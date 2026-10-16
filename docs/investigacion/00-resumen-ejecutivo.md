@@ -70,6 +70,10 @@ en él) probablemente también:
 Segunda tanda de investigación sobre Reino Unido, Irlanda, nórdicos, DACH, Benelux, Francia,
 Italia, Portugal y nivel UE. Confirma la conclusión española y añade requisitos:
 
+- **Ninguna solución europea, libre o comercial, cumple el pliego completo** (tabla de
+  cumplimiento en la sección 0.3 del anexo 05). Las libres que cumplen la capa técnica
+  (Publik, OpenCity, tilavarauspalvelu) carecen del dominio deportivo; las que lo tienen
+  (Aktiv kommune, GELORE, Berlín, nórdicas, francesas) son propietarias o de código cerrado.
 - **Tampoco en Europa existe un producto público o libre vivo para municipios pequeños.**
   Varaamo (Helsinki, MIT, 9 ciudades) está archivado; Kommunale Räume (DE, Apache-2.0) no
   tiene reparto de temporada y depende de la plataforma DeDi; el catálogo OSS de la UE

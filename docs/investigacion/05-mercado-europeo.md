@@ -64,7 +64,48 @@
 **Precio objetivo a batir en la memoria: <3.000 €/concello/año** (banda Aqqo/Hallenbuchungsplan/
 Pitchbooking), que es lo que permite comprar sin licitar.
 
-### 0.3 Lo que debe incorporar la propuesta gallega (lecciones consolidadas)
+### 0.3 Cumplimiento de los requisitos del certamen, solución por solución
+
+Mismos filtros que la tabla 5.1 del [resumen ejecutivo](00-resumen-ejecutivo.md), según las
+bases: **T1** licencia OSI/FSF · **T2** web responsive y modular · **T3** autenticación
+pública y estándares abiertos · **T4** RGPD y gestión segura · **T5** WCAG 2.1 AA ·
+**R3** multi-municipio · **C/M** portal ciudadano (C1–C4) y gestión municipal (M1–M3) ·
+**gl** gallego (o, al menos, i18n que permita añadirlo sin tocar código).
+✅ cumple · ⚠️ parcial · ❌ no cumple · ❓ sin verificar.
+
+**Software libre y de titularidad pública**
+
+| Solución | T1 | T2 | T3 | T4 | T5 | R3 | C/M | gl | Veredicto |
+|---|---|---|---|---|---|---|---|---|---|
+| **Kommunale Räume** (DE, openCode) | ✅ Apache-2.0 | ✅ React/TS, módulos frontend+admin+backend | ⚠️ OIDC vía Keycloak, pero **solo con la plataforma DeDi** (AGPL); API con SDKs | ✅ | ⚠️ plugin a11y en el linter, sin declaración ni auditoría | ✅ catálogo nacional, organizaciones | ⚠️ reserva de día/franjas y pago; **sin temporada, aprobación ni tarifas por tipo de usuario documentadas** | ❌ solo de; i18next permite añadir | El más cercano por licencia y multi-municipio; inviable como base sin desacoplar DeDi y añadir el núcleo municipal |
+| **Publik Chrono + Ressources** (FR, Entr'ouvert) | ✅ AGPL-3.0 | ✅ Django, componentes desacoplados | ✅ FranceConnect nativo (OIDC/SAML genéricos), API `fillslot`, PayFiP vía eopayment | ✅ | ✅ RGAA declarado | ✅ multi-tenant SaaS | ⚠️ agendas, recursos compartidos y personas jurídicas sí; **sin temporada ni reglas deportivas**; es una GRU completa | ❌ fr; i18n Django | Cumple la capa técnica entera; demasiado grande como base, excelente referencia de arquitectura |
+| **OpenCity Stanza del Cittadino** (IT) | ✅ AGPL-3.0 | ✅ microservicios | ✅ SPID/CIE/eIDAS, OpenAPI, pagoPA, App IO | ✅ | ✅ Bootstrap Italia / AgID | ✅ multi-ente | ⚠️ «prenotazione sale e spazi» con importe y pago; sin temporada | ❌ it/de | Igual que Publik: técnica completa, dominio deportivo ausente |
+| **tilavarauspalvelu** (Helsinki, nuevo Varaamo) | ✅ MIT | ✅ Django+GraphQL, Next.js | ⚠️ acoplado a Helsinki Profile, Web Shop, Pindora | ✅ | ✅ Helsinki Design System | ❌ monociudad | ⚠️ reserva ciudadana y recurrencias; temporada parcial | ❌ fi/sv/en | Arquitectura y accesibilidad ejemplares; desacoplarlo cuesta más que rehacerlo |
+| **respa / varaamo** (Helsinki, antiguo) y fork **codepointtku/respa** (Turku) | ✅ MIT | ✅ | ⚠️ JWT/Tunnistamo; spec 6Aika | ✅ | ⚠️ Turku añadió módulo accessibility | ⚠️ varias ciudades compartían instancia con frontal propio | ⚠️ recursos, unidades, reglas, pagos (Turku), accesos (kulkunen) | ❌ | Originales archivados; el fork de Turku es el más genérico, pero código sin futuro |
+| **Lutece** (París) | ✅ BSD-3 | ✅ Java, 300+ plugins | ⚠️ | ✅ | ❓ | ✅ | ❌ solo citas; sin plugin de equipamientos | ❌ fr | Descartado por dominio |
+| **GRR** (FR) | ✅ GPL-2.0 | ⚠️ Symfony 6, intranet | ❌ API desconocida | ✅ | ❓ | ❌ multi-dominio | ❌ sin portal ciudadano | ❌ (es sí) | Referencia |
+| **Aktiv kommune** (NO), **GELORE** (CH), **Hallenbuchungsplan** (DE), **Groundkeeper/Berlín** (DE) | ❌ titularidad pública pero **código cerrado** o licencia desconocida | ✅ | ❓ | ✅ | ⚠️ solo Groundkeeper declara BITV | ✅ los cuatro son multi-municipio | ✅ temporada, aprobación, accesos | ❌ | **Fallan T1**: son el modelo de gobernanza y de funcionalidad, no código reutilizable |
+| **LIPAS** (FI) | ✅ MIT + CC BY 4.0 | ✅ | ✅ API pública sin registro | ✅ | ❓ | n/a (registro nacional) | ❌ no es un sistema de reservas | ❌ | Fuera de alcance, pero **modelo para el rexistro de instalacións** y la capa de datos abiertos (T3, criterio 4) |
+
+**Comerciales europeas** (todas fallan T1 por ser propietarias; se evalúa el resto para saber qué nivel exige el mercado)
+
+| Solución | T2 | T3 | T4 | T5 | R3 | C/M | gl | Lo que enseña |
+|---|---|---|---|---|---|---|---|---|
+| Planitech, BalleJaune, Looc, 3D Ouest (FR) | ✅ | ⚠️ PayFiP sí; FranceConnect no; API limitada | ✅ | ❌ ninguna declara RGAA | ⚠️ BalleJaune multi-sitio; resto por cliente | ✅ temporada, convenciones, journal, heatmap | ❌ | El nivel funcional de temporada y trazabilidad que hay que igualar |
+| CiviliaNext, SYSAP, Comune Facile, ServiziOnLinePA (IT) | ✅ | ✅ SPID/CIE + pagoPA + App IO | ✅ | ⚠️ obligados por AgID, no verificado | ⚠️ ServiziOnLinePA para unioni | ✅ | ❌ | Integración con eID y pago público como estándar, no como extra |
+| Interbook GO, Rbok, Actor (SE); KMD, Conventus, WinKAS (DK); Timmi, Enkora (FI) | ✅ | ✅ BankID/MitID/Suomi.fi | ✅ | ❓ | ⚠️ por municipio | ✅ temporada + **subvenciones a clubes** + accesos | ❌ | Reserva, temporada y subvenciones como un solo sistema club–municipio |
+| Locaboo, Venuzle, KOMMSOFT, NOLIS (DE/AT) | ✅ | ⚠️ sin BundID documentado; Locaboo mapea LeiKa | ✅ | ❓ | ⚠️ | ✅ Dauerbelegung, aprobación, sub-partes de pabellón | ❌ | Flujo solicitud → aprobación y pabellón divisible |
+| Aqqo (NL), Recreatex (BE) | ✅ | ⚠️ iDEAL/Mollie; sin DigiD/itsme | ✅ | ❓ | ✅ Enterprise / webshop por municipio | ✅ | ❌ | Multi-municipio comercial y precio bajo (Aqqo) |
+| Pitchbooking, Bookteq, GovBook, Legend, Gladstone, ClubSpark (UK); SportsKey (IE) | ✅ | ⚠️ OpenActive (Bookteq, Legend, Gladstone); sin One Login | ✅ | ⚠️ GovBook/Gladstone declaran AA; ClubSpark, Legend, BookingLive **«parcialmente conformes»** según los propios councils | ⚠️ multi-sede | ✅ | ❌ | Precios públicos de referencia; la accesibilidad como punto débil generalizado |
+| BookUp (NO), Anybuddy (FR), Playfinder (UK/IE) | ✅ | ⚠️ Vipps (BookUp) | ✅ | ❓ | ✅ marketplace | ⚠️ reserva sí, gestión municipal débil | ❌ | Modelo marketplace supramunicipal con eID |
+
+**Lectura:**
+1. **Ninguna solución europea, libre o comercial, cumple el pliego completo.** La columna que sigue vacía en toda Europa es la combinación T1 (libre) + R3 (multi-municipio) + C/M con reparto de temporada + T5 declarada.
+2. Las tres libres que cumplen toda la capa técnica (Publik, OpenCity, tilavarauspalvelu) son plataformas generalistas o monociudad **sin el dominio deportivo** (temporada, tarifas por tipo de usuario, no-show). Las que tienen el dominio deportivo completo (Aktiv kommune, GELORE, Berlín, nórdicas, francesas) son **propietarias o de código cerrado**.
+3. Kommunale Räume es el único proyecto libre y multi-municipio, pero su dependencia de DeDi y la ausencia de temporada lo dejan como referencia de stack y licencia, no como base.
+4. Para la memoria: la tabla demuestra que un desarrollo libre, multi-concello, con temporada y accesibilidad declarada sería **inédito en Europa**, no solo en España, y que los patrones de integración (eID + pago público + cuenta de organización + accesos por webhook) son el estándar que el jurado puede reconocer.
+
+### 0.4 Lo que debe incorporar la propuesta gallega (lecciones consolidadas)
 
 | # | Lección | Origen | Requisito que implica |
 |---|---------|--------|----------------------|
