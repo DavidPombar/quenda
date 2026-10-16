@@ -76,6 +76,45 @@ en él) probablemente también:
 | **Pretix** | AGPL-3.0+ | Componente para aforo/entradas de piscina por franja, no para pistas |
 | Cal.com, Easy!Appointments, Seatsurfing, Indico | varias | Solo referencia (modelo de citas o escritorios) |
 
+### 5.1 Cumplimiento de los requisitos del certamen, solución por solución
+
+Filtros aplicados (según las bases, ver `docs/contexto/`): **T1** licencia OSI/FSF ·
+**T2** web responsive y modular · **T3** autenticación pública y estándares abiertos ·
+**T4** RGPD y gestión segura de usuarios · **T5** WCAG 2.1 AA · **R3** multi-municipio ·
+**C/M** portal ciudadano (C1–C4) y gestión municipal (M1–M3) · **gl** interfaz en gallego
+(no es requisito literal, pero el jurado y las bases son gallegos).
+✅ cumple · ⚠️ parcial · ❌ no cumple · ❓ sin verificar.
+
+| Solución | T1 | T2 | T3 | T4 | T5 | R3 | C/M | gl | Veredicto |
+|---|---|---|---|---|---|---|---|---|---|
+| **LibreBooking** | ✅ GPL-3.0 | ✅ | ⚠️ API + ICS + SAML/OAuth2, sin OIDC | ⚠️ CVE críticos corregidos en 7.0/7.1 (oct-2026) | ❌ no documentada | ❌ | ⚠️ reglas y cuotas sí; sin pagos ni indicadores | ❌ | La más completa; falla 3 obligatorios |
+| **MRBS** | ✅ GPL-2.0 | ⚠️ UI antigua | ❌ sin API REST | ✅ | ❌ | ❌ | ❌ sin portal ciudadano | ✅ único con gl | Solo motor interno |
+| **ep3-bs** | ✅ MIT | ⚠️ | ❌ sin API | ⚠️ | ❌ | ❌ | ⚠️ pistas sí, gestión municipal no | ❌ | Referencia de modelo de datos |
+| **Odoo + OCA resource_booking** | ✅ AGPL-3.0 | ✅ | ✅ RPC/REST, OIDC vía OCA | ✅ | ❌ cliente web no certificado | ⚠️ multi-company | ⚠️ back-office sí, portal ciudadano flojo | ⚠️ parcial | La que más se acerca; falla T5 y portal |
+| **Drupal + BEE/BAT** | ✅ GPL-2.0+ | ✅ | ✅ | ✅ | ✅ core de Drupal | ⚠️ multisite | ❌ reglas deportivas por programar | ✅ | Cumple la capa técnica, no la funcional |
+| **Kommunale Räume** (openCode.de) | ✅ Apache-2.0 | ✅ | ⚠️ identidad acoplada a «DeDi» (DE) | ✅ | ❓ | ✅ | ⚠️ espacios genéricos; pago sí | ❌ | Único multi-municipio real; stack e idioma sin verificar |
+| **GRR** | ✅ GPL-2.0 | ✅ Symfony 6 | ❓ API | ✅ | ❓ | ❌ (multi-dominio) | ❌ intranet | ❌ (es sí) | Referencia |
+| Cal.com/Cal.diy, Easy!Appointments, Seatsurfing, Indico | ✅ | ✅ | ✅/⚠️ | ✅ | ❌ | ❌ | ❌ modelo de citas o escritorios | ❌ | Descartadas por dominio |
+| **Pretix** | ✅ AGPL-3.0+ | ✅ | ✅ API completa | ✅ | ❌ | ✅ multi-organizador | ❌ entradas/aforo, no pistas | ❓ | Solo componente de aforo |
+| Directus, Budibase, Dolibarr/ERPNext (módulos de reservas), Odoo `appointment` | ❌ no OSI o propietario | — | — | — | — | — | — | — | Descartadas en T1 |
+| Comerciales (Cronos, Deporsite, Sporttia, ReservaDeportes, Playtomic…) | ❌ propietarias | ✅ | ❌ ninguna con Cl@ve/Chave365 | ⚠️ ENS medio en Sporttia y T-Innova | ❌ ninguna lo publicita | ⚠️ multi-centro, no multi-concello | ✅ | ❌ (solo portales propios de Vigo/A Coruña) | Descartadas en T1; referencia funcional |
+
+**Lectura de la tabla:**
+1. **Ninguna solución cumple el pliego completo.** El cruce que nadie resuelve es
+   R3 + T5 + portal ciudadano: las multi-tenant (Kommunale Räume, Odoo) no son accesibles
+   ni tienen portal apto; las que tienen reglas de reserva maduras (LibreBooking, ep3-bs)
+   son mono-instancia.
+2. **Ninguna cumple T3 en el sentido de las bases:** la «autenticación pública»
+   (Cl@ve/Chave365) no la integra ninguna, libre o comercial.
+3. **Esto es un argumento para la memoria**, no un problema: el criterio 4 (20 %) puntúa
+   ser un activo público que hoy no existe, y esta tabla lo documenta (se buscó en CTT,
+   mancomún, Joinup, openCode.de, Developers Italia y GitHub).
+4. **Lo reutilizable, y así se defiende:** el modelo de reglas de LibreBooking/ep3-bs
+   (cuotas, antelación, lista de espera, estados de cobro), la traducción gallega de MRBS
+   como glosario, Keycloak para la identidad pública, Pretix como referencia de aforo, y
+   Kommunale Räume como precedente a auditar. Desarrollo propio con piezas libres probadas,
+   no un fork.
+
 **Estrategia recomendada:** desarrollo propio con núcleo de disponibilidad inspirado en
 LibreBooking/ep3-bs/MRBS, arquitectura multi-tenant e identidad propias, y portal ciudadano
 nuevo construido accesible y en gallego desde el inicio. Esto es, además, lo que mejor puntúa
