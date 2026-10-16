@@ -79,7 +79,7 @@ en él) probablemente también:
 **Estrategia recomendada:** desarrollo propio con núcleo de disponibilidad inspirado en
 LibreBooking/ep3-bs/MRBS, arquitectura multi-tenant e identidad propias, y portal ciudadano
 nuevo construido accesible y en gallego desde el inicio. Esto es, además, lo que mejor puntúa
-en «potencial de reutilización» (15 %): cubre un hueco inexistente en CTT, mancomún y Joinup.
+en «reutilización e soberanía tecnolóxica» (20 % según las bases): cubre un hueco inexistente en CTT, mancomún y Joinup.
 
 ## 6. Piezas del sector público que la memoria debe citar
 
@@ -136,17 +136,21 @@ Patrones concretos a reutilizar: restricción de exclusión en PostgreSQL
 (JWT ES256) validable sin red; OSDP en lugar de Wiegand si se integra hardware de acceso;
 FullCalendar Premium es gratuito para proyectos GPLv3 (confirmar por escrito).
 
-## 8. Hallazgo sobre las bases del certamen
+## 8. Bases oficiales del certamen
 
 Durante la investigación apareció el PDF de las **bases completas**, que no estaba enlazado
 en la web el día 15:
 https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf
-Contiene al menos un apartado «8. Propiedade intelectual e licenza» y los puntos 1.1 y 1.2
-que cita la plantilla. **Hay que leerlo y actualizar los ficheros de `docs/contexto/`.**
+Ya están leídas e incorporadas en `docs/contexto/`. Lo que cambia respecto a la web:
+pesos 25/30/25/20 (cobertura baja al 30 %, reutilización sube al 20 % y pasa a llamarse
+«reutilización e soberanía tecnolóxica» con subcriterios de apertura, independencia de
+proveedor, estándares y portabilidad de datos), licencias recomendadas AGPL-3.0 o EUPL 1.2,
+titularidad del participante, obligación de publicar el código en 60 días si se gana, y
+entrega **solo por el formulario oficial** (no por correo).
 
 ## 9. Incógnitas que conviene cerrar antes de la memoria
 
-1. Contenido del PDF de bases (licencia exigida, propiedad intelectual, formato del pitch).
+1. Formato y duración del pitch final (las bases no lo fijan).
 2. Si AMTEGA ofrece federación de Chave365 a concellos y el procedimiento actual de alta en
    Cl@ve para entidades locales (la web de clave.gob.es rechazó las peticiones).
 3. Si alguna deputación dispone de hosting ENS, pasarela de pago o contrato SMS corporativos.
