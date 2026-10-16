@@ -64,7 +64,7 @@
 
 ## 6. Hosting y antecedentes
 - Xunta: CPD Integral en la Cidade da Cultura; acuerdo marco de nube pública accesible a EELL (adjudicatario y ENS: desconocidos). Para SaaS privado: proveedor con certificación ENS ≥ categoría del sistema.
-- **Ningún software libre municipal de reservas deportivas publicado** (CTT, Euskadi, Barcelona, Madrid, València). El mercado es comercial. Esto refuerza el criterio «activo público replicable» (15 %).
+- **Ningún software libre municipal de reservas deportivas publicado** (CTT, Euskadi, Barcelona, Madrid, València). El mercado es comercial. Esto refuerza el criterio «reutilización e soberanía tecnolóxica» (20 % según las bases).
 
 ## Las 8 integraciones/estándares prioritarios para la memoria
 1. Cl@ve (SAML 2.0 vía pasarela) con capa OIDC + Chave365 opcional + «EUDI-ready».
