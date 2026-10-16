@@ -1,8 +1,9 @@
 # Investigación de mercado: soluciones para la reserva de instalaciones deportivas municipales
 
-> Fecha: 2026-10-16. Investigación web en cuatro frentes, consolidada aquí. Los informes
-> detallados con fuentes están en los anexos [01](01-software-libre.md), [02](02-mercado-comercial.md),
-> [03](03-sector-publico.md) y [04](04-stack-tecnico.md). Lo no verificado está marcado
+> Fecha: 2026-10-16. Investigación web en cuatro frentes más una segunda tanda europea,
+> consolidada aquí. Los informes detallados con fuentes están en los anexos
+> [01](01-software-libre.md), [02](02-mercado-comercial.md), [03](03-sector-publico.md),
+> [04](04-stack-tecnico.md) y [05](05-mercado-europeo.md). Lo no verificado está marcado
 > como «desconocido» en los anexos; aquí solo se recogen conclusiones con respaldo.
 
 ## 1. Conclusión principal
@@ -63,6 +64,48 @@ en él) probablemente también:
 - Comisiones ocultas (TPV del proveedor, 0,29–0,99 €/operación en Playtomic).
 - Sin gallego, sin accesibilidad declarada, sin Cl@ve/Chave365.
 - Procesos de temporada por decreto y correo.
+
+## 4 bis. Mercado europeo: qué añade (detalle en [05](05-mercado-europeo.md))
+
+Segunda tanda de investigación sobre Reino Unido, Irlanda, nórdicos, DACH, Benelux, Francia,
+Italia, Portugal y nivel UE. Confirma la conclusión española y añade requisitos:
+
+- **Ninguna solución europea, libre o comercial, cumple el pliego completo** (tabla de
+  cumplimiento en la sección 0.3 del anexo 05). Las libres que cumplen la capa técnica
+  (Publik, OpenCity, tilavarauspalvelu) carecen del dominio deportivo; las que lo tienen
+  (Aktiv kommune, GELORE, Berlín, nórdicas, francesas) son propietarias o de código cerrado.
+- **Tampoco en Europa existe un producto público o libre vivo para municipios pequeños.**
+  Varaamo (Helsinki, MIT, 9 ciudades) está archivado; Kommunale Räume (DE, Apache-2.0) no
+  tiene reparto de temporada y depende de la plataforma DeDi; el catálogo OSS de la UE
+  (>640 soluciones) no tiene ninguna de reservas deportivas.
+- **El reparto anual de horas a clubes es el núcleo funcional en todos los países**
+  («Dauerbelegung», «säsongsansökan», «créneaux», «assegnazione spazi»). En Galicia es
+  manual en A Coruña, Vigo, Santiago y Barreiros. Debe ser un bloque funcional propio.
+- **Patrón universal de pagos**: factura a clubes + pago inmediato a ocasionales +
+  conciliación contable; pasarela pública nacional obligatoria o de facto (PayFiP, pagoPA,
+  iDEAL, MobilePay, Vipps, Suomi.fi).
+- **Cuenta de organización** (club, verificada por el ayuntamiento, varios usuarios)
+  separada de la cuenta ciudadana; eID obligatorio para clubes y temporada, **login ligero
+  de respaldo** para reserva puntual (Lappeenranta perdió adopción cuando el eID fallaba).
+- **Control de accesos sin llaves** (PIN por SMS válido solo en la franja, QR, cerraduras)
+  es el diferenciador más citado; basta un webhook «reserva confirmada → credencial».
+- **Nadie publica accesibilidad verificable**: los councils británicos admiten que sus
+  proveedores son «parcialmente conformes»; Turku gastó dos personas-mes en Varaamo.
+- **Modelo supramunicipal validado en todas partes**: OPSN franceses (Mégalis: la
+  intercomunalidad paga por tramo de población y sus communes acceden gratis), Vitako
+  alemán (80 % de municipios), Aktiv kommune noruego (14 municipios, coste compartido),
+  GELORE cantonal suizo, CIM portuguesas. Es el molde para una deputación.
+- **Gobernanza antes que código**: Varaamo murió por falta de product owner y modelo de
+  financiación compartida (forks divergentes, pago tardío, proyecto parado al irse el jefe).
+- **Precio a batir: <3.000 €/concello/año** (Aqqo, Hallenbuchungsplan, Pitchbooking),
+  que es lo que permite comprar sin licitar.
+- Marco legal a citar junto a la Ley 40/2015: **Interoperable Europe Act** (share & reuse,
+  preferencia por licencias no restrictivas) y **CAD art. 69** italiano (riuso obligatorio).
+- Referencias reutilizables: **Publik Chrono/Ressources** (AGPL, arquitectura agendas +
+  recursos + personas jurídicas), **LIPAS** (registro finlandés de instalaciones, MIT,
+  CC BY 4.0) como modelo de rexistro galego, **BASPO** (marco suizo de criterios de
+  evaluación), **FIM 99098006005000** (ficha alemana del trámite), **modelo App IO
+  «Locazione impianti»** (catálogo de notificaciones), **Venlo** (checklist de licitación).
 
 ## 5. Software libre reutilizable: veredicto
 
