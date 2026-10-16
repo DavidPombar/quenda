@@ -8,6 +8,9 @@ debe cumplir las normas del concurso descritas en estos ficheros de contexto:
 @docs/contexto/03-concurso-presentacion-valoracion.md
 @docs/contexto/04-plantilla-memoria-tecnica.md
 
+Investigación de mercado (software libre, comercial, sector público y stack) en
+`docs/investigacion/`, resumen en `docs/investigacion/00-resumen-ejecutivo.md`.
+
 ## Reglas que no se pueden saltar
 - Solo software libre (licencia OSI/FSF) en el código y en todas las dependencias.
 - Web responsive y modular, estándares abiertos, RGPD y accesibilidad (WCAG 2.1 AA).
