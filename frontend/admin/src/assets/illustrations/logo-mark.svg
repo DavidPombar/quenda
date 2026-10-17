@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<title>Quenda</title>
+<rect width="64" height="64" rx="16" fill="#205540"/>
+<circle cx="29" cy="29" r="13.5" fill="none" stroke="#fff" stroke-width="6"/>
+<path d="M42.5 27v26" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+<path d="M29 21.5V29l5 3.2" stroke="#e6ec6c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

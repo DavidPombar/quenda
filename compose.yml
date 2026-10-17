@@ -1,0 +1,17 @@
+name: quenda
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: quenda
+      POSTGRES_PASSWORD: quenda_local
+      POSTGRES_DB: quenda
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["quenda-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quenda -d quenda"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+volumes:
+  quenda-data:

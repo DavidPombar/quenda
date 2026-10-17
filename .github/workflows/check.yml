@@ -1,0 +1,42 @@
+name: Verify Quenda
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: quenda
+          POSTGRES_PASSWORD: quenda_local
+          POSTGRES_DB: quenda
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U quenda -d quenda"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - run: npm run licenses
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run db:migrate && npm run db:seed
+      - name: Verify the complete browser flow
+        run: |
+          npm run dev > /tmp/quenda.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5173/v2/public/municipalities > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: .dev-logs/
+          include-hidden-files: true

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 170" width="240" height="170" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Quenda illustration set · No bookings yet -->
+<g fill="none" stroke="#183f30" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="120" cy="150" rx="86" ry="9" fill="#cddfba" stroke="none"/>
+<rect x="58" y="30" width="112" height="108" rx="12" fill="#fff"/>
+<path d="M58 58h112" /><rect x="58" y="30" width="112" height="28" rx="12" fill="#b8cf9f" stroke="none"/><rect x="58" y="30" width="112" height="108" rx="12"/>
+<path d="M84 22v18M144 22v18"/>
+<rect x="72" y="70" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="72" y="90" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="72" y="110" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="94" y="70" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="94" y="90" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="94" y="110" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="116" y="70" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="116" y="90" width="12" height="10" rx="3" fill="#e6ec6c" stroke="#183f30"/><rect x="116" y="110" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="138" y="70" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="138" y="90" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/><rect x="138" y="110" width="12" height="10" rx="3" fill="#f2efe6" stroke="none"/>
+<circle cx="182" cy="124" r="20" fill="#e6ec6c"/><path d="M168 110c8 6 8 22 0 28M196 110c-8 6 -8 22 0 28"/>
+<path d="M30 62l6 -6M30 50l6 6" stroke="#cd7a50"/><path d="M200 40h10M205 35v10" stroke="#2f6fa3"/></g>
+</svg>

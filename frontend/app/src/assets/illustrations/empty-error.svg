@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 170" width="240" height="170" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Quenda illustration set · Something went wrong -->
+<g fill="none" stroke="#183f30" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="120" cy="150" rx="86" ry="9" fill="#cddfba" stroke="none"/>
+<path d="M44 140V58M196 140V58"/>
+<path d="M44 62h152" stroke-width="4"/>
+<path d="M56 62v48"/><path d="M72 62v48"/><path d="M88 62v48"/><path d="M104 62v48"/><path d="M120 62v48"/><path d="M136 62v48"/><path d="M152 62v48"/><path d="M168 62v48"/><path d="M184 62v48"/>
+<path d="M44 78h152"/><path d="M44 94h152"/><path d="M44 110h152"/>
+<path d="M44 110h152"/>
+<circle cx="138" cy="86" r="14" fill="#e6ec6c"/><path d="M128 76c6 5 6 15 0 20M148 76c-6 5 -6 15 0 20"/>
+<path d="M162 30l6 -10M174 36l10 -6M150 26l-1 -11" stroke="#e8743b"/></g>
+</svg>

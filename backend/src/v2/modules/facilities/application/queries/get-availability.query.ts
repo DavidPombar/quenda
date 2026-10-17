@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { Injectable } from "@nestjs/common";
+import { Temporal } from "@js-temporal/polyfill";
+import { FacilityRepository } from "../../domain/facility.repository";
+import { OpeningCalendar } from "../../domain/opening-calendar";
+import { Municipalities } from "../../../../shared/application/municipality-settings";
+import { Clock } from "../../../../shared/application/clock";
+import { Result } from "../../../../shared/application/result";
+import { AppError, failure } from "../../../../shared/application/errors";
+export interface AvailabilitySlot {
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  status: "available" | "booked" | "past";
+}
+export type GetAvailabilityError =
+  AppError<"not_found"> | AppError<"validation">;
+@Injectable()
+export class GetAvailability {
+  constructor(
+    private readonly facilities: FacilityRepository,
+    private readonly municipalities: Municipalities,
+    private readonly calendar: OpeningCalendar,
+    private readonly clock: Clock,
+  ) {}
+  async execute(args: {
+    slug: string;
+    id: string;
+    date: string;
+  }): Promise<Result<AvailabilitySlot[], GetAvailabilityError>> {
+    const municipality = await this.municipalities.findBySlug(args.slug);
+    if (!municipality) return Result.err(failure("not_found"));
+    const facility = await this.facilities.find(municipality.id, args.id);
+    if (!facility) return Result.err(failure("not_found"));
+    let date: Temporal.PlainDate;
+    try {
+      date = Temporal.PlainDate.from(args.date);
+    } catch {
+      return Result.err(failure("validation"));
+    }
+    const now = this.clock.now();
+    const today = now.toZonedDateTimeISO(municipality.timezone).toPlainDate();
+    if (
+      Temporal.PlainDate.compare(date, today) < 0 ||
+      Temporal.PlainDate.compare(
+        date,
+        today.add({ days: municipality.advanceDays }),
+      ) > 0 ||
+      facility.status !== "active"
+    )
+      return Result.ok([]);
+    const start = date.toZonedDateTime(municipality.timezone).toInstant();
+    const end = date
+      .add({ days: 1 })
+      .toZonedDateTime(municipality.timezone)
+      .toInstant();
+    const busy = await this.facilities.busy(
+      municipality.id,
+      args.id,
+      start,
+      end,
+    );
+    const slots: AvailabilitySlot[] = [];
+    for (const interval of this.calendar.expand({
+      calendar: facility.openingCalendar,
+      timezone: municipality.timezone,
+      date,
+    })) {
+      for (
+        let from = interval.start;
+        Temporal.Instant.compare(
+          from.add({ minutes: facility.slotMinutes }),
+          interval.end,
+        ) <= 0;
+        from = from.add({ minutes: facility.slotMinutes })
+      ) {
+        if (
+          Temporal.Instant.compare(from, start) < 0 ||
+          Temporal.Instant.compare(from, end) >= 0
+        )
+          continue;
+        const to = from.add({ minutes: facility.slotMinutes });
+        const status =
+          Temporal.Instant.compare(from, now) <= 0
+            ? "past"
+            : busy.some(
+                  (value) =>
+                    Temporal.Instant.compare(value.start, to) < 0 &&
+                    Temporal.Instant.compare(value.end, from) > 0,
+                )
+              ? "booked"
+              : "available";
+        slots.push({ start: from, end: to, status });
+      }
+    }
+    return Result.ok(slots);
+  }
+}

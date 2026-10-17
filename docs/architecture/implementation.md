@@ -1,0 +1,41 @@
+# V0 architecture and requirement decisions
+
+## TrainerStudio conventions
+
+Implementation follows the frontend-architecture, frontend-testing and backend-v2-architecture skills reviewed in the TrainerStudio checkout, including their setup references and `backend/docs/architecture/v2.md`.
+
+Three independent Vite workspaces separate presentation, citizen services and municipal administration (T2). `frontend/web` serves `/` with bilingual product information and links to both products; it has no API client or authentication bootstrap. `frontend/app` serves `/app/` with the citizen catalog, availability, reservations and history. `frontend/admin` serves `/admin/` with facility editing, calendars and indicators. Each has its own router, providers, styles, tests and build; there are no source imports between them. The citizen bundle contains no manager views or manager API calls. The backoffice requires a manager session before rendering operational controls. Both use the existing server-side audience permissions; frontends never grant permissions.
+
+All dropdowns use Chakra `NativeSelect` with browser selection behavior. Build-time rules reject raw select elements and imports between frontends. Nginx routes each path to its own build and handles nested-route reloads. Development uses the website Vite proxy to the citizen server on 5174 and admin server on 5175. Cross-product links cause full document navigation. Locale is shared through `quenda.locale` on the same origin. The demo uses one HttpOnly API session cookie, so opening another audience's demo account replaces the active role; the citizen shell accepts only citizen sessions and the admin shell only manager sessions.
+
+The frontend uses React Router route objects beside their pages. Page-owned subpages and components nest recursively under `components/`. Views render controller outputs; controllers own navigation and user input; TanStack Query owns server state; repositories alone know endpoint paths; the singleton fetch client handles transport. No barrel files are used. Search and sport filters live in the URL, locale in local browser preferences, identity in an HttpOnly cookie and server data in the query cache. Mutations invalidate reservations, notifications, availability and indicators. `scripts/check-architecture.mjs` checks component ownership, layer imports, cycles, endpoint count and guarded audiences.
+
+Backend modules cover identity, municipalities, facilities, bookings and insights. Each v2 controller has one endpoint, explicit DTO mappings, strict request validation and exhaustive error handling. API problems use RFC 7807 with stable codes and Galician/Spanish messages. `Commands` and `Queries` resolve operations eagerly; only the command locator starts a transaction. Business failures are typed Results. Domain repository abstract classes double as injection tokens. `Clock`, `IdGenerator` and `Audit` are shared ports.
+
+Public catalog and demo-session operations accept a municipality slug because no identity exists yet. Protected operations accept a principal whose tenant is derived from an opaque, server-stored session. The HTTP request cannot choose a protected tenant or user. Manager and citizen contracts use separate audience routes. Grant checks remain in the application operation, in addition to authentication at the edge. The facility-schedule port is owned by the booking consumer. Calendar expansion is a shared domain capability exported by the facilities module.
+
+## PostgreSQL adaptation (T1, T2, T3, C2, R3)
+
+The TrainerStudio adapter uses Mongoose. Quenda keeps its architectural rules and uses PostgreSQL instead: it is the context's recommended open database, and the `btree_gist` exclusion constraint expresses the reservation invariant directly. No TrainerStudio proprietary integrations or production data were copied.
+
+The reservation constraint is `(tenant_id =, facility_id =, tstzrange(starts_at, ends_at, '[)') &&)` for confirmed rows. It excludes overlapping reservations even across independent API processes. Adjacent slots are allowed. Composite foreign keys ensure the user and facility belong to the reservation's municipality.
+
+A command checks permissions, locks its user's row, locks the facility row, rechecks policy, and writes its booking, notification and audit event on one transaction connection. The user lock makes quota checks safe under concurrent requests. Facility locks serialize reservation changes with manager schedule edits. Expected exclusion failures map to `slot_taken`; error Results roll back all writes. AsyncLocalStorage transports the connection to repositories. Date values cross PostgreSQL as ISO strings and become Temporal objects in adapters; application code does not use JavaScript Date.
+
+In-app notifications are transaction-local records, not an external delivery queue. No external network side effects run inside transactions. Future email/SMS adapters need a transactional outbox and idempotent delivery handlers.
+
+## Demo identity and deployment (T4, R1)
+
+Demo accounts are preconfigured per municipality. Opening a demo session is deliberately gated by `DEMO_MODE=true`. Tokens contain 256 random bits, are hashed in the database, expire after eight hours and are sent only as HttpOnly SameSite=Strict cookies. Production-mode cookies are Secure. Mutation requests must include a custom same-origin header; no cross-origin CORS allowance exists. Sessions are explicitly revoked at logout. Only fictitious display names are seeded.
+
+Default listeners and Compose ports are loopback-only. The supplied demo does not implement production identity proof, account lifecycle or regulatory compliance. Enabling an internet-facing service requires a separate deployment and identity implementation, HTTPS, operational hardening and the remaining T4 work listed in the README.
+
+## Scope and rollout
+
+The first usable slice covers catalog → calendar availability → reservation → reschedule/cancel → history/notices. Manager facility administration and basic aggregate indicators complete the demonstration path. Prices are informational; there is no payment processing. Closure requires future bookings to be resolved first. Data remains durable across restarts.
+
+A production roadmap should implement identity and GDPR account lifecycle first (T4), then municipal configuration onboarding and notification delivery (R2, C4), followed by facility photos/subspaces, residency policies and operational reporting (M1–M3). QR/mobile are optional and follow mandatory requirements. Principal risks are identity-provider integration, municipal operating-policy differences and accessibility in real assistive-technology workflows.
+
+## Validation (T5)
+
+Vitest Browser Mode renders each frontend with real providers and routing; application tests retain real controllers and cache, replacing only HTTP with MSW/server-stubs. Website tests exercise the public entry and language switching. HTTP tests boot compiled Nest code and a real disposable PostgreSQL database. Calendar tests cover recurrence and DST edge cases. A separate Playwright smoke flow uses the real local stack, follows website → citizen app → admin → website links and verifies audience separation, reloads nested citizen and admin routes, changes native selects and checks mobile overflow. Eight axe WCAG 2.0/2.1 AA scans cover the desktop/mobile website, desktop/mobile catalog, booking dialog, history, manager dashboard and facility editor. Automated checks are evidence, not certification or a substitute for assistive-technology/manual review.

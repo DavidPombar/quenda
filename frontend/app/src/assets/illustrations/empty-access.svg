@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 170" width="240" height="170" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Quenda illustration set · Restricted area -->
+<g fill="none" stroke="#183f30" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="120" cy="150" rx="86" ry="9" fill="#cddfba" stroke="none"/>
+<path d="M40 144V40M200 144V40" stroke-width="5"/>
+<rect x="48" y="46" width="70" height="94" rx="3" fill="#fff"/><rect x="122" y="46" width="70" height="94" rx="3" fill="#fff"/>
+<g stroke-width="1.4" opacity=".55"><path d="M48 46l94 94M192 46l-94 94"/><path d="M66 46l94 94M174 46l-94 94"/><path d="M84 46l94 94M156 46l-94 94"/><path d="M102 46l90 90M138 46l-90 90"/><path d="M120 46l72 72M120 46l-72 72"/><path d="M138 46l54 54M102 46l-54 54"/><path d="M156 46l36 36M84 46l-36 36"/><path d="M174 46l18 18M66 46l-18 18"/></g>
+<rect x="48" y="46" width="70" height="94" rx="3"/><rect x="122" y="46" width="70" height="94" rx="3"/>
+<path d="M108 96c-6 0 -6 10 0 10h24c6 0 6 -10 0 -10" stroke="#8a8f86" stroke-width="3"/>
+<path d="M110 102v-12a10 10 0 0 1 20 0v12" stroke-width="4"/>
+<rect x="104" y="100" width="32" height="28" rx="6" fill="#e6ec6c"/><path d="M120 110v8" stroke-width="3"/>
+<path d="M206 36l8 -8M210 46h11" stroke="#cd7a50"/><path d="M24 70h10M29 65v10" stroke="#2f6fa3"/></g>
+</svg>
