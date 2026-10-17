@@ -21,13 +21,13 @@ jobs:
           --health-cmd "pg_isready -U quenda -d quenda"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Point the API and tests at the service database
         run: |
           url="postgres://quenda:quenda_local@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/quenda"
           echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
           echo "TEST_DATABASE_URL=$url" >> "$GITHUB_ENV"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -45,7 +45,7 @@ jobs:
             sleep 1
           done
           npm run test:smoke
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: browser-evidence
