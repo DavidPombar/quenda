@@ -1,5 +1,11 @@
 name: Verify Quenda
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -10,12 +16,17 @@ jobs:
           POSTGRES_USER: quenda
           POSTGRES_PASSWORD: quenda_local
           POSTGRES_DB: quenda
-        ports: ["55432:5432"]
+        ports: ["5432"]
         options: >-
           --health-cmd "pg_isready -U quenda -d quenda"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
+      - name: Point the API and tests at the service database
+        run: |
+          url="postgres://quenda:quenda_local@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/quenda"
+          echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
+          echo "TEST_DATABASE_URL=$url" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: 24
