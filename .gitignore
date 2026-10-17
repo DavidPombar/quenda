@@ -3,3 +3,11 @@
 .env.*
 !.env.example
 node_modules/
+dist/
+coverage/
+.vite/
+test-results/
+playwright-report/
+*.tsbuildinfo
+.dev-logs/
+__screenshots__/

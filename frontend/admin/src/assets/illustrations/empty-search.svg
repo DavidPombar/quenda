@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 170" width="240" height="170" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Quenda illustration set · No results -->
+<g fill="none" stroke="#183f30" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="120" cy="150" rx="86" ry="9" fill="#cddfba" stroke="none"/>
+<g transform="rotate(-10 110 90)"><rect x="40" y="56" width="140" height="76" rx="4" fill="#cd7a50"/>
+<path d="M50 64h120v60H50zM110 56v76M50 72h120M50 116h120M78 72v44M142 72v44M78 94h64" stroke="#fff" stroke-width="2"/></g>
+<circle cx="150" cy="70" r="30" fill="#fff" fill-opacity=".75"/><circle cx="150" cy="70" r="30"/>
+<path d="M172 92l22 22" stroke-width="8"/><path d="M140 64q10 -10 20 0" />
+<path d="M30 40l6 -6M30 28l6 6" stroke="#2f6fa3"/></g>
+</svg>

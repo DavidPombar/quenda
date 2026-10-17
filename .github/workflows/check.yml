@@ -1,0 +1,53 @@
+name: Verify Quenda
+on:
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: quenda
+          POSTGRES_PASSWORD: quenda_local
+          POSTGRES_DB: quenda
+        ports: ["5432"]
+        options: >-
+          --health-cmd "pg_isready -U quenda -d quenda"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Point the API and tests at the service database
+        run: |
+          url="postgres://quenda:quenda_local@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/quenda"
+          echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
+          echo "TEST_DATABASE_URL=$url" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - run: npm run licenses
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run db:migrate && npm run db:seed
+      - name: Verify the complete browser flow
+        run: |
+          npm run dev > /tmp/quenda.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5173/v2/public/municipalities > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:smoke
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: browser-evidence
+          path: .dev-logs/
+          include-hidden-files: true
