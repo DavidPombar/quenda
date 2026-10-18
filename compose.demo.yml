@@ -11,9 +11,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["sh", "-c", "node backend/dist/database/migrate.js && node backend/dist/database/seed.js && node backend/dist/main.js"]
+    command:
+      [
+        "sh",
+        "-c",
+        "node backend/dist/database/migrate.js && node backend/dist/database/seed.js && node backend/dist/main.js",
+      ]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/v2/public/municipalities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/v2/public/municipalities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10

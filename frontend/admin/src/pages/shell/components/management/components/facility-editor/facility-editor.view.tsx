@@ -258,23 +258,39 @@ export function FacilityEditor(p: {
                       <div className="form-grid">
                         <Field.Root className="field">
                           <Field.Label>{t("opening")}</Field.Label>
-                          <Input
-                            type="time"
-                            value={c.opening}
-                            onChange={(event) =>
-                              c.setOpening(event.target.value)
-                            }
-                          />
+                          <NativeSelect.Root>
+                            <NativeSelect.Field
+                              value={c.opening}
+                              onChange={(event) =>
+                                c.setOpening(event.target.value)
+                              }
+                            >
+                              {c.times.map((time) => (
+                                <option key={time} value={time}>
+                                  {time}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
                         </Field.Root>
                         <Field.Root className="field">
                           <Field.Label>{t("closing")}</Field.Label>
-                          <Input
-                            type="time"
-                            value={c.closing}
-                            onChange={(event) =>
-                              c.setClosing(event.target.value)
-                            }
-                          />
+                          <NativeSelect.Root>
+                            <NativeSelect.Field
+                              value={c.closing}
+                              onChange={(event) =>
+                                c.setClosing(event.target.value)
+                              }
+                            >
+                              {c.times.map((time) => (
+                                <option key={time} value={time}>
+                                  {time}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
                         </Field.Root>
                       </div>
                       <Button

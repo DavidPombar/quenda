@@ -51,7 +51,7 @@ describe("Facility catalog", () => {
     await render(<App />);
     await expect
       .element(page.getByRole("alert"))
-      .toHaveTextContent("Non puidemos cargar os datos.");
+      .toMatchTextContent("Non puidemos cargar os datos.");
   });
   test("should display Spanish labels when the language is changed", async () => {
     stubShell();

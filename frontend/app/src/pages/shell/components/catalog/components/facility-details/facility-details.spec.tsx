@@ -58,6 +58,6 @@ test("should keep the dialog open with an explanation when another person reserv
   await page.getByRole("button", { name: "Confirmar reserva" }).click();
   await expect
     .element(page.getByRole("alert"))
-    .toHaveTextContent("Esta quenda xa está reservada.");
+    .toMatchTextContent("Esta quenda xa está reservada.");
   await expect.element(page.getByRole("dialog")).toBeVisible();
 });

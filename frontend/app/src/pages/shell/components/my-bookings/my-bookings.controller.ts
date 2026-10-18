@@ -9,6 +9,8 @@ import type { AppContext } from "@/types/app-context";
 import type { Booking } from "@/types/models";
 // Most recent notices shown before "Ver todos".
 const NOTICE_PREVIEW = 10;
+// Bookings shown per page; "Ver máis" reveals the next page.
+const BOOKING_PAGE = 10;
 export function useMyBookingsController() {
   const context = useOutletContext<AppContext>();
   const query = useListBookingsQuery(context.session?.userId);
@@ -17,13 +19,14 @@ export function useMyBookingsController() {
   const [cancelling, setCancelling] = useState<Booking | null>(null);
   const [changing, setChanging] = useState<Booking | null>(null);
   const [showAllNotices, setShowAllNotices] = useState(false);
+  const [bookingLimit, setBookingLimit] = useState(BOOKING_PAGE);
   const allNotices = notices.data ?? [];
   const visibleNotices = showAllNotices
     ? allNotices
     : allNotices.slice(0, NOTICE_PREVIEW);
   const update = useUpdateBookingMutation();
   const now = Temporal.Now.instant();
-  const bookings =
+  const allBookings =
     query.data
       ?.filter((booking) => {
         const upcoming =
@@ -36,6 +39,7 @@ export function useMyBookingsController() {
           ? a.start.localeCompare(b.start)
           : b.start.localeCompare(a.start),
       ) ?? [];
+  const bookings = allBookings.slice(0, bookingLimit);
   async function confirmCancel() {
     if (!cancelling) return;
     try {
@@ -59,14 +63,17 @@ export function useMyBookingsController() {
     query,
     notices,
     visibleNotices,
-    hiddenNotices: showAllNotices
-      ? 0
-      : allNotices.length - visibleNotices.length,
-    showAllNotices: showAllNotices,
+    hiddenNotices: Math.max(allNotices.length - NOTICE_PREVIEW, 0),
+    showAllNotices,
     toggleNotices: () => setShowAllNotices((value) => !value),
     tab,
-    setTab,
+    setTab: (value: "upcoming" | "history") => {
+      setTab(value);
+      setBookingLimit(BOOKING_PAGE);
+    },
     bookings,
+    hiddenBookings: allBookings.length - bookings.length,
+    showMoreBookings: () => setBookingLimit((value) => value + BOOKING_PAGE),
     cancelling,
     setCancelling,
     changing,

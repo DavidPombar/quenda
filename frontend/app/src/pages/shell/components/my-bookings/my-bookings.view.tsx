@@ -73,6 +73,15 @@ export function MyBookings() {
                     onChange={() => c.setChanging(booking)}
                   />
                 ))}
+                {c.hiddenBookings > 0 && (
+                  <Button
+                    variant="outline"
+                    alignSelf="flex-start"
+                    onClick={c.showMoreBookings}
+                  >
+                    {`${c.t("showMoreBookings")} (${c.hiddenBookings})`}
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="empty-state">

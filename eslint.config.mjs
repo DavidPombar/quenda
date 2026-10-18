@@ -8,6 +8,7 @@ export default tseslint.config(
       "**/public/mockServiceWorker.js",
       "**/test-results/**",
       "**/coverage/**",
+      "**/.vite/**",
     ],
   },
   ...tseslint.configs.recommended,
