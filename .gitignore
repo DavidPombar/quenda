@@ -11,3 +11,4 @@ playwright-report/
 *.tsbuildinfo
 .dev-logs/
 __screenshots__/
+.vitest/

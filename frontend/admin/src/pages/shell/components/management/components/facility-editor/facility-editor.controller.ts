@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useSaveFacilityMutation } from "@/queries/facilities/save-facility.mutation";
-import { weeklyCalendar } from "@/services/calendar.service";
+import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
 import type { Facility, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
@@ -120,6 +120,7 @@ export function useFacilityEditorController(args: {
     errors,
     days,
     toggleDay,
+    times: dayTimes(),
     opening,
     setOpening,
     closing,

@@ -180,6 +180,7 @@
   align-items: center;
   gap: 12px;
   align-self: flex-start;
+  min-height: 44px;
   border-radius: var(--radius-control);
   color: var(--court);
   font-size: 2rem;

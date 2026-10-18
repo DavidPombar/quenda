@@ -37,3 +37,11 @@ export function weeklyCalendar(args: {
     "",
   ].join("\r\n");
 }
+// 24-hour times in 15-minute steps, independent of the browser's locale.
+export function dayTimes(): string[] {
+  return Array.from({ length: 96 }, (_, index) =>
+    Temporal.PlainTime.from({ hour: 0 })
+      .add({ minutes: index * 15 })
+      .toString({ smallestUnit: "minute" }),
+  );
+}
