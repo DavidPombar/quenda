@@ -13,7 +13,7 @@ function principal(user: Omit<Principal, "grants">): Principal {
     ...user,
     grants:
       user.role === "manager"
-        ? ["bookings:own", "facilities:manage", "insights:view"]
+        ? ["bookings:own", "facilities:manage", "insights:view", "data:export"]
         : ["bookings:own"],
   };
 }

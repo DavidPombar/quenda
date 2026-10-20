@@ -408,6 +408,11 @@ main {
   margin-bottom: 32px;
   border-bottom: 1px solid var(--line);
 }
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .page-subtitle {
   max-width: 70ch;
   margin-top: 8px;

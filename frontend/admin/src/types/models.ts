@@ -63,3 +63,10 @@ export interface Insights {
   to: string;
   byFacility: { id: string; name: string; bookings: number }[];
 }
+/** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
+export interface MunicipalityExport {
+  format: "quenda-municipality-export";
+  version: number;
+  exportedAt: string;
+  municipality: { slug: string };
+}

@@ -6,6 +6,7 @@ import { MunicipalitiesModule } from "./v2/modules/municipalities/municipalities
 import { FacilitiesModule } from "./v2/modules/facilities/facilities.module";
 import { BookingsModule } from "./v2/modules/bookings/bookings.module";
 import { InsightsModule } from "./v2/modules/insights/insights.module";
+import { PortabilityModule } from "./v2/modules/portability/portability.module";
 @Module({
   imports: [
     SharedModule,
@@ -14,6 +15,7 @@ import { InsightsModule } from "./v2/modules/insights/insights.module";
     FacilitiesModule,
     BookingsModule,
     InsightsModule,
+    PortabilityModule,
   ],
 })
 export class AppModule {}

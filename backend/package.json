@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
+    "db:import": "tsx src/database/import.ts",
     "test": "vitest run --config vitest.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts"
   },

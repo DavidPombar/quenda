@@ -121,6 +121,10 @@ const gl = {
   calendarReady: "Horario preparado. Gárdao para aplicalo.",
   calendarReadError: "Non puidemos ler o calendario.",
   facilitySaved: "Instalación gardada.",
+  exportData: "Exportar datos",
+  exportDone:
+    "Descargouse o ficheiro cos datos completos do concello en formato aberto.",
+  exportError: "Non puidemos exportar os datos. Volve tentalo.",
   statsBookings: "Reservas confirmadas",
   statsOccupancy: "Ocupación prevista",
   statsCancelled: "Cancelacións",
@@ -286,6 +290,10 @@ const es: Record<TextKey, string> = {
   calendarReady: "Horario preparado. Guárdalo para aplicarlo.",
   calendarReadError: "No pudimos leer el calendario.",
   facilitySaved: "Instalación guardada.",
+  exportData: "Exportar datos",
+  exportDone:
+    "Se ha descargado el fichero con los datos completos del concello en formato abierto.",
+  exportError: "No pudimos exportar los datos. Vuelve a intentarlo.",
   statsBookings: "Reservas confirmadas",
   statsOccupancy: "Ocupación prevista",
   statsFacilities: "Instalaciones",
