@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Button } from "@chakra-ui/react";
-import { PiCalendarBlank, PiCheck, PiClock, PiX } from "react-icons/pi";
+import {
+  PiCalendarBlank,
+  PiCalendarPlus,
+  PiCheck,
+  PiClock,
+  PiX,
+} from "react-icons/pi";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
 import { bookingDayLabel, timeLabel } from "@/services/date.service";
 import type { Booking, Locale, Municipality } from "@/types/models";
@@ -11,6 +17,7 @@ export function BookingRow(p: {
   locale: Locale;
   t: (key: TextKey) => string;
   canChange: boolean;
+  calendarHref: string;
   onCancel: () => void;
   onChange: () => void;
 }) {
@@ -38,18 +45,28 @@ export function BookingRow(p: {
           <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
         </li>
       </ul>
-      {p.canChange && (
+      {p.booking.status === "confirmed" && (
         <div className="booking-actions">
-          <Button size="lg" variant="outline" onClick={p.onChange}>
-            {p.t("changeBooking")}
-          </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            colorPalette="red"
-            onClick={p.onCancel}
-          >
-            {p.t("cancelBooking")}
+          {p.canChange && (
+            <>
+              <Button size="lg" variant="outline" onClick={p.onChange}>
+                {p.t("changeBooking")}
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                colorPalette="red"
+                onClick={p.onCancel}
+              >
+                {p.t("cancelBooking")}
+              </Button>
+            </>
+          )}
+          <Button asChild size="lg" variant="ghost">
+            <a href={p.calendarHref} download>
+              <PiCalendarPlus size={20} aria-hidden="true" />
+              {p.t("addToCalendar")}
+            </a>
           </Button>
         </div>
       )}

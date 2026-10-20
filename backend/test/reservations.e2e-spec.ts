@@ -382,6 +382,64 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       ).body.code,
     ).toBe("outside_opening");
   });
+  it("should keep a personal calendar feed in sync when a reservation is moved, cancelled and the link revoked", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const id = randomUUID();
+    const later = start(3, 11);
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(),
+    }).expect(201);
+    const anonymous = request(app.getHttpServer());
+    const download = await context.citizen
+      .get(`/v2/citizen/bookings/${id}/calendar.ics`)
+      .expect(200)
+      .expect("Content-Type", /text\/calendar/);
+    expect(download.text).toContain(`UID:${id}@quenda`);
+    expect(download.text).toContain("SEQUENCE:0");
+    await anonymous.get(`/v2/citizen/bookings/${id}/calendar.ics`).expect(401);
+    await context.manager
+      .get(`/v2/citizen/bookings/${id}/calendar.ics`)
+      .expect(404);
+    expect(
+      (await context.citizen.get("/v2/citizen/calendar-feed").expect(200)).body,
+    ).toEqual({ active: false, createdAt: null });
+    const link = await post(context.citizen, "citizen/calendar-feed", {});
+    expect(link.status).toBe(201);
+    const feedPath = link.body.path as string;
+    expect(feedPath).toMatch(
+      /^\/v2\/public\/calendar-feeds\/[0-9a-f]{64}\.ics$/,
+    );
+    await patch(context.citizen, `citizen/bookings/${id}`, {
+      start: later,
+    }).expect(204);
+    const moved = await anonymous.get(feedPath).expect(200);
+    const dtstart = later.replaceAll(/[-:]/g, "").replace(/\.\d+/, "");
+    expect(moved.text).toContain(`UID:${id}@quenda`);
+    expect(moved.text).toContain("SEQUENCE:1");
+    expect(moved.text).toContain(`DTSTART:${dtstart}`);
+    expect(moved.text).toContain(`SUMMARY:${court.name}`);
+    expect(moved.text).not.toContain("citizen");
+    await patch(context.citizen, `citizen/bookings/${id}`, {
+      status: "cancelled",
+    }).expect(204);
+    const cancelled = await anonymous.get(feedPath).expect(200);
+    expect(cancelled.text).toContain("SEQUENCE:2");
+    expect(cancelled.text).toContain("STATUS:CANCELLED");
+    const rotated = await post(context.citizen, "citizen/calendar-feed", {});
+    await anonymous.get(feedPath).expect(404);
+    await anonymous.get(rotated.body.path as string).expect(200);
+    await context.citizen
+      .delete("/v2/citizen/calendar-feed")
+      .set("X-Quenda-Request", "1")
+      .expect(204);
+    await anonymous.get(rotated.body.path as string).expect(404);
+    await anonymous
+      .get("/v2/public/calendar-feeds/not-a-token.ics")
+      .expect(400);
+  });
   it("should revoke the session when the user signs out", async () => {
     const context = await tenant();
     expect(

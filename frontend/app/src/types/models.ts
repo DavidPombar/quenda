@@ -53,6 +53,14 @@ export interface Notification {
   facilityName: string;
   createdAt: string;
 }
+export interface CalendarFeed {
+  active: boolean;
+  createdAt: string | null;
+}
+export interface CalendarFeedLink {
+  path: string;
+  createdAt: string;
+}
 export interface Insights {
   total: number;
   confirmed: number;

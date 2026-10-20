@@ -13,3 +13,20 @@ Only complete slots fit inside an opening. Overnight openings can contribute to 
 A manager cannot change the calendar, slot duration or facility state while confirmed future reservations exist (409 `calendar_in_use`). Other metadata remains editable. This prevents silent invalidation; conflict resolution and bulk cancellation with notices can be a subsequent feature.
 
 References: [RFC 5545](https://www.rfc-editor.org/rfc/rfc5545), [ICAL.js event API](https://kewisch.github.io/ical.js/api/ICAL.Event.html), [Temporal polyfill](https://github.com/js-temporal/temporal-polyfill).
+
+## Personal calendars (optional "calendarios persoais", T3)
+
+Bookings are also published as RFC 5545, in the opposite direction: from Quenda to the
+person's calendar app.
+
+- `GET /v2/citizen/bookings/:id/calendar.ics` downloads one reservation with the session cookie.
+- `POST /v2/citizen/calendar-feed` issues a subscription link and returns its secret path once;
+  issuing again replaces the previous link. `DELETE` revokes it and `GET` reports only whether a
+  link exists. Only a SHA-256 hash of the 256-bit token is stored (`calendar_feeds`).
+- `GET /v2/public/calendar-feeds/:token.ics` needs no cookie, because calendar clients cannot send
+  one. It lists the person's bookings that ended less than 30 days ago or are still to come.
+- Each booking is one `VEVENT` with `UID:<booking-id>@quenda`. `bookings.sequence` increments on
+  every reschedule or cancellation and is published as `SEQUENCE`; cancellations stay in the feed
+  with `STATUS:CANCELLED`, so subscribed clients update the event instead of duplicating it.
+- Times are UTC instants, so no `VTIMEZONE` is needed. The feed carries the facility name and
+  address and the municipality name, never the person's name or other personal data.

@@ -5,6 +5,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import { useListBookingsQuery } from "@/queries/bookings/list-bookings.query";
 import { useListNotificationsQuery } from "@/queries/bookings/list-notifications.query";
 import { useUpdateBookingMutation } from "@/queries/bookings/update-booking.mutation";
+import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
 import type { AppContext } from "@/types/app-context";
 import type { Booking } from "@/types/models";
 // Most recent notices shown before "Ver todos".
@@ -25,6 +26,7 @@ export function useMyBookingsController() {
     ? allNotices
     : allNotices.slice(0, NOTICE_PREVIEW);
   const update = useUpdateBookingMutation();
+  const calendarHref = useBookingCalendarLink();
   const now = Temporal.Now.instant();
   const allBookings =
     query.data
@@ -81,5 +83,6 @@ export function useMyBookingsController() {
     update,
     confirmCancel,
     canChange,
+    calendarHref,
   };
 }
