@@ -95,6 +95,11 @@ export class CreateBooking {
               args.principal,
               "booking.created",
               booking.id,
+              {
+                facilityId: booking.facilityId,
+                start: booking.start.toString(),
+                end: booking.end.toString(),
+              },
             );
             return Result.ok(booking);
           },

@@ -97,7 +97,34 @@ export class SaveFacility {
       args.principal,
       args.mode === "create" ? "facility.created" : "facility.updated",
       args.id,
+      changes(existing, facility),
     );
     return Result.ok(facility);
   }
+}
+type AuditedField = Exclude<
+  keyof Facility,
+  "id" | "tenantId" | "openingCalendar"
+>;
+/**
+ * Audit details limited to changed fields. The iCalendar text can be large, so only a marker
+ * records that it changed.
+ */
+function changes(existing: Facility | null, facility: Facility) {
+  const fields = (Object.keys(facility) as (keyof Facility)[]).filter(
+    (key): key is AuditedField =>
+      key !== "id" &&
+      key !== "tenantId" &&
+      key !== "openingCalendar" &&
+      (!existing || existing[key] !== facility[key]),
+  );
+  const pick = (source: Facility) =>
+    Object.fromEntries(fields.map((key) => [key, source[key]]));
+  return {
+    before: existing ? pick(existing) : null,
+    after: pick(facility),
+    ...(!existing || existing.openingCalendar !== facility.openingCalendar
+      ? { openingCalendarChanged: true }
+      : {}),
+  };
 }

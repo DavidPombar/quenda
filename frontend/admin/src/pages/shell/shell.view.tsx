@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Outlet, NavLink } from "react-router-dom";
 import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
-import { PiArrowSquareOut, PiBuildings, PiSignOut, PiX } from "react-icons/pi";
+import {
+  PiArrowSquareOut,
+  PiBuildings,
+  PiListChecks,
+  PiSignOut,
+  PiX,
+} from "react-icons/pi";
 import {
   ROUTES,
   routeFor,
@@ -49,6 +55,12 @@ export function Shell() {
             <PiBuildings size={20} aria-hidden="true" />
             {t("dashboard")}
           </NavLink>
+          {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
+              <PiListChecks size={20} aria-hidden="true" />
+              {t("audit")}
+            </NavLink>
+          )}
         </nav>
         <div className="sidebar-bottom">
           <p className="sidebar-contact">

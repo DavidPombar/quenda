@@ -8,4 +8,11 @@ export abstract class Audit {
     resourceId: string,
     details?: AuditDetails,
   ): Promise<void>;
+  /** Records an action performed by the platform itself (actor_id NULL, actor_role 'system'). */
+  abstract recordSystem(
+    tenantId: string,
+    action: string,
+    resourceId: string,
+    details?: AuditDetails,
+  ): Promise<void>;
 }

@@ -95,7 +95,9 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
       .get("/v2/citizen/me/export")
       .expect(200);
     expect(exported.headers["content-disposition"]).toMatch(
-      new RegExp(`attachment; filename="quenda-${context.slug}-\\d{4}-\\d{2}-\\d{2}\\.json"`),
+      new RegExp(
+        `attachment; filename="quenda-${context.slug}-\\d{4}-\\d{2}-\\d{2}\\.json"`,
+      ),
     );
     expect(exported.body.municipality).toMatchObject({
       slug: context.slug,
@@ -113,9 +115,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     expect(exported.body.notifications).toHaveLength(4);
     expect(
       exported.body.auditEvents.map((item: { action: string }) => item.action),
-    ).toEqual(
-      expect.arrayContaining(["consent.accepted", "booking.created"]),
-    );
+    ).toEqual(expect.arrayContaining(["consent.accepted", "booking.created"]));
     const audit = await harness.db.query(
       "SELECT count(*)::int AS count FROM audit_events WHERE tenant_id=$1 AND actor_id=$2 AND action='account.exported'",
       [context.id, context.users.citizen],
