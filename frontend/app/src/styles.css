@@ -1364,3 +1364,97 @@ main {
     scroll-behavior: auto !important;
   }
 }
+
+/* Account page */
+.page-notice {
+  max-width: 1280px;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-3) var(--gutter);
+  color: var(--court);
+  font-weight: 650;
+}
+a.account {
+  min-height: 44px;
+  padding-right: var(--space-2);
+  border-radius: var(--radius-control);
+}
+a.account:hover .account-name strong {
+  color: var(--court);
+}
+.account-sections {
+  display: flex;
+  flex-direction: column;
+  max-width: 70ch;
+}
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line);
+}
+.account-section h2 {
+  font-size: var(--t-2);
+}
+.account-section > p {
+  color: var(--ink-2);
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4) var(--space-6);
+}
+.facts dt {
+  font-size: var(--t-small);
+  font-weight: 650;
+  color: var(--ink-2);
+}
+.facts dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-1);
+}
+.facts .count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.notice-warning {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--maintenance-tint, #fbefd9);
+  border-radius: var(--radius-control);
+  color: var(--maintenance);
+  font-size: var(--t-small);
+  font-weight: 650;
+}
+.notice-warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.danger-zone h2 {
+  color: var(--danger);
+}
+.consent-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+.consent-check {
+  min-height: 44px;
+  align-items: flex-start;
+  padding-block: var(--space-2);
+}
+.consent-check [data-part="control"] {
+  margin-top: 2px;
+}
+.consent-check [data-part="control"]:is(:focus-visible, [data-focus-visible]) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.consent-check [data-part="label"] {
+  font-weight: 500;
+  line-height: 1.4;
+}

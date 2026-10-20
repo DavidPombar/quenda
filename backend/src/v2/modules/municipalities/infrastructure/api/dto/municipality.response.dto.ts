@@ -15,6 +15,12 @@ export class MunicipalityResponseDTO {
   maxActiveBookings!: number;
   @ApiProperty({ description: "Municipal contact address" }) contact!: string;
   @ApiProperty({ description: "Municipal privacy notice" }) legalText!: string;
+  @ApiProperty({
+    description: "Privacy notice version citizens must accept when signing in",
+  })
+  legalVersion!: string;
+  @ApiProperty({ description: "Personal data retention period in months" })
+  retentionMonths!: number;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -27,6 +33,8 @@ export class MunicipalityResponseDTO {
       maxActiveBookings: value.maxActiveBookings,
       contact: value.contact,
       legalText: value.legalText,
+      legalVersion: value.legalVersion,
+      retentionMonths: value.retentionMonths,
     };
   }
 }

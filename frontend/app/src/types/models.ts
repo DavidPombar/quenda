@@ -11,6 +11,8 @@ export interface Municipality {
   maxActiveBookings: number;
   contact: string;
   legalText: string;
+  legalVersion: string;
+  retentionMonths: number;
 }
 export interface Session {
   userId: string;
@@ -62,4 +64,54 @@ export interface Insights {
   from: string;
   to: string;
   byFacility: { id: string; name: string; bookings: number }[];
+}
+export interface Consent {
+  legalVersion: string;
+  acceptedAt: string;
+}
+export interface Account {
+  userId: string;
+  displayName: string;
+  role: "citizen" | "manager";
+  currentLegalVersion: string;
+  consentUpToDate: boolean;
+  consents: Consent[];
+  bookings: number;
+  notifications: number;
+}
+export interface AccountExport {
+  generatedAt: string;
+  municipality: {
+    slug: string;
+    name: string;
+    contact: string;
+    legalVersion: string;
+    retentionMonths: number;
+  };
+  profile: { userId: string; displayName: string; role: "citizen" | "manager" };
+  consents: Consent[];
+  bookings: {
+    id: string;
+    facilityId: string;
+    facilityName: string;
+    sport: Sport;
+    start: string;
+    end: string;
+    status: "confirmed" | "cancelled";
+    createdAt: string;
+    cancelledAt: string | null;
+  }[];
+  notifications: {
+    id: string;
+    bookingId: string;
+    kind: Notification["kind"];
+    createdAt: string;
+  }[];
+  auditEvents: {
+    id: string;
+    action: string;
+    resourceId: string;
+    occurredAt: string;
+    details: Record<string, unknown> | null;
+  }[];
 }

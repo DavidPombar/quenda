@@ -13,8 +13,8 @@ function principal(user: Omit<Principal, "grants">): Principal {
     ...user,
     grants:
       user.role === "manager"
-        ? ["bookings:own", "facilities:manage", "insights:view"]
-        : ["bookings:own"],
+        ? ["bookings:own", "facilities:manage", "insights:view", "audit:view"]
+        : ["bookings:own", "account:own"],
   };
 }
 @Injectable()
@@ -24,10 +24,27 @@ export class PostgresSessionRepository extends SessionRepository {
   }
   async findDemoUser(tenantId: string, role: "citizen" | "manager") {
     const { rows } = await this.db.query<Omit<Principal, "grants">>(
-      'SELECT id AS "userId", tenant_id AS "tenantId", display_name AS "displayName", role FROM users WHERE tenant_id=$1 AND role=$2 ORDER BY id LIMIT 1',
+      'SELECT id AS "userId", tenant_id AS "tenantId", display_name AS "displayName", role FROM users WHERE tenant_id=$1 AND role=$2 AND deleted_at IS NULL ORDER BY id LIMIT 1',
       [tenantId, role],
     );
     return rows[0] ? principal(rows[0]) : null;
+  }
+  async createDemoUser(args: {
+    id: string;
+    tenantId: string;
+    role: "citizen" | "manager";
+    displayName: string;
+  }) {
+    await this.db.query(
+      "INSERT INTO users (id,tenant_id,display_name,role) VALUES ($1,$2,$3,$4)",
+      [args.id, args.tenantId, args.displayName, args.role],
+    );
+    return principal({
+      userId: args.id,
+      tenantId: args.tenantId,
+      displayName: args.displayName,
+      role: args.role,
+    });
   }
   async create(user: Principal, expiresAt: Temporal.Instant) {
     const token = randomBytes(32).toString("hex");
@@ -41,7 +58,7 @@ export class PostgresSessionRepository extends SessionRepository {
   }
   async find(token: string, now: Temporal.Instant) {
     const { rows } = await this.db.query<Omit<Principal, "grants">>(
-      'SELECT u.id AS "userId", u.tenant_id AS "tenantId", u.display_name AS "displayName", u.role FROM sessions s JOIN users u ON u.id=s.user_id AND u.tenant_id=s.tenant_id WHERE s.token_hash=$1 AND s.expires_at>$2',
+      'SELECT u.id AS "userId", u.tenant_id AS "tenantId", u.display_name AS "displayName", u.role FROM sessions s JOIN users u ON u.id=s.user_id AND u.tenant_id=s.tenant_id WHERE s.token_hash=$1 AND s.expires_at>$2 AND u.deleted_at IS NULL',
       [hash(token), now.toString()],
     );
     return rows[0] ? principal(rows[0]) : null;

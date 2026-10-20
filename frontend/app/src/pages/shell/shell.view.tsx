@@ -9,6 +9,8 @@ import {
   PiSignOut,
   PiSquaresFour,
   PiSquaresFourFill,
+  PiUserCircle,
+  PiUserCircleFill,
   PiX,
 } from "react-icons/pi";
 import logoMark from "@/assets/illustrations/logo-mark.svg";
@@ -96,6 +98,20 @@ export function Shell() {
               </>
             )}
           </NavLink>
+          {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.account)}>
+              {({ isActive }) => (
+                <>
+                  {isActive ? (
+                    <PiUserCircleFill size={22} aria-hidden="true" />
+                  ) : (
+                    <PiUserCircle size={22} aria-hidden="true" />
+                  )}
+                  {t("account")}
+                </>
+              )}
+            </NavLink>
+          )}
         </nav>
         <div className="sidebar-bottom">{help}</div>
       </aside>
@@ -156,7 +172,10 @@ export function Shell() {
             </div>
             {c.session ? (
               <>
-                <span className="account">
+                <NavLink
+                  className="account"
+                  to={routeFor(municipality.slug, ROUTES.account)}
+                >
                   <span className="account-avatar" aria-hidden="true">
                     {c.initials}
                   </span>
@@ -164,7 +183,7 @@ export function Shell() {
                     <strong>{c.accountName}</strong>
                     {c.accountRole && <small>{c.accountRole}</small>}
                   </span>
-                </span>
+                </NavLink>
                 <Button
                   variant="ghost"
                   size="md"
@@ -187,6 +206,11 @@ export function Shell() {
           </div>
         </header>
         <main id="main" tabIndex={-1}>
+          {c.notice && (
+            <p role="status" className="page-notice">
+              {t(c.notice)}
+            </p>
+          )}
           <Outlet context={c.context} />
         </main>
         <footer className="footer">
@@ -196,7 +220,7 @@ export function Shell() {
       </div>
       <SessionDialog
         open={c.loginOpen}
-        onClose={() => c.setLoginOpen(false)}
+        onClose={c.closeLogin}
         onSelect={() => {
           void c.signIn();
         }}
@@ -204,6 +228,9 @@ export function Shell() {
         error={c.create.error?.message ?? ""}
         t={t}
         municipality={municipality.name}
+        consent={c.consent}
+        onConsentChange={c.setConsent}
+        onPrivacy={() => c.setPrivacyOpen(true)}
       />
       <Dialog.Root
         open={c.privacyOpen}

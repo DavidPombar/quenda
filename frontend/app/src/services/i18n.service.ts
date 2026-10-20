@@ -177,6 +177,42 @@ const gl = {
     "Xa a tes en «As miñas reservas», onde tamén podes cambiala ou cancelala.",
   facilityStatus: "Estado da instalación",
   timetable: "Quendas do día",
+  account: "A miña conta",
+  accountTitle: "Conta e privacidade",
+  accountSubtitle:
+    "Consulta os teus datos, descárgaos nun ficheiro ou elimina a túa conta.",
+  accountSignedOut: "Entra para ver a túa conta",
+  accountSignedOutBody:
+    "Coa túa conta podes consultar os teus datos, descargalos ou eliminalos.",
+  accountData: "Os teus datos",
+  accountName: "Nome",
+  accountRole: "Perfil",
+  roleCitizen: "Cidadanía",
+  accountBookings: "Reservas",
+  accountNotices: "Avisos",
+  privacySection: "Privacidade e consentimento",
+  consentVersion: "Versión do aviso aceptada",
+  consentAccepted: "Aceptado o",
+  consentOutdated:
+    "Hai unha nova versión do aviso de privacidade. Pedirémosche que a aceptes a próxima vez que entres.",
+  retentionNote: "Prazo de conservación dos datos",
+  months: "meses",
+  readPrivacy: "Ler o aviso de privacidade",
+  downloadTitle: "Copia dos teus datos",
+  download: "Descargar os meus datos",
+  downloadBody:
+    "Recibirás un ficheiro JSON coas túas reservas, avisos, consentimentos e actividade na aplicación.",
+  downloadReady: "Descarga lista. Garda o ficheiro no teu dispositivo.",
+  downloadError: "Non puidemos preparar a descarga. Volve tentalo.",
+  dangerZone: "Eliminación da conta",
+  deleteAccount: "Eliminar a conta",
+  deleteTitle: "Queres eliminar a túa conta?",
+  deleteBody:
+    "Cancelaremos as túas quendas futuras e eliminaremos os teus datos persoais. O historial consérvase de xeito anónimo.",
+  confirmDelete: "Si, eliminar a conta",
+  deleteDone: "A túa conta foi eliminada. Grazas por probar Quenda.",
+  consentLabel: "Lin e acepto o aviso de privacidade",
+  consentRequired: "Marca a casilla para poder entrar.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -333,6 +369,42 @@ const es: Record<TextKey, string> = {
     "Ya lo tienes en «Mis reservas», donde también puedes cambiarlo o cancelarlo.",
   facilityStatus: "Estado de la instalación",
   timetable: "Turnos del día",
+  account: "Mi cuenta",
+  accountTitle: "Cuenta y privacidad",
+  accountSubtitle:
+    "Consulta tus datos, descárgalos en un archivo o elimina tu cuenta.",
+  accountSignedOut: "Entra para ver tu cuenta",
+  accountSignedOutBody:
+    "Con tu cuenta puedes consultar tus datos, descargarlos o eliminarlos.",
+  accountData: "Tus datos",
+  accountName: "Nombre",
+  accountRole: "Perfil",
+  roleCitizen: "Ciudadanía",
+  accountBookings: "Reservas",
+  accountNotices: "Avisos",
+  privacySection: "Privacidad y consentimiento",
+  consentVersion: "Versión del aviso aceptada",
+  consentAccepted: "Aceptado el",
+  consentOutdated:
+    "Hay una nueva versión del aviso de privacidad. Te pediremos que la aceptes la próxima vez que entres.",
+  retentionNote: "Plazo de conservación de los datos",
+  months: "meses",
+  readPrivacy: "Leer el aviso de privacidad",
+  downloadTitle: "Copia de tus datos",
+  download: "Descargar mis datos",
+  downloadBody:
+    "Recibirás un archivo JSON con tus reservas, avisos, consentimientos y actividad en la aplicación.",
+  downloadReady: "Descarga lista. Guarda el archivo en tu dispositivo.",
+  downloadError: "No pudimos preparar la descarga. Vuelve a intentarlo.",
+  dangerZone: "Eliminación de la cuenta",
+  deleteAccount: "Eliminar la cuenta",
+  deleteTitle: "¿Quieres eliminar tu cuenta?",
+  deleteBody:
+    "Cancelaremos tus turnos futuros y eliminaremos tus datos personales. El historial se conserva de forma anónima.",
+  confirmDelete: "Sí, eliminar la cuenta",
+  deleteDone: "Tu cuenta ha sido eliminada. Gracias por probar Quenda.",
+  consentLabel: "He leído y acepto el aviso de privacidad",
+  consentRequired: "Marca la casilla para poder entrar.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

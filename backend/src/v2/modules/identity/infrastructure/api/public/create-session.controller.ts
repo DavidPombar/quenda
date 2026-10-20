@@ -30,6 +30,7 @@ export class CreateSessionController {
     const result = await this.operation.execute({
       slug: body.slug,
       role: body.role,
+      legalVersion: body.legalVersion,
     });
     return result.fold((value) => {
       response.cookie("quenda_session", value.token, {
@@ -48,6 +49,8 @@ export class CreateSessionController {
         throw new ProblemException(403, error);
       case "not_found":
         throw new ProblemException(404, error);
+      case "consent_required":
+        throw new ProblemException(422, error);
       default:
         return assertNever(error);
     }

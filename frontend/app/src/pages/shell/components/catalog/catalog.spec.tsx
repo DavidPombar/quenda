@@ -13,7 +13,11 @@ describe("Facility catalog", () => {
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await expect
       .element(page.getByRole("button", { name: "Entrar como cidadanía" }))
-      .toBeVisible();
+      .toBeDisabled();
+    await page.getByText("Lin e acepto o aviso de privacidade").click();
+    await expect
+      .element(page.getByRole("button", { name: "Entrar como cidadanía" }))
+      .toBeEnabled();
     await expect
       .element(page.getByRole("button", { name: "Entrar como xestor/a" }))
       .not.toBeInTheDocument();

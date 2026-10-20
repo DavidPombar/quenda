@@ -7,6 +7,7 @@ export const ROUTES = {
   catalog: "instalacions",
   detail: "instalacions/:id",
   bookings: "reservas",
+  account: "conta",
 } as const;
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;

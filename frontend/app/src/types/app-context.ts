@@ -7,4 +7,5 @@ export interface AppContext {
   locale: Locale;
   t: (key: TextKey) => string;
   signIn: () => void;
+  showPrivacy: () => void;
 }
