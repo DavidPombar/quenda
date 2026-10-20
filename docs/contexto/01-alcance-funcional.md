@@ -1,8 +1,10 @@
 # 01 · Alcance funcional y especificaciones
 
-> **Fuente: bases oficiales.** `Bases_I_Certame_GOBTEC_2026.pdf`
-> (https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf),
-> descargadas y leídas el 2026-10-16. Puntos 0, 1, 1.1, 1.2 y 1.3 de las bases.
+> **Fuente: bases oficiales.** Leídas en su primera versión el 2026-10-16 y revisadas el
+> 2026-10-20 contra la **versión 3** (`Bases_I_Certame_GOBTEC_2026_GL_v3.pdf`,
+> https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf),
+> que solo cambia el plazo, la forma de entrega y el calendario (ver
+> [03](03-concurso-presentacion-valoracion.md)): los puntos citados aquí no cambian. Puntos 0, 1, 1.1, 1.2 y 1.3 de las bases.
 > Fuente secundaria: https://www.agasol.gal/i-certame-gobtec/ (consultada el 2026-10-15
 > y el 2026-10-16). Los textos entre comillas son literales de las bases (en gallego).
 > Lo marcado como **[Interpretación]** es criterio propio para desarrollar, no está en

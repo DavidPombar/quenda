@@ -222,13 +222,17 @@ FullCalendar Premium es gratuito para proyectos GPLv3 (confirmar por escrito).
 
 Durante la investigación apareció el PDF de las **bases completas**, que no estaba enlazado
 en la web el día 15:
-https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf
+https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf (sustituido el
+20-10-2026 por la versión 3, `Bases_I_Certame_GOBTEC_2026_GL_v3.pdf`)
 Ya están leídas e incorporadas en `docs/contexto/`. Lo que cambia respecto a la web:
 pesos 25/30/25/20 (cobertura baja al 30 %, reutilización sube al 20 % y pasa a llamarse
 «reutilización e soberanía tecnolóxica» con subcriterios de apertura, independencia de
 proveedor, estándares y portabilidad de datos), licencias recomendadas AGPL-3.0 o EUPL 1.2,
 titularidad del participante, obligación de publicar el código en 60 días si se gana, y
-entrega **solo por el formulario oficial** (no por correo).
+entrega **solo por el formulario oficial** (no por correo). **Actualización 20-10-2026:** la
+versión 3 de las bases sustituye el formulario por **correo a certame@agasol.gal**, adelanta el
+cierre al **miércoles 18 de noviembre** y el evento final al **jueves 26 de noviembre**
+(detalle en `docs/contexto/03-concurso-presentacion-valoracion.md`).
 
 ## 9. Incógnitas que conviene cerrar antes de la memoria
 
