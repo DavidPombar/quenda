@@ -64,3 +64,7 @@ This is a functional prototype with synthetic accounts, not a service ready to p
 Facilities are closed or put into maintenance rather than deleted; historical bookings remain intact. Photos, multiple independently reservable courts per facility, residency-dependent rules, payments, QR entry and personal-calendar subscriptions are outside this V0. Municipal settings are bootstrap/database configuration; the manager UI currently edits facilities and their rules. A schedule/state change with future reservations is rejected to avoid silently invalidating bookings. The API returns at most 200 history entries and 50 notices; the citizen app shows them ten at a time. Production needs server-side pagination and retention.
 
 See [architecture](docs/architecture/implementation.md), [database migrations](docs/architecture/migrations.md), [design guidelines](docs/architecture/design-guidelines.md), [calendar semantics](docs/architecture/calendars.md), and the original [scope](docs/contexto/01-alcance-funcional.md).
+
+## Contributing and reuse
+
+Quenda is published as a reusable public asset. See [CONTRIBUTING.md](CONTRIBUTING.md), the [security policy](SECURITY.md), the [code of conduct](CODE_OF_CONDUCT.md), the [changelog](CHANGELOG.md) and the [publiccode.yml](publiccode.yml) catalog metadata.
