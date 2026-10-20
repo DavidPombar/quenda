@@ -103,6 +103,8 @@ async function availability(
 beforeAll(async () => {
   process.env.NODE_ENV = "test";
   process.env.DEMO_MODE = "true";
+  // Every test opens fresh sessions from one loopback client.
+  process.env.SESSION_RATE_LIMIT_PER_MINUTE = "1000";
   process.env.DATABASE_URL = testUrl.toString();
   admin = new Pool({ connectionString: baseUrl });
   await admin.query(`CREATE DATABASE "${databaseName}"`);

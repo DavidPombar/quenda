@@ -28,6 +28,8 @@ In-app notifications are transaction-local records, not an external delivery que
 
 Demo accounts are preconfigured per municipality. Opening a demo session is deliberately gated by `DEMO_MODE=true`. Tokens contain 256 random bits, are hashed in the database, expire after eight hours and are sent only as HttpOnly SameSite=Strict cookies. Production-mode cookies are Secure. Mutation requests must include a custom same-origin header; no cross-origin CORS allowance exists. Sessions are explicitly revoked at logout. Only fictitious display names are seeded.
 
+A global throttler guard limits requests per client IP, with a stricter limit on endpoints marked `@SensitiveEndpoint()` (sign-in); 429s are RFC 7807 problems. A scheduler entry point runs the `PurgeExpiredSessions` command at start-up and periodically, resolving it through `Commands` and using the injected `Clock`. TLS terminates in a front proxy (`deploy/Caddyfile`); nginx adds the SPA security headers and forwards `X-Forwarded-For`/`X-Forwarded-Proto`.
+
 Default listeners and Compose ports are loopback-only. The supplied demo does not implement production identity proof, account lifecycle or regulatory compliance. Enabling an internet-facing service requires a separate deployment and identity implementation, HTTPS, operational hardening and the remaining T4 work listed in the README.
 
 ## Scope and rollout

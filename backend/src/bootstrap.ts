@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import helmet from "helmet";
 import type { Request, Response, NextFunction } from "express";
 import { AppModule } from "./app.module";
 export async function createApp() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: process.env.NODE_ENV === "test" ? false : ["error", "warn", "log"],
   });
+  // Rate limits key on the client IP; trust X-Forwarded-For only from the
+  // reverse proxies in front of the API (nginx, a TLS proxy), never from clients.
+  app.set("trust proxy", process.env.TRUST_PROXY ?? "loopback, uniquelocal");
   app.use(helmet());
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Cache-Control", "no-store");

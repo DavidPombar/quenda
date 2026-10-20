@@ -24,6 +24,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     calendar_in_use:
       "Hai reservas futuras. Non se pode cambiar o horario ou pechar a instalación.",
     demo_disabled: "O acceso de demostración está desactivado.",
+    rate_limited: "Demasiadas solicitudes. Agarda un minuto e téntao de novo.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -40,6 +41,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     calendar_in_use:
       "Hay reservas futuras. No se puede cambiar el horario o cerrar la instalación.",
     demo_disabled: "El acceso de demostración está desactivado.",
+    rate_limited:
+      "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
   },
 };
 @Catch(HttpException)
@@ -57,10 +60,18 @@ export class ProblemFilter implements ExceptionFilter {
             ? "forbidden"
             : status === 404
               ? "not_found"
-              : "validation";
+              : status === 429
+                ? "rate_limited"
+                : "validation";
     const locale = request.headers["accept-language"]?.startsWith("es")
       ? "es"
       : "gl";
+    // Named throttlers emit `Retry-After-<name>`; expose the standard header too.
+    const retryAfter = response
+      .getHeaderNames()
+      .find((name) => name.startsWith("retry-after"));
+    if (status === 429 && retryAfter)
+      response.setHeader("Retry-After", String(response.getHeader(retryAfter)));
     response.status(status).type("application/problem+json").send({
       type: "about:blank",
       title: code,

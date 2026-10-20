@@ -7,6 +7,8 @@ services:
     environment:
       DATABASE_URL: postgres://quenda:quenda_local@db:5432/quenda
       DEMO_MODE: "true"
+      # The loopback demo is served over plain HTTP; never disable this behind TLS.
+      COOKIE_SECURE: "false"
       HOST: 0.0.0.0
     depends_on:
       db:

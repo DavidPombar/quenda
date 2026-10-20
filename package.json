@@ -27,7 +27,8 @@
     "format": "prettier --write backend/src backend/test frontend/app/src frontend/admin/src frontend/web/src scripts *.json *.yml",
     "licenses": "node scripts/check-licenses.mjs",
     "illustrations": "node scripts/build-illustrations.mjs",
-    "test:smoke": "node scripts/smoke-browser.mjs"
+    "test:smoke": "node scripts/smoke-browser.mjs",
+    "test:headers": "node scripts/check-headers.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.6",
