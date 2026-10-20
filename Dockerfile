@@ -10,7 +10,7 @@ RUN npm ci
 COPY backend backend
 COPY frontend frontend
 RUN npm run build
-RUN cp backend/src/database/schema.sql backend/dist/database/schema.sql
+RUN cp -r backend/src/database/migrations backend/dist/database/migrations
 
 FROM node:24-bookworm-slim AS api
 WORKDIR /app
