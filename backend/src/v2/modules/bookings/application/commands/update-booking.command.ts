@@ -95,11 +95,30 @@ export class UpdateBooking {
       kind: args.start ? "rescheduled" : "cancelled",
       createdAt: now,
     });
-    await this.audit.record(
-      args.principal,
-      args.start ? "booking.rescheduled" : "booking.cancelled",
-      existing.id,
-    );
+    if (args.start)
+      await this.audit.record(
+        args.principal,
+        "booking.rescheduled",
+        existing.id,
+        {
+          from: {
+            start: existing.start.toString(),
+            end: existing.end.toString(),
+          },
+          to: { start: updated.start.toString(), end: updated.end.toString() },
+        },
+      );
+    else
+      await this.audit.record(
+        args.principal,
+        "booking.cancelled",
+        existing.id,
+        {
+          facilityId: existing.facilityId,
+          start: existing.start.toString(),
+          end: existing.end.toString(),
+        },
+      );
     return Result.ok();
   }
 }

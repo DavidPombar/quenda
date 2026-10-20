@@ -182,6 +182,46 @@ const gl = {
   previewCalendar:
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
+  audit: "Auditoría",
+  auditSubtitle:
+    "Rexistro das accións sobre reservas, instalacións e contas deste concello.",
+  auditFilters: "Filtrar eventos",
+  auditAction: "Acción",
+  auditAllActions: "Todas as accións",
+  auditFrom: "Desde o día",
+  auditTo: "Ata o día",
+  auditRangeError: "A data final debe ser igual ou posterior á inicial.",
+  auditCaption:
+    "Eventos rexistrados, do máis recente ao máis antigo (máximo 100).",
+  auditDate: "Data e hora",
+  auditActor: "Realizado por",
+  auditResource: "Recurso",
+  auditDetails: "Detalle",
+  auditShowDetails: "Ver detalle",
+  auditNoDetails: "Sen detalle",
+  auditEmpty: "Non hai eventos con estes filtros",
+  auditEmptyBody: "Cambia a acción ou o intervalo de datas.",
+  auditNone: "Aínda non hai eventos rexistrados",
+  auditNoneBody:
+    "As accións sobre reservas, instalacións e contas aparecerán aquí.",
+  auditClear: "Quitar filtros",
+  auditForbidden: "Esta conta non pode consultar a auditoría.",
+  auditForbiddenBody:
+    "A consulta está reservada ao persoal con permiso de auditoría.",
+  auditSystem: "Sistema",
+  auditDeletedAccount: "Conta eliminada",
+  auditRoleCitizen: "Cidadanía",
+  auditRoleManager: "Xestión municipal",
+  auditRoleSystem: "Proceso automático",
+  auditBookingCreated: "Reserva creada",
+  auditBookingRescheduled: "Reserva cambiada de horario",
+  auditBookingCancelled: "Reserva cancelada",
+  auditFacilityCreated: "Instalación creada",
+  auditFacilityUpdated: "Instalación modificada",
+  auditAccountExported: "Datos da conta exportados",
+  auditAccountDeleted: "Conta eliminada",
+  auditConsentAccepted: "Aviso de privacidade aceptado",
+  auditRetentionApplied: "Política de conservación aplicada",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -344,6 +384,46 @@ const es: Record<TextKey, string> = {
   previewCalendar:
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",
+  audit: "Auditoría",
+  auditSubtitle:
+    "Registro de las acciones sobre reservas, instalaciones y cuentas de este municipio.",
+  auditFilters: "Filtrar eventos",
+  auditAction: "Acción",
+  auditAllActions: "Todas las acciones",
+  auditFrom: "Desde el día",
+  auditTo: "Hasta el día",
+  auditRangeError: "La fecha final debe ser igual o posterior a la inicial.",
+  auditCaption:
+    "Eventos registrados, del más reciente al más antiguo (máximo 100).",
+  auditDate: "Fecha y hora",
+  auditActor: "Realizado por",
+  auditResource: "Recurso",
+  auditDetails: "Detalle",
+  auditShowDetails: "Ver detalle",
+  auditNoDetails: "Sin detalle",
+  auditEmpty: "No hay eventos con estos filtros",
+  auditEmptyBody: "Cambia la acción o el intervalo de fechas.",
+  auditNone: "Todavía no hay eventos registrados",
+  auditNoneBody:
+    "Las acciones sobre reservas, instalaciones y cuentas aparecerán aquí.",
+  auditClear: "Quitar filtros",
+  auditForbidden: "Esta cuenta no puede consultar la auditoría.",
+  auditForbiddenBody:
+    "La consulta está reservada al personal con permiso de auditoría.",
+  auditSystem: "Sistema",
+  auditDeletedAccount: "Cuenta eliminada",
+  auditRoleCitizen: "Ciudadanía",
+  auditRoleManager: "Gestión municipal",
+  auditRoleSystem: "Proceso automático",
+  auditBookingCreated: "Reserva creada",
+  auditBookingRescheduled: "Reserva cambiada de horario",
+  auditBookingCancelled: "Reserva cancelada",
+  auditFacilityCreated: "Instalación creada",
+  auditFacilityUpdated: "Instalación modificada",
+  auditAccountExported: "Datos de la cuenta exportados",
+  auditAccountDeleted: "Cuenta eliminada",
+  auditConsentAccepted: "Aviso de privacidad aceptado",
+  auditRetentionApplied: "Política de conservación aplicada",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

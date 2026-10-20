@@ -20,13 +20,38 @@ export class PostgresAudit extends Audit {
     resourceId: string,
     details?: AuditDetails,
   ) {
+    await this.insert(
+      principal.tenantId,
+      principal.userId,
+      principal.role,
+      action,
+      resourceId,
+      details,
+    );
+  }
+  async recordSystem(
+    tenantId: string,
+    action: string,
+    resourceId: string,
+    details?: AuditDetails,
+  ) {
+    await this.insert(tenantId, null, "system", action, resourceId, details);
+  }
+  private async insert(
+    tenantId: string,
+    actorId: string | null,
+    actorRole: Principal["role"] | "system",
+    action: string,
+    resourceId: string,
+    details?: AuditDetails,
+  ) {
     await this.db.query(
       "INSERT INTO audit_events (id,tenant_id,actor_id,actor_role,action,resource_id,occurred_at,details) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb)",
       [
         this.ids.next(),
-        principal.tenantId,
-        principal.userId,
-        principal.role,
+        tenantId,
+        actorId,
+        actorRole,
         action,
         resourceId,
         this.clock.now().toString(),

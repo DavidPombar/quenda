@@ -63,3 +63,20 @@ export interface Insights {
   to: string;
   byFacility: { id: string; name: string; bookings: number }[];
 }
+export type AuditActorRole = "citizen" | "manager" | "system";
+export interface AuditEvent {
+  id: string;
+  action: string;
+  actorId: string | null;
+  actorRole: AuditActorRole | null;
+  actorName: string | null;
+  resourceId: string;
+  occurredAt: string;
+  details: Record<string, unknown> | null;
+}
+export interface AuditFilters {
+  from?: string;
+  to?: string;
+  action?: string;
+  limit?: number;
+}

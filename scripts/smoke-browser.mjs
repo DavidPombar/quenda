@@ -174,6 +174,13 @@ try {
   await page.getByRole("button", { name: "Nova instalación" }).waitFor();
   await audit("management");
   await page.screenshot({ path: ".dev-logs/management.png", fullPage: true });
+  await page.getByRole("link", { name: "Auditoría", exact: true }).click();
+  await page.waitForURL(/\/admin\/[^/]+\/auditoria$/);
+  await page.getByRole("heading", { level: 1, name: "Auditoría" }).waitFor();
+  await audit("audit-log");
+  await page.screenshot({ path: ".dev-logs/audit-log.png", fullPage: true });
+  await page.getByRole("link", { name: "Panel", exact: true }).click();
+  await page.getByRole("button", { name: "Nova instalación" }).waitFor();
   await page.getByRole("button", { name: "Nova instalación" }).click();
   const editor = page.getByRole("dialog");
   await editor
@@ -203,7 +210,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Ten accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Eleven accessibility scans passed.",
   );
 } finally {
   await browser.close();

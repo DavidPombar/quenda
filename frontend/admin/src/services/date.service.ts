@@ -74,3 +74,45 @@ const GL_MONTHS = [
   "novembro",
   "decembro",
 ];
+// Bounds of a local calendar day as ISO instants in the municipality timezone.
+// The end is the last millisecond of the day, so inclusive filters keep the whole day.
+export function dayStartInstant(date: string, timezone: string) {
+  return Temporal.PlainDate.from(date)
+    .toZonedDateTime({ timeZone: timezone })
+    .toInstant()
+    .toString({ smallestUnit: "millisecond" });
+}
+export function dayEndInstant(date: string, timezone: string) {
+  return Temporal.PlainDate.from(date)
+    .add({ days: 1 })
+    .toZonedDateTime({ timeZone: timezone })
+    .toInstant()
+    .subtract({ milliseconds: 1 })
+    .toString({ smallestUnit: "millisecond" });
+}
+export function isPlainDate(value: string) {
+  try {
+    return (
+      /^\d{4}-\d{2}-\d{2}$/.test(value) && !!Temporal.PlainDate.from(value)
+    );
+  } catch {
+    return false;
+  }
+}
+// Numeric date and time ("20/10/2026, 09:30") avoids month names that some
+// browsers cannot render in Galician.
+export function dateTimeLabel(
+  instant: string,
+  timezone: string,
+  locale: Locale,
+) {
+  return Temporal.Instant.from(instant)
+    .toZonedDateTimeISO(timezone)
+    .toLocaleString(intlLocale(locale), {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+}
