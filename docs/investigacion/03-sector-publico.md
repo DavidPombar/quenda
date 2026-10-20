@@ -4,7 +4,7 @@
 > las peticiones (WAF). Donde no hay verificación se indica **desconocido**.
 
 ## 0. Hallazgo sobre el certamen
-- **Bases (PDF):** https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf (no enlazado en la web el 15-10). Tienen un apartado «8. Propiedade intelectual e licenza» y los puntos 1.1 y 1.2 que cita la plantilla. Texto no extraído: **leer a mano y actualizar `docs/contexto/`**.
+- **Bases (PDF):** https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf (no enlazado en la web el 15-10; sustituido el 20-10 por la versión 3, `Bases_I_Certame_GOBTEC_2026_GL_v3.pdf`, con nuevo plazo, entrega por correo y calendario). Tienen un apartado «8. Propiedade intelectual e licenza» y los puntos 1.1 y 1.2 que cita la plantilla. Texto no extraído: **leer a mano y actualizar `docs/contexto/`**.
 - Encaja con el Plan de Acción de Software Libre 2026 de AMTEGA («reto tecnolóxico de interese público» vía convenio con AGASOL): https://mancomun.gal/wp-content/uploads/2026/06/Plan-de-Accion-2026_SWL.pdf. Logos FEDER/NextGenerationEU.
 
 ## 1. Identidad

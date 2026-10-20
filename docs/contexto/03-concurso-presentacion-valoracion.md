@@ -1,14 +1,24 @@
 # 03 · Requisitos del concurso, presentación y valoración
 
-> **Fuente: bases oficiales.** `Bases_I_Certame_GOBTEC_2026.pdf`
-> (https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf),
-> descargadas y leídas el 2026-10-16 (5 páginas, puntos 0–11). Fuente secundaria:
-> https://www.agasol.gal/i-certame-gobtec/ (consultada el 2026-10-15 y el 2026-10-16).
+> **Fuente: bases oficiales, versión 3.** `Bases_I_Certame_GOBTEC_2026_GL_v3.pdf`
+> (https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf),
+> «Versión 3 — modificada o 20 de outubro de 2026», leídas el 2026-10-20. La versión
+> anterior (`Bases_I_Certame_GOBTEC_2026.pdf`) ya no está publicada. Fuente secundaria:
+> https://www.agasol.gal/i-certame-gobtec/ (consultada el 2026-10-15, 16 y 20).
 > Literales de las bases entre comillas (en gallego). **[Interpretación]** = criterio
 > propio. **[Cambio vs. web]** = difiere de lo que decía la web antes de las bases.
+> **[Cambio v3]** = cambio introducido por la versión 3 de las bases.
 >
-> Las bases prevalecen sobre la web: a 2026-10-16 la web **todavía muestra los pesos
-> antiguos (35 %/15 %)** y el formulario de entrega aún no está habilitado.
+> **Qué cambió en la versión 3 (literal):** "Modifícase o punto 4 (prazo e forma de
+> presentación): as propostas preséntanse por correo electrónico, en substitución do
+> formulario web inicialmente previsto. Modifícase tamén o calendario do punto 9 [...]: o
+> peche do prazo pasa ao mércores 18 de novembro de 2026 e o evento final ao xoves 26 de
+> novembro de 2026. O resto das bases mantense inalterado."
+>
+> Las bases prevalecen sobre la web. A 2026-10-20 la web publica el aviso de
+> modificación, pero **aún conserva en dos sitios la fecha antigua** («antes das 23:59h do
+> xoves 19 de novembro» y «antes do 19 de novembro») y no muestra la semana de logística
+> del 24 y 25 de noviembre que sí recogen las bases.
 
 ## Datos generales
 - **Certamen:** I Certame GOBTEC de Software Libre — 2026. "Concurso de ideas innovadoras
@@ -23,7 +33,8 @@
   máximo de **60 días naturales desde el fallo** (punto 8). **[Cambio vs. web]** nuevo.
 - **Importante (puntos 0 y 7):** participar o ganar **no implica contratación, encargo ni
   financiación** del desarrollo.
-- **Contacto:** certame@agasol.gal (de la web; las bases no indican correo).
+- **Contacto y canal de entrega:** certame@agasol.gal. **[Cambio v3]** Las bases ya lo
+  recogen como canal de presentación (ver punto 4 abajo).
 - **Aceptación (punto 11):** participar implica aceptar íntegramente las bases; AGASOL
   resuelve las incidencias no previstas y puede **modificar el calendario** por causas
   justificadas, avisando en la página del certamen.
@@ -63,25 +74,37 @@
 | Documento | Obligatorio | Formato |
 |-----------|-------------|---------|
 | Memoria técnica "conforme á plantilla oficial de presentación publicada xunto a estas bases" | Sí | **PDF, máximo 10 páginas** |
-| Datos de contacto de la entidad (persona de contacto, teléfono, correo electrónico) | Sí | En el formulario |
+| Datos de contacto de la entidad (persona de contacto, teléfono, correo electrónico) | Sí | En el cuerpo del correo de entrega **[Cambio v3]**, además de en el apartado 0 de la memoria |
 | Mockup, prototipo o demo funcional | Opcional | Libre (enlace a demo o repositorio recomendado) |
 
 - Sobre la plantilla, las bases dicen: "Recoméndase encarecidamente o uso da plantilla
   oficial para facilitar unha avaliación obxectiva e comparable de todas as propostas por
   parte do xurado." Es decir, **recomendada con mucha insistencia, no estrictamente
   obligatoria**; la usamos siempre.
-- Plantilla oficial: https://www.agasol.gal/wp-content/uploads/2026/09/plantilla_memoria_tecnica_gobtec_2026.odt
+- Plantilla oficial (versión 3, 20-10-2026): https://www.agasol.gal/wp-content/uploads/2026/10/plantilla_memoria_tecnica_gobtec_2026.odt
+  La de septiembre ya no está publicada. Detalle de los cambios en [04](04-plantilla-memoria-tecnica.md).
 
-## Plazo y canal de entrega (punto 4)
-- **Plazo límite:** "ata as 23:59h do xoves **19 de novembro de 2026**".
-- **Canal único:** "formulario habilitado na páxina do certame, aloxada en agasol.gal".
-- "**Non se admitirán** propostas presentadas fóra de prazo **nin por canles distintas ao
-  formulario oficial**." **[Cambio vs. web]** El envío por correo a certame@agasol.gal
-  (que es a donde apuntaba el botón de la web) **no vale como entrega**.
-- **Formulario de entrega:** las bases no dan URL. A 2026-10-16 la web dice que "o
-  formulario de presentación de propostas [...] estará dispoñible nesta mesma páxina" y
-  aún no está publicado. **Comprobar https://www.agasol.gal/i-certame-gobtec/ con
-  antelación al 19-11-2026** y anotar aquí la URL del formulario cuando exista.
+## Plazo y forma de entrega (punto 4, «Prazo e forma de presentación»)
+**[Cambio v3]** Todo este apartado cambia: plazo un día antes y entrega por correo.
+- **Plazo límite:** "ata as 23:59h do **mércores 18 de novembro de 2026**" (antes, jueves
+  19 de noviembre).
+- **Canal:** "correo electrónico ao enderezo **certame@agasol.gal**, indicando no asunto
+  **«Proposta — I Certame GOBTEC»**". Sustituye al formulario web, que ya no existirá.
+- **Contenido del correo:**
+  - la memoria técnica en **PDF de 15 MB como máximo**; si lo supera, un enlace de
+    descarga en el cuerpo del mensaje, válido "cando menos, ata o 31 de decembro de 2026";
+  - en el cuerpo: nombre o razón social, persona de contacto, teléfono y correo
+    electrónico.
+- **Hora que cuenta:** "a data e hora de entrada da mensaxe no servidor de correo de
+  AGASOL" (no la de envío).
+- **Acuse de recibo:** AGASOL confirmará la recepción en un máximo de **dos días
+  hábiles**. "De non recibir esa confirmación, a entidade participante deberá poñerse en
+  contacto con AGASOL antes do peche do prazo."
+- "Non se admitirán propostas presentadas fóra de prazo." Desaparece la frase de la
+  versión anterior que excluía «canles distintas ao formulario oficial».
+- **[Interpretación]** Por el acuse de dos días hábiles, **enviar como tarde el viernes
+  13 de noviembre**: así, si no llega la confirmación, queda margen para reclamar antes del
+  cierre del miércoles 18. Guardar copia del correo enviado con su hora.
 
 ### Reglas para la memoria técnica
 1. Seguir la estructura de la plantilla oficial sin saltarse apartados (detalle en
@@ -127,20 +150,29 @@ concello pequeño.
 | Fecha | Hito |
 |-------|------|
 | Semana del 5 al 9 oct 2026 | Publicación de bases, landing en agasol.gal y apertura de la convocatoria |
-| Oct – 19 nov 2026 | Campaña de difusión activa (AGASOL y Startup Galicia) |
-| **Jue 19 nov 2026, 23:59 h** | **Cierre de presentación de propuestas** |
-| 20–27 nov 2026 | Evaluación del jurado y preselección de 5–6 finalistas |
-| Vie 27 nov 2026 | Comunicación a finalistas y preparación de pitches |
-| Semana del 30 nov al 2 dic | Confirmación logística final con la Cidade da Cultura |
-| **Jue 3 dic 2026** | Evento: pitches de finalistas, fallo del jurado y entrega del reconocimiento |
+| Oct – 18 nov 2026 | Campaña de difusión activa (AGASOL y Startup Galicia) |
+| **Mié 18 nov 2026, 23:59 h** | **Cierre de presentación de propuestas** |
+| 19–23 nov 2026 | Evaluación del jurado y preselección de 5–6 finalistas |
+| Lun 23 nov 2026 | Comunicación a finalistas y preparación de pitches |
+| 24 y 25 nov 2026 | Confirmación logística final con la Cidade da Cultura |
+| **Jue 26 nov 2026** | Evento: pitches de finalistas, fallo del jurado y entrega del reconocimiento |
 
-AGASOL puede modificar este calendario por causas justificadas (punto 11).
+**[Cambio v3]** Fechas anteriores: cierre el jueves 19 nov, evaluación del 20 al 27 nov,
+comunicación el viernes 27 nov, logística del 30 nov al 2 dic y evento el jueves 3 dic.
+La modificación se ampara en el punto 11, que permite a AGASOL cambiar el calendario por
+causas justificadas avisando en la página del certamen. **[Interpretación]** Puede volver
+a cambiar: revisar la página cada semana hasta la entrega.
 
 ## Fase final (pitch)
 - El jurado preselecciona **entre 5 y 6 propuestas finalistas**, "que serán convidadas a
-  presentar a súa solución (pitch) o día do evento" (3 de diciembre, Cidade da Cultura).
-- Las bases **no fijan duración ni formato del pitch**; la preparación va del 27 nov al
-  3 dic. Confirmar el formato con la organización al ser notificados.
-- **[Interpretación]** Preparar entre el 27 nov y el 3 dic: demo en vivo estable, guion
-  que siga los 4 criterios y su peso (incluyendo los subcriterios de soberanía), y plan B
-  (vídeo grabado) por si falla la demo.
+  presentar a súa solución (pitch) o día do evento" (**jueves 26 de noviembre**, Cidade da
+  Cultura). **[Cambio v3]** Antes, 3 de diciembre.
+- Las bases **no fijan duración ni formato del pitch**. Según las preguntas frecuentes de
+  la web, puede defenderlo "calquera persoa que figure no equipo do proxecto na memoria
+  técnica". Confirmar el formato con la organización al ser notificados.
+- **[Cambio v3]** Entre la comunicación a finalistas (lunes 23) y el evento (jueves 26)
+  quedan **tres días**, frente a los seis de antes.
+- **[Interpretación]** Con ese margen, el pitch, la demo estable y el plan B (vídeo
+  grabado) deben estar **listos antes del 18 de noviembre**, junto con la memoria, no
+  después de saber si se es finalista. El guion debe seguir los 4 criterios y su peso,
+  incluidos los subcriterios de soberanía.

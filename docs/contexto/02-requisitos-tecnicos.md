@@ -1,8 +1,10 @@
 # 02 · Requisitos técnicos
 
-> **Fuente: bases oficiales.** `Bases_I_Certame_GOBTEC_2026.pdf`
-> (https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026.pdf),
-> descargadas y leídas el 2026-10-16. Puntos 1.2 "Condicionantes técnicos obrigatorios",
+> **Fuente: bases oficiales.** Leídas en su primera versión el 2026-10-16 y revisadas el
+> 2026-10-20 contra la **versión 3** (`Bases_I_Certame_GOBTEC_2026_GL_v3.pdf`,
+> https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf),
+> que solo cambia el plazo, la forma de entrega y el calendario (ver
+> [03](03-concurso-presentacion-valoracion.md)): los puntos citados aquí no cambian. Puntos 1.2 "Condicionantes técnicos obrigatorios",
 > 1.3, 5 (criterio «Reutilización e soberanía tecnolóxica») y 8 «Propiedade intelectual e
 > licenza». Fuente secundaria: https://www.agasol.gal/i-certame-gobtec/ (2026-10-15).
 > Las bases listan cinco condicionantes técnicos obligatorios, literales entre comillas.

@@ -18,8 +18,9 @@ Investigación de mercado (software libre, comercial, sector público y stack) e
   y después las opcionales (app, calendarios, QR, analítica).
 - Todo lo que dependa del municipio es configuración; la solución es multi-municipio.
 - Pensar siempre en un concello pequeño con pocos recursos técnicos.
-- Entrega: memoria técnica en PDF de máx. 10 páginas con la plantilla oficial, antes
-  del 19/11/2026 a las 23:59 h.
+- Entrega: memoria técnica en PDF de máx. 10 páginas y 15 MB con la plantilla oficial,
+  por correo a certame@agasol.gal (asunto «Proposta — I Certame GOBTEC»), antes del
+  miércoles 18/11/2026 a las 23:59 h (bases v3, 20/10/2026). Evento final: 26/11/2026.
 
 Cuando una decisión técnica afecte a un requisito, citar su ID (C1–C4, M1–M3, R1–R3, T1–T5).
 
