@@ -1,137 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
-import { createRequire } from "node:module";
-import { readFile } from "node:fs/promises";
-import { Pool } from "pg";
 import request from "supertest";
-import type { INestApplication } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { openingCalendar } from "../src/database/seed";
-const require = createRequire(import.meta.url);
-const databaseName = `quenda_test_${randomUUID().replaceAll("-", "")}`;
-const baseUrl =
-  process.env.TEST_DATABASE_URL ??
-  "postgres://quenda:quenda_local@127.0.0.1:55432/quenda";
-const testUrl = new URL(baseUrl);
-testUrl.pathname = `/${databaseName}`;
-let app: INestApplication;
-let db: Pool;
-let admin: Pool;
-type Agent = ReturnType<typeof request.agent>;
-function post(agent: Agent, path: string, body: unknown) {
-  return agent.post(`/v2/${path}`).set("X-Quenda-Request", "1").send(body);
-}
-function patch(agent: Agent, path: string, body: unknown) {
-  return agent.patch(`/v2/${path}`).set("X-Quenda-Request", "1").send(body);
-}
-function start(days = 2, hour = 10) {
-  return Temporal.Now.zonedDateTimeISO("Europe/Madrid")
-    .add({ days })
-    .toPlainDate()
-    .toZonedDateTime({
-      timeZone: "Europe/Madrid",
-      plainTime: `${String(hour).padStart(2, "0")}:00`,
-    })
-    .toInstant()
-    .toString();
-}
-// Municipality installation and demo accounts are bootstrap configuration, not API-owned resources.
-async function tenant() {
-  const id = randomUUID();
-  const slug = `test-${id}`;
-  await db.query(
-    "INSERT INTO municipalities VALUES ($1,$2,$3,$4,$5,14,2,5,$6,$7)",
-    [
-      id,
-      slug,
-      "Test municipality",
-      "Europe/Madrid",
-      "gl",
-      "test@example.invalid",
-      "Synthetic test data",
-    ],
-  );
-  for (const role of ["citizen", "manager"])
-    await db.query("INSERT INTO users VALUES ($1,$2,$3,$4)", [
-      randomUUID(),
-      id,
-      role,
-      role,
-    ]);
-  const citizen = request.agent(app.getHttpServer());
-  const manager = request.agent(app.getHttpServer());
-  await post(citizen, "public/sessions", { slug, role: "citizen" }).expect(201);
-  await post(manager, "public/sessions", { slug, role: "manager" }).expect(201);
-  return { id, slug, citizen, manager };
-}
-async function facility(
-  context: Awaited<ReturnType<typeof tenant>>,
-  calendar?: string,
-) {
-  const id = randomUUID();
-  const body = {
-    id,
-    name: `Court ${id}`,
-    sport: "padel",
-    address: "Test street",
-    description: "Test facility",
-    accessible: true,
-    status: "active",
-    slotMinutes: 60,
-    priceCents: 0,
-    openingCalendar: calendar ?? openingCalendar(id),
-    rules: "Sports shoes required",
-  };
-  await post(context.manager, "manager/facilities", body).expect(201);
-  return body;
-}
-async function availability(
-  context: Awaited<ReturnType<typeof tenant>>,
-  id: string,
-  instant: string,
-) {
-  const date = Temporal.Instant.from(instant)
-    .toZonedDateTimeISO("Europe/Madrid")
-    .toPlainDate()
-    .toString();
-  return request(app.getHttpServer())
-    .get(`/v2/public/availability/${id}`)
-    .query({ slug: context.slug, date })
-    .expect(200);
-}
-beforeAll(async () => {
-  process.env.NODE_ENV = "test";
-  process.env.DEMO_MODE = "true";
-  process.env.DATABASE_URL = testUrl.toString();
-  admin = new Pool({ connectionString: baseUrl });
-  await admin.query(`CREATE DATABASE "${databaseName}"`);
-  db = new Pool({ connectionString: testUrl.toString() });
-  await db.query(
-    await readFile(
-      new URL("../src/database/schema.sql", import.meta.url),
-      "utf8",
-    ),
-  );
-  const { createApp } = require("../dist/bootstrap.js") as {
-    createApp: () => Promise<INestApplication>;
-  };
-  app = await createApp();
-  await app.listen(0, "127.0.0.1");
-});
-afterAll(async () => {
-  if (app) await app.close();
-  if (db) await db.end();
-  if (admin) {
-    await admin.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
-    await admin.end();
-  }
-});
+import {
+  availability,
+  facility,
+  harness,
+  patch,
+  post,
+  setup,
+  start,
+  teardown,
+  tenant,
+} from "./harness";
+beforeAll(setup);
+afterAll(teardown);
 describe("Municipal reservations through HTTP and PostgreSQL", () => {
   it("should expose public availability and reject protected or malformed requests when signed out", async () => {
     const context = await tenant();
     const court = await facility(context);
-    const anonymous = request(app.getHttpServer());
+    const anonymous = request(harness.app.getHttpServer());
     const municipalities = await anonymous
       .get("/v2/public/municipalities")
       .expect(200);
@@ -191,12 +81,12 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
         (slot: { start: string }) => slot.start === begins,
       ).status,
     ).toBe("booked");
-    const noticeCount = await db.query(
+    const noticeCount = await harness.db.query(
       "SELECT count(*)::int AS count FROM notifications WHERE tenant_id=$1",
       [context.id],
     );
     expect(noticeCount.rows[0].count).toBe(1);
-    const bookings = await db.query(
+    const bookings = await harness.db.query(
       "SELECT count(*)::int AS count FROM bookings WHERE tenant_id=$1",
       [context.id],
     );
@@ -400,7 +290,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await context.citizen.get("/v2/citizen/bookings").expect(401);
   });
   it("should publish an OpenAPI contract for each resource when the API starts", async () => {
-    const schema = await request(app.getHttpServer())
+    const schema = await request(harness.app.getHttpServer())
       .get("/api/openapi.json")
       .expect(200);
     expect(schema.body.paths["/v2/citizen/bookings"].post).toBeDefined();

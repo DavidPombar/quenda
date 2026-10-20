@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
-import type { Facility, Municipality } from "@/types/models";
+import type { Account, Facility, Municipality } from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "vilaverde",
@@ -12,6 +12,8 @@ export const municipality: Municipality = {
   maxActiveBookings: 5,
   contact: "deportes@vilaverde.example",
   legalText: "Demostración con datos ficticios.",
+  legalVersion: "2026-10",
+  retentionMonths: 24,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -56,4 +58,21 @@ export function stubShell(authenticated = false) {
       },
     ],
   });
+}
+export const account: Account = {
+  userId: "10000000-0000-4000-8000-000000000011",
+  displayName: "Alex",
+  role: "citizen",
+  currentLegalVersion: municipality.legalVersion,
+  consentUpToDate: true,
+  consents: [
+    { legalVersion: municipality.legalVersion, acceptedAt: "2026-10-18T09:30:00Z" },
+  ],
+  bookings: 2,
+  notifications: 3,
+};
+export function stubAccount(overrides: Partial<Account> = {}) {
+  const response = { ...account, ...overrides };
+  stubJsonResponse({ path: "*/v2/citizen/me", response });
+  return response;
 }

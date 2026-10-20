@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { Shell } from "./shell.view";
 import { catalogRoute } from "./components/catalog/catalog.route";
 import { myBookingsRoute } from "./components/my-bookings/my-bookings.route";
+import { accountRoute } from "./components/account/account.route";
 export const shellRoute = {
   path: ROUTES.shell,
   element: <Shell />,
@@ -11,5 +12,6 @@ export const shellRoute = {
     { index: true, element: <Navigate to={ROUTES.catalog} replace /> },
     catalogRoute,
     myBookingsRoute,
+    accountRoute,
   ],
 };

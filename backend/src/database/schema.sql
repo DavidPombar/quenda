@@ -6,11 +6,14 @@ CREATE TABLE IF NOT EXISTS municipalities (
   advance_days integer NOT NULL CHECK (advance_days BETWEEN 1 AND 90),
   cancellation_hours integer NOT NULL CHECK (cancellation_hours >= 0),
   max_active_bookings integer NOT NULL CHECK (max_active_bookings > 0),
-  contact text NOT NULL, legal_text text NOT NULL
+  contact text NOT NULL, legal_text text NOT NULL,
+  legal_version text NOT NULL DEFAULT '2026-10',
+  retention_months integer NOT NULL DEFAULT 24 CHECK (retention_months BETWEEN 1 AND 120)
 );
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY, tenant_id uuid NOT NULL REFERENCES municipalities(id),
   display_name text NOT NULL, role text NOT NULL CHECK (role IN ('citizen', 'manager')),
+  deleted_at timestamptz,
   UNIQUE(tenant_id, id)
 );
 CREATE TABLE IF NOT EXISTS sessions (
@@ -18,6 +21,13 @@ CREATE TABLE IF NOT EXISTS sessions (
   expires_at timestamptz NOT NULL,
   FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id)
 );
+-- Append-only record of accepted privacy notice versions; kept until retention purges the user.
+CREATE TABLE IF NOT EXISTS consents (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL,
+  legal_version text NOT NULL, accepted_at timestamptz NOT NULL,
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id)
+);
+CREATE INDEX IF NOT EXISTS consents_user ON consents(tenant_id, user_id, accepted_at DESC);
 CREATE TABLE IF NOT EXISTS facilities (
   id uuid PRIMARY KEY, tenant_id uuid NOT NULL REFERENCES municipalities(id),
   name text NOT NULL, sport text NOT NULL CHECK (sport IN ('padel','tennis','futsal','swimming')),
@@ -28,8 +38,9 @@ CREATE TABLE IF NOT EXISTS facilities (
   opening_calendar text NOT NULL, rules text NOT NULL,
   UNIQUE(tenant_id, id)
 );
+-- user_id becomes NULL when retention detaches a past reservation from its person.
 CREATE TABLE IF NOT EXISTS bookings (
-  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL, facility_id uuid NOT NULL,
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid, facility_id uuid NOT NULL,
   starts_at timestamptz NOT NULL, ends_at timestamptz NOT NULL,
   status text NOT NULL CHECK (status IN ('confirmed', 'cancelled')),
   created_at timestamptz NOT NULL, cancelled_at timestamptz,
@@ -50,8 +61,20 @@ CREATE TABLE IF NOT EXISTS notifications (
   FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id),
   FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
 );
+-- actor_id is NULL for system actions and after retention pseudonymises old events.
 CREATE TABLE IF NOT EXISTS audit_events (
-  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, actor_id uuid NOT NULL,
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, actor_id uuid,
   action text NOT NULL, resource_id uuid NOT NULL, occurred_at timestamptz NOT NULL,
+  actor_role text, details jsonb,
   FOREIGN KEY (tenant_id, actor_id) REFERENCES users(tenant_id, id)
 );
+CREATE INDEX IF NOT EXISTS audit_events_tenant_time ON audit_events(tenant_id, occurred_at DESC);
+-- Idempotent upgrades for databases created before these columns existed.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS legal_version text NOT NULL DEFAULT '2026-10';
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS retention_months integer NOT NULL DEFAULT 24
+  CHECK (retention_months BETWEEN 1 AND 120);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE bookings ALTER COLUMN user_id DROP NOT NULL;
+ALTER TABLE audit_events ALTER COLUMN actor_id DROP NOT NULL;
+ALTER TABLE audit_events ADD COLUMN IF NOT EXISTS actor_role text;
+ALTER TABLE audit_events ADD COLUMN IF NOT EXISTS details jsonb;

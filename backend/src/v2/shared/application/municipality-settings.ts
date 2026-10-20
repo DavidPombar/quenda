@@ -10,6 +10,8 @@ export interface MunicipalitySettings {
   maxActiveBookings: number;
   contact: string;
   legalText: string;
+  legalVersion: string;
+  retentionMonths: number;
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

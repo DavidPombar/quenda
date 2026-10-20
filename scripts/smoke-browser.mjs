@@ -91,6 +91,7 @@ try {
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.getByText("Lin e acepto o aviso de privacidade").click();
   await page.getByRole("button", { name: "Entrar como cidadanía" }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   await page
@@ -137,6 +138,19 @@ try {
       .count(),
     0,
   );
+  await page.getByRole("link", { name: "A miña conta", exact: true }).click();
+  await page.getByRole("heading", { name: "Conta e privacidade" }).waitFor();
+  await audit("account");
+  await page.screenshot({ path: ".dev-logs/account.png", fullPage: true });
+  await page.getByRole("button", { name: "Eliminar a conta" }).click();
+  await page.getByRole("alertdialog").waitFor();
+  await audit("delete-account");
+  await page.getByRole("button", { name: "Si, eliminar a conta" }).click();
+  await page.getByRole("alertdialog").waitFor({ state: "hidden" });
+  await page
+    .getByRole("banner")
+    .getByRole("button", { name: "Entrar", exact: true })
+    .waitFor();
   await page.getByRole("link", { name: "Coñece Quenda", exact: true }).click();
   await page
     .getByRole("link", { name: "Explorar a demo municipal", exact: true })
@@ -189,7 +203,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Eight accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Ten accessibility scans passed.",
   );
 } finally {
   await browser.close();

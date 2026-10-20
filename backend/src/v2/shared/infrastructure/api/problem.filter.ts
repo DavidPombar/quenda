@@ -24,6 +24,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     calendar_in_use:
       "Hai reservas futuras. Non se pode cambiar o horario ou pechar a instalación.",
     demo_disabled: "O acceso de demostración está desactivado.",
+    consent_required:
+      "Debes aceptar o aviso de privacidade vixente para continuar.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -40,6 +42,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     calendar_in_use:
       "Hay reservas futuras. No se puede cambiar el horario o cerrar la instalación.",
     demo_disabled: "El acceso de demostración está desactivado.",
+    consent_required:
+      "Debes aceptar el aviso de privacidad vigente para continuar.",
   },
 };
 @Catch(HttpException)

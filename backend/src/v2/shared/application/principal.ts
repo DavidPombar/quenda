@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-export type Permission = "bookings:own" | "facilities:manage" | "insights:view";
+export type Permission =
+  | "bookings:own"
+  | "account:own"
+  | "facilities:manage"
+  | "insights:view"
+  | "audit:view";
 export interface Principal {
   userId: string;
   tenantId: string;

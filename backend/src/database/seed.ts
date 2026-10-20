@@ -28,7 +28,7 @@ export async function seed(url = databaseUrl) {
     ] as const) {
       const tenant = `00000000-0000-4000-8000-00000000000${i}`;
       await db.query(
-        "INSERT INTO municipalities VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO NOTHING",
+        "INSERT INTO municipalities (id,slug,name,timezone,locale,advance_days,cancellation_hours,max_active_bookings,contact,legal_text,legal_version,retention_months) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO NOTHING",
         [
           tenant,
           slug,
@@ -40,6 +40,8 @@ export async function seed(url = databaseUrl) {
           5,
           `deportes@${slug}.example`,
           "Demostración con datos ficticios. Non introduzas datos persoais. As reservas son de proba.",
+          "2026-10",
+          24,
         ],
       );
       for (const [j, role, display] of [

@@ -242,6 +242,7 @@ export function MyBookings() {
             locale: c.locale,
             t: c.t,
             signIn: c.signIn,
+            showPrivacy: c.showPrivacy,
           }}
         />
       )}

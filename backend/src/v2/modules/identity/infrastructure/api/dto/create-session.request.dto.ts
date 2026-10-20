@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsIn, Matches } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsString,
+  IsIn,
+  IsOptional,
+  Matches,
+  MaxLength,
+} from "class-validator";
 
 export class CreateSessionRequestDTO {
   @ApiProperty({ description: "Municipality slug" })
@@ -12,4 +18,12 @@ export class CreateSessionRequestDTO {
   })
   @IsIn(["citizen", "manager"])
   role!: "citizen" | "manager";
+  @ApiPropertyOptional({
+    description:
+      "Privacy notice version the citizen accepts; must match the municipality's current version",
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  legalVersion?: string;
 }
