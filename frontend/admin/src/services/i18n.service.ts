@@ -159,6 +159,16 @@ const gl = {
   descriptionHint: "Unha ou dúas frases sobre o espazo.",
   nameRequired: "Escribe o nome da instalación (mínimo 2 caracteres).",
   addressRequired: "Escribe o enderezo da instalación.",
+  latitude: "Latitude",
+  longitude: "Lonxitude",
+  latitudeHint:
+    "Opcional. Graos decimais, por exemplo 42.61. Publícase nos datos abertos.",
+  longitudeHint:
+    "Opcional. Graos decimais, por exemplo -8.12. Ao oeste de Greenwich é negativa.",
+  latitudeInvalid: "Escribe unha latitude entre -90 e 90.",
+  longitudeInvalid: "Escribe unha lonxitude entre -180 e 180.",
+  coordinatesPair:
+    "Escribe a latitude e a lonxitude, ou deixa as dúas baleiras.",
   activity: "Actividade",
   dashboard: "Panel",
   activityLoading: "Actividade dos próximos 7 días",
@@ -475,6 +485,15 @@ const es: Record<TextKey, string> = {
   descriptionHint: "Una o dos frases sobre el espacio.",
   nameRequired: "Escribe el nombre de la instalación (mínimo 2 caracteres).",
   addressRequired: "Escribe la dirección de la instalación.",
+  latitude: "Latitud",
+  longitude: "Longitud",
+  latitudeHint:
+    "Opcional. Grados decimales, por ejemplo 42.61. Se publica en los datos abiertos.",
+  longitudeHint:
+    "Opcional. Grados decimales, por ejemplo -8.12. Al oeste de Greenwich es negativa.",
+  latitudeInvalid: "Escribe una latitud entre -90 y 90.",
+  longitudeInvalid: "Escribe una longitud entre -180 y 180.",
+  coordinatesPair: "Escribe la latitud y la longitud, o deja las dos vacías.",
   activity: "Actividad",
   activityLoading: "Actividad de los próximos 7 días",
   stepFreeShort: "Sin barreras",

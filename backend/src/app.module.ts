@@ -10,6 +10,7 @@ import { AccountModule } from "./v2/modules/account/account.module";
 import { AuditModule } from "./v2/modules/audit/audit.module";
 import { RetentionModule } from "./v2/modules/retention/retention.module";
 import { NotificationsModule } from "./v2/modules/notifications/notifications.module";
+import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
 @Module({
   imports: [
     SharedModule,
@@ -22,6 +23,7 @@ import { NotificationsModule } from "./v2/modules/notifications/notifications.mo
     AuditModule,
     RetentionModule,
     NotificationsModule,
+    OpenDataModule,
   ],
 })
 export class AppModule {}

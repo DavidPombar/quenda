@@ -38,6 +38,10 @@ export async function createApp() {
     .setDescription("Municipal sports reservations — V0")
     .setVersion("0.1.0")
     .addCookieAuth("quenda_session")
+    .addTag(
+      "public/open-data",
+      "Open data of each municipality: facility catalogue (schema.org JSON-LD, CSV, GeoJSON) and DCAT-AP-ES catalogue. Licensed per municipality (CC BY 4.0 by default); no personal data.",
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document, {

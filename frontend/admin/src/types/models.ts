@@ -68,6 +68,9 @@ export interface Facility {
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position, published as open data; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface Slot {
   start: string;

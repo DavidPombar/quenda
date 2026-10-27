@@ -29,6 +29,7 @@ export const municipality: Municipality = {
   noShowLimit: 3,
   noShowWindowDays: 30,
   noShowBlockDays: 7,
+  dataLicense: "CC-BY-4.0",
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",

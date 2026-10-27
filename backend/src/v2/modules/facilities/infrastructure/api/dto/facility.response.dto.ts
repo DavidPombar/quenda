@@ -29,6 +29,18 @@ export class FacilityResponseDTO {
   })
   followsMunicipalHolidays!: boolean;
   @ApiProperty({
+    description: "WGS 84 latitude, or null when not set",
+    type: Number,
+    nullable: true,
+  })
+  latitude!: number | null;
+  @ApiProperty({
+    description: "WGS 84 longitude, or null when not set",
+    type: Number,
+    nullable: true,
+  })
+  longitude!: number | null;
+  @ApiProperty({
     description: "Bookable courts or spaces, ordered by position and name",
     type: [ResourceResponseDTO],
   })
@@ -47,6 +59,8 @@ export class FacilityResponseDTO {
       openingCalendar: value.openingCalendar,
       rules: value.rules,
       followsMunicipalHolidays: value.followsMunicipalHolidays,
+      latitude: value.latitude,
+      longitude: value.longitude,
       resources: value.resources.map(ResourceResponseDTO.from),
     };
   }

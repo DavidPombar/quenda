@@ -1573,3 +1573,68 @@ a.account:hover .account-name strong {
 .penalty-banner.blocked {
   border-left-color: var(--danger);
 }
+.download-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+}
+.download-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+.download-list li > a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 650;
+  min-height: 44px;
+}
+.download-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}
+.download-meta code {
+  overflow-wrap: anywhere;
+}
+.download-schema {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+}
+.open-data-privacy {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.open-data-page a {
+  color: var(--court);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.open-data-page a:hover {
+  text-decoration-thickness: 2px;
+}
+.open-data-page a svg {
+  display: inline;
+  vertical-align: -3px;
+  margin-left: var(--space-1);
+}
+.open-data-page .download-list li > a svg,
+.open-data-page .download-schema svg {
+  margin-left: 0;
+}
+.open-data-api {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+}
