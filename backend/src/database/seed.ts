@@ -44,6 +44,17 @@ export async function seed(url = databaseUrl) {
           24,
         ],
       );
+      // Versioned notice in both languages; the row above keeps the Galician text for older readers.
+      await db.query(
+        "INSERT INTO legal_texts (tenant_id,version,text_gl,text_es,published_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",
+        [
+          tenant,
+          "2026-10",
+          "Demostración con datos ficticios. Non introduzas datos persoais. As reservas son de proba.",
+          "Demostración con datos ficticios. No introduzcas datos personales. Las reservas son de prueba.",
+          "2026-10-01T00:00:00Z",
+        ],
+      );
       for (const [j, role, display] of [
         [1, "citizen", "Alex · conta de proba"],
         [2, "manager", "Uxía · xestión municipal"],

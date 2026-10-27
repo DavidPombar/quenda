@@ -4,6 +4,7 @@ import type {
   AccountPersonalData,
   AccountProfile,
   ExportedAuditEvent,
+  ExportedBlock,
   ExportedBooking,
   ExportedIdentity,
   ExportedNotification,
@@ -57,6 +58,11 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<ExportedNotification[]>;
+  /** Temporary booking bans after repeated no-shows. */
+  abstract listBlocksAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedBlock[]>;
   abstract listAuditByActor(
     tenantId: string,
     userId: string,

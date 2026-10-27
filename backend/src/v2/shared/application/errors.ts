@@ -16,7 +16,13 @@ export type ErrorCode =
   | "consent_required"
   | "oidc_unavailable"
   | "login_expired"
-  | "login_rejected";
+  | "login_rejected"
+  | "insufficient_contrast"
+  | "invalid_holidays"
+  | "unsupported_logo"
+  | "logo_too_large"
+  | "booking_blocked"
+  | "attendance_window";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

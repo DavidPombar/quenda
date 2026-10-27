@@ -4,7 +4,9 @@ export type Permission =
   | "account:own"
   | "facilities:manage"
   | "insights:view"
-  | "audit:view";
+  | "audit:view"
+  | "municipality:manage"
+  | "bookings:manage";
 /** How strongly the account's identity was proven: demo account, e-mail code, eID (OIDC) or local credentials. */
 export type Assurance = "demo" | "email" | "eid" | "local";
 export interface Principal {

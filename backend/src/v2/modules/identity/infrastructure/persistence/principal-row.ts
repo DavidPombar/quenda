@@ -9,7 +9,14 @@ export function toPrincipal(user: PrincipalRow): Principal {
     ...user,
     grants:
       user.role === "manager"
-        ? ["bookings:own", "facilities:manage", "insights:view", "audit:view"]
+        ? [
+            "bookings:own",
+            "facilities:manage",
+            "insights:view",
+            "audit:view",
+            "municipality:manage",
+            "bookings:manage",
+          ]
         : ["bookings:own", "account:own"],
   };
 }

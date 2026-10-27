@@ -7,9 +7,13 @@ export function useCreateBookingMutation() {
     mutationFn: bookingsRepository.create,
     onSettled: async () => {
       await Promise.all(
-        ["bookings", "notifications", "availability", "insights"].map((key) =>
-          cache.invalidateQueries({ queryKey: [key] }),
-        ),
+        [
+          "bookings",
+          "notifications",
+          "penalty",
+          "availability",
+          "insights",
+        ].map((key) => cache.invalidateQueries({ queryKey: [key] })),
       );
     },
   });

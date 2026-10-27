@@ -8,11 +8,26 @@ export class ExportedBookingResponseDTO {
   @ApiProperty({ description: "Sport" }) sport!: string;
   @ApiProperty({ description: "Start instant" }) start!: string;
   @ApiProperty({ description: "End instant" }) end!: string;
-  @ApiProperty({ description: "Booking state" }) status!:
-    "confirmed" | "cancelled";
+  @ApiProperty({
+    enum: ["confirmed", "cancelled", "no_show"],
+    description: "Booking state",
+  })
+  status!: ExportedBooking["status"];
   @ApiProperty({ description: "Creation instant" }) createdAt!: string;
   @ApiProperty({ description: "Cancellation instant", nullable: true })
   cancelledAt!: string | null;
+  @ApiProperty({
+    enum: ["citizen", "municipality"],
+    nullable: true,
+    description: "Who cancelled",
+  })
+  cancelledBy!: ExportedBooking["cancelledBy"];
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Municipal reason",
+  })
+  cancellationReason!: string | null;
   static from(value: ExportedBooking): ExportedBookingResponseDTO {
     return {
       id: value.id,
@@ -24,6 +39,8 @@ export class ExportedBookingResponseDTO {
       status: value.status,
       createdAt: value.createdAt.toString(),
       cancelledAt: value.cancelledAt ? value.cancelledAt.toString() : null,
+      cancelledBy: value.cancelledBy,
+      cancellationReason: value.cancellationReason,
     };
   }
 }

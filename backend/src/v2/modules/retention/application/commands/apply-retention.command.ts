@@ -12,6 +12,7 @@ export interface RetentionSummary {
   cutoff: Temporal.Instant;
   bookingsDetached: number;
   notificationsDeleted: number;
+  blocksDeleted: number;
   auditPseudonymised: number;
   sessionsPurged: number;
   loginAttemptsPurged: number;
@@ -46,6 +47,7 @@ export class ApplyRetention {
       tenantId,
       cutoff,
     );
+    const blocksDeleted = await this.retention.deleteBlocks(tenantId, cutoff);
     const auditPseudonymised = await this.retention.pseudonymiseAudit(
       tenantId,
       cutoff,
@@ -68,6 +70,7 @@ export class ApplyRetention {
       cutoff,
       bookingsDetached,
       notificationsDeleted,
+      blocksDeleted,
       auditPseudonymised,
       sessionsPurged,
       loginAttemptsPurged,
@@ -78,6 +81,7 @@ export class ApplyRetention {
       cutoff: cutoff.toString(),
       bookingsDetached,
       notificationsDeleted,
+      blocksDeleted,
       auditPseudonymised,
       sessionsPurged,
       loginAttemptsPurged,

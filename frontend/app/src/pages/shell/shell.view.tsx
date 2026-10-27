@@ -73,6 +73,13 @@ export function Shell() {
             quenda<span className="brand-dot">.</span>
           </span>
         </NavLink>
+        {municipality.logoUrl && (
+          <img
+            className="municipal-logo"
+            src={municipality.logoUrl}
+            alt={`${t("logoAlt")}: ${municipality.name}`}
+          />
+        )}
         <nav aria-label={t("explore")} className="main-nav">
           <NavLink to={routeFor(municipality.slug, ROUTES.catalog)}>
             {({ isActive }) => (
@@ -266,7 +273,7 @@ export function Shell() {
                 <Dialog.Title>{t("privacyTitle")}</Dialog.Title>
               </Dialog.Header>
               <Dialog.Body>
-                <p>{municipality.legalText}</p>
+                <p lang={c.locale}>{municipality.legalTexts[c.locale]}</p>
                 <p className="muted">{municipality.contact}</p>
               </Dialog.Body>
               <Dialog.CloseTrigger asChild>

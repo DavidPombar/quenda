@@ -83,7 +83,9 @@ export function Account() {
               <div>
                 <dt>{c.t("retentionNote")}</dt>
                 <dd>
-                  <span className="count">{c.municipality.retentionMonths}</span>{" "}
+                  <span className="count">
+                    {c.municipality.retentionMonths}
+                  </span>{" "}
                   {c.t("months")}
                 </dd>
               </div>

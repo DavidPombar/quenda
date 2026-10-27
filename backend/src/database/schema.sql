@@ -104,3 +104,64 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS assurance text NOT NULL DEFAULT 'demo
   CHECK (assurance IN ('demo','email','eid','local'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS nif_ciphertext text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS nif_digest text;
+-- Municipal settings editable by managers (R2, M2).
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS primary_color text NOT NULL DEFAULT '#1f5b43'
+  CHECK (primary_color ~ '^#[0-9a-f]{6}$');
+-- RFC 5545 VCALENDAR of all-day closures inherited by every facility; empty means none.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS holidays_calendar text NOT NULL DEFAULT '';
+-- Append-only privacy notice versions; consents.legal_version points here so the accepted text can be proven.
+CREATE TABLE IF NOT EXISTS legal_texts (
+  tenant_id uuid NOT NULL REFERENCES municipalities(id), version text NOT NULL,
+  text_gl text NOT NULL, text_es text NOT NULL, published_at timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, version)
+);
+INSERT INTO legal_texts (tenant_id, version, text_gl, text_es, published_at)
+  SELECT id, legal_version, legal_text, legal_text, now() FROM municipalities
+  ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS municipality_logos (
+  tenant_id uuid PRIMARY KEY REFERENCES municipalities(id),
+  content_type text NOT NULL CHECK (content_type IN ('image/png', 'image/jpeg', 'image/webp')),
+  data bytea NOT NULL CHECK (octet_length(data) BETWEEN 1 AND 2097152),
+  sha256 text NOT NULL, updated_at timestamptz NOT NULL
+);
+-- Cancellation deadline in force when the booking was made; NULL for older rows (current setting applies).
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_hours integer CHECK (cancellation_hours >= 0);
+ALTER TABLE facilities ADD COLUMN IF NOT EXISTS follows_municipal_holidays boolean NOT NULL DEFAULT true;
+-- Attendance, no-shows and municipal cancellations (C3, M3). Attended is derived: a confirmed
+-- booking that has ended. Constraints are recreated by name so the upgrade stays idempotent.
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_check1;
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_valid;
+ALTER TABLE bookings ADD CONSTRAINT bookings_status_valid
+  CHECK (status IN ('confirmed', 'cancelled', 'no_show'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_by text CHECK (cancelled_by IN ('citizen', 'municipality'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_reason text CHECK (length(cancellation_reason) <= 500);
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_cancellation_valid;
+ALTER TABLE bookings ADD CONSTRAINT bookings_cancellation_valid CHECK (
+  (status IN ('confirmed', 'no_show') AND cancelled_at IS NULL AND cancelled_by IS NULL AND cancellation_reason IS NULL)
+  OR (status = 'cancelled' AND cancelled_at IS NOT NULL
+    AND (cancelled_by IS DISTINCT FROM 'municipality' OR cancellation_reason IS NOT NULL))
+);
+-- No-show penalty: no_show_limit absences within no_show_window_days block new bookings for
+-- no_show_block_days. A limit of 0 disables it.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_limit integer NOT NULL DEFAULT 3
+  CHECK (no_show_limit BETWEEN 0 AND 20);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_window_days integer NOT NULL DEFAULT 30
+  CHECK (no_show_window_days BETWEEN 1 AND 365);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_block_days integer NOT NULL DEFAULT 7
+  CHECK (no_show_block_days BETWEEN 1 AND 365);
+-- booking_id is the no-show that reached the limit; lifted_at is set when it is corrected.
+CREATE TABLE IF NOT EXISTS booking_blocks (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL, booking_id uuid NOT NULL,
+  starts_at timestamptz NOT NULL, ends_at timestamptz NOT NULL, lifted_at timestamptz,
+  CHECK (ends_at > starts_at),
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id),
+  FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
+);
+CREATE INDEX IF NOT EXISTS booking_blocks_user ON booking_blocks(tenant_id, user_id, ends_at);
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;
+ALTER TABLE notifications ADD CONSTRAINT notifications_kind_check CHECK (kind IN (
+  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'no_show', 'blocked', 'unblocked'
+));
+-- Snapshot shown with the notice: the municipal reason or the penalty standing at that moment.
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS details jsonb;

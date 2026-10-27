@@ -42,16 +42,31 @@ export interface ExportedBooking {
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
   createdAt: Temporal.Instant;
   cancelledAt: Temporal.Instant | null;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
 }
 export interface ExportedNotification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind:
+    | "confirmed"
+    | "rescheduled"
+    | "cancelled"
+    | "cancelled_by_municipality"
+    | "no_show"
+    | "blocked"
+    | "unblocked";
   facilityName: string;
   createdAt: Temporal.Instant;
+  details: Record<string, unknown> | null;
+}
+export interface ExportedBlock {
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  liftedAt: Temporal.Instant | null;
 }
 export interface ExportedAuditEvent {
   id: string;
@@ -74,5 +89,6 @@ export interface AccountExport {
   consents: ConsentRecord[];
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
+  blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];
 }

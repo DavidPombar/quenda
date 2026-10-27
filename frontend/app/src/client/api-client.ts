@@ -15,7 +15,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers: {
       "Content-Type": "application/json",
       "X-Quenda-Request": "1",
-      "Accept-Language": localStorage.getItem("quenda.locale") ?? "gl",
+      // The shell keeps <html lang> on the chosen or the municipality's default language.
+      "Accept-Language":
+        localStorage.getItem("quenda.locale") ??
+        (document.documentElement.lang || "gl"),
       ...options.headers,
     },
   });
