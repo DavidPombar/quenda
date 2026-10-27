@@ -21,6 +21,10 @@ export class MunicipalityResponseDTO {
   legalVersion!: string;
   @ApiProperty({ description: "Personal data retention period in months" })
   retentionMonths!: number;
+  @ApiProperty({
+    description: "Hours before a reservation its reminder is sent",
+  })
+  reminderHours!: number;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -35,6 +39,7 @@ export class MunicipalityResponseDTO {
       legalText: value.legalText,
       legalVersion: value.legalVersion,
       retentionMonths: value.retentionMonths,
+      reminderHours: value.reminderHours,
     };
   }
 }

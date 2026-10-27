@@ -49,7 +49,7 @@ export interface Booking {
 export interface Notification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
   facilityName: string;
   createdAt: string;
 }

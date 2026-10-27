@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 const approved = new Set([
   "MIT",
+  "MIT-0",
   "ISC",
   "Apache-2.0",
   "BSD-2-Clause",

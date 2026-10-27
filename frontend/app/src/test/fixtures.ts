@@ -14,6 +14,7 @@ export const municipality: Municipality = {
   legalText: "Demostración con datos ficticios.",
   legalVersion: "2026-10",
   retentionMonths: 24,
+  reminderHours: 24,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -46,6 +47,13 @@ export function stubShell(authenticated = false) {
         : null,
     },
   });
+  // A signed-in shell remembers the language the person uses for outgoing email.
+  if (authenticated)
+    stubJsonResponse({
+      path: "*/v2/citizen/me",
+      method: "PATCH",
+      response: {},
+    });
   stubJsonResponse({
     path: "*/v2/public/facilities",
     response: [
@@ -66,10 +74,16 @@ export const account: Account = {
   currentLegalVersion: municipality.legalVersion,
   consentUpToDate: true,
   consents: [
-    { legalVersion: municipality.legalVersion, acceptedAt: "2026-10-18T09:30:00Z" },
+    {
+      legalVersion: municipality.legalVersion,
+      acceptedAt: "2026-10-18T09:30:00Z",
+    },
   ],
   bookings: 2,
   notifications: 3,
+  email: "alex@vilaverde.example",
+  locale: "gl",
+  reminderEmails: true,
 };
 export function stubAccount(overrides: Partial<Account> = {}) {
   const response = { ...account, ...overrides };

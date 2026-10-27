@@ -5,7 +5,7 @@ export class ExportedNotificationResponseDTO {
   @ApiProperty({ description: "Notification UUID" }) id!: string;
   @ApiProperty({ description: "Related reservation" }) bookingId!: string;
   @ApiProperty({ description: "Event kind" }) kind!:
-    "confirmed" | "rescheduled" | "cancelled";
+    "confirmed" | "rescheduled" | "cancelled" | "reminder";
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
   @ApiProperty({ description: "Event instant" }) createdAt!: string;
   static from(value: ExportedNotification): ExportedNotificationResponseDTO {

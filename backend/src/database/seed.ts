@@ -52,6 +52,11 @@ export async function seed(url = databaseUrl) {
           "INSERT INTO users VALUES ($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING",
           [`10000000-0000-4000-8000-0000000000${i}${j}`, tenant, display, role],
         );
+      // Synthetic address at a reserved domain; demo notices land in the local mail catcher.
+      await db.query(
+        "UPDATE users SET email=$2 WHERE id=$1 AND email IS NULL AND deleted_at IS NULL",
+        [`10000000-0000-4000-8000-0000000000${i}1`, `alex@${slug}.example`],
+      );
       for (const [
         j,
         label,

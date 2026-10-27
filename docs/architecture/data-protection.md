@@ -42,15 +42,30 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 
 | Table | Personal data | Purpose | Retention |
 |---|---|---|---|
-| `users` | `display_name`, `role`, `deleted_at` | Identify the person who books or manages | Anonymised on deletion; row removed by retention once nothing references it |
+| `users` | `display_name`, `role`, `deleted_at`, optional `email` and `locale` | Identify the person who books or manages; address and language for email notices | Anonymised on deletion (`email` and `locale` cleared); row removed by retention once nothing references it |
 | `sessions` | Hash of a random token, expiry | Keep the person signed in for at most eight hours | Removed at sign-out, deletion or expiry (retention purges expired rows) |
 | `consents` | Accepted notice version and time | Prove the person was informed | Kept while the account exists; removed by retention after deletion |
 | `bookings` | Link from a reservation to `user_id` | Provide the reservation and its history | Link set to NULL once the reservation ended more than `retention_months` ago |
 | `notifications` | Link to `user_id` and a reservation | In-app notices | Deleted on account deletion or after `retention_months` |
+| `outbox` | Link to `user_id`, a reservation, notice kind and delivery state; never the address or the text | Deliver email notices after the reservation commits | Deleted on account deletion or after `retention_months` |
+| `notification_preferences` | Whether the person wants email reminders | Respect the opt-out | Deleted on account deletion |
 | `audit_events` | `actor_id`, `actor_role`, `details` | Accountability for changes (art. 5.2 GDPR) | `actor_id` set to NULL after `retention_months`; action and details remain |
 
-Quenda does not collect identity documents, addresses, phone numbers, email addresses, health data
-or data about minors. Demo accounts carry fictitious names only. Production identity (Cl@ve,
+Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
+about minors. The email address is optional and only used for notices about the person's own
+reservations. Demo accounts carry fictitious names and synthetic addresses at the reserved
+`.example` domain, which the local Mailpit catches.
+
+### Email notices
+
+Confirmations, changes and cancellations are part of providing the reservation (art. 6.1.b GDPR) and
+are always sent when an address exists. The reminder before each reservation is optional: the
+person can switch it off under **A miña conta → Avisos por correo** or with the signed link in every
+reminder (`POST /v2/public/unsubscribe`, which asks for a click so mail scanners cannot trigger it).
+Both are audited (`notification_preferences.updated`, `notification_preferences.unsubscribed`).
+Messages are written in the language the person last used in the app (`users.locale`). The outbox
+stores no address or text: both are resolved when the worker sends, so nothing goes out once an
+account is deleted. Production identity (Cl@ve,
 Chave365) must keep this minimisation: store the identifier the identity provider returns, not
 copies of documents.
 
@@ -58,8 +73,8 @@ copies of documents.
 
 | Right | Implementation |
 |---|---|
-| Access and portability (arts. 15, 20) | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile, consents, every reservation, every notice and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`. |
-| Erasure (art. 17) | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices are deleted, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
+| Access and portability (arts. 15, 20) | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including the email address and language), consents, every reservation, every notice, notice preferences, the email messages queued or sent (kind and dates, no text) and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`. |
+| Erasure (art. 17) | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices, queued messages and notice preferences are deleted, the email address and language are cleared, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
 | Information (arts. 13, 14) | The council's notice is shown from the sign-in dialog and the account page, with the version the person accepted and the retention period. |
 | Rectification (art. 16) | Not needed for the stored fields: the only free personal datum is the display name that the identity provider supplies. Requests go to the council. |
 | Restriction and objection (arts. 18, 21) | Not automated. The council handles requests manually; a manager can cancel the person's reservations and the operator can mark the account. |
@@ -74,7 +89,7 @@ municipality inside a transaction with the injected clock. The cutoff is now min
 `retention_months`, computed in the municipality's time zone. It then:
 
 1. detaches `user_id` from reservations that ended before the cutoff;
-2. deletes notices created before the cutoff;
+2. deletes notices and outbox messages created before the cutoff;
 3. sets `actor_id` to NULL on audit events before the cutoff;
 4. deletes expired sessions;
 5. deletes the consents of accounts deleted before the cutoff, then the user rows that nothing

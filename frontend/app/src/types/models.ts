@@ -13,6 +13,7 @@ export interface Municipality {
   legalText: string;
   legalVersion: string;
   retentionMonths: number;
+  reminderHours: number;
 }
 export interface Session {
   userId: string;
@@ -51,7 +52,7 @@ export interface Booking {
 export interface Notification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
   facilityName: string;
   createdAt: string;
 }
@@ -78,6 +79,9 @@ export interface Account {
   consents: Consent[];
   bookings: number;
   notifications: number;
+  email: string | null;
+  locale: Locale | null;
+  reminderEmails: boolean;
 }
 export interface AccountExport {
   generatedAt: string;

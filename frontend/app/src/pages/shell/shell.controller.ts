@@ -5,6 +5,7 @@ import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-munici
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
 import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.mutation";
+import { useUpdateLocaleMutation } from "@/queries/account/update-locale.mutation";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
 import type { Locale } from "@/types/models";
@@ -18,6 +19,7 @@ export function useShellController() {
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
   const remove = useDeleteSessionMutation();
+  const saveLocale = useUpdateLocaleMutation();
   const [locale, setLocale] = useState<Locale>(
     localStorage.getItem("quenda.locale") === "es" ? "es" : "gl",
   );
@@ -48,6 +50,12 @@ export function useShellController() {
     document.documentElement.lang = locale;
     localStorage.setItem("quenda.locale", locale);
   }, [locale]);
+  // Email notices follow the language the person is using; failures only affect email wording.
+  const sessionUser = session?.userId;
+  const { mutate: rememberLocale } = saveLocale;
+  useEffect(() => {
+    if (sessionUser) rememberLocale(locale);
+  }, [sessionUser, locale, rememberLocale]);
   async function selectMunicipality(next: string) {
     if (sessionQuery.data) await remove.mutateAsync();
     await navigate(routeFor(next, ROUTES.catalog));

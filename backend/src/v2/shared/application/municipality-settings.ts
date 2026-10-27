@@ -12,6 +12,12 @@ export interface MunicipalitySettings {
   legalText: string;
   legalVersion: string;
   retentionMonths: number;
+  /** Lead time of the single booking reminder. */
+  reminderHours: number;
+  /** Display name for outgoing email; blank means the municipality name. */
+  mailSenderName: string;
+  /** Reply-To for outgoing email; blank means the general contact. */
+  mailReplyTo: string;
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

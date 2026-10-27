@@ -3,7 +3,7 @@ import type { Temporal } from "@js-temporal/polyfill";
 export interface Notification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
   facilityName: string;
   createdAt: Temporal.Instant;
 }

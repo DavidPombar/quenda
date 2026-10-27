@@ -4,6 +4,20 @@ export interface AccountProfile {
   userId: string;
   displayName: string;
   role: "citizen" | "manager";
+  /** Optional address for email notices. */
+  email: string | null;
+  /** Language for outgoing messages; NULL until the person picks one. */
+  locale: "gl" | "es" | null;
+}
+export interface NotificationPreferences {
+  reminderEmails: boolean;
+}
+export interface ExportedMessage {
+  id: string;
+  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
+  channel: "email";
+  createdAt: Temporal.Instant;
+  sentAt: Temporal.Instant | null;
 }
 export interface ConsentRecord {
   legalVersion: string;
@@ -16,6 +30,7 @@ export interface AccountSummary {
   consents: ConsentRecord[];
   bookings: number;
   notifications: number;
+  preferences: NotificationPreferences;
 }
 export interface ExportedBooking {
   id: string;
@@ -31,7 +46,7 @@ export interface ExportedBooking {
 export interface ExportedNotification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
   facilityName: string;
   createdAt: Temporal.Instant;
 }
@@ -55,5 +70,7 @@ export interface AccountExport {
   consents: ConsentRecord[];
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
+  preferences: NotificationPreferences;
+  messages: ExportedMessage[];
   auditEvents: ExportedAuditEvent[];
 }

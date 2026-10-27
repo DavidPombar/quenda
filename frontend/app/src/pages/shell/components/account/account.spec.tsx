@@ -30,7 +30,9 @@ describe("Account and privacy page", () => {
     await commands.navigate("/app/vilaverde/conta");
     await render(<App />);
     await expect
-      .element(page.getByRole("heading", { name: "Entra para ver a túa conta" }))
+      .element(
+        page.getByRole("heading", { name: "Entra para ver a túa conta" }),
+      )
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: "A miña conta" }))
@@ -99,9 +101,7 @@ describe("Account and privacy page", () => {
       .element(page.getByRole("status"))
       .toMatchTextContent("A túa conta foi eliminada.");
     await expect
-      .element(
-        page.getByRole("banner").getByRole("button", { name: "Entrar" }),
-      )
+      .element(page.getByRole("banner").getByRole("button", { name: "Entrar" }))
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: "A miña conta" }))
@@ -124,5 +124,51 @@ describe("Account and privacy page", () => {
       .element(page.getByRole("alert"))
       .toMatchTextContent("Non tes permiso para isto.");
     await expect.element(page.getByRole("alertdialog")).toBeVisible();
+  });
+  test("should save the reminder preference when the person unticks email reminders", async () => {
+    stubShell(true);
+    stubAccount();
+    const { spy } = stubJsonResponse({
+      path: "*/v2/citizen/me/notification-preferences",
+      method: "PUT",
+      response: {},
+    });
+    await commands.navigate("/app/vilaverde/conta");
+    await render(<App />);
+    await expect
+      .element(page.getByText(account.email ?? "", { exact: true }))
+      .toBeVisible();
+    const reminders = page.getByRole("checkbox", {
+      name: "Recibir unha lembranza por correo antes de cada reserva",
+    });
+    await expect.element(reminders).toBeChecked();
+    await expect
+      .element(page.getByText("Chega 24 horas antes do inicio."))
+      .toBeVisible();
+    await page
+      .getByText("Recibir unha lembranza por correo antes de cada reserva")
+      .click();
+    await expect
+      .element(page.getByRole("status"))
+      .toMatchTextContent("Preferencia gardada.");
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { reminderEmails: false } }),
+    );
+  });
+  test("should explain that notices stay in the app when the account has no email", async () => {
+    stubShell(true);
+    stubAccount({ email: null });
+    await commands.navigate("/app/vilaverde/conta");
+    await render(<App />);
+    await expect
+      .element(
+        page.getByText(
+          "Esta conta non ten correo, así que só verás os avisos aquí.",
+        ),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("checkbox", { name: /lembranza/ }))
+      .not.toBeInTheDocument();
   });
 });

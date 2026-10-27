@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import {
+  PiBell,
   PiCalendarCheck,
   PiCalendarX,
   PiClockClockwise,
@@ -10,10 +11,24 @@ import {
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { ROUTES, routeFor } from "@/constants/routes";
+import type { TextKey } from "@/services/i18n.service";
+import type { Notification } from "@/types/models";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
+const NOTICE_ICONS: Record<Notification["kind"], typeof PiBell> = {
+  confirmed: PiCalendarCheck,
+  cancelled: PiCalendarX,
+  rescheduled: PiClockClockwise,
+  reminder: PiBell,
+};
+const NOTICE_LABELS: Record<Notification["kind"], TextKey> = {
+  confirmed: "noticeConfirmed",
+  cancelled: "noticeCancelled",
+  rescheduled: "noticeRescheduled",
+  reminder: "noticeReminder",
+};
 export function MyBookings() {
   const c = useMyBookingsController();
   return (
@@ -112,23 +127,12 @@ export function MyBookings() {
                 <ul>
                   {c.visibleNotices.map((notice) => (
                     <li key={notice.id} className={notice.kind}>
-                      {notice.kind === "confirmed" ? (
-                        <PiCalendarCheck size={20} aria-hidden="true" />
-                      ) : notice.kind === "cancelled" ? (
-                        <PiCalendarX size={20} aria-hidden="true" />
-                      ) : (
-                        <PiClockClockwise size={20} aria-hidden="true" />
-                      )}
+                      {(() => {
+                        const Icon = NOTICE_ICONS[notice.kind];
+                        return <Icon size={20} aria-hidden="true" />;
+                      })()}
                       <div>
-                        <strong>
-                          {c.t(
-                            notice.kind === "confirmed"
-                              ? "noticeConfirmed"
-                              : notice.kind === "cancelled"
-                                ? "noticeCancelled"
-                                : "noticeRescheduled",
-                          )}
-                        </strong>
+                        <strong>{c.t(NOTICE_LABELS[notice.kind])}</strong>
                         <p>{notice.facilityName}</p>
                         <small>
                           {dateLabel(

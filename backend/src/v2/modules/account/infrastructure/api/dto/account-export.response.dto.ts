@@ -7,6 +7,8 @@ import { ExportMunicipalityResponseDTO } from "./export-municipality.response.dt
 import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
 import { ExportedNotificationResponseDTO } from "./exported-notification.response.dto";
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
+import { ExportedMessageResponseDTO } from "./exported-message.response.dto";
+import { NotificationPreferencesResponseDTO } from "./notification-preferences.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -36,6 +38,16 @@ export class AccountExportResponseDTO {
   })
   notifications!: ExportedNotificationResponseDTO[];
   @ApiProperty({
+    description: "Notice preferences",
+    type: NotificationPreferencesResponseDTO,
+  })
+  preferences!: NotificationPreferencesResponseDTO;
+  @ApiProperty({
+    description: "Email messages queued or delivered (without their text)",
+    type: [ExportedMessageResponseDTO],
+  })
+  messages!: ExportedMessageResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -50,6 +62,8 @@ export class AccountExportResponseDTO {
       notifications: value.notifications.map(
         ExportedNotificationResponseDTO.from,
       ),
+      preferences: NotificationPreferencesResponseDTO.from(value.preferences),
+      messages: value.messages.map(ExportedMessageResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }
