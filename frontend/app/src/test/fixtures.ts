@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
-import type { Account, Facility, Municipality } from "@/types/models";
+import type {
+  Account,
+  Facility,
+  Municipality,
+  MyCategories,
+} from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "vilaverde",
@@ -19,6 +24,7 @@ export const municipality: Municipality = {
   retentionMonths: 24,
   primaryColor: "#1f5b43",
   logoUrl: null,
+  enabledCategories: ["resident", "family", "minor"],
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -30,10 +36,16 @@ export const facility: Facility = {
   status: "active",
   slotMinutes: 60,
   priceCents: 400,
+  prices: [{ category: "resident", priceCents: 250 }],
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
 };
 export function stubShell(authenticated = false) {
+  if (authenticated)
+    stubJsonResponse({
+      path: "*/v2/citizen/tariffs/*",
+      response: { category: "general", priceCents: facility.priceCents },
+    });
   stubJsonResponse({
     path: "*/v2/public/municipalities",
     response: [municipality],
@@ -79,8 +91,12 @@ export const account: Account = {
   bookings: 2,
   notifications: 3,
 };
-export function stubAccount(overrides: Partial<Account> = {}) {
+export function stubAccount(
+  overrides: Partial<Account> = {},
+  categories: MyCategories = { categories: [], prefersFamilyTariff: false },
+) {
   const response = { ...account, ...overrides };
   stubJsonResponse({ path: "*/v2/citizen/me", response });
+  stubJsonResponse({ path: "*/v2/citizen/categories", response: categories });
   return response;
 }

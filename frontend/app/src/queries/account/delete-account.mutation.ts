@@ -9,6 +9,8 @@ export function useDeleteAccountMutation() {
       cache.removeQueries({ queryKey: ["bookings"] });
       cache.removeQueries({ queryKey: ["notifications"] });
       cache.removeQueries({ queryKey: ["account"] });
+      cache.removeQueries({ queryKey: ["categories"] });
+      cache.removeQueries({ queryKey: ["tariff"] });
       cache.setQueryData(["session"], null);
     },
   });

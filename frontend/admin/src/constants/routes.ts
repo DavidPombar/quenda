@@ -8,6 +8,7 @@ export const ROUTES = {
   management: "xestion",
   audit: "auditoria",
   settings: "axustes",
+  categories: "categorias",
 } as const;
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;

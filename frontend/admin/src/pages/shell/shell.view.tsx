@@ -5,6 +5,7 @@ import {
   PiArrowSquareOut,
   PiBuildings,
   PiGearSix,
+  PiIdentificationCard,
   PiListChecks,
   PiSignOut,
   PiX,
@@ -67,6 +68,12 @@ export function Shell() {
             <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
               <PiListChecks size={20} aria-hidden="true" />
               {t("audit")}
+            </NavLink>
+          )}
+          {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.categories)}>
+              <PiIdentificationCard size={20} aria-hidden="true" />
+              {t("categories")}
             </NavLink>
           )}
           {c.session && (

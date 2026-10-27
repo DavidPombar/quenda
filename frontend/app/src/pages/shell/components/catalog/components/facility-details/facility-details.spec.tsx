@@ -61,3 +61,40 @@ test("should keep the dialog open with an explanation when another person reserv
     .toMatchTextContent("Esta quenda xa está reservada.");
   await expect.element(page.getByRole("dialog")).toBeVisible();
 });
+test("should show the reduced price of a verified category before the person confirms", async () => {
+  stubShell(true);
+  stubJsonResponse({
+    path: `*/v2/public/availability/${facility.id}`,
+    response: [slot],
+  });
+  stubJsonResponse({
+    path: `*/v2/citizen/tariffs/${facility.id}`,
+    response: { category: "resident", priceCents: 250 },
+  });
+  await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+  await render(<App />);
+  await expect
+    .element(page.getByRole("heading", { name: "Tarifas" }))
+    .toBeVisible();
+  await page.getByRole("button", { name: "10:00 Libre" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect.element(dialog).toMatchTextContent(/2,50\s€/);
+  await expect
+    .element(dialog)
+    .toMatchTextContent("A túa tarifa: Persoa empadroada");
+});
+test("should show the general price and invite the visitor to sign in for their own tariff", async () => {
+  stubShell();
+  stubJsonResponse({
+    path: `*/v2/public/availability/${facility.id}`,
+    response: [slot],
+  });
+  await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+  await render(<App />);
+  await page.getByRole("button", { name: "10:00 Libre" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect.element(dialog).toMatchTextContent(/4,00\s€/);
+  await expect
+    .element(dialog)
+    .toMatchTextContent("verás o teu prezo ao entrar");
+});

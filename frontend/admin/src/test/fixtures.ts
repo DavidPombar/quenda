@@ -18,6 +18,7 @@ export const municipality: Municipality = {
   legalVersion: "2026-10",
   primaryColor: "#1f5b43",
   logoUrl: null,
+  enabledCategories: [],
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -29,6 +30,7 @@ export const facility: Facility = {
   status: "active",
   slotMinutes: 60,
   priceCents: 400,
+  prices: [],
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
   followsMunicipalHolidays: true,

@@ -5,6 +5,7 @@ import { Shell } from "./shell.view";
 import { managementRoute } from "./components/management/management.route";
 import { auditRoute } from "./components/audit/audit.route";
 import { settingsRoute } from "./components/settings/settings.route";
+import { categoriesRoute } from "./components/categories/categories.route";
 export const shellRoute = {
   path: ROUTES.shell,
   element: <Shell />,
@@ -12,6 +13,7 @@ export const shellRoute = {
     { index: true, element: <Navigate to={ROUTES.management} replace /> },
     managementRoute,
     auditRoute,
+    categoriesRoute,
     settingsRoute,
   ],
 };

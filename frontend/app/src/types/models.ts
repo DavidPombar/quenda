@@ -1,5 +1,34 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+/** "general" is the facility's base tariff, paid without a verified category. */
+export type TariffCategory = Category | "general";
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface Tariff {
+  category: TariffCategory;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface MyCategories {
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -17,6 +46,7 @@ export interface Municipality {
   retentionMonths: number;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
 }
 export interface Session {
   userId: string;
@@ -35,6 +65,7 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
 }
@@ -51,6 +82,8 @@ export interface Booking {
   start: string;
   end: string;
   status: "confirmed" | "cancelled";
+  tariffCategory: TariffCategory | null;
+  priceCents: number | null;
 }
 export interface Notification {
   id: string;
@@ -94,6 +127,8 @@ export interface AccountExport {
   };
   profile: { userId: string; displayName: string; role: "citizen" | "manager" };
   consents: Consent[];
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
   bookings: {
     id: string;
     facilityId: string;
@@ -104,6 +139,8 @@ export interface AccountExport {
     status: "confirmed" | "cancelled";
     createdAt: string;
     cancelledAt: string | null;
+    tariffCategory: TariffCategory | null;
+    priceCents: number | null;
   }[];
   notifications: {
     id: string;

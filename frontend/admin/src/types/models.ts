@@ -1,5 +1,44 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+export const CATEGORIES: readonly Category[] = [
+  "resident",
+  "family",
+  "local_club",
+  "minor",
+  "large_family",
+  "disability",
+  "senior",
+];
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface CategoryRequest {
+  userId: string;
+  displayName: string;
+  category: Category;
+  requestedAt: string;
+}
+export interface CitizenCategories {
+  userId: string;
+  displayName: string;
+  categories: UserCategory[];
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -15,6 +54,7 @@ export interface Municipality {
   legalVersion: string;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
 }
 export interface LegalTexts {
   gl: string;
@@ -35,6 +75,7 @@ export type SettingsPatch = Partial<
     | "legalTexts"
     | "primaryColor"
     | "holidaysCalendar"
+    | "enabledCategories"
   >
 >;
 export interface SettingsUpdate {
@@ -58,6 +99,7 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;

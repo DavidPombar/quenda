@@ -1326,3 +1326,64 @@ main {
   color: var(--ink-2);
   font-size: var(--t-small);
 }
+.category-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 0 16px;
+}
+.category-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.category-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+}
+.category-list > li + li {
+  border-top: 1px solid var(--line);
+}
+.category-list > li > span:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.category-list .muted {
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}
+.category-list .citizen-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+.citizen-categories li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.category-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.citizen-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.category-prices {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.category-prices legend {
+  font-weight: 600;
+  margin-bottom: 4px;
+}

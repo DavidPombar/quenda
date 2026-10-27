@@ -5,6 +5,8 @@ import { Temporal } from "@js-temporal/polyfill";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
 import { useCreateBookingMutation } from "@/queries/bookings/create-booking.mutation";
+import { useGetTariffQuery } from "@/queries/categories/get-tariff.query";
+import { offeredPrices } from "@/services/tariff.service";
 import { today } from "@/services/date.service";
 import type { AppContext } from "@/types/app-context";
 import type { Slot } from "@/types/models";
@@ -24,6 +26,11 @@ export function useFacilityDetailsController() {
     date,
   });
   const create = useCreateBookingMutation();
+  const tariff = useGetTariffQuery({
+    facilityId: facility ? id : "",
+    userId: context.session?.userId,
+  });
+  const prices = facility ? offeredPrices(facility, context.municipality) : [];
   function select(slot: Slot) {
     setSelected(slot);
     setRequestId(crypto.randomUUID());
@@ -74,5 +81,7 @@ export function useFacilityDetailsController() {
     close,
     reserve,
     create,
+    tariff: tariff.data ?? null,
+    prices,
   };
 }

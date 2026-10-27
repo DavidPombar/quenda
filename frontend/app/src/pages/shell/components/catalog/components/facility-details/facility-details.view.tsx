@@ -20,6 +20,7 @@ import {
   longDayLabel,
   money,
 } from "@/services/date.service";
+import { categoryLabel } from "@/services/tariff.service";
 import { BookingDialog } from "./components/booking-dialog/booking-dialog.view";
 import { useFacilityDetailsController } from "./facility-details.controller";
 export function FacilityDetails() {
@@ -70,6 +71,32 @@ export function FacilityDetails() {
                 </li>
               )}
             </ul>
+            {c.prices.length > 0 && (
+              <>
+                <h3>{c.t("tariffsTitle")}</h3>
+                <dl className="facts tariff-list">
+                  <div>
+                    <dt>{c.t("tariffGeneral")}</dt>
+                    <dd>
+                      {f.priceCents
+                        ? money(f.priceCents, c.locale)
+                        : c.t("free")}
+                    </dd>
+                  </div>
+                  {c.prices.map((price) => (
+                    <div key={price.category}>
+                      <dt>{c.t(categoryLabel(price.category))}</dt>
+                      <dd>
+                        {price.priceCents
+                          ? money(price.priceCents, c.locale)
+                          : c.t("free")}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="muted small">{c.t("tariffsBody")}</p>
+              </>
+            )}
             <h3>{c.t("rules")}</h3>
             <p>{f.rules}</p>
             <p>
@@ -187,6 +214,8 @@ export function FacilityDetails() {
         open={!!c.selected}
         slot={c.selected}
         facility={f}
+        tariff={c.tariff}
+        hasCategoryPrices={c.prices.length > 0}
         municipality={c.municipality}
         locale={c.locale}
         t={c.t}
