@@ -71,11 +71,14 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 | Categoría | Datos |
 |---|---|
 | Identificativos | Nombre visible facilitado por el sistema de identificación; identificador interno |
-| Uso del servicio | Reservas (instalación, fecha y hora, estado), avisos, versión del aviso de privacidad aceptada y fecha |
+| Uso del servicio | Reservas (instalación, fecha y hora, estado, tarifa aplicada), avisos, versión del aviso de privacidad aceptada y fecha |
+| Categoría de usuario | Categorías que dan derecho a una tarifa propia (empadronamiento, familia, club local, menor, familia numerosa, discapacidad, jubilación) y si están verificadas; sin documentos acreditativos |
 | Seguridad | Sesiones (identificador cifrado y caducidad); registro de auditoría de las acciones |
 
-No se tratan categorías especiales de datos (art. 9 RGPD), documentos de identidad, direcciones,
-teléfonos ni datos bancarios. `{{Añadir los datos que aporte el sistema de identificación en
+Si el concello ofrece la categoría «persona con discapacidad», se trata un dato relativo a la salud
+(art. 9 RGPD) reducido a la mera condición verificada, sin grado ni documentos; la base es el art.
+9.2.g RGPD en relación con la ordenanza de precios públicos `{{REFERENCIA}}`. Eliminar este párrafo
+si no se ofrece. No se tratan documentos de identidad, direcciones, teléfonos ni datos bancarios. `{{Añadir los datos que aporte el sistema de identificación en
 producción, por ejemplo el identificador de Cl@ve o Chave365.}}`
 
 ## 8. Destinatarios
