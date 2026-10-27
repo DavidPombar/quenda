@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { Facility } from "../../domain/facility.entity";
 import { FacilityRepository } from "../../domain/facility.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
+import { CATEGORIES } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
@@ -54,6 +55,7 @@ export class SaveFacility {
       status: "active",
       slotMinutes: 60,
       priceCents: 0,
+      prices: [],
       openingCalendar: "",
       rules: "",
       followsMunicipalHolidays: true,
@@ -62,15 +64,24 @@ export class SaveFacility {
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
     );
     if (existing && Object.keys(patch).length === 0) return Result.ok(existing);
-    const facility = { ...(existing ?? defaults), ...patch };
+    const merged: Facility = { ...(existing ?? defaults), ...patch };
+    const facility: Facility = {
+      ...merged,
+      prices: [...merged.prices].sort(
+        (a, b) =>
+          CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category),
+      ),
+    };
     if (existing && args.mode === "create") {
-      return Object.entries(patch).every(
-        ([key, value]) => existing[key as keyof Facility] === value,
+      return Object.keys(patch).every((key) =>
+        same(existing[key as keyof Facility], facility[key as keyof Facility]),
       )
         ? Result.ok(existing)
         : Result.err(failure("id_reused"));
     }
     if (
+      new Set(facility.prices.map((price) => price.category)).size !==
+        facility.prices.length ||
       !facility.name.trim() ||
       !facility.address.trim() ||
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
@@ -117,7 +128,7 @@ function changes(existing: Facility | null, facility: Facility) {
       key !== "id" &&
       key !== "tenantId" &&
       key !== "openingCalendar" &&
-      (!existing || existing[key] !== facility[key]),
+      (!existing || !same(existing[key], facility[key])),
   );
   const pick = (source: Facility) =>
     Object.fromEntries(fields.map((key) => [key, source[key]]));
@@ -128,4 +139,7 @@ function changes(existing: Facility | null, facility: Facility) {
       ? { openingCalendarChanged: true }
       : {}),
   };
+}
+function same(a: unknown, b: unknown) {
+  return JSON.stringify(a) === JSON.stringify(b);
 }

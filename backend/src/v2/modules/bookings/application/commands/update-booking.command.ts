@@ -6,6 +6,7 @@ import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
 import { Booking } from "../../domain/booking.entity";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
+import { TariffResolver } from "../../../tariffs/application/tariff-resolver";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
@@ -28,6 +29,7 @@ export class UpdateBooking {
     private readonly facilities: FacilitySchedule,
     private readonly municipalities: Municipalities,
     private readonly policy: BookingPolicy,
+    private readonly tariffs: TariffResolver,
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
@@ -54,7 +56,13 @@ export class UpdateBooking {
     if (args.start === existing.start.toString()) return Result.ok();
     const settings = await this.municipalities.find(tenantId);
     const facility = await this.facilities.lock(tenantId, existing.facilityId);
-    if (!settings || !facility) return Result.err(failure("not_found"));
+    const tariff = await this.tariffs.resolve(
+      tenantId,
+      userId,
+      existing.facilityId,
+    );
+    if (!settings || !facility || !tariff)
+      return Result.err(failure("not_found"));
     const now = this.clock.now();
     if (
       Temporal.Instant.compare(
@@ -83,11 +91,13 @@ export class UpdateBooking {
           (error) => Result.err(error),
         );
       updated = validity.fold(
-        // A reschedule is a new change, so it takes the deadline now in force.
+        // A reschedule is a new change, so it takes the deadline and tariff now in force.
         (interval) => ({
           ...existing,
           ...interval,
           cancellationHours: settings.cancellationHours,
+          tariffCategory: tariff.category,
+          priceCents: tariff.priceCents,
         }),
         () => existing,
       );

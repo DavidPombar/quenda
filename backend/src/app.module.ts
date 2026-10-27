@@ -4,6 +4,7 @@ import { SharedModule } from "./v2/shared/shared.module";
 import { IdentityModule } from "./v2/modules/identity/identity.module";
 import { MunicipalitiesModule } from "./v2/modules/municipalities/municipalities.module";
 import { FacilitiesModule } from "./v2/modules/facilities/facilities.module";
+import { TariffsModule } from "./v2/modules/tariffs/tariffs.module";
 import { BookingsModule } from "./v2/modules/bookings/bookings.module";
 import { InsightsModule } from "./v2/modules/insights/insights.module";
 import { AccountModule } from "./v2/modules/account/account.module";
@@ -15,6 +16,7 @@ import { RetentionModule } from "./v2/modules/retention/retention.module";
     IdentityModule,
     MunicipalitiesModule,
     FacilitiesModule,
+    TariffsModule,
     BookingsModule,
     InsightsModule,
     AccountModule,

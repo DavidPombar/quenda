@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  CATEGORIES,
+  type Category,
+} from "../../../../../shared/application/categories";
+import {
   MunicipalityLocale,
   MunicipalitySettings,
 } from "../../../../../shared/application/municipality-settings";
@@ -49,6 +53,12 @@ export class MunicipalityResponseDTO {
     description: "Versioned logo URL, or null when none was uploaded",
   })
   logoUrl!: string | null;
+  @ApiProperty({
+    enum: CATEGORIES,
+    isArray: true,
+    description: "User categories with their own tariffs (M2)",
+  })
+  enabledCategories!: Category[];
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -67,6 +77,7 @@ export class MunicipalityResponseDTO {
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`
         : null,
+      enabledCategories: value.enabledCategories,
     };
   }
 }

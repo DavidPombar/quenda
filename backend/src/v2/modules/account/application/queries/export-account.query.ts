@@ -39,6 +39,7 @@ export class ExportAccount {
       },
       profile,
       consents: await this.consents.listByUser(tenantId, userId),
+      ...(await this.accounts.listCategories(tenantId, userId)),
       bookings: await this.accounts.listBookingsAll(tenantId, userId),
       notifications: await this.accounts.listNotificationsAll(tenantId, userId),
       auditEvents: await this.accounts.listAuditByActor(tenantId, userId),

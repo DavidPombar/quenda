@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { Facility } from "../../../domain/facility.entity";
+import { CategoryPriceResponseDTO } from "./category-price.response.dto";
 export class FacilityResponseDTO {
   @ApiProperty({ description: "Facility UUID" }) id!: string;
   @ApiProperty({ description: "Facility name" }) name!: string;
@@ -14,9 +15,15 @@ export class FacilityResponseDTO {
   @ApiProperty({ description: "Duration of one reservable slot" })
   slotMinutes!: number;
   @ApiProperty({
-    description: "Indicative price in EUR cents; payment is outside V0",
+    description: "General indicative price in EUR cents; payment is outside V0",
   })
   priceCents!: number;
+  @ApiProperty({
+    type: [CategoryPriceResponseDTO],
+    description:
+      "Indicative prices for verified user categories; everyone else pays priceCents",
+  })
+  prices!: CategoryPriceResponseDTO[];
   @ApiProperty({
     description:
       "RFC 5545 VCALENDAR; recurring VEVENTs describe opening intervals",
@@ -38,6 +45,7 @@ export class FacilityResponseDTO {
       status: value.status,
       slotMinutes: value.slotMinutes,
       priceCents: value.priceCents,
+      prices: value.prices.map(CategoryPriceResponseDTO.from),
       openingCalendar: value.openingCalendar,
       rules: value.rules,
       followsMunicipalHolidays: value.followsMunicipalHolidays,

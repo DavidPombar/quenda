@@ -32,6 +32,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "O calendario de festivos non é un iCalendar válido de días completos.",
     unsupported_logo: "O logotipo debe ser unha imaxe PNG, JPEG ou WebP.",
     logo_too_large: "O logotipo non pode superar os 2 MB.",
+    category_not_enabled: "O concello non ofrece esta categoría.",
+    category_already_requested:
+      "Xa solicitaches esta categoría ou xa a tes verificada.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -56,6 +59,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "El calendario de festivos no es un iCalendar válido de días completos.",
     unsupported_logo: "El logotipo debe ser una imagen PNG, JPEG o WebP.",
     logo_too_large: "El logotipo no puede superar los 2 MB.",
+    category_not_enabled: "El ayuntamiento no ofrece esta categoría.",
+    category_already_requested:
+      "Ya solicitaste esta categoría o ya la tienes verificada.",
   },
 };
 @Catch(HttpException)

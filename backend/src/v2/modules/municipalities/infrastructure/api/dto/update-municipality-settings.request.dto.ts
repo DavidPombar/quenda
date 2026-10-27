@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
+import { CATEGORIES } from "../../../../../shared/application/categories";
+import type { Category } from "../../../../../shared/application/categories";
 import {
+  ArrayMaxSize,
+  IsArray,
   IsIn,
   IsInt,
   IsString,
@@ -81,4 +85,15 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @IsString()
   @MaxLength(65536)
   holidaysCalendar?: string;
+  @ApiPropertyOptional({
+    enum: CATEGORIES,
+    isArray: true,
+    description:
+      "User categories residents can request and facilities can price; the rest pay the general tariff",
+  })
+  @ValidateIf(defined)
+  @IsArray()
+  @ArrayMaxSize(CATEGORIES.length)
+  @IsIn(CATEGORIES, { each: true })
+  enabledCategories?: Category[];
 }

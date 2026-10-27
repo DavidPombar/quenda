@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { Category } from "./categories";
 export type MunicipalityLocale = "gl" | "es";
 export interface LegalTexts {
   gl: string;
@@ -24,6 +25,8 @@ export interface MunicipalitySettings {
   holidaysCalendar: string;
   /** Content hash prefix of the uploaded logo, or null when there is none. */
   logoVersion: string | null;
+  /** Categories residents can request and facilities can price (M2). */
+  enabledCategories: Category[];
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

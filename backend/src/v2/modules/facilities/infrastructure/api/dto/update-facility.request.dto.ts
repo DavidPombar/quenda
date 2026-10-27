@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
+  ArrayMaxSize,
+  IsArray,
+  ValidateNested,
   IsString,
   IsIn,
   IsInt,
@@ -11,6 +15,8 @@ import {
   IsBoolean,
   ValidateIf,
 } from "class-validator";
+import { CATEGORIES } from "../../../../../shared/application/categories";
+import { CategoryPriceRequestDTO } from "./category-price.request.dto";
 
 export class UpdateFacilityRequestDTO {
   @ApiPropertyOptional({ description: "Facility name" })
@@ -74,4 +80,15 @@ export class UpdateFacilityRequestDTO {
   @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @IsBoolean()
   followsMunicipalHolidays?: boolean;
+  @ApiPropertyOptional({
+    type: [CategoryPriceRequestDTO],
+    description:
+      "Prices per user category; replaces the whole list. Categories without a price pay priceCents",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @IsArray()
+  @ArrayMaxSize(CATEGORIES.length)
+  @ValidateNested({ each: true })
+  @Type(() => CategoryPriceRequestDTO)
+  prices?: CategoryPriceRequestDTO[];
 }

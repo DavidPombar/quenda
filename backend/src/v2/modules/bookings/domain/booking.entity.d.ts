@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
+import type { TariffCategory } from "../../../shared/application/categories";
 interface BookingBase {
   id: string;
   tenantId: string;
@@ -11,6 +12,9 @@ interface BookingBase {
   createdAt: Temporal.Instant;
   /** Deadline in force when booked or last rescheduled; null for rows older than the snapshot. */
   cancellationHours: number | null;
+  /** Tariff in force when booked or last rescheduled; null for rows older than the snapshot. */
+  tariffCategory: TariffCategory | null;
+  priceCents: number | null;
 }
 export interface ConfirmedBooking extends BookingBase {
   status: "confirmed";

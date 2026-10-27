@@ -6,6 +6,7 @@ import {
   AccountProfile,
   ExportedAuditEvent,
   ExportedBooking,
+  ExportedCategory,
   ExportedNotification,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
@@ -19,6 +20,14 @@ interface BookingRow {
   status: "confirmed" | "cancelled";
   createdAt: string;
   cancelledAt: string | null;
+  tariffCategory: ExportedBooking["tariffCategory"];
+  priceCents: number | null;
+}
+interface CategoryRow {
+  category: ExportedCategory["category"];
+  status: ExportedCategory["status"];
+  requestedAt: string | null;
+  decidedAt: string | null;
 }
 interface NotificationRow {
   id: string;
@@ -69,7 +78,7 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     await this.db.query(
-      "UPDATE users SET display_name=$3, deleted_at=$4 WHERE tenant_id=$1 AND id=$2",
+      "UPDATE users SET display_name=$3, deleted_at=$4, prefers_family_tariff=false WHERE tenant_id=$1 AND id=$2",
       [tenantId, userId, displayName, now.toString()],
     );
   }
@@ -91,6 +100,33 @@ export class PostgresAccountRepository extends AccountRepository {
     );
     return rowCount ?? 0;
   }
+  async deleteCategories(tenantId: string, userId: string) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM user_categories WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+    return rowCount ?? 0;
+  }
+  async listCategories(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<CategoryRow>(
+      'SELECT category, status, requested_at AS "requestedAt", decided_at AS "decidedAt" FROM user_categories WHERE tenant_id=$1 AND user_id=$2 ORDER BY category',
+      [tenantId, userId],
+    );
+    const preference = await this.db.query<{ value: boolean }>(
+      "SELECT prefers_family_tariff AS value FROM users WHERE tenant_id=$1 AND id=$2",
+      [tenantId, userId],
+    );
+    const instant = (value: string | null) =>
+      value === null ? null : Temporal.Instant.from(value);
+    return {
+      categories: rows.map((row): ExportedCategory => ({
+        ...row,
+        requestedAt: instant(row.requestedAt),
+        decidedAt: instant(row.decidedAt),
+      })),
+      prefersFamilyTariff: preference.rows[0]?.value ?? false,
+    };
+  }
   async revokeSessions(tenantId: string, userId: string) {
     const { rowCount } = await this.db.query(
       "DELETE FROM sessions WHERE tenant_id=$1 AND user_id=$2",
@@ -100,7 +136,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listBookingsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<BookingRow>(
-      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
+      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.tariff_category AS "tariffCategory", b.price_cents AS "priceCents" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedBooking => ({

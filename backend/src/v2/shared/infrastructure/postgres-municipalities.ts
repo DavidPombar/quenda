@@ -9,7 +9,7 @@ import { Database } from "./database";
 const projection =
   'm.id, m.slug, m.name, m.timezone, m.locale, m.advance_days AS "advanceDays", m.cancellation_hours AS "cancellationHours", m.max_active_bookings AS "maxActiveBookings", m.contact, ' +
   "json_build_object('gl', COALESCE(t.text_gl, m.legal_text), 'es', COALESCE(t.text_es, m.legal_text)) AS \"legalTexts\", " +
-  'm.legal_version AS "legalVersion", m.retention_months AS "retentionMonths", m.primary_color AS "primaryColor", m.holidays_calendar AS "holidaysCalendar", left(l.sha256, 16) AS "logoVersion"';
+  'm.legal_version AS "legalVersion", m.retention_months AS "retentionMonths", m.primary_color AS "primaryColor", m.holidays_calendar AS "holidaysCalendar", left(l.sha256, 16) AS "logoVersion", m.enabled_categories AS "enabledCategories"';
 const source =
   "municipalities m LEFT JOIN legal_texts t ON t.tenant_id=m.id AND t.version=m.legal_version LEFT JOIN municipality_logos l ON l.tenant_id=m.id";
 @Injectable()

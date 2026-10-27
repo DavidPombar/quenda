@@ -6,6 +6,7 @@ import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
 import { Booking } from "../../domain/booking.entity";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
+import { TariffResolver } from "../../../tariffs/application/tariff-resolver";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
@@ -27,6 +28,7 @@ export class CreateBooking {
     private readonly facilities: FacilitySchedule,
     private readonly municipalities: Municipalities,
     private readonly policy: BookingPolicy,
+    private readonly tariffs: TariffResolver,
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
@@ -56,7 +58,13 @@ export class CreateBooking {
         : Result.err(failure("id_reused"));
     const settings = await this.municipalities.find(tenantId);
     const facility = await this.facilities.lock(tenantId, args.facilityId);
-    if (!settings || !facility) return Result.err(failure("not_found"));
+    const tariff = await this.tariffs.resolve(
+      tenantId,
+      userId,
+      args.facilityId,
+    );
+    if (!settings || !facility || !tariff)
+      return Result.err(failure("not_found"));
     const now = this.clock.now();
     if (
       (await this.bookings.countActive(tenantId, userId, now)) >=
@@ -80,6 +88,8 @@ export class CreateBooking {
           status: "confirmed",
           createdAt: now,
           cancellationHours: settings.cancellationHours,
+          tariffCategory: tariff.category,
+          priceCents: tariff.priceCents,
         };
         const saved = await this.bookings.save(booking);
         return saved.fold<Promise<Result<Booking, CreateBookingError>>>(
@@ -100,6 +110,7 @@ export class CreateBooking {
                 facilityId: booking.facilityId,
                 start: booking.start.toString(),
                 end: booking.end.toString(),
+                tariff,
               },
             );
             return Result.ok(booking);

@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
+import type {
+  Category,
+  TariffCategory,
+} from "../../../shared/application/categories";
 export interface AccountProfile {
   userId: string;
   displayName: string;
@@ -27,6 +31,14 @@ export interface ExportedBooking {
   status: "confirmed" | "cancelled";
   createdAt: Temporal.Instant;
   cancelledAt: Temporal.Instant | null;
+  tariffCategory: TariffCategory | null;
+  priceCents: number | null;
+}
+export interface ExportedCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: Temporal.Instant | null;
+  decidedAt: Temporal.Instant | null;
 }
 export interface ExportedNotification {
   id: string;
@@ -53,6 +65,8 @@ export interface AccountExport {
   };
   profile: AccountProfile;
   consents: ConsentRecord[];
+  categories: ExportedCategory[];
+  prefersFamilyTariff: boolean;
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
   auditEvents: ExportedAuditEvent[];

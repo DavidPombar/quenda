@@ -14,6 +14,7 @@ export type EditableSettings = Pick<
   | "contact"
   | "primaryColor"
   | "holidaysCalendar"
+  | "enabledCategories"
 >;
 export abstract class MunicipalitySettingsRepository {
   /** Serialises concurrent edits of one municipality within the current transaction. */

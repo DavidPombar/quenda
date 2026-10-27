@@ -4,6 +4,7 @@ import type {
   AccountProfile,
   ExportedAuditEvent,
   ExportedBooking,
+  ExportedCategory,
   ExportedNotification,
 } from "./account.read-model";
 export abstract class AccountRepository {
@@ -33,6 +34,12 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<number>;
+  /** Category records go with the account: they can reveal special-category data (GDPR art. 9). */
+  abstract deleteCategories(tenantId: string, userId: string): Promise<number>;
+  abstract listCategories(
+    tenantId: string,
+    userId: string,
+  ): Promise<{ categories: ExportedCategory[]; prefersFamilyTariff: boolean }>;
   abstract revokeSessions(tenantId: string, userId: string): Promise<number>;
   abstract listBookingsAll(
     tenantId: string,
