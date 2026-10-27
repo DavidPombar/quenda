@@ -2,7 +2,7 @@
 import type { Temporal } from "@js-temporal/polyfill";
 import type { Result } from "../../../shared/application/result";
 import type { AppError } from "../../../shared/application/errors";
-/** Occupied units of confirmed reservations; the store rejects overlaps on the same unit. */
+/** Occupied units of confirmed reservations and no-shows; the store rejects overlaps on the same unit. */
 export abstract class BookingUnitRepository {
   /** Replaces the reservation's units with `unitIds` over the interval. */
   abstract replace(args: {

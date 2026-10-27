@@ -7,6 +7,7 @@ import { useCreateSessionMutation } from "@/queries/sessions/create-session.muta
 import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.mutation";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
+import { BRAND_VARIABLES, brandVariables } from "@/services/color.service";
 import type { Locale } from "@/types/models";
 export function useShellController() {
   const { slug } = useParams();
@@ -15,12 +16,19 @@ export function useShellController() {
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
   const remove = useDeleteSessionMutation();
-  const [locale, setLocale] = useState<Locale>(
-    localStorage.getItem("quenda.locale") === "es" ? "es" : "gl",
-  );
+  // Only an explicit choice is stored; until then the municipality's default language applies.
+  const [chosenLocale, setChosenLocale] = useState<Locale | null>(() => {
+    const saved = localStorage.getItem("quenda.locale");
+    return saved === "gl" || saved === "es" ? saved : null;
+  });
   const [loginOpen, setLoginOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const municipality = municipalities.data?.find((item) => item.slug === slug);
+  const locale: Locale = chosenLocale ?? municipality?.locale ?? "gl";
+  function setLocale(next: Locale) {
+    localStorage.setItem("quenda.locale", next);
+    setChosenLocale(next);
+  }
   const session =
     sessionQuery.data?.role === "manager" &&
     sessionQuery.data.tenantId === municipality?.id
@@ -37,8 +45,15 @@ export function useShellController() {
     .join("");
   useEffect(() => {
     document.documentElement.lang = locale;
-    localStorage.setItem("quenda.locale", locale);
   }, [locale]);
+  const primaryColor = municipality?.primaryColor ?? "";
+  useEffect(() => {
+    const style = document.documentElement.style;
+    const variables = brandVariables(primaryColor);
+    for (const name of BRAND_VARIABLES)
+      if (variables[name]) style.setProperty(name, variables[name]);
+      else style.removeProperty(name);
+  }, [primaryColor]);
   async function selectMunicipality(next: string) {
     if (sessionQuery.data) await remove.mutateAsync();
     await navigate(routeFor(next, ROUTES.management));

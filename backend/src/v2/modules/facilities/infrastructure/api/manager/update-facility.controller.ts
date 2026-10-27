@@ -32,11 +32,13 @@ export class UpdateFacilityController {
     @Param() path: IdPathRequestDTO,
     @Body() body: UpdateFacilityRequestDTO,
   ): Promise<void> {
+    const { closureReason, ...patch } = body;
     const result = await this.operation.execute({
       principal,
       id: path.id,
-      patch: body,
+      patch,
       mode: "update",
+      closureReason,
     });
     return result.fold(() => undefined, this.handleError);
   }

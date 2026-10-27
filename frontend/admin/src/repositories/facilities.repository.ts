@@ -1,20 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { apiClient } from "@/client/api-client";
-import type { Facility } from "@/types/models";
+import type { Facility, FacilityImpact } from "@/types/models";
 export const facilitiesRepository = {
   list: (slug: string) =>
     apiClient.request<Facility[]>(
       `public/facilities?slug=${encodeURIComponent(slug)}`,
     ),
-  save: (args: { facility: Facility; isNew: boolean }) =>
+  impact: (id: string) =>
+    apiClient.request<FacilityImpact>(`manager/facilities/${id}/impact`),
+  save: (args: {
+    facility: Facility;
+    isNew: boolean;
+    /** Cancels upcoming bookings with this reason when closing. */
+    closureReason?: string;
+  }) =>
     apiClient.request<Facility | void>(
       `manager/facilities${args.isNew ? "" : `/${args.facility.id}`}`,
       {
         method: args.isNew ? "POST" : "PATCH",
-        body: JSON.stringify({
-          ...(args.isNew ? { id: args.facility.id } : {}),
-          ...editable(args.facility),
-        }),
+        body: JSON.stringify(
+          args.isNew
+            ? { id: args.facility.id, ...editable(args.facility) }
+            : { ...editable(args.facility), closureReason: args.closureReason },
+        ),
       },
     ),
 };
@@ -34,5 +42,6 @@ function editable(facility: Facility) {
     priceCents: facility.priceCents,
     openingCalendar: facility.openingCalendar,
     rules: facility.rules,
+    followsMunicipalHolidays: facility.followsMunicipalHolidays,
   };
 }

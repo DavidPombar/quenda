@@ -7,8 +7,7 @@ export class BookingResponseDTO {
   @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
   @ApiProperty({ description: "Start instant" }) start!: string;
   @ApiProperty({ description: "End instant" }) end!: string;
-  @ApiProperty({ description: "Booking state" }) status!:
-    "confirmed" | "cancelled";
+  @ApiProperty({ description: "Booking state" }) status!: Booking["status"];
   @ApiProperty({ description: "Creation instant" }) createdAt!: string;
   static from(value: Booking): BookingResponseDTO {
     return {

@@ -5,6 +5,7 @@ import { BookingRepository } from "../../domain/booking.repository";
 import { BookingUnitRepository } from "../../domain/booking-unit.repository";
 import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
+import { BookingBlockRepository } from "../../domain/booking-block.repository";
 import { Booking } from "../../domain/booking.entity";
 import { Resource } from "../../../facilities/domain/resource.entity";
 import { units } from "../../../facilities/domain/resource-units";
@@ -15,6 +16,7 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CreateBookingError =
@@ -23,6 +25,7 @@ export type CreateBookingError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"booking_limit">
+  | AppError<"booking_blocked">
   | AppError<"slot_taken">
   | AppError<"id_reused">;
 @Injectable()
@@ -37,6 +40,8 @@ export class CreateBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly outbox: Outbox,
+    private readonly blocks: BookingBlockRepository,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -80,6 +85,8 @@ export class CreateBooking {
     if ("error" in choice) return Result.err(choice.error);
     const { resource } = choice;
     const now = this.clock.now();
+    if (await this.blocks.active(tenantId, userId, now))
+      return Result.err(failure("booking_blocked"));
     if (
       (await this.bookings.countActive(tenantId, userId, now)) >=
       settings.maxActiveBookings
@@ -102,6 +109,7 @@ export class CreateBooking {
           ...interval,
           status: "confirmed",
           createdAt: now,
+          cancellationHours: settings.cancellationHours,
         };
         const rejected =
           (await this.bookings.save(booking)).fold(
@@ -121,12 +129,23 @@ export class CreateBooking {
             (e) => e,
           );
         if (rejected) return Result.err(rejected);
+        const notificationId = this.ids.next();
         await this.notifications.add({
+          id: notificationId,
+          tenantId,
+          userId,
+          bookingId: booking.id,
+          kind: "confirmed",
+          createdAt: now,
+        });
+        await this.outbox.enqueue({
           id: this.ids.next(),
           tenantId,
           userId,
           bookingId: booking.id,
           kind: "confirmed",
+          channel: "email",
+          dedupeKey: `confirmed:${notificationId}`,
           createdAt: now,
         });
         await this.audit.record(args.principal, "booking.created", booking.id, {

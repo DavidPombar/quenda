@@ -6,6 +6,7 @@ export interface FacilityUsage {
   status: string;
   bookings: number;
   cancelled: number;
+  noShows: number;
   /** Occupied unit-minutes within the period: a whole-court booking counts once per part. */
   minutes: number;
   /** Active units (resources without parts) that multiply the opening minutes. */

@@ -15,7 +15,13 @@ export type ErrorCode =
   | "demo_disabled"
   | "consent_required"
   | "resource_required"
-  | "resource_unavailable";
+  | "resource_unavailable"
+  | "insufficient_contrast"
+  | "invalid_holidays"
+  | "unsupported_logo"
+  | "logo_too_large"
+  | "booking_blocked"
+  | "attendance_window";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

@@ -5,6 +5,7 @@ export interface FacilityScheduleData {
   status: string;
   slotMinutes: number;
   openingCalendar: string;
+  followsMunicipalHolidays: boolean;
 }
 /** Consumer-owned port; locking serializes reservations with schedule edits. */
 export abstract class FacilitySchedule {

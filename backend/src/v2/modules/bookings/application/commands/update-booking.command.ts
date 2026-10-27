@@ -15,6 +15,7 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type UpdateBookingError =
@@ -38,6 +39,7 @@ export class UpdateBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly outbox: Outbox,
   ) {}
   /** Reschedules (new start and/or another resource of the same facility) or cancels. */
   async execute(args: {
@@ -75,7 +77,9 @@ export class UpdateBooking {
     const now = this.clock.now();
     if (
       Temporal.Instant.compare(
-        now.add({ hours: settings.cancellationHours }),
+        now.add({
+          hours: existing.cancellationHours ?? settings.cancellationHours,
+        }),
         existing.start,
       ) > 0
     )
@@ -85,6 +89,8 @@ export class UpdateBooking {
         ...existing,
         status: "cancelled",
         cancelledAt: now,
+        cancelledBy: "citizen",
+        cancellationReason: null,
       };
       const rejected = (await this.bookings.save(cancelled)).fold(
         () => null,
@@ -133,6 +139,8 @@ export class UpdateBooking {
       resourceId: choice.resource.id,
       start: validity.start,
       end: validity.end,
+      // A reschedule is a new change, so it takes the deadline now in force.
+      cancellationHours: settings.cancellationHours,
     };
     const rejected =
       (await this.bookings.save(updated)).fold(
@@ -177,12 +185,23 @@ export class UpdateBooking {
     kind: "rescheduled" | "cancelled",
     now: Temporal.Instant,
   ) {
+    const notificationId = this.ids.next();
     await this.notifications.add({
+      id: notificationId,
+      tenantId: booking.tenantId,
+      userId: booking.userId,
+      bookingId: booking.id,
+      kind,
+      createdAt: now,
+    });
+    await this.outbox.enqueue({
       id: this.ids.next(),
       tenantId: booking.tenantId,
       userId: booking.userId,
       bookingId: booking.id,
       kind,
+      channel: "email",
+      dedupeKey: `${kind}:${notificationId}`,
       createdAt: now,
     });
   }

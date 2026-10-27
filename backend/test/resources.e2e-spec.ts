@@ -344,6 +344,35 @@ describe("Courts and divisible spaces (M1, C1, C2) through HTTP and PostgreSQL",
     );
     expect(audit.rows[0].details).toMatchObject({ resourceId: whole });
   });
+  it("should free the court when the municipality cancels a reservation or closes the facility", async () => {
+    const context = await tenant();
+    const { court, whole } = await hall(context);
+    const cancelled = randomUUID();
+    const closed = randomUUID();
+    const first = start(2, 10);
+    const second = start(2, 12);
+    await book(context, court.id, first, whole, cancelled).expect(201);
+    await book(context, court.id, second, whole, closed).expect(201);
+    const occupied = async () =>
+      (
+        await harness.db.query(
+          "SELECT count(*)::int AS count FROM booking_units WHERE tenant_id=$1",
+          [context.id],
+        )
+      ).rows[0].count as number;
+    expect(await occupied()).toBe(6);
+    await patch(context.manager, `manager/bookings/${cancelled}`, {
+      status: "cancelled",
+      reason: "Avaría na iluminación",
+    }).expect(204);
+    expect(await occupied()).toBe(3);
+    expect(await slotStatus(context, court.id, first)).toBe("available");
+    await patch(context.manager, `manager/facilities/${court.id}`, {
+      status: "closed",
+      closureReason: "Obras urxentes na cuberta",
+    }).expect(204);
+    expect(await occupied()).toBe(0);
+  });
   it("should count each part of a divisible hall and stay within 100 % when the whole court is booked", async () => {
     const context = await tenant();
     const day = Temporal.Instant.from(start())
