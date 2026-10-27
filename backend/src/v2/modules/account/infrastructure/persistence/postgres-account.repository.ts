@@ -9,6 +9,7 @@ import {
   ExportedBlock,
   ExportedBooking,
   ExportedIdentity,
+  ExportedMessage,
   ExportedNotification,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
@@ -33,6 +34,13 @@ interface NotificationRow {
   createdAt: string;
   details: Record<string, unknown> | null;
 }
+interface MessageRow {
+  id: string;
+  kind: ExportedMessage["kind"];
+  channel: ExportedMessage["channel"];
+  createdAt: string;
+  sentAt: string | null;
+}
 interface AuditRow {
   id: string;
   action: string;
@@ -53,7 +61,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async find(tenantId: string, userId: string) {
     const { rows } = await this.db.query<AccountProfile>(
-      'SELECT id AS "userId", display_name AS "displayName", role FROM users WHERE tenant_id=$1 AND id=$2 AND deleted_at IS NULL',
+      'SELECT id AS "userId", display_name AS "displayName", role, email, locale FROM users WHERE tenant_id=$1 AND id=$2 AND deleted_at IS NULL',
       [tenantId, userId],
     );
     return rows[0] ?? null;
@@ -82,7 +90,7 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     await this.db.query(
-      "UPDATE users SET display_name=$3, deleted_at=$4, email=NULL, nif_ciphertext=NULL, nif_digest=NULL WHERE tenant_id=$1 AND id=$2",
+      "UPDATE users SET display_name=$3, deleted_at=$4, email=NULL, locale=NULL, nif_ciphertext=NULL, nif_digest=NULL WHERE tenant_id=$1 AND id=$2",
       [tenantId, userId, displayName, now.toString()],
     );
   }
@@ -103,6 +111,51 @@ export class PostgresAccountRepository extends AccountRepository {
       [tenantId, userId],
     );
     return rowCount ?? 0;
+  }
+  async deleteMessaging(tenantId: string, userId: string) {
+    await this.db.query(
+      "DELETE FROM outbox WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+    await this.db.query(
+      "DELETE FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+  }
+  async setLocale(tenantId: string, userId: string, locale: "gl" | "es") {
+    await this.db.query(
+      "UPDATE users SET locale=$3 WHERE tenant_id=$1 AND id=$2",
+      [tenantId, userId, locale],
+    );
+  }
+  async findPreferences(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{ enabled: boolean }>(
+      "SELECT enabled FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2 AND kind='reminder' AND channel='email'",
+      [tenantId, userId],
+    );
+    return { reminderEmails: rows[0]?.enabled ?? true };
+  }
+  async setReminderEmails(
+    tenantId: string,
+    userId: string,
+    enabled: boolean,
+    now: Temporal.Instant,
+  ) {
+    await this.db.query(
+      "INSERT INTO notification_preferences (tenant_id,user_id,kind,channel,enabled,updated_at) VALUES ($1,$2,'reminder','email',$3,$4) ON CONFLICT (tenant_id,user_id,kind,channel) DO UPDATE SET enabled=EXCLUDED.enabled, updated_at=EXCLUDED.updated_at",
+      [tenantId, userId, enabled, now.toString()],
+    );
+  }
+  async listMessagesAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<MessageRow>(
+      'SELECT id, kind, channel, created_at AS "createdAt", sent_at AS "sentAt" FROM outbox WHERE tenant_id=$1 AND user_id=$2 ORDER BY created_at DESC',
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedMessage => ({
+      ...row,
+      createdAt: Temporal.Instant.from(row.createdAt),
+      sentAt: row.sentAt === null ? null : Temporal.Instant.from(row.sentAt),
+    }));
   }
   async revokeSessions(tenantId: string, userId: string) {
     const { rowCount } = await this.db.query(

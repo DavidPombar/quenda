@@ -18,6 +18,7 @@ const NOTICE_TITLES = {
   no_show: "noticeNoShow",
   blocked: "noticeBlocked",
   unblocked: "noticeUnblocked",
+  reminder: "noticeReminder",
 } as const satisfies Record<Notification["kind"], TextKey>;
 // Most recent notices shown before "Ver todos".
 const NOTICE_PREVIEW = 10;

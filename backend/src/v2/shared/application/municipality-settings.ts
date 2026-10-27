@@ -21,6 +21,12 @@ export interface MunicipalitySettings {
   retentionMonths: number;
   /** Residency verification is enabled: the NIF from eID sign-in is kept, encrypted. */
   storeNif: boolean;
+  /** Lead time of the single booking reminder. */
+  reminderHours: number;
+  /** Display name for outgoing email; blank means the municipality name. */
+  mailSenderName: string;
+  /** Reply-To for outgoing email; blank means the general contact. */
+  mailReplyTo: string;
   primaryColor: string;
   /** RFC 5545 VCALENDAR of all-day municipal holidays; empty when none. */
   holidaysCalendar: string;

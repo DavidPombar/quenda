@@ -15,6 +15,7 @@ export interface Municipality {
   legalTexts: { gl: string; es: string };
   legalVersion: string;
   retentionMonths: number;
+  reminderHours: number;
   primaryColor: string;
   logoUrl: string | null;
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
@@ -80,7 +81,8 @@ export interface Notification {
     | "cancelled_by_municipality"
     | "no_show"
     | "blocked"
-    | "unblocked";
+    | "unblocked"
+    | "reminder";
   facilityName: string;
   createdAt: string;
   details: {
@@ -111,6 +113,9 @@ export interface Account {
   consents: Consent[];
   bookings: number;
   notifications: number;
+  email: string | null;
+  locale: Locale | null;
+  reminderEmails: boolean;
 }
 export interface AccountExport {
   generatedAt: string;

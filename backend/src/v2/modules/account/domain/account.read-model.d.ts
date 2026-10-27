@@ -1,10 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
 import type { Assurance } from "../../../shared/application/principal";
+import type { MessageKind } from "../../../shared/application/outbox";
 export interface AccountProfile {
   userId: string;
   displayName: string;
   role: "citizen" | "manager";
+  /** Optional address for email notices. */
+  email: string | null;
+  /** Language for outgoing messages; NULL until the person picks one. */
+  locale: "gl" | "es" | null;
+}
+export interface NotificationPreferences {
+  reminderEmails: boolean;
+}
+export interface ExportedMessage {
+  id: string;
+  kind: MessageKind;
+  channel: "email";
+  createdAt: Temporal.Instant;
+  sentAt: Temporal.Instant | null;
 }
 /** Personal data kept on the account row; the NIF arrives here still encrypted. */
 export interface AccountPersonalData {
@@ -34,6 +49,7 @@ export interface AccountSummary {
   consents: ConsentRecord[];
   bookings: number;
   notifications: number;
+  preferences: NotificationPreferences;
 }
 export interface ExportedBooking {
   id: string;
@@ -58,7 +74,8 @@ export interface ExportedNotification {
     | "cancelled_by_municipality"
     | "no_show"
     | "blocked"
-    | "unblocked";
+    | "unblocked"
+    | "reminder";
   facilityName: string;
   createdAt: Temporal.Instant;
   details: Record<string, unknown> | null;
@@ -89,6 +106,8 @@ export interface AccountExport {
   consents: ConsentRecord[];
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
+  preferences: NotificationPreferences;
+  messages: ExportedMessage[];
   blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];
 }

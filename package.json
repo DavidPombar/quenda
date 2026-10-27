@@ -13,13 +13,14 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "concurrently -k -n api,app,admin,web 'npm run dev -w backend' 'npm run dev -w frontend/app' 'npm run dev -w frontend/admin' 'npm run dev -w frontend/web'",
-    "db:up": "docker compose up -d --wait db",
+    "dev": "concurrently -k -n api,worker,app,admin,web 'npm run dev -w backend' 'npm run dev:worker -w backend' 'npm run dev -w frontend/app' 'npm run dev -w frontend/admin' 'npm run dev -w frontend/web'",
+    "db:up": "docker compose up -d --wait db mailpit",
     "identity:up": "docker compose --profile identity up -d --wait keycloak",
     "identity:down": "docker compose --profile identity rm --stop --force keycloak",
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:retention": "npm run db:retention -w backend",
+    "worker": "npm run build -w backend && npm run worker -w backend",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed",
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",

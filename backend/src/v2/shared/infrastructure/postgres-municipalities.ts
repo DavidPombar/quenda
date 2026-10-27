@@ -10,7 +10,8 @@ const projection =
   'm.id, m.slug, m.name, m.timezone, m.locale, m.advance_days AS "advanceDays", m.cancellation_hours AS "cancellationHours", m.max_active_bookings AS "maxActiveBookings", m.contact, ' +
   "json_build_object('gl', COALESCE(t.text_gl, m.legal_text), 'es', COALESCE(t.text_es, m.legal_text)) AS \"legalTexts\", " +
   'm.legal_version AS "legalVersion", m.retention_months AS "retentionMonths", m.primary_color AS "primaryColor", m.holidays_calendar AS "holidaysCalendar", left(l.sha256, 16) AS "logoVersion", ' +
-  'm.no_show_limit AS "noShowLimit", m.no_show_window_days AS "noShowWindowDays", m.no_show_block_days AS "noShowBlockDays", m.store_nif AS "storeNif"';
+  'm.no_show_limit AS "noShowLimit", m.no_show_window_days AS "noShowWindowDays", m.no_show_block_days AS "noShowBlockDays", ' +
+  'm.reminder_hours AS "reminderHours", m.mail_sender_name AS "mailSenderName", m.mail_reply_to AS "mailReplyTo", m.store_nif AS "storeNif"';
 const source =
   "municipalities m LEFT JOIN legal_texts t ON t.tenant_id=m.id AND t.version=m.legal_version LEFT JOIN municipality_logos l ON l.tenant_id=m.id";
 @Injectable()

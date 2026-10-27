@@ -30,6 +30,11 @@ export abstract class RetentionRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<number>;
+  /** Removes outbox messages, sent or abandoned, created before the cutoff. */
+  abstract deleteMessages(
+    tenantId: string,
+    cutoff: Temporal.Instant,
+  ): Promise<number>;
   abstract deleteConsentsOfPurgedUsers(
     tenantId: string,
     cutoff: Temporal.Instant,

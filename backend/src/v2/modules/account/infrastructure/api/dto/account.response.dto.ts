@@ -21,6 +21,20 @@ export class AccountResponseDTO {
   bookings!: number;
   @ApiProperty({ description: "Number of notices on record" })
   notifications!: number;
+  @ApiProperty({
+    description: "Address for email notices",
+    type: String,
+    nullable: true,
+  })
+  email!: string | null;
+  @ApiProperty({
+    description: "Language for outgoing messages",
+    enum: ["gl", "es"],
+    nullable: true,
+  })
+  locale!: "gl" | "es" | null;
+  @ApiProperty({ description: "Whether reminders are sent by email" })
+  reminderEmails!: boolean;
   static from(value: AccountSummary): AccountResponseDTO {
     return {
       userId: value.profile.userId,
@@ -31,6 +45,9 @@ export class AccountResponseDTO {
       consents: value.consents.map(ConsentResponseDTO.from),
       bookings: value.bookings,
       notifications: value.notifications,
+      email: value.profile.email,
+      locale: value.profile.locale,
+      reminderEmails: value.preferences.reminderEmails,
     };
   }
 }

@@ -8,6 +8,7 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityError =
@@ -25,6 +26,7 @@ export class SaveFacility {
     private readonly clock: Clock,
     private readonly audit: Audit,
     private readonly ids: IdGenerator,
+    private readonly outbox: Outbox,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -106,16 +108,28 @@ export class SaveFacility {
         (error) => Result.err(error),
       );
     if (upcoming.length && reason) {
+      const cancelled = upcoming.map((booking) => ({
+        id: booking.id,
+        userId: booking.userId,
+        notificationId: this.ids.next(),
+      }));
       await this.facilities.cancelBookings({
         tenantId: municipality.id,
-        bookings: upcoming.map((booking) => ({
-          id: booking.id,
-          userId: booking.userId,
-          notificationId: this.ids.next(),
-        })),
+        bookings: cancelled,
         reason,
         at: now,
       });
+      for (const booking of cancelled)
+        await this.outbox.enqueue({
+          id: this.ids.next(),
+          tenantId: municipality.id,
+          userId: booking.userId,
+          bookingId: booking.id,
+          kind: "cancelled_by_municipality",
+          channel: "email",
+          dedupeKey: `cancelled_by_municipality:${booking.notificationId}`,
+          createdAt: now,
+        });
       for (const booking of upcoming)
         await this.audit.record(
           args.principal,

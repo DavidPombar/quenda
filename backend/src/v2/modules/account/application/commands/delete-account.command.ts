@@ -37,6 +37,7 @@ export class DeleteAccount {
       now,
     );
     await this.accounts.deleteNotifications(tenantId, userId);
+    await this.accounts.deleteMessaging(tenantId, userId);
     const revokedSessions = await this.accounts.revokeSessions(
       tenantId,
       userId,

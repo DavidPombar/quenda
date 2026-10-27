@@ -7,11 +7,18 @@ export class ExportedProfileResponseDTO {
   @ApiProperty({ description: "Display name" }) displayName!: string;
   @ApiProperty({ description: "Account role" }) role!: "citizen" | "manager";
   @ApiProperty({
-    description: "E-mail address from the identity provider, if any",
+    description:
+      "Email address for notices, from the identity provider or the demo account",
     type: String,
     nullable: true,
   })
   email!: string | null;
+  @ApiProperty({
+    description: "Language for outgoing messages",
+    enum: ["gl", "es"],
+    nullable: true,
+  })
+  locale!: "gl" | "es" | null;
   @ApiProperty({
     description: "How the identity was proven",
     enum: ["demo", "email", "eid", "local"],
@@ -30,6 +37,7 @@ export class ExportedProfileResponseDTO {
       displayName: value.displayName,
       role: value.role,
       email: value.email,
+      locale: value.locale,
       assurance: value.assurance,
       nif: value.nif,
     };

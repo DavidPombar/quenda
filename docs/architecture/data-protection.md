@@ -8,11 +8,11 @@ reviewed by the council's data protection officer (DPO) before use.
 
 ## Roles
 
-| Role | Who | Basis |
-|---|---|---|
-| Controller | Each council (*concello*) for its own facilities and residents | Art. 4.7 GDPR |
-| Processor | The operator of a shared deployment: a provincial *deputación*, a *mancomunidade*, AMTEGA or a private provider | Art. 28 GDPR; contract template in [`docs/legal/contrato-encargado-tratamiento.md`](../legal/contrato-encargado-tratamiento.md) |
-| Sub-processor | Hosting and backup providers chosen by the processor | Art. 28.2 and 28.4 GDPR |
+| Role          | Who                                                                                                             | Basis                                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Controller    | Each council (_concello_) for its own facilities and residents                                                  | Art. 4.7 GDPR                                                                                                                   |
+| Processor     | The operator of a shared deployment: a provincial _deputación_, a _mancomunidade_, AMTEGA or a private provider | Art. 28 GDPR; contract template in [`docs/legal/contrato-encargado-tratamiento.md`](../legal/contrato-encargado-tratamiento.md) |
+| Sub-processor | Hosting and backup providers chosen by the processor                                                            | Art. 28.2 and 28.4 GDPR                                                                                                         |
 
 A council that hosts its own instance is controller and operator at once and needs no processor
 contract. Every table carries `tenant_id`; protected operations derive it from the server-side
@@ -24,7 +24,7 @@ Booking municipal sports facilities is a public service within municipal compete
 art. 25.2.l). The expected lawful basis is therefore art. 6.1.e GDPR (public task), not consent;
 the council confirms this in its record of processing activities.
 
-What Quenda calls *consent* is the person's acknowledgement of the council's privacy notice
+What Quenda calls _consent_ is the person's acknowledgement of the council's privacy notice
 (art. 13 GDPR) at a given version:
 
 - `municipalities.legal_text` holds the notice and `municipalities.legal_version` its version. A
@@ -40,32 +40,47 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 
 ## Data inventory
 
-| Table | Personal data | Purpose | Retention |
-|---|---|---|---|
-| `users` | `display_name`, `role`, `assurance`, `deleted_at`; `email` when the identity provider sends it; `nif_ciphertext` and `nif_digest` only when the municipality enables `store_nif` | Identify the person who books or manages; the NIF verifies residence for fees (#13) | Name, email and NIF erased on deletion; row removed by retention once nothing references it |
-| `identities` | Identity provider issuer and subject identifier | Recognise the person at the next sign-in | Deleted with the account |
-| `login_attempts` | No personal data: hashed state, nonce, PKCE verifier, notice version | Complete an OIDC sign-in safely | Ten minutes; expired rows purged by retention |
-| `sessions` | Hash of a random token, expiry | Keep the person signed in for at most eight hours | Removed at sign-out, deletion or expiry (retention purges expired rows) |
-| `consents` | Accepted notice version and time | Prove the person was informed | Kept while the account exists; removed by retention after deletion |
-| `bookings` | Link from a reservation to `user_id` | Provide the reservation and its history | Link set to NULL once the reservation ended more than `retention_months` ago |
-| `notifications` | Link to `user_id` and a reservation | In-app notices | Deleted on account deletion or after `retention_months` |
-| `audit_events` | `actor_id`, `actor_role`, `details` | Accountability for changes (art. 5.2 GDPR) | `actor_id` set to NULL after `retention_months`; action and details remain |
+| Table                      | Personal data                                                                                                                                                                                                                  | Purpose                                                                                                                     | Retention                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `users`                    | `display_name`, `role`, `assurance`, `deleted_at`, `locale`; `email` when the identity provider sends it (demo citizens get a synthetic one); `nif_ciphertext` and `nif_digest` only when the municipality enables `store_nif` | Identify the person who books or manages; address and language for email notices; the NIF verifies residence for fees (#13) | Name, email, language and NIF erased on deletion; row removed by retention once nothing references it |
+| `identities`               | Identity provider issuer and subject identifier                                                                                                                                                                                | Recognise the person at the next sign-in                                                                                    | Deleted with the account                                                                              |
+| `login_attempts`           | No personal data: hashed state, nonce, PKCE verifier, notice version                                                                                                                                                           | Complete an OIDC sign-in safely                                                                                             | Ten minutes; expired rows purged by retention                                                         |
+| `sessions`                 | Hash of a random token, expiry                                                                                                                                                                                                 | Keep the person signed in for at most eight hours                                                                           | Removed at sign-out, deletion or expiry (retention purges expired rows)                               |
+| `consents`                 | Accepted notice version and time                                                                                                                                                                                               | Prove the person was informed                                                                                               | Kept while the account exists; removed by retention after deletion                                    |
+| `bookings`                 | Link from a reservation to `user_id`                                                                                                                                                                                           | Provide the reservation and its history                                                                                     | Link set to NULL once the reservation ended more than `retention_months` ago                          |
+| `notifications`            | Link to `user_id` and a reservation                                                                                                                                                                                            | In-app notices                                                                                                              | Deleted on account deletion or after `retention_months`                                               |
+| `outbox`                   | Link to `user_id`, a reservation, notice kind and delivery state; never the address or the text                                                                                                                                | Deliver email notices after the reservation commits                                                                         | Deleted on account deletion or after `retention_months`                                               |
+| `notification_preferences` | Whether the person wants email reminders                                                                                                                                                                                       | Respect the opt-out                                                                                                         | Deleted on account deletion                                                                           |
+| `audit_events`             | `actor_id`, `actor_role`, `details`                                                                                                                                                                                            | Accountability for changes (art. 5.2 GDPR)                                                                                  | `actor_id` set to NULL after `retention_months`; action and details remain                            |
 
-Quenda does not collect identity documents, addresses, phone numbers, health data or data about
-minors. It keeps the identifier the identity provider returns and the name it supplies; the email
-address only when the provider sends one; and the tax identifier (NIF) only when the municipality
-enables residence verification, encrypted with AES-256-GCM under `QUENDA_DATA_KEY` and never in
-plain text. Demo accounts carry fictitious names only. See [public identity](identity.md).
+Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
+about minors. It keeps the identifier the identity provider returns and the name it supplies; the
+email address only when the provider sends one, used only for notices about the person's own
+reservations; and the tax identifier (NIF) only when the municipality enables residence
+verification, encrypted with AES-256-GCM under `QUENDA_DATA_KEY` and never in plain text. Demo
+accounts carry fictitious names and synthetic addresses at the reserved `.example` domain, which the
+local Mailpit catches. See [public identity](identity.md).
+
+### Email notices
+
+Confirmations, changes and cancellations are part of providing the reservation (art. 6.1.b GDPR) and
+are always sent when an address exists. The reminder before each reservation is optional: the
+person can switch it off under **A miña conta → Avisos por correo** or with the signed link in every
+reminder (`POST /v2/public/unsubscribe`, which asks for a click so mail scanners cannot trigger it).
+Both are audited (`notification_preferences.updated`, `notification_preferences.unsubscribed`).
+Messages are written in the language the person last used in the app (`users.locale`). The outbox
+stores no address or text: both are resolved when the worker sends, so nothing goes out once an
+account is deleted.
 
 ## Rights supported (arts. 15–22 GDPR)
 
-| Right | Implementation |
-|---|---|
-| Access and portability (arts. 15, 20) | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including email and decrypted NIF when stored), linked identities, consents, every reservation, every notice and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`. |
-| Erasure (art. 17) | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices are deleted, every session is revoked, `display_name` becomes «Conta eliminada», email and NIF are erased, linked identities are deleted and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
-| Information (arts. 13, 14) | The council's notice is shown from the sign-in dialog and the account page, with the version the person accepted and the retention period. |
-| Rectification (art. 16) | Name, email and NIF come from the identity provider and are refreshed at each sign-in, so corrections are made at the provider. Other requests go to the council. |
-| Restriction and objection (arts. 18, 21) | Not automated. The council handles requests manually; a manager can cancel the person's reservations and the operator can mark the account. |
+| Right                                    | Implementation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Access and portability (arts. 15, 20)    | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including the email address, language and decrypted NIF when stored), linked identities, consents, every reservation, every notice, notice preferences, the email messages queued or sent (kind and dates, no text) and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`.                                                                                |
+| Erasure (art. 17)                        | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices, queued messages and notice preferences are deleted, the email address, language and NIF are cleared, linked identities are deleted, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
+| Information (arts. 13, 14)               | The council's notice is shown from the sign-in dialog and the account page, with the version the person accepted and the retention period.                                                                                                                                                                                                                                                                                                                                                                                         |
+| Rectification (art. 16)                  | Name, email and NIF come from the identity provider and are refreshed at each sign-in, so corrections are made at the provider. Other requests go to the council.                                                                                                                                                                                                                                                                                                                                                                  |
+| Restriction and objection (arts. 18, 21) | Not automated. The council handles requests manually; a manager can cancel the person's reservations and the operator can mark the account.                                                                                                                                                                                                                                                                                                                                                                                        |
 
 Managers cannot export or delete their own accounts through these endpoints (`403 forbidden`);
 staff accounts follow the council's internal procedures.
@@ -77,7 +92,7 @@ municipality inside a transaction with the injected clock. The cutoff is now min
 `retention_months`, computed in the municipality's time zone. It then:
 
 1. detaches `user_id` from reservations that ended before the cutoff;
-2. deletes notices created before the cutoff;
+2. deletes notices and outbox messages created before the cutoff;
 3. sets `actor_id` to NULL on audit events before the cutoff;
 4. deletes expired sessions;
 5. deletes the consents of accounts deleted before the cutoff, then the user rows that nothing
@@ -111,7 +126,7 @@ retention only removes the actor link.
 - Reservations, notices and audit events commit in one transaction; a failure rolls them all back.
 - No personal data leaves the deployment: no third-party analytics, fonts, maps or AI services.
   Sign-in happens at the identity provider the operator configures (for example Cl@ve through the
-  *deputación*); Quenda only receives the claims listed above.
+  _deputación_); Quenda only receives the claims listed above.
 - The NIF is encrypted with AES-256-GCM and searched by HMAC digest; the key lives outside the
   database (`QUENDA_DATA_KEY`).
 - All code and dependencies are free software under licences checked in CI.

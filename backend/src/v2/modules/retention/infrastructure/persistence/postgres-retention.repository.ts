@@ -27,6 +27,13 @@ export class PostgresRetentionRepository extends RetentionRepository {
       cutoff,
     );
   }
+  deleteMessages(tenantId: string, cutoff: Temporal.Instant) {
+    return this.run(
+      "DELETE FROM outbox WHERE tenant_id=$1 AND created_at<$2",
+      tenantId,
+      cutoff,
+    );
+  }
   deleteBlocks(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       "DELETE FROM booking_blocks WHERE tenant_id=$1 AND ends_at<$2",
@@ -73,7 +80,9 @@ export class PostgresRetentionRepository extends RetentionRepository {
         AND NOT EXISTS (SELECT 1 FROM sessions s WHERE s.tenant_id=u.tenant_id AND s.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM audit_events a WHERE a.tenant_id=u.tenant_id AND a.actor_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM consents c WHERE c.tenant_id=u.tenant_id AND c.user_id=u.id)
-        AND NOT EXISTS (SELECT 1 FROM identities i WHERE i.tenant_id=u.tenant_id AND i.user_id=u.id)`,
+        AND NOT EXISTS (SELECT 1 FROM identities i WHERE i.tenant_id=u.tenant_id AND i.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM outbox o WHERE o.tenant_id=u.tenant_id AND o.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM notification_preferences p WHERE p.tenant_id=u.tenant_id AND p.user_id=u.id)`,
       tenantId,
       cutoff,
     );

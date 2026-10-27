@@ -1133,6 +1133,9 @@ main {
 .notices-panel li.rescheduled > svg {
   color: var(--maintenance);
 }
+.notices-panel li.reminder > svg {
+  color: var(--ink-2);
+}
 .notices-panel li strong {
   font-size: var(--t-small);
   font-weight: 700;
