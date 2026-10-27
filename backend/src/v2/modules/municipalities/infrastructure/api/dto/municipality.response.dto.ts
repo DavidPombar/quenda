@@ -40,6 +40,10 @@ export class MunicipalityResponseDTO {
   @ApiProperty({ description: "Personal data retention period in months" })
   retentionMonths!: number;
   @ApiProperty({
+    description: "Hours before a reservation its reminder is sent",
+  })
+  reminderHours!: number;
+  @ApiProperty({
     description: "Brand colour (#rrggbb) with at least 4.5:1 contrast on white",
   })
   primaryColor!: string;
@@ -74,6 +78,7 @@ export class MunicipalityResponseDTO {
       legalTexts: { gl: value.legalTexts.gl, es: value.legalTexts.es },
       legalVersion: value.legalVersion,
       retentionMonths: value.retentionMonths,
+      reminderHours: value.reminderHours,
       primaryColor: value.primaryColor,
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`

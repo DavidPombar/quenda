@@ -20,6 +20,7 @@ import {
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type ManageBookingError =
@@ -47,6 +48,7 @@ export class ManageBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly outbox: Outbox,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -94,14 +96,25 @@ export class ManageBooking {
       cancelledBy: "municipality",
       cancellationReason: reason,
     });
+    const notificationId = this.ids.next();
     await this.notifications.add({
-      id: this.ids.next(),
+      id: notificationId,
       tenantId: existing.tenantId,
       userId: existing.userId,
       bookingId: existing.id,
       kind: "cancelled_by_municipality",
       createdAt: now,
       details: { reason },
+    });
+    await this.outbox.enqueue({
+      id: this.ids.next(),
+      tenantId: existing.tenantId,
+      userId: existing.userId,
+      bookingId: existing.id,
+      kind: "cancelled_by_municipality",
+      channel: "email",
+      dedupeKey: `cancelled_by_municipality:${notificationId}`,
+      createdAt: now,
     });
     await this.audit.record(
       principal,

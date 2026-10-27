@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import {
+  PiBell,
   PiCalendarCheck,
   PiCalendarX,
   PiCheckCircle,
@@ -25,6 +26,7 @@ const NOTICE_ICONS = {
   no_show: PiUserMinus,
   blocked: PiProhibit,
   unblocked: PiCheckCircle,
+  reminder: PiBell,
 };
 export function MyBookings() {
   const c = useMyBookingsController();

@@ -104,3 +104,29 @@ test("should tell the person how many more absences the municipality allows befo
       "Levas 2 ausencias sen avisar nos últimos 30 días. Se faltas 1 vez máis, non poderás reservar durante 7 días.",
     );
 });
+test("should list a booking reminder among the notices", async () => {
+  stubShell(true);
+  stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
+  stubJsonResponse({
+    path: "*/v2/citizen/notifications",
+    response: [
+      {
+        id: "40000000-0000-4000-8000-000000000003",
+        bookingId: base.id,
+        kind: "reminder",
+        facilityName: facility.name,
+        createdAt: "2026-10-20T08:00:00Z",
+        details: null,
+      },
+    ] satisfies Notification[],
+  });
+  stubJsonResponse({
+    path: "*/v2/citizen/penalty",
+    response: { ...standing, count: 0, remaining: 3, blockedUntil: null },
+  });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await expect
+    .element(page.getByText("Lembranza da reserva", { exact: true }))
+    .toBeVisible();
+});

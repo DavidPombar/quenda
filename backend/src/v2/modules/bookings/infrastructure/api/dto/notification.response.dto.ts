@@ -33,6 +33,7 @@ export class NotificationResponseDTO {
       "no_show",
       "blocked",
       "unblocked",
+      "reminder",
     ],
     description: "Event kind",
   })

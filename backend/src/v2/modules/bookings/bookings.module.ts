@@ -55,5 +55,6 @@ import { ListNotificationsController } from "./infrastructure/api/citizen/list-n
     ListManagedBookingsController,
     GetPenaltyStandingController,
   ],
+  exports: [NotificationRepository],
 })
 export class BookingsModule {}

@@ -135,7 +135,42 @@ CREATE TABLE IF NOT EXISTS booking_blocks (
 CREATE INDEX IF NOT EXISTS booking_blocks_user ON booking_blocks(tenant_id, user_id, ends_at);
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;
 ALTER TABLE notifications ADD CONSTRAINT notifications_kind_check CHECK (kind IN (
-  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'no_show', 'blocked', 'unblocked'
+  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'no_show', 'blocked', 'unblocked',
+  'reminder'
 ));
 -- Snapshot shown with the notice: the municipal reason or the penalty standing at that moment.
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS details jsonb;
+-- Email notices (C4): optional contact data, per-municipality sender and reminder lead time.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locale text CHECK (locale IN ('gl', 'es'));
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS reminder_hours integer NOT NULL DEFAULT 24
+  CHECK (reminder_hours BETWEEN 1 AND 168);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS mail_sender_name text NOT NULL DEFAULT '';
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS mail_reply_to text NOT NULL DEFAULT '';
+-- A missing row means the default: every notice is enabled.
+CREATE TABLE IF NOT EXISTS notification_preferences (
+  tenant_id uuid NOT NULL, user_id uuid NOT NULL,
+  kind text NOT NULL CHECK (kind IN ('reminder')),
+  channel text NOT NULL CHECK (channel IN ('email')),
+  enabled boolean NOT NULL, updated_at timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, user_id, kind, channel),
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id)
+);
+-- Transactional outbox: rows commit with the booking change; a worker delivers them afterwards.
+-- Recipient and text are resolved at delivery time, so no copy of personal data is kept here.
+CREATE TABLE IF NOT EXISTS outbox (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL, booking_id uuid NOT NULL,
+  kind text NOT NULL,
+  channel text NOT NULL CHECK (channel IN ('email')),
+  dedupe_key text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL, available_at timestamptz NOT NULL,
+  attempts integer NOT NULL DEFAULT 0, locked_until timestamptz,
+  sent_at timestamptz, last_error text,
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id),
+  FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
+);
+CREATE INDEX IF NOT EXISTS outbox_pending ON outbox(available_at) WHERE sent_at IS NULL;
+ALTER TABLE outbox DROP CONSTRAINT IF EXISTS outbox_kind_check;
+ALTER TABLE outbox ADD CONSTRAINT outbox_kind_check CHECK (kind IN (
+  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'reminder'
+));

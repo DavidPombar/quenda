@@ -12,6 +12,7 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CreateBookingError =
@@ -33,6 +34,7 @@ export class CreateBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly outbox: Outbox,
     private readonly blocks: BookingBlockRepository,
   ) {}
   async execute(args: {
@@ -89,12 +91,23 @@ export class CreateBooking {
         const saved = await this.bookings.save(booking);
         return saved.fold<Promise<Result<Booking, CreateBookingError>>>(
           async () => {
+            const notificationId = this.ids.next();
             await this.notifications.add({
+              id: notificationId,
+              tenantId,
+              userId,
+              bookingId: booking.id,
+              kind: "confirmed",
+              createdAt: now,
+            });
+            await this.outbox.enqueue({
               id: this.ids.next(),
               tenantId,
               userId,
               bookingId: booking.id,
               kind: "confirmed",
+              channel: "email",
+              dedupeKey: `confirmed:${notificationId}`,
               createdAt: now,
             });
             await this.audit.record(

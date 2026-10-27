@@ -21,7 +21,8 @@ export interface Notification {
     | "cancelled_by_municipality"
     | "no_show"
     | "blocked"
-    | "unblocked";
+    | "unblocked"
+    | "reminder";
   /** Municipal reason or penalty standing at the time of the notice. */
   details: NotificationDetails | null;
   facilityName: string;

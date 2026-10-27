@@ -19,6 +19,12 @@ export interface MunicipalitySettings {
   legalTexts: LegalTexts;
   legalVersion: string;
   retentionMonths: number;
+  /** Lead time of the single booking reminder. */
+  reminderHours: number;
+  /** Display name for outgoing email; blank means the municipality name. */
+  mailSenderName: string;
+  /** Reply-To for outgoing email; blank means the general contact. */
+  mailReplyTo: string;
   primaryColor: string;
   /** RFC 5545 VCALENDAR of all-day municipal holidays; empty when none. */
   holidaysCalendar: string;
