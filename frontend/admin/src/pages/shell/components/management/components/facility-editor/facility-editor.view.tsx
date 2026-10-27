@@ -140,6 +140,21 @@ export function FacilityEditor(p: {
                         {t("accessible")}
                       </label>
                     </div>
+                    <div className="checkbox-cell">
+                      <label className="checkbox-field">
+                        <input
+                          type="checkbox"
+                          checked={c.draft.followsMunicipalHolidays}
+                          onChange={(event) =>
+                            c.setField(
+                              "followsMunicipalHolidays",
+                              event.target.checked,
+                            )
+                          }
+                        />
+                        {t("followsHolidays")}
+                      </label>
+                    </div>
                     <Field.Root className="field full">
                       <Field.Label>{t("description")}</Field.Label>
                       <Textarea

@@ -116,3 +116,14 @@ export function dateTimeLabel(
       minute: "2-digit",
     });
 }
+// "27 de outubro de 2026"
+export function fullDateLabel(date: string, locale: Locale) {
+  const value = Temporal.PlainDate.from(date);
+  if (locale === "gl" && !GALICIAN_SUPPORTED)
+    return `${value.day} de ${GL_MONTHS[value.month - 1]} de ${value.year}`;
+  return value.toLocaleString(intlLocale(locale), {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}

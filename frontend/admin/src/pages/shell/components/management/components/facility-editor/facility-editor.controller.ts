@@ -26,6 +26,7 @@ export function useFacilityEditorController(args: {
       slotMinutes: 60,
       priceCents: 0,
       rules: "",
+      followsMunicipalHolidays: true,
       openingCalendar: weeklyCalendar({
         id,
         timezone: args.municipality.timezone,

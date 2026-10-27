@@ -5,12 +5,41 @@ export interface Municipality {
   slug: string;
   name: string;
   timezone: string;
-  locale: string;
+  /** Default language; the person's saved choice takes precedence. */
+  locale: Locale;
   advanceDays: number;
   cancellationHours: number;
   maxActiveBookings: number;
   contact: string;
-  legalText: string;
+  legalTexts: LegalTexts;
+  legalVersion: string;
+  primaryColor: string;
+  logoUrl: string | null;
+}
+export interface LegalTexts {
+  gl: string;
+  es: string;
+}
+export interface MunicipalitySettings extends Municipality {
+  /** RFC 5545 VCALENDAR of all-day municipal holidays. */
+  holidaysCalendar: string;
+}
+export type SettingsPatch = Partial<
+  Pick<
+    MunicipalitySettings,
+    | "locale"
+    | "advanceDays"
+    | "cancellationHours"
+    | "maxActiveBookings"
+    | "contact"
+    | "legalTexts"
+    | "primaryColor"
+    | "holidaysCalendar"
+  >
+>;
+export interface SettingsUpdate {
+  settings: MunicipalitySettings;
+  affectedBookings: number;
 }
 export interface Session {
   userId: string;
@@ -31,6 +60,7 @@ export interface Facility {
   priceCents: number;
   openingCalendar: string;
   rules: string;
+  followsMunicipalHolidays: boolean;
 }
 export interface Slot {
   start: string;
