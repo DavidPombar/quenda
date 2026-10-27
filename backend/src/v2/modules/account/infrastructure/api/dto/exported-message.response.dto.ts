@@ -5,7 +5,13 @@ export class ExportedMessageResponseDTO {
   @ApiProperty({ description: "Message UUID" }) id!: string;
   @ApiProperty({
     description: "Notice kind",
-    enum: ["confirmed", "rescheduled", "cancelled", "reminder"],
+    enum: [
+      "confirmed",
+      "rescheduled",
+      "cancelled",
+      "cancelled_by_municipality",
+      "reminder",
+    ],
   })
   kind!: ExportedMessage["kind"];
   @ApiProperty({ description: "Delivery channel", enum: ["email"] })

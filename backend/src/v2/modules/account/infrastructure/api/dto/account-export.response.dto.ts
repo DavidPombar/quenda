@@ -9,6 +9,7 @@ import { ExportedNotificationResponseDTO } from "./exported-notification.respons
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
 import { ExportedMessageResponseDTO } from "./exported-message.response.dto";
 import { NotificationPreferencesResponseDTO } from "./notification-preferences.response.dto";
+import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -48,6 +49,11 @@ export class AccountExportResponseDTO {
   })
   messages!: ExportedMessageResponseDTO[];
   @ApiProperty({
+    description: "Booking bans after repeated no-shows",
+    type: [ExportedBlockResponseDTO],
+  })
+  blocks!: ExportedBlockResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -64,6 +70,7 @@ export class AccountExportResponseDTO {
       ),
       preferences: NotificationPreferencesResponseDTO.from(value.preferences),
       messages: value.messages.map(ExportedMessageResponseDTO.from),
+      blocks: value.blocks.map(ExportedBlockResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

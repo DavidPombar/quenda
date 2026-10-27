@@ -22,6 +22,7 @@ interface DeliveryRow {
   replyTo: string;
   facilityName: string;
   facilityAddress: string;
+  cancellationReason: string | null;
   start: string;
   end: string;
 }
@@ -75,6 +76,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         COALESCE(NULLIF(m.mail_sender_name, ''), m.name) AS "senderName",
         COALESCE(NULLIF(m.mail_reply_to, ''), m.contact) AS "replyTo",
         f.name AS "facilityName", f.address AS "facilityAddress",
+        b.cancellation_reason AS "cancellationReason",
         b.starts_at AS start, b.ends_at AS "end"
       FROM claimed c
       JOIN users u ON u.tenant_id=c.tenant_id AND u.id=c.user_id
@@ -107,6 +109,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         replyTo: row.replyTo,
       },
       facility: { name: row.facilityName, address: row.facilityAddress },
+      cancellationReason: row.cancellationReason,
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
     }));

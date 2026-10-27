@@ -5,8 +5,15 @@ import {
   MunicipalitySettings,
 } from "../application/municipality-settings";
 import { Database } from "./database";
+// Municipalities created before versioned notices fall back to their single legal_text.
 const projection =
-  'id, slug, name, timezone, locale, advance_days AS "advanceDays", cancellation_hours AS "cancellationHours", max_active_bookings AS "maxActiveBookings", contact, legal_text AS "legalText", legal_version AS "legalVersion", retention_months AS "retentionMonths", reminder_hours AS "reminderHours", mail_sender_name AS "mailSenderName", mail_reply_to AS "mailReplyTo"';
+  'm.id, m.slug, m.name, m.timezone, m.locale, m.advance_days AS "advanceDays", m.cancellation_hours AS "cancellationHours", m.max_active_bookings AS "maxActiveBookings", m.contact, ' +
+  "json_build_object('gl', COALESCE(t.text_gl, m.legal_text), 'es', COALESCE(t.text_es, m.legal_text)) AS \"legalTexts\", " +
+  'm.legal_version AS "legalVersion", m.retention_months AS "retentionMonths", m.primary_color AS "primaryColor", m.holidays_calendar AS "holidaysCalendar", left(l.sha256, 16) AS "logoVersion", ' +
+  'm.no_show_limit AS "noShowLimit", m.no_show_window_days AS "noShowWindowDays", m.no_show_block_days AS "noShowBlockDays", ' +
+  'm.reminder_hours AS "reminderHours", m.mail_sender_name AS "mailSenderName", m.mail_reply_to AS "mailReplyTo"';
+const source =
+  "municipalities m LEFT JOIN legal_texts t ON t.tenant_id=m.id AND t.version=m.legal_version LEFT JOIN municipality_logos l ON l.tenant_id=m.id";
 @Injectable()
 export class PostgresMunicipalities extends Municipalities {
   constructor(private readonly db: Database) {
@@ -15,7 +22,7 @@ export class PostgresMunicipalities extends Municipalities {
   async list() {
     return (
       await this.db.query<MunicipalitySettings>(
-        `SELECT ${projection} FROM municipalities ORDER BY name`,
+        `SELECT ${projection} FROM ${source} ORDER BY m.name`,
       )
     ).rows;
   }
@@ -23,7 +30,7 @@ export class PostgresMunicipalities extends Municipalities {
     return (
       (
         await this.db.query<MunicipalitySettings>(
-          `SELECT ${projection} FROM municipalities WHERE id=$1`,
+          `SELECT ${projection} FROM ${source} WHERE m.id=$1`,
           [id],
         )
       ).rows[0] ?? null
@@ -33,7 +40,7 @@ export class PostgresMunicipalities extends Municipalities {
     return (
       (
         await this.db.query<MunicipalitySettings>(
-          `SELECT ${projection} FROM municipalities WHERE slug=$1`,
+          `SELECT ${projection} FROM ${source} WHERE m.slug=$1`,
           [slug],
         )
       ).rows[0] ?? null

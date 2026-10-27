@@ -11,6 +11,11 @@ export abstract class RetentionRepository {
     tenantId: string,
     cutoff: Temporal.Instant,
   ): Promise<number>;
+  /** Removes booking bans that ended before the cutoff. */
+  abstract deleteBlocks(
+    tenantId: string,
+    cutoff: Temporal.Instant,
+  ): Promise<number>;
   /** Keeps old audit events but removes the link to their actor. */
   abstract pseudonymiseAudit(
     tenantId: string,

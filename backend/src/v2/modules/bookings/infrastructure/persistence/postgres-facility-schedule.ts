@@ -14,7 +14,7 @@ export class PostgresFacilitySchedule extends FacilitySchedule {
     return (
       (
         await this.db.query<FacilityScheduleData>(
-          'SELECT id,status,slot_minutes AS "slotMinutes",opening_calendar AS "openingCalendar" FROM facilities WHERE tenant_id=$1 AND id=$2 FOR UPDATE',
+          'SELECT id,status,slot_minutes AS "slotMinutes",opening_calendar AS "openingCalendar",follows_municipal_holidays AS "followsMunicipalHolidays" FROM facilities WHERE tenant_id=$1 AND id=$2 FOR UPDATE',
           [tenantId, id],
         )
       ).rows[0] ?? null

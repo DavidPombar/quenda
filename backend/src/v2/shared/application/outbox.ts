@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
 export type MessageKind =
-  "confirmed" | "rescheduled" | "cancelled" | "reminder";
+  | "confirmed"
+  | "rescheduled"
+  | "cancelled"
+  | "cancelled_by_municipality"
+  | "reminder";
 export type MessageChannel = "email";
 /** Messages for delivery outside the transaction; they commit or roll back with the caller. */
 export abstract class Outbox {

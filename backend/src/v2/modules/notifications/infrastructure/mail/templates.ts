@@ -8,18 +8,21 @@ const copy = {
       confirmed: "Reserva confirmada",
       rescheduled: "Reserva cambiada",
       cancelled: "Reserva cancelada",
+      cancelled_by_municipality: "Reserva cancelada polo concello",
       reminder: "Lembranza da túa reserva",
     },
     intro: {
       confirmed: "A túa reserva está confirmada.",
       rescheduled: "Cambiaches a túa reserva. Este é o novo horario:",
       cancelled: "A túa reserva foi cancelada.",
+      cancelled_by_municipality: "O concello cancelou a túa reserva.",
       reminder: "Lembrámosche que tes unha reserva:",
     },
     facility: "Instalación",
     date: "Data",
     time: "Hora",
     address: "Enderezo",
+    reason: "Motivo",
     bookings: "Ver as miñas reservas",
     footer: (name: string) =>
       `Recibes este correo porque tes unha reserva no ${name}. Se tes dúbidas, responde a esta mensaxe.`,
@@ -30,18 +33,21 @@ const copy = {
       confirmed: "Reserva confirmada",
       rescheduled: "Reserva modificada",
       cancelled: "Reserva cancelada",
+      cancelled_by_municipality: "Reserva cancelada por el ayuntamiento",
       reminder: "Recordatorio de tu reserva",
     },
     intro: {
       confirmed: "Tu reserva está confirmada.",
       rescheduled: "Has cambiado tu reserva. Este es el nuevo horario:",
       cancelled: "Tu reserva ha sido cancelada.",
+      cancelled_by_municipality: "El ayuntamiento ha cancelado tu reserva.",
       reminder: "Te recordamos que tienes una reserva:",
     },
     facility: "Instalación",
     date: "Fecha",
     time: "Hora",
     address: "Dirección",
+    reason: "Motivo",
     bookings: "Ver mis reservas",
     footer: (name: string) =>
       `Recibes este correo porque tienes una reserva en el ${name}. Si tienes dudas, responde a este mensaje.`,
@@ -88,6 +94,10 @@ export function renderMail(
     [t.date, day],
     [t.time, `${clock(start)}–${clock(end)}`],
     [t.address, delivery.facility.address],
+    ...(delivery.kind === "cancelled_by_municipality" &&
+    delivery.cancellationReason
+      ? ([[t.reason, delivery.cancellationReason]] as [string, string][])
+      : []),
   ];
   const subject = `${t.subject[delivery.kind]}: ${delivery.facility.name}`;
   const footer = t.footer(delivery.municipality.name);

@@ -22,6 +22,7 @@ export async function retention() {
               `bookings detached ${summary.bookingsDetached}, ` +
               `notifications deleted ${summary.notificationsDeleted}, ` +
               `messages deleted ${summary.messagesDeleted}, ` +
+              `blocks deleted ${summary.blocksDeleted}, ` +
               `audit pseudonymised ${summary.auditPseudonymised}, ` +
               `sessions purged ${summary.sessionsPurged}, ` +
               `consents deleted ${summary.consentsDeleted}, ` +

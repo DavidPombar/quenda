@@ -334,4 +334,22 @@ describe("Email notices through the transactional outbox", () => {
     );
     expect(user.rows[0]).toEqual({ email: null, locale: null });
   });
+  it("should email the person when the municipality cancels their reservation", async () => {
+    const context = await withEmail();
+    const court = await facility(context);
+    const id = randomUUID();
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(3, 10),
+    }).expect(201);
+    await patch(context.manager, `manager/bookings/${id}`, {
+      status: "cancelled",
+      reason: "Obras urxentes na cuberta",
+    }).expect(204);
+    expect((await messages(context)).map((row) => row.kind)).toEqual([
+      "confirmed",
+      "cancelled_by_municipality",
+    ]);
+  });
 });

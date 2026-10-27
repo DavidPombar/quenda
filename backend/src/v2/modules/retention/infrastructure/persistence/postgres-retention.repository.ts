@@ -34,6 +34,13 @@ export class PostgresRetentionRepository extends RetentionRepository {
       cutoff,
     );
   }
+  deleteBlocks(tenantId: string, cutoff: Temporal.Instant) {
+    return this.run(
+      "DELETE FROM booking_blocks WHERE tenant_id=$1 AND ends_at<$2",
+      tenantId,
+      cutoff,
+    );
+  }
   pseudonymiseAudit(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       "UPDATE audit_events SET actor_id=NULL WHERE tenant_id=$1 AND actor_id IS NOT NULL AND occurred_at<$2",
@@ -61,6 +68,7 @@ export class PostgresRetentionRepository extends RetentionRepository {
     return this.run(
       `DELETE FROM users u WHERE u.tenant_id=$1 AND u.deleted_at<$2
         AND NOT EXISTS (SELECT 1 FROM bookings b WHERE b.tenant_id=u.tenant_id AND b.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM booking_blocks k WHERE k.tenant_id=u.tenant_id AND k.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.tenant_id=u.tenant_id AND n.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM sessions s WHERE s.tenant_id=u.tenant_id AND s.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM audit_events a WHERE a.tenant_id=u.tenant_id AND a.actor_id=u.id)

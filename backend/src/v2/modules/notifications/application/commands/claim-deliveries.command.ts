@@ -27,7 +27,7 @@ export class ClaimDeliveries {
     for (const delivery of claimed) {
       const skip = !delivery.email
         ? "skipped:no_recipient"
-        : delivery.kind === "reminder" && delivery.bookingStatus === "cancelled"
+        : delivery.kind === "reminder" && delivery.bookingStatus !== "confirmed"
           ? "skipped:cancelled"
           : null;
       if (skip) await this.deliveries.markSent(delivery.id, now, skip);

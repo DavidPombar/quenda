@@ -5,29 +5,28 @@ import {
   PiBell,
   PiCalendarCheck,
   PiCalendarX,
+  PiCheckCircle,
   PiClockClockwise,
+  PiProhibit,
+  PiUserMinus,
   PiX,
 } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { ROUTES, routeFor } from "@/constants/routes";
-import type { TextKey } from "@/services/i18n.service";
-import type { Notification } from "@/types/models";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
-const NOTICE_ICONS: Record<Notification["kind"], typeof PiBell> = {
+const NOTICE_ICONS = {
   confirmed: PiCalendarCheck,
-  cancelled: PiCalendarX,
   rescheduled: PiClockClockwise,
+  cancelled: PiCalendarX,
+  cancelled_by_municipality: PiCalendarX,
+  no_show: PiUserMinus,
+  blocked: PiProhibit,
+  unblocked: PiCheckCircle,
   reminder: PiBell,
-};
-const NOTICE_LABELS: Record<Notification["kind"], TextKey> = {
-  confirmed: "noticeConfirmed",
-  cancelled: "noticeCancelled",
-  rescheduled: "noticeRescheduled",
-  reminder: "noticeReminder",
 };
 export function MyBookings() {
   const c = useMyBookingsController();
@@ -47,6 +46,14 @@ export function MyBookings() {
       ) : (
         <div className="bookings-layout">
           <section>
+            {c.penaltyMessage && (
+              <p
+                className={`penalty-banner${c.blocked ? " blocked" : ""}`}
+                role={c.blocked ? "alert" : "status"}
+              >
+                {c.penaltyMessage}
+              </p>
+            )}
             <div className="tabs" role="group" aria-label={c.t("bookings")}>
               {(["upcoming", "history"] as const).map((tab) => (
                 <button
@@ -125,25 +132,30 @@ export function MyBookings() {
             ) : c.visibleNotices.length ? (
               <>
                 <ul>
-                  {c.visibleNotices.map((notice) => (
-                    <li key={notice.id} className={notice.kind}>
-                      {(() => {
-                        const Icon = NOTICE_ICONS[notice.kind];
-                        return <Icon size={20} aria-hidden="true" />;
-                      })()}
-                      <div>
-                        <strong>{c.t(NOTICE_LABELS[notice.kind])}</strong>
-                        <p>{notice.facilityName}</p>
-                        <small>
-                          {dateLabel(
-                            notice.createdAt,
-                            c.municipality.timezone,
-                            c.locale,
+                  {c.visibleNotices.map((notice) => {
+                    const Icon = NOTICE_ICONS[notice.kind];
+                    return (
+                      <li key={notice.id} className={notice.kind}>
+                        <Icon size={20} aria-hidden="true" />
+                        <div>
+                          <strong>{c.noticeTitle(notice)}</strong>
+                          <p>{notice.facilityName}</p>
+                          {c.noticeDetail(notice) && (
+                            <p className="notice-detail">
+                              {c.noticeDetail(notice)}
+                            </p>
                           )}
-                        </small>
-                      </div>
-                    </li>
-                  ))}
+                          <small>
+                            {dateLabel(
+                              notice.createdAt,
+                              c.municipality.timezone,
+                              c.locale,
+                            )}
+                          </small>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
                 {c.hiddenNotices > 0 && (
                   <button

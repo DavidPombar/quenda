@@ -16,7 +16,7 @@ export interface Delivery {
   /** NULL when the account has no address or has been deleted. */
   email: string | null;
   locale: "gl" | "es";
-  bookingStatus: "confirmed" | "cancelled";
+  bookingStatus: "confirmed" | "cancelled" | "no_show";
   municipality: {
     slug: string;
     name: string;
@@ -25,6 +25,8 @@ export interface Delivery {
     replyTo: string;
   };
   facility: { name: string; address: string };
+  /** Reason given by the municipality when it cancelled the reservation. */
+  cancellationReason: string | null;
   start: Temporal.Instant;
   end: Temporal.Instant;
 }

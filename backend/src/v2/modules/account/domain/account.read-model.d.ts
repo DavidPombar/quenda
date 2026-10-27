@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
+import type { MessageKind } from "../../../shared/application/outbox";
 export interface AccountProfile {
   userId: string;
   displayName: string;
@@ -14,7 +15,7 @@ export interface NotificationPreferences {
 }
 export interface ExportedMessage {
   id: string;
-  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
+  kind: MessageKind;
   channel: "email";
   createdAt: Temporal.Instant;
   sentAt: Temporal.Instant | null;
@@ -39,16 +40,32 @@ export interface ExportedBooking {
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
   createdAt: Temporal.Instant;
   cancelledAt: Temporal.Instant | null;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
 }
 export interface ExportedNotification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled" | "reminder";
+  kind:
+    | "confirmed"
+    | "rescheduled"
+    | "cancelled"
+    | "cancelled_by_municipality"
+    | "no_show"
+    | "blocked"
+    | "unblocked"
+    | "reminder";
   facilityName: string;
   createdAt: Temporal.Instant;
+  details: Record<string, unknown> | null;
+}
+export interface ExportedBlock {
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  liftedAt: Temporal.Instant | null;
 }
 export interface ExportedAuditEvent {
   id: string;
@@ -72,5 +89,6 @@ export interface AccountExport {
   notifications: ExportedNotification[];
   preferences: NotificationPreferences;
   messages: ExportedMessage[];
+  blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];
 }

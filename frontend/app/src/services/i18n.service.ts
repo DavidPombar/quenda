@@ -163,6 +163,7 @@ const gl = {
   demoNotice: "Versión de proba",
   browse: "Explorar instalacións",
   privacyTitle: "Privacidade nesta demostración",
+  logoAlt: "Logotipo do concello",
   previewCalendar:
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
@@ -232,6 +233,20 @@ const gl = {
   unsubscribeError:
     "A ligazón non é válida ou caducou. Podes desactivar as lembranzas desde a túa conta.",
   unsubscribeAccount: "Ir á miña conta",
+  attended: "Asistida",
+  noShow: "Non presentada",
+  cancelledByMunicipality: "Cancelada polo concello",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "O concello cancelou a túa reserva",
+  noticeNoShow: "Marcada como non presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Xa podes reservar de novo",
+  penaltyRemaining:
+    "Levas {count} ausencias sen avisar nos últimos {windowDays} días. Se faltas {remaining} vez máis, non poderás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sen avisar, non podes facer reservas ata o {date}.",
+  penaltyDisabled:
+    "A ausencia queda no teu historial; o concello non aplica bloqueos.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -374,6 +389,7 @@ const es: Record<TextKey, string> = {
   hoursBeforeShort: "horas antes",
   browse: "Explorar instalaciones",
   privacyTitle: "Privacidad en esta demostración",
+  logoAlt: "Logotipo del ayuntamiento",
   previewCalendar:
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",
@@ -444,7 +460,27 @@ const es: Record<TextKey, string> = {
   unsubscribeError:
     "El enlace no es válido o ha caducado. Puedes desactivar los recordatorios desde tu cuenta.",
   unsubscribeAccount: "Ir a mi cuenta",
+  attended: "Asistida",
+  noShow: "No presentada",
+  cancelledByMunicipality: "Cancelada por el ayuntamiento",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "El ayuntamiento canceló tu reserva",
+  noticeNoShow: "Marcada como no presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Ya puedes volver a reservar",
+  penaltyRemaining:
+    "Llevas {count} ausencias sin avisar en los últimos {windowDays} días. Si faltas {remaining} vez más, no podrás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sin avisar, no puedes hacer reservas hasta el {date}.",
+  penaltyDisabled:
+    "La ausencia queda en tu historial; el ayuntamiento no aplica bloqueos.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];
+}
+/** Replaces {name} placeholders in a translated text. */
+export function fill(text: string, values: Record<string, string | number>) {
+  return text.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in values ? String(values[name]) : match,
+  );
 }

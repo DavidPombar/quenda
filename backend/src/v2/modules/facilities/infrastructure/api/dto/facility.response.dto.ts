@@ -23,6 +23,10 @@ export class FacilityResponseDTO {
   })
   openingCalendar!: string;
   @ApiProperty({ description: "Facility rules" }) rules!: string;
+  @ApiProperty({
+    description: "Whether municipal holidays close this facility",
+  })
+  followsMunicipalHolidays!: boolean;
   static from(value: Facility): FacilityResponseDTO {
     return {
       id: value.id,
@@ -36,6 +40,7 @@ export class FacilityResponseDTO {
       priceCents: value.priceCents,
       openingCalendar: value.openingCalendar,
       rules: value.rules,
+      followsMunicipalHolidays: value.followsMunicipalHolidays,
     };
   }
 }

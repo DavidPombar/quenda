@@ -60,7 +60,9 @@ export class UpdateBooking {
     const now = this.clock.now();
     if (
       Temporal.Instant.compare(
-        now.add({ hours: settings.cancellationHours }),
+        now.add({
+          hours: existing.cancellationHours ?? settings.cancellationHours,
+        }),
         existing.start,
       ) > 0
     )
@@ -69,6 +71,8 @@ export class UpdateBooking {
       ...existing,
       status: "cancelled",
       cancelledAt: now,
+      cancelledBy: "citizen",
+      cancellationReason: null,
     };
     if (args.start) {
       const validity = this.policy.validate({
@@ -83,7 +87,12 @@ export class UpdateBooking {
           (error) => Result.err(error),
         );
       updated = validity.fold(
-        (interval) => ({ ...existing, ...interval }),
+        // A reschedule is a new change, so it takes the deadline now in force.
+        (interval) => ({
+          ...existing,
+          ...interval,
+          cancellationHours: settings.cancellationHours,
+        }),
         () => existing,
       );
     }
