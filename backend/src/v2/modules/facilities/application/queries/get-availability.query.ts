@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { FacilityRepository } from "../../domain/facility.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
+import { HolidayCalendar } from "../../domain/holiday-calendar";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
 import { Result } from "../../../../shared/application/result";
@@ -20,6 +21,7 @@ export class GetAvailability {
     private readonly facilities: FacilityRepository,
     private readonly municipalities: Municipalities,
     private readonly calendar: OpeningCalendar,
+    private readonly holidays: HolidayCalendar,
     private readonly clock: Clock,
   ) {}
   async execute(args: {
@@ -45,7 +47,9 @@ export class GetAvailability {
         date,
         today.add({ days: municipality.advanceDays }),
       ) > 0 ||
-      facility.status !== "active"
+      facility.status !== "active" ||
+      (facility.followsMunicipalHolidays &&
+        this.holidays.isHoliday(municipality.holidaysCalendar, date))
     )
       return Result.ok([]);
     const start = date.toZonedDateTime(municipality.timezone).toInstant();

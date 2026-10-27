@@ -4,6 +4,8 @@ import { FacilityRepository } from "./domain/facility.repository";
 import { OpeningCalendar } from "./domain/opening-calendar";
 import { PostgresFacilityRepository } from "./infrastructure/persistence/postgres-facility.repository";
 import { IcalOpeningCalendar } from "./infrastructure/calendar/ical-opening-calendar";
+import { HolidayCalendar } from "./domain/holiday-calendar";
+import { IcalHolidayCalendar } from "./infrastructure/calendar/ical-holiday-calendar";
 import { ListFacilities } from "./application/queries/list-facilities.query";
 import { GetAvailability } from "./application/queries/get-availability.query";
 import { SaveFacility } from "./application/commands/save-facility.command";
@@ -18,6 +20,7 @@ import { UpdateFacilityController } from "./infrastructure/api/manager/update-fa
     SaveFacility,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
     { provide: OpeningCalendar, useClass: IcalOpeningCalendar },
+    { provide: HolidayCalendar, useClass: IcalHolidayCalendar },
   ],
   controllers: [
     ListFacilitiesController,
@@ -25,6 +28,6 @@ import { UpdateFacilityController } from "./infrastructure/api/manager/update-fa
     CreateFacilityController,
     UpdateFacilityController,
   ],
-  exports: [OpeningCalendar],
+  exports: [OpeningCalendar, HolidayCalendar],
 })
 export class FacilitiesModule {}

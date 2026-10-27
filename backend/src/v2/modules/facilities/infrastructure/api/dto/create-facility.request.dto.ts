@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsUUID,
@@ -10,6 +10,7 @@ import {
   MaxLength,
   MinLength,
   IsBoolean,
+  ValidateIf,
 } from "class-validator";
 
 export class CreateFacilityRequestDTO {
@@ -60,4 +61,11 @@ export class CreateFacilityRequestDTO {
   @IsString()
   @MaxLength(2000)
   rules!: string;
+  @ApiPropertyOptional({
+    description:
+      "Whether municipal holidays close this facility (default true)",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @IsBoolean()
+  followsMunicipalHolidays?: boolean;
 }

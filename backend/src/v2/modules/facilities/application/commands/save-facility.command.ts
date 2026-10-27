@@ -56,6 +56,7 @@ export class SaveFacility {
       priceCents: 0,
       openingCalendar: "",
       rules: "",
+      followsMunicipalHolidays: true,
     };
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),

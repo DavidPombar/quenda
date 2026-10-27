@@ -13,7 +13,11 @@ export type ErrorCode =
   | "id_reused"
   | "calendar_in_use"
   | "demo_disabled"
-  | "consent_required";
+  | "consent_required"
+  | "insufficient_contrast"
+  | "invalid_holidays"
+  | "unsupported_logo"
+  | "logo_too_large";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

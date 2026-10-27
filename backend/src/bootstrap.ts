@@ -1,15 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import helmet from "helmet";
 import type { Request, Response, NextFunction } from "express";
 import { AppModule } from "./app.module";
 export async function createApp() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: process.env.NODE_ENV === "test" ? false : ["error", "warn", "log"],
   });
   app.use(helmet());
+  // Only the municipal logo upload sends a binary body; the command enforces the 2 MB limit.
+  app.useBodyParser("raw", {
+    type: ["image/png", "image/jpeg", "image/webp"],
+    limit: "3mb",
+  });
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Cache-Control", "no-store");
     if (

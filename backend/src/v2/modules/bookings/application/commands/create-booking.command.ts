@@ -79,6 +79,7 @@ export class CreateBooking {
           ...interval,
           status: "confirmed",
           createdAt: now,
+          cancellationHours: settings.cancellationHours,
         };
         const saved = await this.bookings.save(booking);
         return saved.fold<Promise<Result<Booking, CreateBookingError>>>(
