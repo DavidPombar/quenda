@@ -66,7 +66,7 @@ describe("indicators", () => {
       .element(page.getByRole("link", { name: /Descargar CSV/ }))
       .toHaveAttribute(
         "href",
-        "/v2/manager/insights/export?from=2026-10-01&to=2026-10-31",
+        "/v2/manager/insights/export?from=2026-10-01&to=2026-10-31&lang=gl",
       );
   });
 

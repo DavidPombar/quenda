@@ -155,7 +155,7 @@ export function Insights() {
                   <a
                     key={`${range.from}-${range.to}`}
                     className="upload-calendar"
-                    href={c.exportUrl(range)}
+                    href={c.exportUrl(range, c.locale)}
                     download
                   >
                     <PiDownloadSimple size={18} aria-hidden="true" />

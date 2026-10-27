@@ -28,9 +28,9 @@ export function rangeError(range: DateRange): RangeError | null {
     return "insightsRangeLong";
   return null;
 }
-/** Same-origin download; the session cookie authorises it. */
-export function exportUrl(range: DateRange) {
-  return `/v2/manager/insights/export?${new URLSearchParams({ ...range }).toString()}`;
+/** Same-origin download; the session cookie authorises it and `lang` sets the headers. */
+export function exportUrl(range: DateRange, locale: Locale) {
+  return `/v2/manager/insights/export?${new URLSearchParams({ ...range, lang: locale }).toString()}`;
 }
 /** Five-step scale for the heatmap: 0 %, under 25, under 50, under 75, 75 or more. */
 export function heatLevel(occupancy: number) {

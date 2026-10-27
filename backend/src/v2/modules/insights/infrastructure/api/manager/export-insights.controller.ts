@@ -10,7 +10,7 @@ import {
 import { Principal } from "../../../../../shared/application/principal";
 import { Queries } from "../../../../../shared/infrastructure/queries.locator";
 import { GetInsights } from "../../../application/queries/get-insights.query";
-import { InsightsRangeRequestDTO } from "../dto/insights-range.request.dto";
+import { ExportInsightsRequestDTO } from "../dto/export-insights.request.dto";
 import { insightsCsv } from "../../csv/insights-csv";
 import { handleInsightsError } from "./get-insights.controller";
 @V2Controller("manager/insights/export")
@@ -29,10 +29,11 @@ export class ExportInsightsController {
   })
   async handle(
     @CurrentPrincipal() principal: Principal,
-    @Query() range: InsightsRangeRequestDTO,
+    @Query() range: ExportInsightsRequestDTO,
     @Headers("accept-language") language: string | undefined,
     @Res() response: Response,
   ): Promise<void> {
+    // Downloads are plain navigations, so the interface language travels as ?lang.
     const result = await this.operation.execute({
       principal,
       from: range.from,
@@ -46,7 +47,12 @@ export class ExportInsightsController {
           "Content-Disposition",
           `attachment; filename="indicadores-${insights.slug}-${insights.from}-${insights.to}.csv"`,
         )
-        .send(insightsCsv(insights, language?.startsWith("es") ? "es" : "gl"));
+        .send(
+          insightsCsv(
+            insights,
+            range.lang ?? (language?.startsWith("es") ? "es" : "gl"),
+          ),
+        );
     }, handleInsightsError);
   }
 }

@@ -239,5 +239,18 @@ describe("Indicators through HTTP and PostgreSQL", () => {
       `${court.name};padel;1;0;;1,0;${(7 * DAY_MINUTES) / 60},0;1\r\n`,
     );
     expect(text).toContain("Lunes;10:00;1,0;1,0;100\r\n");
+    const galician = await context.manager
+      .get("/v2/manager/insights/export")
+      .set("Accept-Language", "es")
+      .query({ from: "2026-10-05", to: "2026-10-11", lang: "gl" })
+      .buffer(true)
+      .parse((res, done) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk: string) => (body += chunk));
+        res.on("end", () => done(null, body));
+      })
+      .expect(200);
+    expect(galician.body as string).toContain("Luns;10:00;");
   });
 });
