@@ -8,6 +8,7 @@ export const ROUTES = {
   detail: "instalacions/:id",
   bookings: "reservas",
   account: "conta",
+  accessibility: "accesibilidade",
 } as const;
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;

@@ -1,4 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+export type AccessibilityMethod = "self" | "external";
+export interface AccessibilitySettings {
+  unit: string;
+  email: string;
+  phone: string;
+  /** Last review of the statement as an ISO calendar date. */
+  reviewedOn: string;
+  method: AccessibilityMethod;
+  exceptions: { gl: string; es: string };
+}
 export interface MunicipalitySettings {
   id: string;
   slug: string;
@@ -12,6 +22,7 @@ export interface MunicipalitySettings {
   legalText: string;
   legalVersion: string;
   retentionMonths: number;
+  accessibility: AccessibilitySettings;
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

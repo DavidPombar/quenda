@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+export interface Accessibility {
+  unit: string;
+  email: string;
+  phone: string;
+  reviewedOn: string;
+  method: "self" | "external";
+  exceptions: Record<Locale, string>;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -13,6 +21,7 @@ export interface Municipality {
   legalText: string;
   legalVersion: string;
   retentionMonths: number;
+  accessibility: Accessibility;
 }
 export interface Session {
   userId: string;

@@ -53,6 +53,12 @@ export function Shell() {
         >
           {t("privacy")}
         </button>
+        <NavLink
+          className="help-link"
+          to={routeFor(municipality.slug, ROUTES.accessibility)}
+        >
+          {t("accessibility")}
+        </NavLink>
       </div>
       <span className="help-note">{t("openSource")}</span>
     </>

@@ -14,6 +14,17 @@ export const municipality: Municipality = {
   legalText: "Demostración con datos ficticios.",
   legalVersion: "2026-10",
   retentionMonths: 24,
+  accessibility: {
+    unit: "Servizo de Deportes do Concello de Vilaverde",
+    email: "accesibilidade@vilaverde.example",
+    phone: "+34 986 000 001",
+    reviewedOn: "2026-10-27",
+    method: "self",
+    exceptions: {
+      gl: "As descricións das instalacións aínda non se revisaron.",
+      es: "Las descripciones de las instalaciones aún no se han revisado.",
+    },
+  },
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -66,7 +77,10 @@ export const account: Account = {
   currentLegalVersion: municipality.legalVersion,
   consentUpToDate: true,
   consents: [
-    { legalVersion: municipality.legalVersion, acceptedAt: "2026-10-18T09:30:00Z" },
+    {
+      legalVersion: municipality.legalVersion,
+      acceptedAt: "2026-10-18T09:30:00Z",
+    },
   ],
   bookings: 2,
   notifications: 3,

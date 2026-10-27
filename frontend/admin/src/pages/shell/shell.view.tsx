@@ -82,6 +82,11 @@ export function Shell() {
                 {t("privacy")}
               </button>
             </li>
+            <li>
+              <NavLink to={routeFor(municipality.slug, ROUTES.accessibility)}>
+                {t("accessibility")}
+              </NavLink>
+            </li>
           </ul>
           <p className="sidebar-note">{t("openSource")}</p>
         </div>
@@ -169,6 +174,12 @@ export function Shell() {
         <footer className="footer">
           <span>{t("demo")}</span>
           <span>{t("demoNotice")}</span>
+          <NavLink
+            className="footer-link"
+            to={routeFor(municipality.slug, ROUTES.accessibility)}
+          >
+            {t("accessibility")}
+          </NavLink>
         </footer>
       </div>
       <SessionDialog

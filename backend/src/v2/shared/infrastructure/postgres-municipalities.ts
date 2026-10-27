@@ -6,7 +6,8 @@ import {
 } from "../application/municipality-settings";
 import { Database } from "./database";
 const projection =
-  'id, slug, name, timezone, locale, advance_days AS "advanceDays", cancellation_hours AS "cancellationHours", max_active_bookings AS "maxActiveBookings", contact, legal_text AS "legalText", legal_version AS "legalVersion", retention_months AS "retentionMonths"';
+  'id, slug, name, timezone, locale, advance_days AS "advanceDays", cancellation_hours AS "cancellationHours", max_active_bookings AS "maxActiveBookings", contact, legal_text AS "legalText", legal_version AS "legalVersion", retention_months AS "retentionMonths", ' +
+  "json_build_object('unit', accessibility_unit, 'email', accessibility_email, 'phone', accessibility_phone, 'reviewedOn', to_char(accessibility_reviewed_on, 'YYYY-MM-DD'), 'method', accessibility_method, 'exceptions', json_build_object('gl', accessibility_exceptions_gl, 'es', accessibility_exceptions_es)) AS accessibility";
 @Injectable()
 export class PostgresMunicipalities extends Municipalities {
   constructor(private readonly db: Database) {

@@ -213,6 +213,39 @@ const gl = {
   deleteDone: "A túa conta foi eliminada. Grazas por probar Quenda.",
   consentLabel: "Lin e acepto o aviso de privacidade",
   consentRequired: "Marca a casilla para poder entrar.",
+  accessibility: "Accesibilidade",
+  a11yTitle: "Declaración de accesibilidade",
+  a11yIntro:
+    "comprométese a facer accesible esta aplicación, de conformidade co Real Decreto 1112/2018, do 7 de setembro, sobre accesibilidade dos sitios web e aplicacións para dispositivos móbiles do sector público.",
+  a11yStatusTitle: "Situación de cumprimento",
+  a11yStatus:
+    "Esta aplicación é parcialmente conforme co RD 1112/2018 debido á falta de conformidade dos aspectos que se indican a continuación.",
+  a11yStandard: "Norma de referencia: WCAG 2.1 nivel AA e norma EN 301 549.",
+  a11yContentTitle: "Contido non accesible",
+  a11yNonCompliance: "Falta de conformidade co RD 1112/2018",
+  a11yManualPending:
+    "Aínda non se fixo a revisión manual con tecnoloxías de apoio (lectores de pantalla, ampliadores e control por voz), polo que poden existir barreiras que as probas automáticas non detectan.",
+  a11yBurdenTitle: "Carga desproporcionada",
+  a11yBurden: "Non se invoca.",
+  a11yScopeTitle: "Contido fóra do ámbito da lexislación aplicable",
+  a11yScope: "Non hai.",
+  a11yPreparationTitle: "Preparación desta declaración",
+  a11yReviewedOn: "Última revisión",
+  a11yMethod: "Método empregado",
+  a11yMethodSelf: "Autoavaliación do concello",
+  a11yMethodExternal: "Auditoría externa",
+  a11yAutomated: "Probas automáticas",
+  a11yAutomatedValue: "Análise axe (WCAG 2.1 AA) en cada cambio do código",
+  a11yReviewCycle: "A declaración revísase polo menos unha vez ao ano.",
+  a11yContactTitle: "Observacións e datos de contacto",
+  a11yContactBody:
+    "Podes comunicar calquera posible incumprimento, pedir información nun formato accesible ou presentar unha queixa sobre os requisitos do RD 1112/2018. Responderemos nun prazo máximo de 20 días hábiles.",
+  a11yUnit: "Unidade responsable",
+  a11yEmail: "Correo electrónico",
+  a11yPhone: "Teléfono",
+  a11yEnforcementTitle: "Procedemento de aplicación",
+  a11yEnforcement:
+    "Se a túa solicitude de información accesible ou a túa queixa é desestimada, non estás de acordo coa decisión ou a resposta non cumpre o artigo 12.5 do RD 1112/2018, podes presentar unha reclamación ante a unidade responsable, conforme ao artigo 13.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -405,6 +438,39 @@ const es: Record<TextKey, string> = {
   deleteDone: "Tu cuenta ha sido eliminada. Gracias por probar Quenda.",
   consentLabel: "He leído y acepto el aviso de privacidad",
   consentRequired: "Marca la casilla para poder entrar.",
+  accessibility: "Accesibilidad",
+  a11yTitle: "Declaración de accesibilidad",
+  a11yIntro:
+    "se compromete a hacer accesible esta aplicación, de conformidad con el Real Decreto 1112/2018, de 7 de septiembre, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público.",
+  a11yStatusTitle: "Situación de cumplimiento",
+  a11yStatus:
+    "Esta aplicación es parcialmente conforme con el RD 1112/2018 debido a la falta de conformidad de los aspectos que se indican a continuación.",
+  a11yStandard: "Norma de referencia: WCAG 2.1 nivel AA y norma EN 301 549.",
+  a11yContentTitle: "Contenido no accesible",
+  a11yNonCompliance: "Falta de conformidad con el RD 1112/2018",
+  a11yManualPending:
+    "Aún no se ha hecho la revisión manual con tecnologías de apoyo (lectores de pantalla, ampliadores y control por voz), por lo que pueden existir barreras que las pruebas automáticas no detectan.",
+  a11yBurdenTitle: "Carga desproporcionada",
+  a11yBurden: "No se invoca.",
+  a11yScopeTitle: "Contenido fuera del ámbito de la legislación aplicable",
+  a11yScope: "No hay.",
+  a11yPreparationTitle: "Preparación de esta declaración",
+  a11yReviewedOn: "Última revisión",
+  a11yMethod: "Método empleado",
+  a11yMethodSelf: "Autoevaluación del ayuntamiento",
+  a11yMethodExternal: "Auditoría externa",
+  a11yAutomated: "Pruebas automáticas",
+  a11yAutomatedValue: "Análisis axe (WCAG 2.1 AA) en cada cambio del código",
+  a11yReviewCycle: "La declaración se revisa al menos una vez al año.",
+  a11yContactTitle: "Observaciones y datos de contacto",
+  a11yContactBody:
+    "Puedes comunicar cualquier posible incumplimiento, pedir información en un formato accesible o presentar una queja sobre los requisitos del RD 1112/2018. Responderemos en un plazo máximo de 20 días hábiles.",
+  a11yUnit: "Unidad responsable",
+  a11yEmail: "Correo electrónico",
+  a11yPhone: "Teléfono",
+  a11yEnforcementTitle: "Procedimiento de aplicación",
+  a11yEnforcement:
+    "Si tu solicitud de información accesible o tu queja es desestimada, no estás de acuerdo con la decisión o la respuesta no cumple el artículo 12.5 del RD 1112/2018, puedes presentar una reclamación ante la unidad responsable, conforme al artículo 13.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

@@ -5,6 +5,7 @@ import { Shell } from "./shell.view";
 import { catalogRoute } from "./components/catalog/catalog.route";
 import { myBookingsRoute } from "./components/my-bookings/my-bookings.route";
 import { accountRoute } from "./components/account/account.route";
+import { accessibilityRoute } from "./components/accessibility/accessibility.route";
 export const shellRoute = {
   path: ROUTES.shell,
   element: <Shell />,
@@ -13,5 +14,6 @@ export const shellRoute = {
     catalogRoute,
     myBookingsRoute,
     accountRoute,
+    accessibilityRoute,
   ],
 };
