@@ -11,11 +11,9 @@ export class InsightsResponseDTO {
   @ApiProperty({ description: "Confirmed bookings" }) confirmed!: number;
   @ApiProperty({ description: "Cancelled bookings" }) cancelled!: number;
   @ApiProperty({
-    type: Number,
-    nullable: true,
-    description: "No-shows; null until attendance tracking (#16) exists",
+    description: "Bookings marked as no-show; not counted as booked time",
   })
-  noShows!: number | null;
+  noShows!: number;
   @ApiProperty({ description: "Booked minutes within open time" })
   bookedMinutes!: number;
   @ApiProperty({ description: "Open minutes across facilities" })

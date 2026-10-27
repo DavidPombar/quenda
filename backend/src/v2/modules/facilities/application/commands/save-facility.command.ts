@@ -6,7 +6,9 @@ import { OpeningCalendar } from "../../domain/opening-calendar";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
+import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityError =
@@ -23,12 +25,19 @@ export class SaveFacility {
     private readonly calendar: OpeningCalendar,
     private readonly clock: Clock,
     private readonly audit: Audit,
+    private readonly ids: IdGenerator,
+    private readonly outbox: Outbox,
   ) {}
   async execute(args: {
     principal: Principal;
     id: string;
     patch: Partial<Omit<Facility, "id" | "tenantId">>;
     mode: "create" | "update";
+    /**
+     * Unexpected closure (C3): when the status leaves "active" with upcoming bookings, they are
+     * cancelled with this reason and each person is notified. Without it the change is refused.
+     */
+    closureReason?: string;
   }): Promise<Result<Facility, SaveFacilityError>> {
     if (!can(args.principal, "facilities:manage"))
       return Result.err(failure("forbidden"));
@@ -76,17 +85,21 @@ export class SaveFacility {
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
     )
       return Result.err(failure("validation"));
-    if (
-      existing &&
+    const now = this.clock.now();
+    const scheduleChanged =
+      !!existing &&
       (existing.openingCalendar !== facility.openingCalendar ||
-        existing.slotMinutes !== facility.slotMinutes ||
-        existing.status !== facility.status) &&
-      (await this.facilities.hasFutureBookings(
-        municipality.id,
-        args.id,
-        this.clock.now(),
-      ))
-    )
+        existing.slotMinutes !== facility.slotMinutes);
+    const closing =
+      !!existing &&
+      existing.status !== facility.status &&
+      facility.status !== "active";
+    const reason = args.closureReason?.trim();
+    const upcoming =
+      scheduleChanged || (existing && existing.status !== facility.status)
+        ? await this.facilities.upcomingBookings(municipality.id, args.id, now)
+        : [];
+    if (upcoming.length && (scheduleChanged || !closing || !reason))
       return Result.err(failure("calendar_in_use"));
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
@@ -99,13 +112,60 @@ export class SaveFacility {
         facility.tenantId,
         facility.id,
         facility.status,
-        this.clock.now(),
+        now,
       );
+    if (upcoming.length && reason) {
+      const cancelled = upcoming.map((booking) => ({
+        id: booking.id,
+        userId: booking.userId,
+        notificationId: this.ids.next(),
+      }));
+      await this.facilities.cancelBookings({
+        tenantId: municipality.id,
+        bookings: cancelled,
+        reason,
+        at: now,
+      });
+      for (const booking of cancelled)
+        await this.outbox.enqueue({
+          id: this.ids.next(),
+          tenantId: municipality.id,
+          userId: booking.userId,
+          bookingId: booking.id,
+          kind: "cancelled_by_municipality",
+          channel: "email",
+          dedupeKey: `cancelled_by_municipality:${booking.notificationId}`,
+          createdAt: now,
+        });
+      for (const booking of upcoming)
+        await this.audit.record(
+          args.principal,
+          "booking.cancelled_by_municipality",
+          booking.id,
+          {
+            facilityId: args.id,
+            start: booking.start.toString(),
+            end: booking.end.toString(),
+            reason,
+          },
+        );
+    }
     await this.audit.record(
       args.principal,
       args.mode === "create" ? "facility.created" : "facility.updated",
       args.id,
-      changes(existing, facility),
+      {
+        ...changes(existing, facility),
+        ...(upcoming.length && reason
+          ? {
+              closure: {
+                reason,
+                cancelledBookings: upcoming.length,
+                people: new Set(upcoming.map((booking) => booking.userId)).size,
+              },
+            }
+          : {}),
+      },
     );
     return Result.ok(facility);
   }

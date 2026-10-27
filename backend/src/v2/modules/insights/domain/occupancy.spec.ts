@@ -82,6 +82,24 @@ describe("occupancy report", () => {
       occupancy: 0,
     });
   });
+  it("should count no-shows apart without adding their time to booked minutes", () => {
+    const result = report(
+      facility({
+        bookings: [
+          {
+            ...span("2026-10-05T10:00", "2026-10-05T11:00"),
+            status: "no_show",
+          },
+        ],
+      }),
+    );
+    expect(result).toMatchObject({
+      noShows: 1,
+      confirmed: 0,
+      bookedMinutes: 0,
+    });
+    expect(result.byFacility[0].noShows).toBe(1);
+  });
   it("should split a booking that straddles two hours", () => {
     const result = report(
       facility({

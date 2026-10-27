@@ -13,6 +13,8 @@ export class FacilityUsageResponseDTO {
   confirmed!: number;
   @ApiProperty({ description: "Cancelled bookings starting in the range" })
   cancelled!: number;
+  @ApiProperty({ description: "No-shows among bookings starting in the range" })
+  noShows!: number;
   @ApiProperty({ description: "Booked minutes within open time" })
   bookedMinutes!: number;
   @ApiProperty({
@@ -34,6 +36,7 @@ export class FacilityUsageResponseDTO {
       bookings: value.confirmed,
       confirmed: value.confirmed,
       cancelled: value.cancelled,
+      noShows: value.noShows,
       bookedMinutes: value.bookedMinutes,
       openMinutes: value.openMinutes,
       occupancy: value.occupancy,

@@ -5,6 +5,7 @@ import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-munici
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
 import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.mutation";
+import { useUpdateLocaleMutation } from "@/queries/account/update-locale.mutation";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
 import { BRAND_VARIABLES, brandVariables } from "@/services/color.service";
@@ -19,6 +20,7 @@ export function useShellController() {
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
   const remove = useDeleteSessionMutation();
+  const saveLocale = useUpdateLocaleMutation();
   // Only an explicit choice is stored; until then the municipality's default language applies.
   const [chosenLocale, setChosenLocale] = useState<Locale | null>(() => {
     const saved = localStorage.getItem("quenda.locale");
@@ -55,6 +57,12 @@ export function useShellController() {
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+  // Email notices follow the language the person is using; failures only affect email wording.
+  const sessionUser = session?.userId;
+  const { mutate: rememberLocale } = saveLocale;
+  useEffect(() => {
+    if (sessionUser) rememberLocale(locale);
+  }, [sessionUser, locale, rememberLocale]);
   const primaryColor = municipality?.primaryColor ?? "";
   useEffect(() => {
     const style = document.documentElement.style;

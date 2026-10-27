@@ -1459,3 +1459,48 @@ main {
 .occupancy-cell .usage-bar {
   flex: 1;
 }
+
+/* Attendance and unexpected closures (C3, M3) */
+.bookings-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.booking-outcome {
+  display: block;
+  color: var(--court);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.booking-outcome.attended,
+.booking-outcome.cancelled {
+  color: var(--ink-2);
+}
+.booking-outcome.no_show {
+  color: var(--danger);
+}
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.closure-warning {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-card);
+  color: var(--ink);
+}
+.closure-warning svg {
+  flex-shrink: 0;
+  color: var(--danger);
+}
+.closure-warning h3 {
+  margin-bottom: 4px;
+  font-weight: 650;
+}
+@media (max-width: 720px) {
+  .bookings-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

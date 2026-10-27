@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Button } from "@chakra-ui/react";
+import { Button, Checkbox } from "@chakra-ui/react";
 import { PiDownloadSimple, PiWarningCircle } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
@@ -103,6 +103,49 @@ export function Account() {
             >
               {c.t("readPrivacy")}
             </button>
+          </section>
+          <section className="account-section">
+            <h2>{c.t("noticesTitle")}</h2>
+            {c.account.email ? (
+              <>
+                <dl className="facts">
+                  <div>
+                    <dt>{c.t("noticesEmail")}</dt>
+                    <dd>{c.account.email}</dd>
+                  </div>
+                </dl>
+                <p>{c.t("noticesAlways")}</p>
+                <Checkbox.Root
+                  className="consent-check"
+                  colorPalette="court"
+                  size="lg"
+                  checked={c.account.reminderEmails}
+                  disabled={c.preferences.isPending}
+                  onCheckedChange={(event) =>
+                    c.setReminderEmails(event.checked === true)
+                  }
+                >
+                  <Checkbox.HiddenInput aria-describedby="reminder-hint" />
+                  <Checkbox.Control />
+                  <Checkbox.Label>{c.t("reminderLabel")}</Checkbox.Label>
+                </Checkbox.Root>
+                <p id="reminder-hint" className="muted small">
+                  {c.reminderHint}
+                </p>
+                {c.preferences.isSuccess && (
+                  <p role="status" className="success-body">
+                    {c.t("reminderSaved")}
+                  </p>
+                )}
+                {c.preferences.isError && (
+                  <p role="alert" className="error-text">
+                    {c.t("reminderError")}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>{c.t("noticesNoEmail")}</p>
+            )}
           </section>
           <section className="account-section">
             <h2>{c.t("downloadTitle")}</h2>

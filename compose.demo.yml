@@ -8,6 +8,7 @@ services:
       DATABASE_URL: postgres://quenda:quenda_local@db:5432/quenda
       DEMO_MODE: "true"
       HOST: 0.0.0.0
+      APP_BASE_URL: http://127.0.0.1:8080
     depends_on:
       db:
         condition: service_healthy
@@ -28,6 +29,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  worker:
+    build:
+      context: .
+      target: api
+    environment:
+      DATABASE_URL: postgres://quenda:quenda_local@db:5432/quenda
+      DEMO_MODE: "true"
+      SMTP_URL: smtp://mailpit:1025
+      MAIL_FROM: quenda@demo.example
+      APP_BASE_URL: http://127.0.0.1:8080
+    depends_on:
+      api:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    command: ["node", "backend/dist/worker.js"]
   web:
     build:
       context: .

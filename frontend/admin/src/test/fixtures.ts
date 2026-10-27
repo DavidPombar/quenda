@@ -18,6 +18,9 @@ export const municipality: Municipality = {
   legalVersion: "2026-10",
   primaryColor: "#1f5b43",
   logoUrl: null,
+  noShowLimit: 3,
+  noShowWindowDays: 30,
+  noShowBlockDays: 7,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -72,10 +75,10 @@ export function insightsFor(
   return {
     from,
     to,
-    total: 12,
+    total: 15,
     confirmed: 10,
     cancelled: 2,
-    noShows: null,
+    noShows: 3,
     bookedMinutes: 600,
     openMinutes: 6000,
     occupancy,
@@ -88,6 +91,7 @@ export function insightsFor(
         bookings: 10,
         confirmed: 10,
         cancelled: 2,
+        noShows: 3,
         bookedMinutes: 600,
         openMinutes: 6000,
         occupancy,

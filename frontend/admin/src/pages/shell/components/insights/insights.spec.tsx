@@ -59,8 +59,18 @@ describe("indicators", () => {
     await expect
       .element(table.getByRole("cell", { name: "Pechado" }).first())
       .toBeInTheDocument();
+    const noShows = page
+      .getByRole("term")
+      .filter({ hasText: "Non presentados" })
+      .element().parentElement!;
+    expect(noShows.querySelector(".stat-value")?.textContent).toBe("3");
     await expect
-      .element(page.getByText("Dispoñible coa xestión de asistencia (#16)."))
+      .element(
+        page.getByRole("columnheader", {
+          name: "Non presentados",
+          exact: true,
+        }),
+      )
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: /Descargar CSV/ }))
