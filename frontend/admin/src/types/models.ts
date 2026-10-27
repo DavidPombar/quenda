@@ -83,15 +83,43 @@ export interface Notification {
   facilityName: string;
   createdAt: string;
 }
-export interface Insights {
+export interface FacilityUsage {
+  id: string;
+  name: string;
+  sport: Sport;
+  bookings: number;
+  confirmed: number;
+  cancelled: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  /** Booked over open time, rounded percent; null when never open. */
+  occupancy: number | null;
+}
+export interface HeatmapCell {
+  /** ISO weekday, 1 = Monday. */
+  weekday: number;
+  hour: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number;
+}
+export interface DateRange {
+  from: string;
+  to: string;
+}
+export interface Insights extends DateRange {
   total: number;
   confirmed: number;
   cancelled: number;
-  occupancy: number;
+  /** Null until attendance tracking (#16) exists. */
+  noShows: number | null;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number | null;
   facilities: number;
-  from: string;
-  to: string;
-  byFacility: { id: string; name: string; bookings: number }[];
+  byFacility: FacilityUsage[];
+  /** Only weekday × hour cells with open time. */
+  heatmap: HeatmapCell[];
 }
 export type AuditActorRole = "citizen" | "manager" | "system";
 export interface AuditEvent {

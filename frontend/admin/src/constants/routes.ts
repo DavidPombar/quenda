@@ -7,6 +7,7 @@ export const ROUTES = {
   shell: "/:slug",
   management: "xestion",
   audit: "auditoria",
+  insights: "indicadores",
   settings: "axustes",
 } as const;
 export function routeFor(slug: string, child: string) {
