@@ -130,3 +130,46 @@ test("should list a booking reminder among the notices", async () => {
     .element(page.getByText("Lembranza da reserva", { exact: true }))
     .toBeVisible();
 });
+test("should show a scannable pass with a code to read out for an upcoming reservation", async () => {
+  const upcoming: Booking = {
+    ...base,
+    id: "30000000-0000-4000-8000-0000000000aa",
+    start: "2099-06-01T08:00:00Z",
+    end: "2099-06-01T09:00:00Z",
+    status: "confirmed",
+    outcome: "upcoming",
+  };
+  stubShell(true);
+  stubJsonResponse({ path: "*/v2/citizen/bookings", response: [upcoming] });
+  stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
+  stubJsonResponse({
+    path: "*/v2/citizen/penalty",
+    response: { ...standing, count: 0, remaining: 3, blockedUntil: null },
+  });
+  const { spy } = stubJsonResponse({
+    path: `*/v2/citizen/bookings/${upcoming.id}/access-pass`,
+    method: "POST",
+    response: {
+      token: "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl",
+      code: "300000AA",
+      validFrom: "2099-06-01T07:00:00Z",
+      validUntil: "2099-06-01T09:00:00Z",
+    },
+  });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await page.getByRole("button", { name: "Mostrar QR" }).click();
+  const dialog = page.getByRole("dialog", { name: "Pase de acceso" });
+  await expect
+    .element(
+      dialog.getByRole("img", {
+        name: `Código QR do pase de acceso para ${facility.name}`,
+      }),
+    )
+    .toBeVisible();
+  await expect.element(dialog.getByText("300000AA")).toBeVisible();
+  await expect
+    .element(dialog.getByText("Válido o Luns, 1 de xuño de 09:00 a 11:00."))
+    .toBeVisible();
+  expect(spy).toHaveBeenCalledTimes(1);
+});

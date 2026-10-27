@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
-import type { Principal } from "../../../shared/application/principal";
+import type { Principal, Role } from "../../../shared/application/principal";
 export abstract class SessionRepository {
   /** Deleted (anonymised) accounts are never offered as demo identities. */
   abstract findDemoUser(
     tenantId: string,
-    role: "citizen" | "manager",
+    role: Role,
   ): Promise<Principal | null>;
   abstract createDemoUser(args: {
     id: string;
     tenantId: string;
-    role: "citizen" | "manager";
+    role: Role;
     displayName: string;
     email: string | null;
   }): Promise<Principal>;

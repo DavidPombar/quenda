@@ -16,6 +16,8 @@ export abstract class BookingRepository {
   ): Promise<Booking | null>;
   /** Any person's booking in the tenant, for municipal actions. */
   abstract findInTenant(tenantId: string, id: string): Promise<Booking | null>;
+  /** Whether access staff recorded the person entering for this reservation. */
+  abstract hasCheckIn(tenantId: string, id: string): Promise<boolean>;
   abstract list(tenantId: string, userId: string): Promise<BookingReadModel[]>;
   /** Bookings starting in [from, to), optionally for one facility, with the person's name. */
   abstract listStarting(args: {

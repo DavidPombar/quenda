@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Delivery } from "../../domain/delivery.read-model";
+import type { MessageKind } from "../../../../shared/application/outbox";
+/** Notices people are emailed about; absences only reach the access-control system. */
+export type EmailKind = Exclude<MessageKind, "no_show">;
 type Locale = Delivery["locale"];
 const TAGS: Record<Locale, string> = { gl: "gl-ES", es: "es-ES" };
 const copy = {
@@ -74,7 +77,7 @@ export interface RenderedMail {
   html: string;
 }
 export function renderMail(
-  delivery: Delivery,
+  delivery: Delivery & { kind: EmailKind },
   links: { bookings: string; unsubscribe: string | null },
 ): RenderedMail {
   const t = copy[delivery.locale];

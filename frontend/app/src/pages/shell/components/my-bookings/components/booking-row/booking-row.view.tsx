@@ -4,6 +4,7 @@ import {
   PiCalendarBlank,
   PiCheck,
   PiClock,
+  PiQrCode,
   PiUserMinus,
   PiX,
 } from "react-icons/pi";
@@ -25,6 +26,8 @@ export function BookingRow(p: {
   canChange: boolean;
   onCancel: () => void;
   onChange: () => void;
+  canShowPass: boolean;
+  onShowPass: () => void;
 }) {
   const [StatusIcon, label] = OUTCOMES[p.booking.outcome];
   const byMunicipality = p.booking.cancelledBy === "municipality";
@@ -56,19 +59,29 @@ export function BookingRow(p: {
           <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
         </li>
       </ul>
-      {p.canChange && (
+      {(p.canChange || p.canShowPass) && (
         <div className="booking-actions">
-          <Button size="lg" variant="outline" onClick={p.onChange}>
-            {p.t("changeBooking")}
-          </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            colorPalette="red"
-            onClick={p.onCancel}
-          >
-            {p.t("cancelBooking")}
-          </Button>
+          {p.canShowPass && (
+            <Button size="lg" colorPalette="court" onClick={p.onShowPass}>
+              <PiQrCode size={20} aria-hidden="true" />
+              {p.t("showPass")}
+            </Button>
+          )}
+          {p.canChange && (
+            <>
+              <Button size="lg" variant="outline" onClick={p.onChange}>
+                {p.t("changeBooking")}
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                colorPalette="red"
+                onClick={p.onCancel}
+              >
+                {p.t("cancelBooking")}
+              </Button>
+            </>
+          )}
         </div>
       )}
     </article>

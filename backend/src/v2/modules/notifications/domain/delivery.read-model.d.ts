@@ -25,6 +25,10 @@ export interface Delivery {
     replyTo: string;
   };
   facility: { name: string; address: string };
+  /** Access-control connector of the municipality, when configured. */
+  webhook: { url: string; secretSealed: string } | null;
+  facilityId: string;
+  openingCalendar: string;
   /** Reason given by the municipality when it cancelled the reservation. */
   cancellationReason: string | null;
   start: Temporal.Instant;

@@ -65,6 +65,13 @@ export class PostgresBookingRepository extends BookingRepository {
     );
     return rows[0] ? toDomain(rows[0]) : null;
   }
+  async hasCheckIn(tenantId: string, id: string) {
+    const { rowCount } = await this.db.query(
+      "SELECT 1 FROM check_ins WHERE tenant_id=$1 AND booking_id=$2",
+      [tenantId, id],
+    );
+    return (rowCount ?? 0) > 0;
+  }
   async findInTenant(tenantId: string, id: string) {
     const { rows } = await this.db.query<Row>(
       "SELECT * FROM bookings WHERE tenant_id=$1 AND id=$2 AND user_id IS NOT NULL",

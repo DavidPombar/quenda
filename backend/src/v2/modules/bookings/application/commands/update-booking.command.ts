@@ -11,7 +11,10 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
-import { Outbox } from "../../../../shared/application/outbox";
+import {
+  Outbox,
+  queueBookingChange,
+} from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type UpdateBookingError =
@@ -108,15 +111,15 @@ export class UpdateBooking {
       kind,
       createdAt: now,
     });
-    await this.outbox.enqueue({
-      id: this.ids.next(),
-      tenantId,
-      userId,
+    await queueBookingChange(this.outbox, {
+      newId: () => this.ids.next(),
+      tenantId: tenantId,
+      userId: userId,
       bookingId: existing.id,
       kind,
-      channel: "email",
-      dedupeKey: `${kind}:${notificationId}`,
+      notificationId: notificationId,
       createdAt: now,
+      email: true,
     });
     if (args.start)
       await this.audit.record(

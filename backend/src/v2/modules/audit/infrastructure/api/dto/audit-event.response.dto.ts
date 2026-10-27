@@ -17,7 +17,7 @@ export class AuditEventResponseDTO {
     enum: ["citizen", "manager", "system"],
     nullable: true,
   })
-  actorRole!: "citizen" | "manager" | "system" | null;
+  actorRole!: "citizen" | "manager" | "access" | "system" | null;
   @ApiProperty({
     description: "Actor display name when the actor is still linked",
     type: String,

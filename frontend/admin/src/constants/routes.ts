@@ -9,6 +9,7 @@ export const ROUTES = {
   audit: "auditoria",
   settings: "axustes",
   bookings: "reservas",
+  access: "acceso",
 } as const;
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;

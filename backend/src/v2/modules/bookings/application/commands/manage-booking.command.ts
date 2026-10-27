@@ -20,7 +20,10 @@ import {
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
-import { Outbox } from "../../../../shared/application/outbox";
+import {
+  Outbox,
+  queueBookingChange,
+} from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type ManageBookingError =
@@ -55,8 +58,13 @@ export class ManageBooking {
     id: string;
     change: ManageBookingChange;
   }): Promise<Result<void, ManageBookingError>> {
-    if (!can(args.principal, "bookings:manage"))
-      return Result.err(failure("forbidden"));
+    // Access staff record absences at the door; only managers cancel on behalf of the council.
+    const permitted =
+      "status" in args.change
+        ? can(args.principal, "bookings:manage")
+        : can(args.principal, "bookings:manage") ||
+          can(args.principal, "access:control");
+    if (!permitted) return Result.err(failure("forbidden"));
     const { tenantId } = args.principal;
     const found = await this.bookings.findInTenant(tenantId, args.id);
     if (!found) return Result.err(failure("not_found"));
@@ -106,15 +114,15 @@ export class ManageBooking {
       createdAt: now,
       details: { reason },
     });
-    await this.outbox.enqueue({
-      id: this.ids.next(),
+    await queueBookingChange(this.outbox, {
+      newId: () => this.ids.next(),
       tenantId: existing.tenantId,
       userId: existing.userId,
       bookingId: existing.id,
       kind: "cancelled_by_municipality",
-      channel: "email",
-      dedupeKey: `cancelled_by_municipality:${notificationId}`,
+      notificationId: notificationId,
       createdAt: now,
+      email: true,
     });
     await this.audit.record(
       principal,
@@ -144,6 +152,9 @@ export class ManageBooking {
       .equals(now.toZonedDateTimeISO(settings.timezone).toPlainDate());
     if (!sameDay || Temporal.Instant.compare(existing.start, now) > 0)
       return Result.err(failure("attendance_window"));
+    // Someone recorded at the door did come.
+    if (await this.bookings.hasCheckIn(existing.tenantId, existing.id))
+      return Result.err(failure("validation"));
     await this.save({ ...existing, status: "no_show" });
     let standing = await this.standing(existing.userId, settings, now);
     const blocked = reachesLimit(standing);
@@ -159,14 +170,26 @@ export class ManageBooking {
       });
       standing = { ...standing, blockedUntil: end };
     }
+    const notificationId = this.ids.next();
     await this.notifications.add({
-      id: this.ids.next(),
+      id: notificationId,
       tenantId: existing.tenantId,
       userId: existing.userId,
       bookingId: existing.id,
       kind: "no_show",
       createdAt: now,
       details: { standing: snapshot(standing) },
+    });
+    // The person is not emailed about it, but the door must stop accepting the reservation.
+    await queueBookingChange(this.outbox, {
+      newId: () => this.ids.next(),
+      tenantId: existing.tenantId,
+      userId: existing.userId,
+      bookingId: existing.id,
+      kind: "no_show",
+      notificationId,
+      createdAt: now,
+      email: false,
     });
     await this.audit.record(principal, "booking.no_show", existing.id, {
       facilityId: existing.facilityId,

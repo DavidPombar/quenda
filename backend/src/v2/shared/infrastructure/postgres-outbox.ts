@@ -9,7 +9,11 @@ export class PostgresOutbox extends Outbox {
   }
   async enqueue(args: Parameters<Outbox["enqueue"]>[0]) {
     const { rowCount } = await this.db.query(
-      "INSERT INTO outbox (id,tenant_id,user_id,booking_id,kind,channel,dedupe_key,created_at,available_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8) ON CONFLICT (dedupe_key) DO NOTHING",
+      // Webhook messages are only queued for municipalities with a connector configured.
+      `INSERT INTO outbox (id,tenant_id,user_id,booking_id,kind,channel,dedupe_key,created_at,available_at)
+        SELECT $1,$2,$3,$4,$5,$6,$7,$8,$8
+        WHERE $6 <> 'webhook' OR EXISTS (SELECT 1 FROM municipalities WHERE id=$2 AND access_webhook_url <> '')
+        ON CONFLICT (dedupe_key) DO NOTHING`,
       [
         args.id,
         args.tenantId,

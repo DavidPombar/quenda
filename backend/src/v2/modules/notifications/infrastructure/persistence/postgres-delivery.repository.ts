@@ -23,6 +23,10 @@ interface DeliveryRow {
   facilityName: string;
   facilityAddress: string;
   cancellationReason: string | null;
+  webhookUrl: string;
+  webhookSecretSealed: string | null;
+  facilityId: string;
+  openingCalendar: string;
   start: string;
   end: string;
 }
@@ -77,6 +81,8 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         COALESCE(NULLIF(m.mail_reply_to, ''), m.contact) AS "replyTo",
         f.name AS "facilityName", f.address AS "facilityAddress",
         b.cancellation_reason AS "cancellationReason",
+        m.access_webhook_url AS "webhookUrl", m.access_webhook_secret_sealed AS "webhookSecretSealed",
+        b.facility_id AS "facilityId", f.opening_calendar AS "openingCalendar",
         b.starts_at AS start, b.ends_at AS "end"
       FROM claimed c
       JOIN users u ON u.tenant_id=c.tenant_id AND u.id=c.user_id
@@ -110,6 +116,12 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       },
       facility: { name: row.facilityName, address: row.facilityAddress },
       cancellationReason: row.cancellationReason,
+      webhook:
+        row.webhookUrl && row.webhookSecretSealed
+          ? { url: row.webhookUrl, secretSealed: row.webhookSecretSealed }
+          : null,
+      facilityId: row.facilityId,
+      openingCalendar: row.openingCalendar,
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
     }));

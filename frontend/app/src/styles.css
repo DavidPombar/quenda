@@ -1498,3 +1498,20 @@ a.account:hover .account-name strong {
 .penalty-banner.blocked {
   border-left-color: var(--danger);
 }
+
+/* Access pass (QR) */
+.access-pass-qr {
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
+  margin: var(--space-4) auto;
+}
+.access-pass-validity {
+  font-weight: 650;
+  text-align: center;
+}
+.access-pass-code {
+  font-family: ui-monospace, monospace;
+  font-size: var(--t-2);
+  letter-spacing: 0.15em;
+}

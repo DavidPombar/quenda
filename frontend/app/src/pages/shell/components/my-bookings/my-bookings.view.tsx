@@ -17,6 +17,7 @@ import { ROUTES, routeFor } from "@/constants/routes";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
+import { AccessPassDialog } from "./components/access-pass-dialog/access-pass-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
 const NOTICE_ICONS = {
   confirmed: PiCalendarCheck,
@@ -93,6 +94,8 @@ export function MyBookings() {
                       c.setCancelling(booking);
                     }}
                     onChange={() => c.setChanging(booking)}
+                    canShowPass={c.canShowPass(booking)}
+                    onShowPass={() => c.setShowingPass(booking)}
                   />
                 ))}
                 {c.hiddenBookings > 0 && (
@@ -252,6 +255,20 @@ export function MyBookings() {
         <ChangeBookingDialog
           booking={c.changing}
           onClose={() => c.setChanging(null)}
+          context={{
+            municipality: c.municipality,
+            session: c.session,
+            locale: c.locale,
+            t: c.t,
+            signIn: c.signIn,
+            showPrivacy: c.showPrivacy,
+          }}
+        />
+      )}
+      {c.showingPass && (
+        <AccessPassDialog
+          booking={c.showingPass}
+          onClose={() => c.setShowingPass(null)}
           context={{
             municipality: c.municipality,
             session: c.session,

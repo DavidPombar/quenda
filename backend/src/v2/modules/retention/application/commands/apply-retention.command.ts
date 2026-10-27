@@ -13,6 +13,7 @@ export interface RetentionSummary {
   bookingsDetached: number;
   notificationsDeleted: number;
   messagesDeleted: number;
+  checkInsDeleted: number;
   blocksDeleted: number;
   auditPseudonymised: number;
   sessionsPurged: number;
@@ -51,6 +52,10 @@ export class ApplyRetention {
       tenantId,
       cutoff,
     );
+    const checkInsDeleted = await this.retention.deleteCheckIns(
+      tenantId,
+      cutoff,
+    );
     const blocksDeleted = await this.retention.deleteBlocks(tenantId, cutoff);
     const auditPseudonymised = await this.retention.pseudonymiseAudit(
       tenantId,
@@ -71,6 +76,7 @@ export class ApplyRetention {
       bookingsDetached,
       notificationsDeleted,
       messagesDeleted,
+      checkInsDeleted,
       blocksDeleted,
       auditPseudonymised,
       sessionsPurged,
@@ -82,6 +88,7 @@ export class ApplyRetention {
       bookingsDetached,
       notificationsDeleted,
       messagesDeleted,
+      checkInsDeleted,
       blocksDeleted,
       auditPseudonymised,
       sessionsPurged,

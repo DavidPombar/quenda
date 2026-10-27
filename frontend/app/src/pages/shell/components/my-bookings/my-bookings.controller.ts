@@ -31,6 +31,7 @@ export function useMyBookingsController() {
   const penalty = useGetPenaltyStandingQuery(context.session?.userId);
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
   const [cancelling, setCancelling] = useState<Booking | null>(null);
+  const [showingPass, setShowingPass] = useState<Booking | null>(null);
   const [changing, setChanging] = useState<Booking | null>(null);
   const [showAllNotices, setShowAllNotices] = useState(false);
   const [bookingLimit, setBookingLimit] = useState(BOOKING_PAGE);
@@ -60,6 +61,13 @@ export function useMyBookingsController() {
     } catch {
       /* Mutation state presents the error. */
     }
+  }
+  /** A pass is useful until the reservation ends, on its day or before. */
+  function canShowPass(booking: Booking) {
+    return (
+      booking.status === "confirmed" &&
+      Temporal.Instant.compare(Temporal.Instant.from(booking.end), now) > 0
+    );
   }
   function canChange(booking: Booking) {
     return (
@@ -123,5 +131,8 @@ export function useMyBookingsController() {
     update,
     confirmCancel,
     canChange,
+    canShowPass,
+    showingPass,
+    setShowingPass,
   };
 }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Role } from "../../../../../shared/application/principal";
 import {
   IsString,
   IsIn,
@@ -16,8 +17,8 @@ export class CreateSessionRequestDTO {
   @ApiProperty({
     description: "Demo account to use; unavailable unless DEMO_MODE=true",
   })
-  @IsIn(["citizen", "manager"])
-  role!: "citizen" | "manager";
+  @IsIn(["citizen", "manager", "access"])
+  role!: Role;
   @ApiPropertyOptional({
     description:
       "Privacy notice version the citizen accepts; must match the municipality's current version",

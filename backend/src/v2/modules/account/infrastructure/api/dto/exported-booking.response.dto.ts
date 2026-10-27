@@ -28,6 +28,12 @@ export class ExportedBookingResponseDTO {
     description: "Municipal reason",
   })
   cancellationReason!: string | null;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Instant access staff recorded the entry",
+  })
+  checkedInAt!: string | null;
   static from(value: ExportedBooking): ExportedBookingResponseDTO {
     return {
       id: value.id,
@@ -41,6 +47,7 @@ export class ExportedBookingResponseDTO {
       cancelledAt: value.cancelledAt ? value.cancelledAt.toString() : null,
       cancelledBy: value.cancelledBy,
       cancellationReason: value.cancellationReason,
+      checkedInAt: value.checkedInAt?.toString() ?? null,
     };
   }
 }

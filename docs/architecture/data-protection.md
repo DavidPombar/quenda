@@ -49,12 +49,21 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 | `notifications` | Link to `user_id` and a reservation | In-app notices | Deleted on account deletion or after `retention_months` |
 | `outbox` | Link to `user_id`, a reservation, notice kind and delivery state; never the address or the text | Deliver email notices after the reservation commits | Deleted on account deletion or after `retention_months` |
 | `notification_preferences` | Whether the person wants email reminders | Respect the opt-out | Deleted on account deletion |
+| `check_ins` | Link to a reservation, the time of entry and the staff member who recorded it | Evidence of attendance at the door | Deleted after `retention_months` |
+| `access_keys` | None (signing keys; the private half is sealed) | Sign access passes | Kept; retired keys stop being published after 48 hours |
 | `audit_events` | `actor_id`, `actor_role`, `details` | Accountability for changes (art. 5.2 GDPR) | `actor_id` set to NULL after `retention_months`; action and details remain |
 
 Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
 about minors. The email address is optional and only used for notices about the person's own
 reservations. Demo accounts carry fictitious names and synthetic addresses at the reserved
 `.example` domain, which the local Mailpit catches.
+
+### QR access passes
+
+A pass contains only the reservation, facility, municipality and validity window, never a name. Door
+devices store the current day's list with each holder's first name, needed to greet and identify
+people, and nothing else; it is replaced on every sync. Staff with the `access` role see no other
+personal data. The access-control webhook sends no personal data at all.
 
 ### Email notices
 

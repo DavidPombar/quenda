@@ -41,6 +41,13 @@ export class PostgresRetentionRepository extends RetentionRepository {
       cutoff,
     );
   }
+  deleteCheckIns(tenantId: string, cutoff: Temporal.Instant) {
+    return this.run(
+      "DELETE FROM check_ins WHERE tenant_id=$1 AND checked_in_at<$2",
+      tenantId,
+      cutoff,
+    );
+  }
   pseudonymiseAudit(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       "UPDATE audit_events SET actor_id=NULL WHERE tenant_id=$1 AND actor_id IS NOT NULL AND occurred_at<$2",
