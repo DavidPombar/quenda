@@ -13,7 +13,14 @@ function principal(user: Omit<Principal, "grants">): Principal {
     ...user,
     grants:
       user.role === "manager"
-        ? ["bookings:own", "facilities:manage", "insights:view", "audit:view"]
+        ? [
+            "bookings:own",
+            "facilities:manage",
+            "insights:view",
+            "audit:view",
+            "municipality:manage",
+            "bookings:manage",
+          ]
         : ["bookings:own", "account:own"],
   };
 }
@@ -34,10 +41,11 @@ export class PostgresSessionRepository extends SessionRepository {
     tenantId: string;
     role: "citizen" | "manager";
     displayName: string;
+    email: string | null;
   }) {
     await this.db.query(
-      "INSERT INTO users (id,tenant_id,display_name,role) VALUES ($1,$2,$3,$4)",
-      [args.id, args.tenantId, args.displayName, args.role],
+      "INSERT INTO users (id,tenant_id,display_name,role,email) VALUES ($1,$2,$3,$4,$5)",
+      [args.id, args.tenantId, args.displayName, args.role, args.email],
     );
     return principal({
       userId: args.id,

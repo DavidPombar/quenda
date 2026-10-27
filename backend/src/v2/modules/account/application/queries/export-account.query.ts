@@ -41,6 +41,9 @@ export class ExportAccount {
       consents: await this.consents.listByUser(tenantId, userId),
       bookings: await this.accounts.listBookingsAll(tenantId, userId),
       notifications: await this.accounts.listNotificationsAll(tenantId, userId),
+      preferences: await this.accounts.findPreferences(tenantId, userId),
+      messages: await this.accounts.listMessagesAll(tenantId, userId),
+      blocks: await this.accounts.listBlocksAll(tenantId, userId),
       auditEvents: await this.accounts.listAuditByActor(tenantId, userId),
     };
     // Queries run outside a transaction; this single INSERT autocommits on its own.

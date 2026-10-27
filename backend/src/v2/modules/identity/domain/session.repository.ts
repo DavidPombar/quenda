@@ -12,6 +12,7 @@ export abstract class SessionRepository {
     tenantId: string;
     role: "citizen" | "manager";
     displayName: string;
+    email: string | null;
   }): Promise<Principal>;
   abstract create(
     principal: Principal,

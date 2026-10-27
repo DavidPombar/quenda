@@ -5,3 +5,6 @@ export interface BookingReadModel {
   facilityName: string;
   sport: string;
 }
+export interface ManagedBookingReadModel extends BookingReadModel {
+  displayName: string;
+}

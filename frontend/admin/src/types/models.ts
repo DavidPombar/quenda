@@ -13,13 +13,49 @@ export interface Municipality {
   slug: string;
   name: string;
   timezone: string;
-  locale: string;
+  /** Default language; the person's saved choice takes precedence. */
+  locale: Locale;
   advanceDays: number;
   cancellationHours: number;
   maxActiveBookings: number;
   contact: string;
-  legalText: string;
+  legalTexts: LegalTexts;
+  legalVersion: string;
+  primaryColor: string;
+  logoUrl: string | null;
+  /** No-shows within the window that block new bookings; 0 disables the penalty. */
+  noShowLimit: number;
+  noShowWindowDays: number;
+  noShowBlockDays: number;
   accessibility: Accessibility;
+}
+export interface LegalTexts {
+  gl: string;
+  es: string;
+}
+export interface MunicipalitySettings extends Municipality {
+  /** RFC 5545 VCALENDAR of all-day municipal holidays. */
+  holidaysCalendar: string;
+}
+export type SettingsPatch = Partial<
+  Pick<
+    MunicipalitySettings,
+    | "locale"
+    | "advanceDays"
+    | "cancellationHours"
+    | "maxActiveBookings"
+    | "contact"
+    | "legalTexts"
+    | "primaryColor"
+    | "holidaysCalendar"
+    | "noShowLimit"
+    | "noShowWindowDays"
+    | "noShowBlockDays"
+  >
+>;
+export interface SettingsUpdate {
+  settings: MunicipalitySettings;
+  affectedBookings: number;
 }
 export interface Session {
   userId: string;
@@ -40,37 +76,49 @@ export interface Facility {
   priceCents: number;
   openingCalendar: string;
   rules: string;
+  followsMunicipalHolidays: boolean;
 }
 export interface Slot {
   start: string;
   end: string;
   status: "available" | "booked" | "past";
 }
-export interface Booking {
+export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
+/** One person's reservation as the municipality sees it on the bookings page. */
+export interface ManagedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
   sport: Sport;
   start: string;
   end: string;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
+  outcome: BookingOutcome;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
+  displayName: string;
+  canMarkNoShow: boolean;
+  canRevert: boolean;
+  canCancel: boolean;
 }
-export interface Notification {
-  id: string;
-  bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
-  facilityName: string;
-  createdAt: string;
+export type BookingChange =
+  | { attendance: "no_show" | "attended" }
+  | { status: "cancelled"; reason: string };
+/** Upcoming bookings a closure would cancel. */
+export interface FacilityImpact {
+  bookings: number;
+  people: number;
 }
 export interface Insights {
   total: number;
   confirmed: number;
   cancelled: number;
+  noShows: number;
   occupancy: number;
   facilities: number;
   from: string;
   to: string;
-  byFacility: { id: string; name: string; bookings: number }[];
+  byFacility: { id: string; name: string; bookings: number; noShows: number }[];
 }
 export type AuditActorRole = "citizen" | "manager" | "system";
 export interface AuditEvent {

@@ -1,9 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
+import type { MessageKind } from "../../../shared/application/outbox";
 export interface AccountProfile {
   userId: string;
   displayName: string;
   role: "citizen" | "manager";
+  /** Optional address for email notices. */
+  email: string | null;
+  /** Language for outgoing messages; NULL until the person picks one. */
+  locale: "gl" | "es" | null;
+}
+export interface NotificationPreferences {
+  reminderEmails: boolean;
+}
+export interface ExportedMessage {
+  id: string;
+  kind: MessageKind;
+  channel: "email";
+  createdAt: Temporal.Instant;
+  sentAt: Temporal.Instant | null;
 }
 export interface ConsentRecord {
   legalVersion: string;
@@ -16,6 +31,7 @@ export interface AccountSummary {
   consents: ConsentRecord[];
   bookings: number;
   notifications: number;
+  preferences: NotificationPreferences;
 }
 export interface ExportedBooking {
   id: string;
@@ -24,16 +40,32 @@ export interface ExportedBooking {
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
   createdAt: Temporal.Instant;
   cancelledAt: Temporal.Instant | null;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
 }
 export interface ExportedNotification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind:
+    | "confirmed"
+    | "rescheduled"
+    | "cancelled"
+    | "cancelled_by_municipality"
+    | "no_show"
+    | "blocked"
+    | "unblocked"
+    | "reminder";
   facilityName: string;
   createdAt: Temporal.Instant;
+  details: Record<string, unknown> | null;
+}
+export interface ExportedBlock {
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  liftedAt: Temporal.Instant | null;
 }
 export interface ExportedAuditEvent {
   id: string;
@@ -55,5 +87,8 @@ export interface AccountExport {
   consents: ConsentRecord[];
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
+  preferences: NotificationPreferences;
+  messages: ExportedMessage[];
+  blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];
 }

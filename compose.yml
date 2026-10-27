@@ -13,5 +13,9 @@ services:
       interval: 2s
       timeout: 5s
       retries: 20
+  # Catches development email; open http://127.0.0.1:8025 to read it.
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
 volumes:
   quenda-data:

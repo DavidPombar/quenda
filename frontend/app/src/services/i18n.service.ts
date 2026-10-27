@@ -163,6 +163,7 @@ const gl = {
   demoNotice: "Versión de proba",
   browse: "Explorar instalacións",
   privacyTitle: "Privacidade nesta demostración",
+  logoAlt: "Logotipo do concello",
   previewCalendar:
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
@@ -246,6 +247,39 @@ const gl = {
   a11yEnforcementTitle: "Procedemento de aplicación",
   a11yEnforcement:
     "Se a túa solicitude de información accesible ou a túa queixa é desestimada, non estás de acordo coa decisión ou a resposta non cumpre o artigo 12.5 do RD 1112/2018, podes presentar unha reclamación ante a unidade responsable, conforme ao artigo 13.",
+  noticeReminder: "Lembranza da reserva",
+  noticesTitle: "Avisos por correo",
+  noticesEmail: "Enderezo de correo",
+  noticesNoEmail: "Esta conta non ten correo, así que só verás os avisos aquí.",
+  noticesAlways:
+    "Sempre che enviamos a confirmación, os cambios e as cancelacións das túas reservas.",
+  reminderLabel: "Recibir unha lembranza por correo antes de cada reserva",
+  reminderHint: "Chega {hours} horas antes do inicio.",
+  reminderSaved: "Preferencia gardada.",
+  reminderError: "Non puidemos gardar a preferencia. Volve tentalo.",
+  unsubscribeTitle: "Baixa das lembranzas por correo",
+  unsubscribeBody:
+    "Confirma que queres deixar de recibir as lembranzas das túas reservas por correo.",
+  unsubscribeConfirm: "Confirmar a baixa",
+  unsubscribeDone:
+    "Feito. Xa non che enviaremos lembranzas por correo. Seguirás recibindo as confirmacións e as cancelacións.",
+  unsubscribeError:
+    "A ligazón non é válida ou caducou. Podes desactivar as lembranzas desde a túa conta.",
+  unsubscribeAccount: "Ir á miña conta",
+  attended: "Asistida",
+  noShow: "Non presentada",
+  cancelledByMunicipality: "Cancelada polo concello",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "O concello cancelou a túa reserva",
+  noticeNoShow: "Marcada como non presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Xa podes reservar de novo",
+  penaltyRemaining:
+    "Levas {count} ausencias sen avisar nos últimos {windowDays} días. Se faltas {remaining} vez máis, non poderás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sen avisar, non podes facer reservas ata o {date}.",
+  penaltyDisabled:
+    "A ausencia queda no teu historial; o concello non aplica bloqueos.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -388,6 +422,7 @@ const es: Record<TextKey, string> = {
   hoursBeforeShort: "horas antes",
   browse: "Explorar instalaciones",
   privacyTitle: "Privacidad en esta demostración",
+  logoAlt: "Logotipo del ayuntamiento",
   previewCalendar:
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",
@@ -471,7 +506,47 @@ const es: Record<TextKey, string> = {
   a11yEnforcementTitle: "Procedimiento de aplicación",
   a11yEnforcement:
     "Si tu solicitud de información accesible o tu queja es desestimada, no estás de acuerdo con la decisión o la respuesta no cumple el artículo 12.5 del RD 1112/2018, puedes presentar una reclamación ante la unidad responsable, conforme al artículo 13.",
+  noticeReminder: "Recordatorio de la reserva",
+  noticesTitle: "Avisos por correo",
+  noticesEmail: "Dirección de correo",
+  noticesNoEmail:
+    "Esta cuenta no tiene correo, así que solo verás los avisos aquí.",
+  noticesAlways:
+    "Siempre te enviamos la confirmación, los cambios y las cancelaciones de tus reservas.",
+  reminderLabel: "Recibir un recordatorio por correo antes de cada reserva",
+  reminderHint: "Llega {hours} horas antes del inicio.",
+  reminderSaved: "Preferencia guardada.",
+  reminderError: "No pudimos guardar la preferencia. Vuelve a intentarlo.",
+  unsubscribeTitle: "Baja de los recordatorios por correo",
+  unsubscribeBody:
+    "Confirma que quieres dejar de recibir los recordatorios de tus reservas por correo.",
+  unsubscribeConfirm: "Confirmar la baja",
+  unsubscribeDone:
+    "Hecho. Ya no te enviaremos recordatorios por correo. Seguirás recibiendo las confirmaciones y las cancelaciones.",
+  unsubscribeError:
+    "El enlace no es válido o ha caducado. Puedes desactivar los recordatorios desde tu cuenta.",
+  unsubscribeAccount: "Ir a mi cuenta",
+  attended: "Asistida",
+  noShow: "No presentada",
+  cancelledByMunicipality: "Cancelada por el ayuntamiento",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "El ayuntamiento canceló tu reserva",
+  noticeNoShow: "Marcada como no presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Ya puedes volver a reservar",
+  penaltyRemaining:
+    "Llevas {count} ausencias sin avisar en los últimos {windowDays} días. Si faltas {remaining} vez más, no podrás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sin avisar, no puedes hacer reservas hasta el {date}.",
+  penaltyDisabled:
+    "La ausencia queda en tu historial; el ayuntamiento no aplica bloqueos.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];
+}
+/** Replaces {name} placeholders in a translated text. */
+export function fill(text: string, values: Record<string, string | number>) {
+  return text.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in values ? String(values[name]) : match,
+  );
 }

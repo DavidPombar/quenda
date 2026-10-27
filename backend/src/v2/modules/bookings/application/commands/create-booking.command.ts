@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { BookingRepository } from "../../domain/booking.repository";
 import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
+import { BookingBlockRepository } from "../../domain/booking-block.repository";
 import { Booking } from "../../domain/booking.entity";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
 import { Principal, can } from "../../../../shared/application/principal";
@@ -11,6 +12,7 @@ import { Municipalities } from "../../../../shared/application/municipality-sett
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CreateBookingError =
@@ -18,6 +20,7 @@ export type CreateBookingError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"booking_limit">
+  | AppError<"booking_blocked">
   | AppError<"slot_taken">
   | AppError<"id_reused">;
 @Injectable()
@@ -31,6 +34,8 @@ export class CreateBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly outbox: Outbox,
+    private readonly blocks: BookingBlockRepository,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -58,6 +63,8 @@ export class CreateBooking {
     const facility = await this.facilities.lock(tenantId, args.facilityId);
     if (!settings || !facility) return Result.err(failure("not_found"));
     const now = this.clock.now();
+    if (await this.blocks.active(tenantId, userId, now))
+      return Result.err(failure("booking_blocked"));
     if (
       (await this.bookings.countActive(tenantId, userId, now)) >=
       settings.maxActiveBookings
@@ -79,16 +86,28 @@ export class CreateBooking {
           ...interval,
           status: "confirmed",
           createdAt: now,
+          cancellationHours: settings.cancellationHours,
         };
         const saved = await this.bookings.save(booking);
         return saved.fold<Promise<Result<Booking, CreateBookingError>>>(
           async () => {
+            const notificationId = this.ids.next();
             await this.notifications.add({
+              id: notificationId,
+              tenantId,
+              userId,
+              bookingId: booking.id,
+              kind: "confirmed",
+              createdAt: now,
+            });
+            await this.outbox.enqueue({
               id: this.ids.next(),
               tenantId,
               userId,
               bookingId: booking.id,
               kind: "confirmed",
+              channel: "email",
+              dedupeKey: `confirmed:${notificationId}`,
               createdAt: now,
             });
             await this.audit.record(

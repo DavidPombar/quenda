@@ -57,6 +57,17 @@ export async function seed(url = databaseUrl) {
           "Los textos que redacta el ayuntamiento (descripciones de las instalaciones y normas de uso) aún no se han revisado con criterios de accesibilidad y lenguaje claro.",
         ],
       );
+      // Versioned notice in both languages; the row above keeps the Galician text for older readers.
+      await db.query(
+        "INSERT INTO legal_texts (tenant_id,version,text_gl,text_es,published_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",
+        [
+          tenant,
+          "2026-10",
+          "Demostración con datos ficticios. Non introduzas datos persoais. As reservas son de proba.",
+          "Demostración con datos ficticios. No introduzcas datos personales. Las reservas son de prueba.",
+          "2026-10-01T00:00:00Z",
+        ],
+      );
       for (const [j, role, display] of [
         [1, "citizen", "Alex · conta de proba"],
         [2, "manager", "Uxía · xestión municipal"],
@@ -65,6 +76,11 @@ export async function seed(url = databaseUrl) {
           "INSERT INTO users VALUES ($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING",
           [`10000000-0000-4000-8000-0000000000${i}${j}`, tenant, display, role],
         );
+      // Synthetic address at a reserved domain; demo notices land in the local mail catcher.
+      await db.query(
+        "UPDATE users SET email=$2 WHERE id=$1 AND email IS NULL AND deleted_at IS NULL",
+        [`10000000-0000-4000-8000-0000000000${i}1`, `alex@${slug}.example`],
+      );
       for (const [
         j,
         label,

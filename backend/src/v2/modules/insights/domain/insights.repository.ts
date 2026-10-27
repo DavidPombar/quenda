@@ -6,6 +6,7 @@ export interface FacilityUsage {
   status: string;
   bookings: number;
   cancelled: number;
+  noShows: number;
   minutes: number;
 }
 export abstract class InsightsRepository {

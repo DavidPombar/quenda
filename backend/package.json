@@ -5,12 +5,14 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "DEMO_MODE=true tsc-watch --onSuccess 'node dist/main.js'",
+    "dev:worker": "until [ -f dist/worker.js ]; do sleep 1; done; DEMO_MODE=true WORKER_INTERVAL_MS=5000 node --watch dist/worker.js",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
     "db:retention": "npm run build && node dist/database/retention.js",
+    "worker": "node dist/worker.js",
     "test": "vitest run --config vitest.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts"
   },
@@ -24,6 +26,7 @@
     "class-validator": "^0.15.1",
     "helmet": "^8.1.0",
     "ical.js": "^2.2.1",
+    "nodemailer": "~10.2.1",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"

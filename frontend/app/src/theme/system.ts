@@ -24,16 +24,17 @@ const config = defineConfig({
         bold: { value: "700" },
       },
       colors: {
-        // Municipal court green; 600 is the brand solid.
+        // Municipal brand colour; 600 is the solid. The shell overrides the CSS variables with
+        // the municipality's validated primary colour; the hex values are Quenda's default green.
         court: {
           50: { value: "#f0f6f2" },
-          100: { value: "#e6efe9" },
-          200: { value: "#c9ddd0" },
-          300: { value: "#9fc2ad" },
+          100: { value: "var(--court-tint, #e6efe9)" },
+          200: { value: "var(--court-200, #c9ddd0)" },
+          300: { value: "var(--court-300, #9fc2ad)" },
           400: { value: "#5f957a" },
           500: { value: "#2f7356" },
-          600: { value: "#1f5b43" },
-          700: { value: "#174634" },
+          600: { value: "var(--court, #1f5b43)" },
+          700: { value: "var(--court-dark, #174634)" },
           800: { value: "#123828" },
           900: { value: "#0d291e" },
           950: { value: "#081a13" },
