@@ -4,7 +4,8 @@ import { AccountProfile } from "../../../domain/account.read-model";
 export class AccountProfileResponseDTO {
   @ApiProperty({ description: "User UUID" }) userId!: string;
   @ApiProperty({ description: "Display name" }) displayName!: string;
-  @ApiProperty({ description: "Account role" }) role!: "citizen" | "manager";
+  @ApiProperty({ description: "Account role" }) role!:
+    "citizen" | "manager" | "staff";
   static from(value: AccountProfile): AccountProfileResponseDTO {
     return {
       userId: value.userId,

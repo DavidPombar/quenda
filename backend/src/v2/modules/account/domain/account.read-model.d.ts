@@ -3,7 +3,7 @@ import type { Temporal } from "@js-temporal/polyfill";
 export interface AccountProfile {
   userId: string;
   displayName: string;
-  role: "citizen" | "manager";
+  role: "citizen" | "manager" | "staff";
 }
 export interface ConsentRecord {
   legalVersion: string;

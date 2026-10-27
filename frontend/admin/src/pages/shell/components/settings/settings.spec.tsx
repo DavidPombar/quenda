@@ -6,6 +6,8 @@ import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { stubShell, municipality } from "@/test/fixtures";
 import type {
+  AccessSettings,
+  SigningKey,
   MunicipalitySettings,
   SettingsPatch,
   SettingsUpdate,
@@ -37,7 +39,23 @@ function stubManager(overrides: Partial<MunicipalitySettings> = {}) {
     path: "*/v2/manager/municipality",
     response: { ...settings, ...overrides },
   });
+  stubJsonResponse({ path: "*/v2/manager/access", response: () => access });
 }
+
+const signingKey: SigningKey = {
+  kty: "OKP",
+  crv: "Ed25519",
+  alg: "EdDSA",
+  kid: "50000000-0000-4000-8000-000000000001",
+  x: "Nq_grNqY5XfpBccrLyAGpW8OOTKGsdUf28vA3xmgNr4",
+  fingerprint: "1a2b:3c4d:5e6f:7a8b",
+  createdAt: "2026-10-01T08:00:00Z",
+};
+let access: AccessSettings = {
+  key: signingKey,
+  webhookUrl: null,
+  hasWebhookSecret: false,
+};
 
 function stubPatch(result: Partial<MunicipalitySettings> = {}, affected = 0) {
   return stubJsonResponse({
@@ -176,5 +194,63 @@ describe("municipal settings", () => {
       .element(page.getByRole("heading", { level: 1, name: "Axustes" }))
       .toBeVisible();
     expect(localStorage.getItem("quenda.locale")).toBe("gl");
+  });
+  test("should replace the signing key after confirming and configure the access webhook", async () => {
+    access = { key: signingKey, webhookUrl: null, hasWebhookSecret: false };
+    stubManager();
+    let rotations = 0;
+    stubJsonResponse({
+      path: "*/v2/manager/access/key-rotations",
+      method: "POST",
+      status: 201,
+      response: () => {
+        rotations++;
+        access = {
+          ...access,
+          key: {
+            ...signingKey,
+            kid: "new",
+            fingerprint: "ffff:eeee:dddd:cccc",
+          },
+        };
+        return access.key;
+      },
+    });
+    const webhooks: unknown[] = [];
+    stubJsonResponse({
+      path: "*/v2/manager/access/webhook",
+      method: "PUT",
+      response: ({ body }: { body: unknown }) => {
+        webhooks.push(body);
+        access = {
+          ...access,
+          webhookUrl: "https://locks.example/quenda",
+          hasWebhookSecret: true,
+        };
+        return { url: access.webhookUrl, secret: "whsec_c2VjcmV0" };
+      },
+    });
+    await open();
+    const section = page.getByRole("region", { name: "Control de acceso" });
+    await expect
+      .element(section.getByText("1a2b:3c4d:5e6f:7a8b"))
+      .toBeVisible();
+    await section.getByRole("button", { name: "Substituír a clave" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect.element(dialog.getByText(/deixarán de valer/)).toBeVisible();
+    await dialog.getByRole("button", { name: "Substituír" }).click();
+    await expect
+      .element(section.getByText("ffff:eeee:dddd:cccc"))
+      .toBeVisible();
+    await expect.element(section.getByText(/Clave substituída/)).toBeVisible();
+    expect(rotations).toBe(1);
+    await section
+      .getByRole("textbox", { name: "Webhook de acceso (opcional)" })
+      .fill("https://locks.example/quenda");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect.element(section.getByText("whsec_c2VjcmV0")).toBeVisible();
+    expect(webhooks).toEqual([
+      { url: "https://locks.example/quenda", rotateSecret: false },
+    ]);
   });
 });

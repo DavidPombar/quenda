@@ -8,7 +8,7 @@ import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
-import { Principal } from "../../../../shared/application/principal";
+import { Principal, Role } from "../../../../shared/application/principal";
 export type CreateSessionError =
   | AppError<"demo_disabled">
   | AppError<"not_found">
@@ -26,7 +26,7 @@ export class CreateSession {
   ) {}
   async execute(args: {
     slug: string;
-    role: "citizen" | "manager";
+    role: Role;
     legalVersion?: string;
   }): Promise<
     Result<{ token: string; principal: Principal }, CreateSessionError>

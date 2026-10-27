@@ -139,3 +139,57 @@ ALTER TABLE notifications ADD CONSTRAINT notifications_kind_check CHECK (kind IN
 ));
 -- Snapshot shown with the notice: the municipal reason or the penalty standing at that moment.
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS details jsonb;
+-- Access control (M3, #23). 'staff' only validates credentials and marks attendance.
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_valid;
+ALTER TABLE users ADD CONSTRAINT users_role_valid CHECK (role IN ('citizen', 'manager', 'staff'));
+-- Ed25519 key per municipality; the private half is AES-256-GCM encrypted under the deployment
+-- key (iv | tag | ciphertext). Rotation retires the active key, which revokes its credentials.
+CREATE TABLE IF NOT EXISTS municipality_signing_keys (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL REFERENCES municipalities(id),
+  public_key text NOT NULL, encrypted_private_key bytea NOT NULL,
+  created_at timestamptz NOT NULL, retired_at timestamptz
+);
+CREATE UNIQUE INDEX IF NOT EXISTS municipality_signing_keys_active
+  ON municipality_signing_keys(tenant_id) WHERE retired_at IS NULL;
+-- Scanned at the door; a check-in only stands on a confirmed booking.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at timestamptz;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_by uuid;
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_checked_in_by_fk;
+ALTER TABLE bookings ADD CONSTRAINT bookings_checked_in_by_fk
+  FOREIGN KEY (tenant_id, checked_in_by) REFERENCES users(tenant_id, id);
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_check_in_valid;
+ALTER TABLE bookings ADD CONSTRAINT bookings_check_in_valid CHECK (
+  (checked_in_at IS NULL AND checked_in_by IS NULL)
+  OR (status = 'confirmed' AND checked_in_at IS NOT NULL)
+);
+-- Open webhook "reserva confirmada → credencial temporal" (Standard Webhooks). The secret is
+-- encrypted like the signing key.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS access_webhook_url text
+  CHECK (access_webhook_url ~ '^https?://' AND length(access_webhook_url) <= 500);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS access_webhook_secret bytea;
+-- Outbox: one pending row per booking, coalesced; the payload is built from the booking's state
+-- at delivery time, so no copy of personal data is stored here.
+CREATE TABLE IF NOT EXISTS access_webhook_deliveries (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, booking_id uuid NOT NULL,
+  changed_at timestamptz NOT NULL, available_at timestamptz NOT NULL,
+  attempts integer NOT NULL DEFAULT 0, locked_until timestamptz,
+  sent_at timestamptz, last_error text,
+  FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS access_webhook_deliveries_pending
+  ON access_webhook_deliveries(booking_id) WHERE sent_at IS NULL;
+-- Every reservation change commits its delivery in the same transaction, whichever command made it.
+CREATE OR REPLACE FUNCTION enqueue_access_webhook() RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM municipalities WHERE id = NEW.tenant_id AND access_webhook_url IS NOT NULL) THEN
+    INSERT INTO access_webhook_deliveries (id, tenant_id, booking_id, changed_at, available_at)
+      VALUES (gen_random_uuid(), NEW.tenant_id, NEW.id, clock_timestamp(), clock_timestamp())
+      ON CONFLICT (booking_id) WHERE sent_at IS NULL
+      DO UPDATE SET changed_at = EXCLUDED.changed_at, available_at = EXCLUDED.available_at, attempts = 0;
+  END IF;
+  RETURN NULL;
+END $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS bookings_access_webhook ON bookings;
+CREATE TRIGGER bookings_access_webhook AFTER INSERT OR UPDATE OF status, starts_at, ends_at ON bookings
+  FOR EACH ROW EXECUTE FUNCTION enqueue_access_webhook();

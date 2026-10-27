@@ -3,6 +3,7 @@ import { Button } from "@chakra-ui/react";
 import {
   PiCalendarBlank,
   PiCheck,
+  PiQrCode,
   PiClock,
   PiUserMinus,
   PiX,
@@ -23,6 +24,7 @@ export function BookingRow(p: {
   locale: Locale;
   t: (key: TextKey) => string;
   canChange: boolean;
+  onShowPass: () => void;
   onCancel: () => void;
   onChange: () => void;
 }) {
@@ -56,19 +58,29 @@ export function BookingRow(p: {
           <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
         </li>
       </ul>
-      {p.canChange && (
+      {(p.booking.outcome === "upcoming" || p.canChange) && (
         <div className="booking-actions">
-          <Button size="lg" variant="outline" onClick={p.onChange}>
-            {p.t("changeBooking")}
-          </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            colorPalette="red"
-            onClick={p.onCancel}
-          >
-            {p.t("cancelBooking")}
-          </Button>
+          {p.booking.outcome === "upcoming" && (
+            <Button size="lg" colorPalette="court" onClick={p.onShowPass}>
+              <PiQrCode size={20} aria-hidden="true" />
+              {p.t("showAccessPass")}
+            </Button>
+          )}
+          {p.canChange && (
+            <>
+              <Button size="lg" variant="outline" onClick={p.onChange}>
+                {p.t("changeBooking")}
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                colorPalette="red"
+                onClick={p.onCancel}
+              >
+                {p.t("cancelBooking")}
+              </Button>
+            </>
+          )}
         </div>
       )}
     </article>

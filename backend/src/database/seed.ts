@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Pool } from "pg";
 import { databaseUrl } from "./config";
+import { provisionSigningKeys } from "../v2/modules/access/infrastructure/crypto/provision-signing-keys";
 export function openingCalendar(id: string) {
   return [
     "BEGIN:VCALENDAR",
@@ -58,6 +59,7 @@ export async function seed(url = databaseUrl) {
       for (const [j, role, display] of [
         [1, "citizen", "Alex · conta de proba"],
         [2, "manager", "Uxía · xestión municipal"],
+        [3, "staff", "Brais · conserxería"],
       ] as const)
         await db.query(
           "INSERT INTO users VALUES ($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING",
@@ -134,6 +136,8 @@ export async function seed(url = databaseUrl) {
         );
       }
     }
+    // Each municipality gets its access-credential signing key when it is installed (M3).
+    await provisionSigningKeys(db);
   } finally {
     await db.end();
   }

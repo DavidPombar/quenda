@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
@@ -12,6 +12,7 @@ import type { Locale } from "@/types/models";
 export function useShellController() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const municipalities = useListMunicipalitiesQuery();
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
@@ -29,11 +30,16 @@ export function useShellController() {
     localStorage.setItem("quenda.locale", next);
     setChosenLocale(next);
   }
+  // Municipal staff only: managers, and door staff limited to access control (M3).
   const session =
-    sessionQuery.data?.role === "manager" &&
+    (sessionQuery.data?.role === "manager" ||
+      sessionQuery.data?.role === "staff") &&
     sessionQuery.data.tenantId === municipality?.id
       ? (sessionQuery.data ?? null)
       : null;
+  const isStaff = session?.role === "staff";
+  const staffAreas: string[] = [ROUTES.access, ROUTES.bookings];
+  const section = location.pathname.split("/")[2] ?? "";
   const t = (key: TextKey) => translate(locale, key);
   // Demo display names look like "Uxía · xestión municipal": show the person, not the role.
   const accountName = session?.displayName.split("·")[0].trim() ?? "";
@@ -58,10 +64,10 @@ export function useShellController() {
     if (sessionQuery.data) await remove.mutateAsync();
     await navigate(routeFor(next, ROUTES.management));
   }
-  async function signIn() {
+  async function signIn(role: "manager" | "staff") {
     if (!municipality) return;
     try {
-      await create.mutateAsync({ slug: municipality.slug, role: "manager" });
+      await create.mutateAsync({ slug: municipality.slug, role });
       setLoginOpen(false);
     } catch {
       /* Mutation state presents the error. */
@@ -71,6 +77,12 @@ export function useShellController() {
     municipalities,
     municipality,
     session,
+    isStaff,
+    // Door staff landing on a management page are sent to the scanner.
+    redirectTo:
+      isStaff && municipality && !staffAreas.includes(section)
+        ? routeFor(municipality.slug, ROUTES.access)
+        : null,
     accountName,
     accountInitials,
     locale,

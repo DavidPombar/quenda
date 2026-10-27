@@ -6,7 +6,10 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import helmet from "helmet";
 import type { Request, Response, NextFunction } from "express";
 import { AppModule } from "./app.module";
+import { masterKey } from "./v2/modules/access/infrastructure/crypto/key-encryption";
 export async function createApp() {
+  // Fail fast: signing keys and webhook secrets cannot be opened without the deployment key.
+  masterKey();
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: process.env.NODE_ENV === "test" ? false : ["error", "warn", "log"],
   });

@@ -14,6 +14,8 @@ interface BookingBase {
 }
 export interface ConfirmedBooking extends BookingBase {
   status: "confirmed";
+  /** Door scan (M3); cleared if the booking is cancelled, marked absent or moved. */
+  checkedInAt?: Temporal.Instant | null;
 }
 /** Marked by the municipality on the day; reverting it makes the booking confirmed again. */
 export interface NoShowBooking extends BookingBase {

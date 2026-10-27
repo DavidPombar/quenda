@@ -31,6 +31,7 @@ export function useMyBookingsController() {
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
   const [cancelling, setCancelling] = useState<Booking | null>(null);
   const [changing, setChanging] = useState<Booking | null>(null);
+  const [showingPass, setShowingPass] = useState<Booking | null>(null);
   const [showAllNotices, setShowAllNotices] = useState(false);
   const [bookingLimit, setBookingLimit] = useState(BOOKING_PAGE);
   const allNotices = notices.data ?? [];
@@ -119,6 +120,8 @@ export function useMyBookingsController() {
     setCancelling,
     changing,
     setChanging,
+    showingPass,
+    setShowingPass,
     update,
     confirmCancel,
     canChange,

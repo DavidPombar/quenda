@@ -5,7 +5,8 @@ import { ConsentResponseDTO } from "./consent.response.dto";
 export class AccountResponseDTO {
   @ApiProperty({ description: "Authenticated user UUID" }) userId!: string;
   @ApiProperty({ description: "Display name" }) displayName!: string;
-  @ApiProperty({ description: "Account role" }) role!: "citizen" | "manager";
+  @ApiProperty({ description: "Account role" }) role!:
+    "citizen" | "manager" | "staff";
   @ApiProperty({ description: "Privacy notice version currently in force" })
   currentLegalVersion!: string;
   @ApiProperty({

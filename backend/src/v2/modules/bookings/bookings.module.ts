@@ -10,6 +10,8 @@ import { PostgresNotificationRepository } from "./infrastructure/persistence/pos
 import { BookingBlockRepository } from "./domain/booking-block.repository";
 import { PostgresBookingBlockRepository } from "./infrastructure/persistence/postgres-booking-block.repository";
 import { ManageBooking } from "./application/commands/manage-booking.command";
+import { MarkUncheckedNoShows } from "./application/commands/mark-unchecked-no-shows.command";
+import { MarkUncheckedNoShowsController } from "./infrastructure/api/manager/mark-unchecked-no-shows.controller";
 import { ListManagedBookings } from "./application/queries/list-managed-bookings.query";
 import { GetPenaltyStanding } from "./application/queries/get-penalty-standing.query";
 import { ManageBookingController } from "./infrastructure/api/manager/manage-booking.controller";
@@ -33,6 +35,7 @@ import { ListNotificationsController } from "./infrastructure/api/citizen/list-n
     ListBookings,
     ListNotifications,
     ManageBooking,
+    MarkUncheckedNoShows,
     ListManagedBookings,
     GetPenaltyStanding,
     {
@@ -52,6 +55,7 @@ import { ListNotificationsController } from "./infrastructure/api/citizen/list-n
     ListBookingsController,
     ListNotificationsController,
     ManageBookingController,
+    MarkUncheckedNoShowsController,
     ListManagedBookingsController,
     GetPenaltyStandingController,
   ],

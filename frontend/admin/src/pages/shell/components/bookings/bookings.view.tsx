@@ -14,7 +14,7 @@ export function Bookings() {
           <p className="page-subtitle">{c.t("dayBookingsSubtitle")}</p>
         </div>
       </div>
-      {!c.isManager ? (
+      {!c.canAttend ? (
         <div className="empty-state">
           <SpotArt kind="access" />
           <h2>{c.t("managerOnly")}</h2>
@@ -35,6 +35,7 @@ export function Bookings() {
               <Input
                 type="date"
                 value={c.date}
+                readOnly={!c.isManager}
                 onChange={(event) => c.setFilter("date", event.target.value)}
               />
             </Field.Root>
@@ -59,6 +60,22 @@ export function Bookings() {
             </Field.Root>
           </form>
           <p className="notice">{c.t("noShowRule")}</p>
+          {c.isToday && c.uncheckedCount > 0 && (
+            <div className="bulk-actions">
+              <Button
+                variant="outline"
+                colorPalette="red"
+                loading={c.markRest.isPending}
+                disabled={c.mutation.isPending}
+                onClick={() => {
+                  void c.markUnchecked();
+                }}
+              >
+                {c.t("markUncheckedNoShows")} ({c.uncheckedCount})
+              </Button>
+              <p className="field-hint">{c.t("markUncheckedHint")}</p>
+            </div>
+          )}
           <div aria-live="polite">
             {c.message && (
               <p role="status" className="success-message">
@@ -68,6 +85,11 @@ export function Bookings() {
             {c.mutation.error && !c.cancelling && (
               <p role="alert" className="error-text">
                 {c.mutation.error.message}
+              </p>
+            )}
+            {c.markRest.error && (
+              <p role="alert" className="error-text">
+                {c.markRest.error.message}
               </p>
             )}
           </div>
@@ -118,6 +140,11 @@ export function Bookings() {
                         <span className={`booking-outcome ${booking.outcome}`}>
                           {c.outcomeLabel(booking)}
                         </span>
+                        {booking.checkedInAt && (
+                          <span className="audit-role checked-in">
+                            {c.checkedInLabel(booking)}
+                          </span>
+                        )}
                         {booking.cancellationReason && (
                           <span className="audit-role">
                             {booking.cancellationReason}

@@ -18,6 +18,8 @@
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:retention": "npm run db:retention -w backend",
+    "db:webhooks": "npm run db:webhooks -w backend --",
+    "simulator:access": "node scripts/access-simulator.mjs",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed",
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",

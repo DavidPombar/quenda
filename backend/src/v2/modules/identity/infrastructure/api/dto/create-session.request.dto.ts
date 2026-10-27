@@ -16,8 +16,8 @@ export class CreateSessionRequestDTO {
   @ApiProperty({
     description: "Demo account to use; unavailable unless DEMO_MODE=true",
   })
-  @IsIn(["citizen", "manager"])
-  role!: "citizen" | "manager";
+  @IsIn(["citizen", "manager", "staff"])
+  role!: "citizen" | "manager" | "staff";
   @ApiPropertyOptional({
     description:
       "Privacy notice version the citizen accepts; must match the municipality's current version",

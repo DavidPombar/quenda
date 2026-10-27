@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import { useListManagedBookingsQuery } from "@/queries/bookings/list-managed-bookings.query";
 import { useManageBookingMutation } from "@/queries/bookings/manage-booking.mutation";
+import { useMarkUncheckedNoShowsMutation } from "@/queries/bookings/mark-unchecked-no-shows.mutation";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
 import {
   fullDateLabel,
@@ -25,9 +26,12 @@ export function useBookingsController() {
   const [params, setParams] = useSearchParams();
   const timezone = context.municipality.timezone;
   const isManager = context.session?.role === "manager";
-  const date = isPlainDate(params.get("date") ?? "")
-    ? (params.get("date") ?? "")
-    : today(timezone);
+  // Door staff (M3) work on today's sheet only and never cancel.
+  const canAttend = isManager || context.session?.role === "staff";
+  const date =
+    isManager && isPlainDate(params.get("date") ?? "")
+      ? (params.get("date") ?? "")
+      : today(timezone);
   const facilities = useListFacilitiesQuery(context.municipality.slug);
   const facilityId = facilities.data?.some(
     (item) => item.id === params.get("facility"),
@@ -35,10 +39,11 @@ export function useBookingsController() {
     ? (params.get("facility") ?? "")
     : "";
   const bookings = useListManagedBookingsQuery(
-    isManager ? context.municipality.id : undefined,
+    canAttend ? context.municipality.id : undefined,
     { date, ...(facilityId && { facilityId }) },
   );
   const mutation = useManageBookingMutation();
+  const markRest = useMarkUncheckedNoShowsMutation();
   const [cancelling, setCancelling] = useState<ManagedBooking | null>(null);
   const [message, setMessage] = useState("");
   function setFilter(key: "date" | "facility", value: string) {
@@ -65,6 +70,18 @@ export function useBookingsController() {
       /* Mutation state presents the error. */
     }
   }
+  /** Everyone whose booking has started today and who was not scanned at the door. */
+  async function markUnchecked() {
+    setMessage("");
+    try {
+      const { marked } = await markRest.mutateAsync(
+        facilityId ? { facilityId } : {},
+      );
+      setMessage(`${t("noShowsMarked")}: ${marked}`);
+    } catch {
+      /* Mutation state presents the error. */
+    }
+  }
   async function cancel(reason: string) {
     if (!cancelling) return;
     await mutation.mutateAsync({
@@ -77,6 +94,7 @@ export function useBookingsController() {
   return {
     ...context,
     isManager,
+    canAttend,
     date,
     dateLabel: fullDateLabel(date, context.locale),
     isToday: date === today(timezone),
@@ -87,6 +105,14 @@ export function useBookingsController() {
     message,
     setFilter,
     setAttendance,
+    markRest,
+    markUnchecked,
+    uncheckedCount:
+      bookings.data?.filter((booking) => booking.canMarkNoShow).length ?? 0,
+    checkedInLabel: (booking: ManagedBooking) =>
+      booking.checkedInAt
+        ? `${t("checkedIn")} ${timeLabel(booking.checkedInAt, timezone)}`
+        : "",
     cancelling,
     setCancelling: (booking: ManagedBooking | null) => {
       mutation.reset();

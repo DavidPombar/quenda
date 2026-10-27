@@ -5,7 +5,7 @@ import type { TextKey } from "@/services/i18n.service";
 export function SessionDialog(props: {
   open: boolean;
   onClose: () => void;
-  onSelect: () => void;
+  onSelect: (role: "manager" | "staff") => void;
   pending: boolean;
   error: string;
   t: (key: TextKey) => string;
@@ -33,10 +33,18 @@ export function SessionDialog(props: {
                 <Button
                   size="lg"
                   colorPalette="court"
-                  onClick={props.onSelect}
-                  loading={props.pending}
+                  onClick={() => props.onSelect("manager")}
+                  disabled={props.pending}
                 >
                   {props.t("manager")}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => props.onSelect("staff")}
+                  disabled={props.pending}
+                >
+                  {props.t("staff")}
                 </Button>
               </div>
               {props.error && (

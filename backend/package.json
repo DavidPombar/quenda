@@ -11,6 +11,7 @@
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
     "db:retention": "npm run build && node dist/database/retention.js",
+    "db:webhooks": "npm run build && node dist/database/deliver-webhooks.js",
     "test": "vitest run --config vitest.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts"
   },

@@ -19,7 +19,13 @@ export type ErrorCode =
   | "unsupported_logo"
   | "logo_too_large"
   | "booking_blocked"
-  | "attendance_window";
+  | "attendance_window"
+  | "checked_in"
+  | "credential_unavailable"
+  | "invalid_credential"
+  | "credential_not_yet_valid"
+  | "credential_expired"
+  | "marked_no_show";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

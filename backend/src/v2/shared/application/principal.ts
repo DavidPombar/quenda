@@ -6,12 +6,15 @@ export type Permission =
   | "insights:view"
   | "audit:view"
   | "municipality:manage"
-  | "bookings:manage";
+  | "bookings:manage"
+  | "bookings:attendance"
+  | "access:validate";
+export type Role = "citizen" | "manager" | "staff";
 export interface Principal {
   userId: string;
   tenantId: string;
   displayName: string;
-  role: "citizen" | "manager";
+  role: Role;
   grants: readonly Permission[];
 }
 export function can(principal: Principal, permission: Permission) {

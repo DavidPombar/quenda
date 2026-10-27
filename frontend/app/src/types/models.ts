@@ -60,6 +60,13 @@ export interface Booking {
   cancelledBy: "citizen" | "municipality" | null;
   cancellationReason: string | null;
 }
+/** Signed temporary access credential (M3), shown as a QR code at the door. */
+export interface AccessCredential {
+  token: string;
+  keyId: string;
+  notBefore: string;
+  expiresAt: string;
+}
 /** No-shows against the municipal penalty; blockedUntil is set while bookings are blocked. */
 export interface PenaltyStanding {
   enabled: boolean;

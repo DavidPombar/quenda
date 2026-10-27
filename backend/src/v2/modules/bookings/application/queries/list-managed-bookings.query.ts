@@ -14,11 +14,15 @@ export type ListManagedBookingsError =
   AppError<"forbidden"> | AppError<"not_found"> | AppError<"validation">;
 export interface ManagedBooking extends ManagedBookingReadModel {
   outcome: BookingOutcome;
+  checkedInAt: Temporal.Instant | null;
   canMarkNoShow: boolean;
   canRevert: boolean;
   canCancel: boolean;
 }
-/** Reservations of one local day, for attendance and municipal cancellations. */
+/**
+ * Reservations of one local day, for attendance and municipal cancellations. Door staff (M3) only
+ * see today and cannot cancel.
+ */
 @Injectable()
 export class ListManagedBookings {
   constructor(
@@ -31,7 +35,8 @@ export class ListManagedBookings {
     date: string;
     facilityId?: string;
   }): Promise<Result<ManagedBooking[], ListManagedBookingsError>> {
-    if (!can(args.principal, "bookings:manage"))
+    const manages = can(args.principal, "bookings:manage");
+    if (!manages && !can(args.principal, "bookings:attendance"))
       return Result.err(failure("forbidden"));
     const settings = await this.municipalities.find(args.principal.tenantId);
     if (!settings) return Result.err(failure("not_found"));
@@ -43,6 +48,8 @@ export class ListManagedBookings {
     }
     const now = this.clock.now();
     const today = now.toZonedDateTimeISO(settings.timezone).toPlainDate();
+    if (!manages && !date.equals(today))
+      return Result.err(failure("forbidden"));
     const rows = await this.bookings.listStarting({
       tenantId: settings.id,
       from: date.toZonedDateTime(settings.timezone).toInstant(),
@@ -52,13 +59,21 @@ export class ListManagedBookings {
     return Result.ok(
       rows.map((row) => {
         const started = Temporal.Instant.compare(row.booking.start, now) <= 0;
+        const checkedInAt =
+          row.booking.status === "confirmed"
+            ? (row.booking.checkedInAt ?? null)
+            : null;
         return {
           ...row,
           outcome: bookingOutcome(row.booking, now),
+          checkedInAt,
           canMarkNoShow:
-            row.booking.status === "confirmed" && started && date.equals(today),
+            row.booking.status === "confirmed" &&
+            !checkedInAt &&
+            started &&
+            date.equals(today),
           canRevert: row.booking.status === "no_show",
-          canCancel: row.booking.status === "confirmed" && !started,
+          canCancel: manages && row.booking.status === "confirmed" && !started,
         };
       }),
     );

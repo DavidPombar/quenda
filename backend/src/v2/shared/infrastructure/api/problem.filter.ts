@@ -36,6 +36,17 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Non podes facer reservas temporalmente por acumular ausencias sen avisar.",
     attendance_window:
       "Só se pode marcar como non presentada unha reserva xa comezada e no mesmo día.",
+    checked_in:
+      "Esta persoa xa rexistrou a entrada; non se pode marcar como non presentada.",
+    credential_unavailable:
+      "Só as reservas confirmadas e sen rematar teñen código de acceso.",
+    invalid_credential:
+      "O código non é válido: non é deste concello, foi substituído ou a reserva cambiou.",
+    credential_not_yet_valid:
+      "Aínda é cedo: o código vale desde a apertura do espazo o día da reserva.",
+    credential_expired: "O código caducou: a reserva xa rematou.",
+    marked_no_show:
+      "A reserva está marcada como non presentada. Corríxea na lista do día se a persoa chegou.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -64,6 +75,17 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "No puedes hacer reservas temporalmente por acumular ausencias sin avisar.",
     attendance_window:
       "Solo se puede marcar como no presentada una reserva ya empezada y en el mismo día.",
+    checked_in:
+      "Esta persona ya registró la entrada; no se puede marcar como no presentada.",
+    credential_unavailable:
+      "Solo las reservas confirmadas y sin terminar tienen código de acceso.",
+    invalid_credential:
+      "El código no es válido: no es de este ayuntamiento, se sustituyó o la reserva cambió.",
+    credential_not_yet_valid:
+      "Todavía es pronto: el código vale desde la apertura del espacio el día de la reserva.",
+    credential_expired: "El código ha caducado: la reserva ya terminó.",
+    marked_no_show:
+      "La reserva está marcada como no presentada. Corrígela en la lista del día si la persona llegó.",
   },
 };
 @Catch(HttpException)

@@ -28,7 +28,8 @@ export type ManageBookingError =
   | AppError<"validation">
   | AppError<"attendance_window">
   | AppError<"cancellation_deadline">
-  | AppError<"booking_cancelled">;
+  | AppError<"booking_cancelled">
+  | AppError<"checked_in">;
 export type ManageBookingChange =
   | { attendance: "no_show" | "attended" }
   | { status: "cancelled"; reason: string };
@@ -53,7 +54,13 @@ export class ManageBooking {
     id: string;
     change: ManageBookingChange;
   }): Promise<Result<void, ManageBookingError>> {
-    if (!can(args.principal, "bookings:manage"))
+    // Door staff (M3) record attendance; only managers cancel on behalf of the municipality.
+    if (
+      !can(
+        args.principal,
+        "status" in args.change ? "bookings:manage" : "bookings:attendance",
+      )
+    )
       return Result.err(failure("forbidden"));
     const { tenantId } = args.principal;
     const found = await this.bookings.findInTenant(tenantId, args.id);
@@ -125,6 +132,7 @@ export class ManageBooking {
     if (existing.status === "no_show") return Result.ok();
     if (existing.status === "cancelled")
       return Result.err(failure("booking_cancelled"));
+    if (existing.checkedInAt) return Result.err(failure("checked_in"));
     const sameDay = existing.start
       .toZonedDateTimeISO(settings.timezone)
       .toPlainDate()

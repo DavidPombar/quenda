@@ -6,7 +6,7 @@ export const sessionsRepository = {
     apiClient
       .request<{ session: Session | null }>("public/session")
       .then((value) => value.session),
-  create: (body: { slug: string; role: "manager" }) =>
+  create: (body: { slug: string; role: "manager" | "staff" }) =>
     apiClient.request<Session>("public/sessions", {
       method: "POST",
       body: JSON.stringify(body),

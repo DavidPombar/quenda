@@ -104,3 +104,41 @@ test("should tell the person how many more absences the municipality allows befo
       "Levas 2 ausencias sen avisar nos últimos 30 días. Se faltas 1 vez máis, non poderás reservar durante 7 días.",
     );
 });
+test("should show the signed access QR of an upcoming booking with its validity window", async () => {
+  const upcoming: Booking = {
+    ...base,
+    id: "30000000-0000-4000-8000-000000000003",
+    start: "2026-10-30T17:00:00Z",
+    end: "2026-10-30T18:00:00Z",
+    status: "confirmed",
+    outcome: "upcoming",
+  };
+  stubShell(true);
+  stubJsonResponse({ path: "*/v2/citizen/bookings", response: [upcoming] });
+  stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
+  stubJsonResponse({
+    path: "*/v2/citizen/penalty",
+    response: { ...standing, count: 0, remaining: 3, blockedUntil: null },
+  });
+  stubJsonResponse({
+    path: `*/v2/citizen/bookings/${upcoming.id}/credential`,
+    response: {
+      token: "eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl",
+      keyId: "50000000-0000-4000-8000-000000000001",
+      notBefore: "2026-10-30T08:00:00Z",
+      expiresAt: "2026-10-30T18:00:00Z",
+    },
+  });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await page.getByRole("button", { name: "Código de acceso" }).click();
+  const dialog = page.getByRole("dialog", { name: "O teu código de acceso" });
+  await expect
+    .element(
+      dialog.getByRole("img", { name: "Código QR de acceso á instalación" }),
+    )
+    .toBeVisible();
+  await expect
+    .element(dialog.getByText("desde as 09:00 ata as 19:00", { exact: false }))
+    .toBeVisible();
+});

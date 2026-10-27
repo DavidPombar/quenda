@@ -3,10 +3,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { Pool } from "pg";
 import { databaseUrl } from "./config";
+import { provisionSigningKeys } from "../v2/modules/access/infrastructure/crypto/provision-signing-keys";
 export async function migrate(url = databaseUrl) {
   const pool = new Pool({ connectionString: url });
   try {
     await pool.query(await readFile(join(__dirname, "schema.sql"), "utf8"));
+    await provisionSigningKeys(pool);
   } finally {
     await pool.end();
   }

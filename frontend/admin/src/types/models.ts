@@ -52,7 +52,7 @@ export interface Session {
   userId: string;
   tenantId: string;
   displayName: string;
-  role: "citizen" | "manager";
+  role: "citizen" | "manager" | "staff";
 }
 export type Sport = "padel" | "tennis" | "futsal" | "swimming";
 export interface Facility {
@@ -88,6 +88,8 @@ export interface ManagedBooking {
   cancelledBy: "citizen" | "municipality" | null;
   cancellationReason: string | null;
   displayName: string;
+  /** Door scan time (M3); absent from servers that predate access control. */
+  checkedInAt?: string | null;
   canMarkNoShow: boolean;
   canRevert: boolean;
   canCancel: boolean;
@@ -127,4 +129,34 @@ export interface AuditFilters {
   to?: string;
   action?: string;
   limit?: number;
+}
+/** Ed25519 public key published to door devices (OKP JWK, RFC 8037). */
+export interface SigningKey {
+  kty: "OKP";
+  crv: "Ed25519";
+  alg: "EdDSA";
+  kid: string;
+  x: string;
+  fingerprint: string;
+  createdAt: string;
+}
+export interface AccessKeys {
+  issuer: string;
+  timezone: string;
+  keys: SigningKey[];
+}
+export interface AccessSettings {
+  key: SigningKey;
+  webhookUrl: string | null;
+  hasWebhookSecret: boolean;
+}
+export interface CheckIn {
+  bookingId: string;
+  facilityId: string;
+  facilityName: string;
+  displayName: string;
+  start: string;
+  end: string;
+  checkedInAt: string;
+  alreadyCheckedIn: boolean;
 }

@@ -19,6 +19,7 @@ interface Row {
   cancelled_by: "citizen" | "municipality" | null;
   cancellation_reason: string | null;
   status: string;
+  checked_in_at: string | null;
   facility_name: string;
   sport: string;
 }
@@ -34,7 +35,13 @@ function toDomain(row: Row): Booking {
     cancellationHours: row.cancellation_hours,
   };
   if (row.status === "confirmed" && row.cancelled_at === null)
-    return { ...base, status: "confirmed" };
+    return {
+      ...base,
+      status: "confirmed",
+      checkedInAt: row.checked_in_at
+        ? Temporal.Instant.from(row.checked_in_at)
+        : null,
+    };
   if (row.status === "no_show" && row.cancelled_at === null)
     return { ...base, status: "no_show" };
   if (row.status === "cancelled" && row.cancelled_at !== null)
@@ -130,7 +137,7 @@ export class PostgresBookingRepository extends BookingRepository {
     try {
       await this.db
         .query(
-          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
+          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12,checked_in_at=CASE WHEN $7='confirmed' AND bookings.starts_at=$5 THEN bookings.checked_in_at END,checked_in_by=CASE WHEN $7='confirmed' AND bookings.starts_at=$5 THEN bookings.checked_in_by END WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
           [
             value.id,
             value.tenantId,

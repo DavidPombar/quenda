@@ -61,6 +61,8 @@ export class ManageBookingController {
         throw new ProblemException(422, error);
       case "booking_cancelled":
         throw new ProblemException(422, error);
+      case "checked_in":
+        throw new ProblemException(422, error);
       default:
         return assertNever(error);
     }

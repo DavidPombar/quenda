@@ -12,4 +12,9 @@ export const bookingsRepository = {
       method: "PATCH",
       body: JSON.stringify(args.change),
     }),
+  markUncheckedNoShows: (args: { facilityId?: string }) =>
+    apiClient.request<{ marked: number }>("manager/bookings/no-shows", {
+      method: "POST",
+      body: JSON.stringify(args),
+    }),
 };

@@ -5,7 +5,7 @@ export interface AuditEntry {
   action: string;
   /** NULL for system actions and for events pseudonymised by retention. */
   actorId: string | null;
-  actorRole: "citizen" | "manager" | "system" | null;
+  actorRole: "citizen" | "manager" | "staff" | "system" | null;
   actorName: string | null;
   resourceId: string;
   occurredAt: Temporal.Instant;

@@ -196,4 +196,64 @@ describe("day bookings", () => {
       closureReason: "Obras urxentes na cuberta",
     });
   });
+  test("should show who came in through the door and mark the rest as no-shows when door staff close the shift", async () => {
+    stubShell();
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      response: {
+        session: {
+          userId: "staff",
+          tenantId: municipality.id,
+          displayName: "Brais",
+          role: "staff",
+        },
+      },
+    });
+    const scanned: ManagedBooking = {
+      ...started,
+      id: "30000000-0000-4000-8000-000000000003",
+      displayName: "Carme",
+      checkedInAt: "2026-10-27T08:55:00Z",
+      canMarkNoShow: false,
+    };
+    let rows = [scanned, started];
+    stubJsonResponse({ path: "*/v2/manager/bookings", response: () => rows });
+    const requests: unknown[] = [];
+    stubJsonResponse({
+      path: "*/v2/manager/bookings/no-shows",
+      method: "POST",
+      response: ({ body }: { body: unknown }) => {
+        requests.push(body);
+        rows = rows.map((row) =>
+          row.id === started.id
+            ? {
+                ...row,
+                status: "no_show",
+                outcome: "no_show",
+                canMarkNoShow: false,
+                canRevert: true,
+              }
+            : row,
+        );
+        return { marked: 1 };
+      },
+    });
+    await commands.navigate("/admin/vilaverde/reservas");
+    await render(<App />);
+    const table = page.getByRole("table", { name: /Reservas do/ });
+    await expect.element(table.getByText("Entrou ás 09:55")).toBeVisible();
+    await expect
+      .element(page.getByLabelText("Día"))
+      .toHaveAttribute("readonly");
+    await page
+      .getByRole("button", { name: "Marcar o resto como non presentado (1)" })
+      .click();
+    await expect
+      .element(
+        page.getByRole("status").getByText("Marcadas como non presentadas: 1"),
+      )
+      .toBeVisible();
+    await expect.element(table.getByText("Non presentada")).toBeVisible();
+    expect(requests).toEqual([{}]);
+  });
 });
