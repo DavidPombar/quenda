@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
-import type { Account, Facility, Municipality } from "@/types/models";
+import type {
+  Account,
+  AuthMethods,
+  Facility,
+  Municipality,
+} from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "vilaverde",
@@ -28,7 +33,21 @@ export const facility: Facility = {
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
 };
-export function stubShell(authenticated = false) {
+export const authMethods: AuthMethods = {
+  demo: true,
+  oidc: null,
+  email: false,
+};
+export function stubAuthMethods(overrides: Partial<AuthMethods> = {}) {
+  const response = { ...authMethods, ...overrides };
+  stubJsonResponse({ path: "*/v2/public/auth/methods", response });
+  return response;
+}
+export function stubShell(
+  authenticated = false,
+  methods: Partial<AuthMethods> = {},
+) {
+  stubAuthMethods(methods);
   stubJsonResponse({
     path: "*/v2/public/municipalities",
     response: [municipality],
@@ -66,7 +85,10 @@ export const account: Account = {
   currentLegalVersion: municipality.legalVersion,
   consentUpToDate: true,
   consents: [
-    { legalVersion: municipality.legalVersion, acceptedAt: "2026-10-18T09:30:00Z" },
+    {
+      legalVersion: municipality.legalVersion,
+      acceptedAt: "2026-10-18T09:30:00Z",
+    },
   ],
   bookings: 2,
   notifications: 3,

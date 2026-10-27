@@ -14,6 +14,7 @@ export interface RetentionSummary {
   notificationsDeleted: number;
   auditPseudonymised: number;
   sessionsPurged: number;
+  loginAttemptsPurged: number;
   consentsDeleted: number;
   usersPurged: number;
 }
@@ -50,6 +51,10 @@ export class ApplyRetention {
       cutoff,
     );
     const sessionsPurged = await this.retention.purgeSessions(tenantId, now);
+    const loginAttemptsPurged = await this.retention.purgeLoginAttempts(
+      tenantId,
+      now,
+    );
     const consentsDeleted = await this.retention.deleteConsentsOfPurgedUsers(
       tenantId,
       cutoff,
@@ -65,6 +70,7 @@ export class ApplyRetention {
       notificationsDeleted,
       auditPseudonymised,
       sessionsPurged,
+      loginAttemptsPurged,
       consentsDeleted,
       usersPurged,
     };
@@ -74,6 +80,7 @@ export class ApplyRetention {
       notificationsDeleted,
       auditPseudonymised,
       sessionsPurged,
+      loginAttemptsPurged,
       consentsDeleted,
       usersPurged,
     });

@@ -6,7 +6,7 @@ import {
 } from "../application/municipality-settings";
 import { Database } from "./database";
 const projection =
-  'id, slug, name, timezone, locale, advance_days AS "advanceDays", cancellation_hours AS "cancellationHours", max_active_bookings AS "maxActiveBookings", contact, legal_text AS "legalText", legal_version AS "legalVersion", retention_months AS "retentionMonths"';
+  'id, slug, name, timezone, locale, advance_days AS "advanceDays", cancellation_hours AS "cancellationHours", max_active_bookings AS "maxActiveBookings", contact, legal_text AS "legalText", legal_version AS "legalVersion", retention_months AS "retentionMonths", store_nif AS "storeNif"';
 @Injectable()
 export class PostgresMunicipalities extends Municipalities {
   constructor(private readonly db: Database) {

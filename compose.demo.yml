@@ -8,9 +8,23 @@ services:
       DATABASE_URL: postgres://quenda:quenda_local@db:5432/quenda
       DEMO_MODE: "true"
       HOST: 0.0.0.0
+      # Identidad (perfil `identity`): Keycloak de referencia + Cl@ve SIMULADO.
+      # Secreto de cliente solo para desarrollo local (ver deploy/keycloak/quenda-realm.json).
+      PUBLIC_URL: http://127.0.0.1:8080
+      OIDC_ISSUER: http://127.0.0.1:8081/realms/quenda
+      # Dentro de la red de compose 127.0.0.1:8081 no es Keycloak: el descubrimiento (y con él
+      # token y JWKS) va por el nombre del servicio; el `issuer` devuelto sigue siendo 127.0.0.1:8081.
+      OIDC_DISCOVERY_URL: http://keycloak:8080/realms/quenda
+      OIDC_CLIENT_ID: quenda
+      OIDC_CLIENT_SECRET: quenda-local-dev-secret-NO-PRODUCCION
+      OIDC_LABEL: Cl@ve
+      OIDC_IDP_HINT: clave
     depends_on:
       db:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+        required: false
     command:
       [
         "sh",

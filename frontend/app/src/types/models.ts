@@ -115,3 +115,8 @@ export interface AccountExport {
     details: Record<string, unknown> | null;
   }[];
 }
+export interface AuthMethods {
+  demo: boolean;
+  oidc: { label: string } | null;
+  email: boolean;
+}

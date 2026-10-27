@@ -3,9 +3,11 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { AccountRepository } from "../../domain/account.repository";
 import {
+  AccountPersonalData,
   AccountProfile,
   ExportedAuditEvent,
   ExportedBooking,
+  ExportedIdentity,
   ExportedNotification,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
@@ -52,6 +54,13 @@ export class PostgresAccountRepository extends AccountRepository {
     );
     return rows[0] ?? null;
   }
+  async findPersonalData(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<AccountPersonalData>(
+      'SELECT email, assurance, nif_ciphertext AS "nifCiphertext" FROM users WHERE tenant_id=$1 AND id=$2 AND deleted_at IS NULL',
+      [tenantId, userId],
+    );
+    return rows[0] ?? null;
+  }
   async countActivity(tenantId: string, userId: string) {
     const { rows } = await this.db.query<{
       bookings: number;
@@ -69,7 +78,7 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     await this.db.query(
-      "UPDATE users SET display_name=$3, deleted_at=$4 WHERE tenant_id=$1 AND id=$2",
+      "UPDATE users SET display_name=$3, deleted_at=$4, email=NULL, nif_ciphertext=NULL, nif_digest=NULL WHERE tenant_id=$1 AND id=$2",
       [tenantId, userId, displayName, now.toString()],
     );
   }
@@ -97,6 +106,27 @@ export class PostgresAccountRepository extends AccountRepository {
       [tenantId, userId],
     );
     return rowCount ?? 0;
+  }
+  async deleteIdentities(tenantId: string, userId: string) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM identities WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+    return rowCount ?? 0;
+  }
+  async listIdentities(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      issuer: string;
+      subject: string;
+      createdAt: string;
+    }>(
+      'SELECT issuer, subject, created_at AS "createdAt" FROM identities WHERE tenant_id=$1 AND user_id=$2 ORDER BY created_at',
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedIdentity => ({
+      ...row,
+      createdAt: Temporal.Instant.from(row.createdAt),
+    }));
   }
   async listBookingsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<BookingRow>(

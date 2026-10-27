@@ -160,6 +160,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     expect(audit.rows[0].details).toEqual({
       cancelledBookings: 1,
       revokedSessions: 1,
+      removedIdentities: 0,
     });
     expect(
       (await availability(context, court.id, begins)).body.find(
@@ -196,5 +197,32 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     ).toBe("forbidden");
     await del(context.manager, "citizen/me").expect(403);
     await context.manager.get("/v2/manager/insights").expect(200);
+  });
+});
+describe("Sign-in methods without an identity provider", () => {
+  it("should offer only the demo when OIDC is not configured", async () => {
+    const methods = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/methods")
+      .expect(200);
+    expect(methods.body).toEqual({ demo: true, oidc: null, email: false });
+  });
+  it("should send the citizen back with oidc_unavailable when OIDC is not configured", async () => {
+    const context = await tenant();
+    const response = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/oidc/start")
+      .query({ slug: context.slug, legalVersion: LEGAL_VERSION })
+      .redirects(0)
+      .expect(303);
+    expect(response.headers.location).toBe(
+      `/app/${context.slug}/instalacions?authError=oidc_unavailable`,
+    );
+  });
+  it("should answer an unexpected callback with a redirect, never JSON", async () => {
+    const response = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/oidc/callback")
+      .query({ code: "x", state: "y", session_state: "z" })
+      .redirects(0)
+      .expect(303);
+    expect(response.headers.location).toBe("/app/?authError=login_rejected");
   });
 });

@@ -12,6 +12,8 @@ export interface MunicipalitySettings {
   legalText: string;
   legalVersion: string;
   retentionMonths: number;
+  /** Residency verification is enabled: the NIF from eID sign-in is kept, encrypted. */
+  storeNif: boolean;
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

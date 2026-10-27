@@ -11,7 +11,8 @@ const anonymisedName = "Conta eliminada";
 /**
  * Right to erasure, in place: foreign keys keep past reservations and audit rows attached to a
  * user row that no longer carries personal data. Future reservations are released without the
- * cancellation deadline and without notices. Consents stay as evidence until retention purges them.
+ * cancellation deadline and without notices. E-mail and NIF are cleared and external identities
+ * unlinked, so a later eID sign-in creates a new, unrelated account. Consents stay as evidence until retention purges them.
  */
 @Injectable()
 export class DeleteAccount {
@@ -40,10 +41,15 @@ export class DeleteAccount {
       tenantId,
       userId,
     );
+    const removedIdentities = await this.accounts.deleteIdentities(
+      tenantId,
+      userId,
+    );
     await this.accounts.markDeleted(tenantId, userId, anonymisedName, now);
     await this.audit.record(args.principal, "account.deleted", userId, {
       cancelledBookings,
       revokedSessions,
+      removedIdentities,
     });
     return Result.ok();
   }

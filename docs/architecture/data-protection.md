@@ -42,26 +42,29 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 
 | Table | Personal data | Purpose | Retention |
 |---|---|---|---|
-| `users` | `display_name`, `role`, `deleted_at` | Identify the person who books or manages | Anonymised on deletion; row removed by retention once nothing references it |
+| `users` | `display_name`, `role`, `assurance`, `deleted_at`; `email` when the identity provider sends it; `nif_ciphertext` and `nif_digest` only when the municipality enables `store_nif` | Identify the person who books or manages; the NIF verifies residence for fees (#13) | Name, email and NIF erased on deletion; row removed by retention once nothing references it |
+| `identities` | Identity provider issuer and subject identifier | Recognise the person at the next sign-in | Deleted with the account |
+| `login_attempts` | No personal data: hashed state, nonce, PKCE verifier, notice version | Complete an OIDC sign-in safely | Ten minutes; expired rows purged by retention |
 | `sessions` | Hash of a random token, expiry | Keep the person signed in for at most eight hours | Removed at sign-out, deletion or expiry (retention purges expired rows) |
 | `consents` | Accepted notice version and time | Prove the person was informed | Kept while the account exists; removed by retention after deletion |
 | `bookings` | Link from a reservation to `user_id` | Provide the reservation and its history | Link set to NULL once the reservation ended more than `retention_months` ago |
 | `notifications` | Link to `user_id` and a reservation | In-app notices | Deleted on account deletion or after `retention_months` |
 | `audit_events` | `actor_id`, `actor_role`, `details` | Accountability for changes (art. 5.2 GDPR) | `actor_id` set to NULL after `retention_months`; action and details remain |
 
-Quenda does not collect identity documents, addresses, phone numbers, email addresses, health data
-or data about minors. Demo accounts carry fictitious names only. Production identity (Cl@ve,
-Chave365) must keep this minimisation: store the identifier the identity provider returns, not
-copies of documents.
+Quenda does not collect identity documents, addresses, phone numbers, health data or data about
+minors. It keeps the identifier the identity provider returns and the name it supplies; the email
+address only when the provider sends one; and the tax identifier (NIF) only when the municipality
+enables residence verification, encrypted with AES-256-GCM under `QUENDA_DATA_KEY` and never in
+plain text. Demo accounts carry fictitious names only. See [public identity](identity.md).
 
 ## Rights supported (arts. 15–22 GDPR)
 
 | Right | Implementation |
 |---|---|
-| Access and portability (arts. 15, 20) | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile, consents, every reservation, every notice and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`. |
-| Erasure (art. 17) | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices are deleted, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
+| Access and portability (arts. 15, 20) | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including email and decrypted NIF when stored), linked identities, consents, every reservation, every notice and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`. |
+| Erasure (art. 17) | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices are deleted, every session is revoked, `display_name` becomes «Conta eliminada», email and NIF are erased, linked identities are deleted and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
 | Information (arts. 13, 14) | The council's notice is shown from the sign-in dialog and the account page, with the version the person accepted and the retention period. |
-| Rectification (art. 16) | Not needed for the stored fields: the only free personal datum is the display name that the identity provider supplies. Requests go to the council. |
+| Rectification (art. 16) | Name, email and NIF come from the identity provider and are refreshed at each sign-in, so corrections are made at the provider. Other requests go to the council. |
 | Restriction and objection (arts. 18, 21) | Not automated. The council handles requests manually; a manager can cancel the person's reservations and the operator can mark the account. |
 
 Managers cannot export or delete their own accounts through these endpoints (`403 forbidden`);
@@ -107,11 +110,15 @@ retention only removes the actor link.
 - Tenant isolation is enforced in every repository query and covered by end-to-end tests.
 - Reservations, notices and audit events commit in one transaction; a failure rolls them all back.
 - No personal data leaves the deployment: no third-party analytics, fonts, maps or AI services.
+  Sign-in happens at the identity provider the operator configures (for example Cl@ve through the
+  *deputación*); Quenda only receives the claims listed above.
+- The NIF is encrypted with AES-256-GCM and searched by HMAC digest; the key lives outside the
+  database (`QUENDA_DATA_KEY`).
 - All code and dependencies are free software under licences checked in CI.
 
 ## Not covered by the prototype
 
-Production identity (OIDC with Cl@ve or Chave365), a full export and import of one municipality's data for a change of operator (issue #7), TLS termination, rate limiting, backup and
+Real Cl@ve onboarding (the repository simulates it, see [public identity](identity.md)), Chave365, a full export and import of one municipality's data for a change of operator (issue #7), TLS termination, rate limiting, backup and
 restore procedures, breach notification workflow, ENS categorisation and a formal data protection
 impact assessment are deployment tasks outside this repository's V0. The templates in
 [`docs/legal/`](../legal/) leave them as obligations for the processor and the council.

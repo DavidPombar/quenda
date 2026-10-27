@@ -211,6 +211,19 @@ export function Shell() {
               {t(c.notice)}
             </p>
           )}
+          {c.authErrorMessage && (
+            <div role="alert" className="page-alert">
+              <p>{c.authErrorMessage}</p>
+              <div className="page-alert-actions">
+                <Button size="sm" colorPalette="court" onClick={c.retryAuth}>
+                  {t("retry")}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={c.dismissAuthError}>
+                  {t("dismiss")}
+                </Button>
+              </div>
+            </div>
+          )}
           <Outlet context={c.context} />
         </main>
         <footer className="footer">
@@ -223,6 +236,13 @@ export function Shell() {
         onClose={c.closeLogin}
         onSelect={() => {
           void c.signIn();
+        }}
+        onEid={c.signInWithEid}
+        eidLabel={c.eidButtonLabel}
+        demo={c.authMethods.data?.demo ?? false}
+        methodsStatus={c.authMethods.status}
+        onRetryMethods={() => {
+          void c.authMethods.refetch();
         }}
         pending={c.create.isPending}
         error={c.create.error?.message ?? ""}

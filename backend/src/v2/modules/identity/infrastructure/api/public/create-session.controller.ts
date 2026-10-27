@@ -12,6 +12,7 @@ import {
 } from "../../../application/commands/create-session.command";
 import { CreateSessionRequestDTO } from "../dto/create-session.request.dto";
 import { SessionResponseDTO } from "../dto/session.response.dto";
+import { setSessionCookie } from "./auth-cookies";
 @V2Controller("public/sessions")
 export class CreateSessionController {
   private readonly operation;
@@ -33,13 +34,7 @@ export class CreateSessionController {
       legalVersion: body.legalVersion,
     });
     return result.fold((value) => {
-      response.cookie("quenda_session", value.token, {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 8 * 60 * 60 * 1000,
-        path: "/",
-      });
+      setSessionCookie(response, value.token);
       return SessionResponseDTO.from(value.principal);
     }, this.handleError);
   }

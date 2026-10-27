@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountExport } from "../../../domain/account.read-model";
-import { AccountProfileResponseDTO } from "./account-profile.response.dto";
+import { ExportedProfileResponseDTO } from "./exported-profile.response.dto";
+import { ExportedIdentityResponseDTO } from "./exported-identity.response.dto";
 import { ConsentResponseDTO } from "./consent.response.dto";
 import { ExportMunicipalityResponseDTO } from "./export-municipality.response.dto";
 import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
@@ -16,10 +17,16 @@ export class AccountExportResponseDTO {
   })
   municipality!: ExportMunicipalityResponseDTO;
   @ApiProperty({
-    description: "Account profile",
-    type: AccountProfileResponseDTO,
+    description: "Account profile with the personal data stored on it",
+    type: ExportedProfileResponseDTO,
   })
-  profile!: AccountProfileResponseDTO;
+  profile!: ExportedProfileResponseDTO;
+  @ApiProperty({
+    description:
+      "External identities (eID issuer and subject) linked to the account",
+    type: [ExportedIdentityResponseDTO],
+  })
+  identities!: ExportedIdentityResponseDTO[];
   @ApiProperty({
     description: "Accepted privacy notice versions",
     type: [ConsentResponseDTO],
@@ -44,7 +51,8 @@ export class AccountExportResponseDTO {
     return {
       generatedAt: value.generatedAt.toString(),
       municipality: ExportMunicipalityResponseDTO.from(value.municipality),
-      profile: AccountProfileResponseDTO.from(value.profile),
+      profile: ExportedProfileResponseDTO.from(value.profile),
+      identities: value.identities.map(ExportedIdentityResponseDTO.from),
       consents: value.consents.map(ConsentResponseDTO.from),
       bookings: value.bookings.map(ExportedBookingResponseDTO.from),
       notifications: value.notifications.map(

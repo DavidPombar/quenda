@@ -20,6 +20,11 @@ export abstract class RetentionRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<number>;
+  /** Removes OIDC sign-in attempts that were never completed. */
+  abstract purgeLoginAttempts(
+    tenantId: string,
+    now: Temporal.Instant,
+  ): Promise<number>;
   abstract deleteConsentsOfPurgedUsers(
     tenantId: string,
     cutoff: Temporal.Instant,

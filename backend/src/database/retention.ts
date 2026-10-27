@@ -23,6 +23,7 @@ export async function retention() {
               `notifications deleted ${summary.notificationsDeleted}, ` +
               `audit pseudonymised ${summary.auditPseudonymised}, ` +
               `sessions purged ${summary.sessionsPurged}, ` +
+              `login attempts purged ${summary.loginAttemptsPurged}, ` +
               `consents deleted ${summary.consentsDeleted}, ` +
               `users purged ${summary.usersPurged}`,
           ),
