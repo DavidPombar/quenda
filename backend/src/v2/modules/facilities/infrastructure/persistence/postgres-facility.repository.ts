@@ -2,7 +2,12 @@
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { Facility } from "../../domain/facility.entity";
-import { FacilityRepository } from "../../domain/facility.repository";
+import {
+  CATALOG_LIMIT,
+  CatalogEntry,
+  CatalogFilters,
+  FacilityRepository,
+} from "../../domain/facility.repository";
 import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
 import { failure } from "../../../../shared/application/errors";
@@ -12,6 +17,35 @@ const fields =
 export class PostgresFacilityRepository extends FacilityRepository {
   constructor(private readonly db: Database) {
     super();
+  }
+  async catalog(filters: CatalogFilters) {
+    const { rows } = await this.db.query<
+      Omit<CatalogEntry, "municipality"> & {
+        municipalitySlug: string;
+        municipalityName: string;
+      }
+    >(
+      `SELECT f.id, f.name, f.sport, f.address, f.description, f.accessible, f.status,
+        f.slot_minutes AS "slotMinutes", f.price_cents AS "priceCents",
+        m.slug AS "municipalitySlug", m.name AS "municipalityName"
+      FROM facilities f JOIN municipalities m ON m.id=f.tenant_id
+      WHERE f.status='active'
+        AND ($1::text IS NULL OR f.name ILIKE $1 OR f.address ILIKE $1)
+        AND ($2::text IS NULL OR f.sport=$2)
+        AND ($3::boolean IS NULL OR f.accessible=$3)
+        AND (cardinality($4::text[])=0 OR m.slug=ANY($4))
+      ORDER BY m.name, f.name LIMIT ${CATALOG_LIMIT}`,
+      [
+        filters.q ? `%${filters.q.replace(/[\\%_]/g, "\\$&")}%` : null,
+        filters.sport ?? null,
+        filters.accessible ?? null,
+        filters.municipalities,
+      ],
+    );
+    return rows.map(({ municipalitySlug, municipalityName, ...facility }) => ({
+      ...facility,
+      municipality: { slug: municipalitySlug, name: municipalityName },
+    }));
   }
   async list(tenantId: string) {
     return (

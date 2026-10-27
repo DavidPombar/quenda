@@ -9,6 +9,7 @@ import { InsightsModule } from "./v2/modules/insights/insights.module";
 import { AccountModule } from "./v2/modules/account/account.module";
 import { AuditModule } from "./v2/modules/audit/audit.module";
 import { RetentionModule } from "./v2/modules/retention/retention.module";
+import { OperatorsModule } from "./v2/modules/operators/operators.module";
 @Module({
   imports: [
     SharedModule,
@@ -20,6 +21,7 @@ import { RetentionModule } from "./v2/modules/retention/retention.module";
     AccountModule,
     AuditModule,
     RetentionModule,
+    OperatorsModule,
   ],
 })
 export class AppModule {}

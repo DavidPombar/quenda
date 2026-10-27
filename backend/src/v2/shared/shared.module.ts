@@ -12,6 +12,11 @@ import { UuidGenerator } from "./infrastructure/uuid-generator";
 import { PostgresAudit } from "./infrastructure/postgres-audit";
 import { PostgresMunicipalities } from "./infrastructure/postgres-municipalities";
 import { PrincipalGuard } from "./infrastructure/api/principal.guard";
+import { OperatorGuard } from "./infrastructure/api/operator.guard";
+import { OperatorAudit } from "./application/operator-audit";
+import { PostgresOperatorAudit } from "./infrastructure/postgres-operator-audit";
+import { OperatorSessionRepository } from "../modules/operators/domain/operator-session.repository";
+import { PostgresOperatorSessionRepository } from "../modules/operators/infrastructure/persistence/postgres-operator-session.repository";
 import { SessionRepository } from "../modules/identity/domain/session.repository";
 import { PostgresSessionRepository } from "../modules/identity/infrastructure/persistence/postgres-session.repository";
 const bindings = [
@@ -20,15 +25,28 @@ const bindings = [
   { provide: Audit, useClass: PostgresAudit },
   { provide: Municipalities, useClass: PostgresMunicipalities },
   { provide: SessionRepository, useClass: PostgresSessionRepository },
+  { provide: OperatorAudit, useClass: PostgresOperatorAudit },
+  {
+    provide: OperatorSessionRepository,
+    useClass: PostgresOperatorSessionRepository,
+  },
 ];
 @Global()
 @Module({
-  providers: [Database, Commands, Queries, PrincipalGuard, ...bindings],
+  providers: [
+    Database,
+    Commands,
+    Queries,
+    PrincipalGuard,
+    OperatorGuard,
+    ...bindings,
+  ],
   exports: [
     Database,
     Commands,
     Queries,
     PrincipalGuard,
+    OperatorGuard,
     ...bindings.map((binding) => binding.provide),
   ],
 })

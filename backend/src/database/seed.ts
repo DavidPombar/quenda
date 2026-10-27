@@ -22,6 +22,11 @@ export function openingCalendar(id: string) {
 export async function seed(url = databaseUrl) {
   const db = new Pool({ connectionString: url });
   try {
+    // One supramunicipal operator per deployment (deputación or mancomunidade, #18).
+    await db.query(
+      "INSERT INTO operators (id,display_name) VALUES ($1,$2) ON CONFLICT(id) DO NOTHING",
+      ["40000000-0000-4000-8000-000000000001", "Deputación · operación"],
+    );
     for (const [i, slug, name] of [
       [1, "vilaverde", "Concello de Vilaverde"],
       [2, "portomar", "Concello de Portomar"],
