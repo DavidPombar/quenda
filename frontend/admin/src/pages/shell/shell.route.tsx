@@ -5,12 +5,14 @@ import { Shell } from "./shell.view";
 import { managementRoute } from "./components/management/management.route";
 import { auditRoute } from "./components/audit/audit.route";
 import { settingsRoute } from "./components/settings/settings.route";
+import { bookingsRoute } from "./components/bookings/bookings.route";
 export const shellRoute = {
   path: ROUTES.shell,
   element: <Shell />,
   children: [
     { index: true, element: <Navigate to={ROUTES.management} replace /> },
     managementRoute,
+    bookingsRoute,
     auditRoute,
     settingsRoute,
   ],

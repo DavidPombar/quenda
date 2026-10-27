@@ -214,6 +214,20 @@ const gl = {
   deleteDone: "A túa conta foi eliminada. Grazas por probar Quenda.",
   consentLabel: "Lin e acepto o aviso de privacidade",
   consentRequired: "Marca a casilla para poder entrar.",
+  attended: "Asistida",
+  noShow: "Non presentada",
+  cancelledByMunicipality: "Cancelada polo concello",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "O concello cancelou a túa reserva",
+  noticeNoShow: "Marcada como non presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Xa podes reservar de novo",
+  penaltyRemaining:
+    "Levas {count} ausencias sen avisar nos últimos {windowDays} días. Se faltas {remaining} vez máis, non poderás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sen avisar, non podes facer reservas ata o {date}.",
+  penaltyDisabled:
+    "A ausencia queda no teu historial; o concello non aplica bloqueos.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -407,7 +421,27 @@ const es: Record<TextKey, string> = {
   deleteDone: "Tu cuenta ha sido eliminada. Gracias por probar Quenda.",
   consentLabel: "He leído y acepto el aviso de privacidad",
   consentRequired: "Marca la casilla para poder entrar.",
+  attended: "Asistida",
+  noShow: "No presentada",
+  cancelledByMunicipality: "Cancelada por el ayuntamiento",
+  reason: "Motivo",
+  noticeCancelledByMunicipality: "El ayuntamiento canceló tu reserva",
+  noticeNoShow: "Marcada como no presentada",
+  noticeBlocked: "Reservas bloqueadas temporalmente",
+  noticeUnblocked: "Ya puedes volver a reservar",
+  penaltyRemaining:
+    "Llevas {count} ausencias sin avisar en los últimos {windowDays} días. Si faltas {remaining} vez más, no podrás reservar durante {blockDays} días.",
+  penaltyBlockedUntil:
+    "Por acumular ausencias sin avisar, no puedes hacer reservas hasta el {date}.",
+  penaltyDisabled:
+    "La ausencia queda en tu historial; el ayuntamiento no aplica bloqueos.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];
+}
+/** Replaces {name} placeholders in a translated text. */
+export function fill(text: string, values: Record<string, string | number>) {
+  return text.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in values ? String(values[name]) : match,
+  );
 }

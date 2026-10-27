@@ -3,7 +3,10 @@ import type { Temporal } from "@js-temporal/polyfill";
 import type { Result } from "../../../shared/application/result";
 import type { AppError } from "../../../shared/application/errors";
 import type { Booking } from "./booking.entity";
-import type { BookingReadModel } from "./booking.read-model";
+import type {
+  BookingReadModel,
+  ManagedBookingReadModel,
+} from "./booking.read-model";
 export abstract class BookingRepository {
   abstract lockUser(tenantId: string, userId: string): Promise<void>;
   abstract find(
@@ -11,7 +14,22 @@ export abstract class BookingRepository {
     userId: string,
     id: string,
   ): Promise<Booking | null>;
+  /** Any person's booking in the tenant, for municipal actions. */
+  abstract findInTenant(tenantId: string, id: string): Promise<Booking | null>;
   abstract list(tenantId: string, userId: string): Promise<BookingReadModel[]>;
+  /** Bookings starting in [from, to), optionally for one facility, with the person's name. */
+  abstract listStarting(args: {
+    tenantId: string;
+    from: Temporal.Instant;
+    to: Temporal.Instant;
+    facilityId?: string;
+  }): Promise<ManagedBookingReadModel[]>;
+  /** Starts of the person's no-shows from `since` onwards. */
+  abstract noShowStarts(
+    tenantId: string,
+    userId: string,
+    since: Temporal.Instant,
+  ): Promise<Temporal.Instant[]>;
   abstract countActive(
     tenantId: string,
     userId: string,

@@ -15,8 +15,18 @@ interface BookingBase {
 export interface ConfirmedBooking extends BookingBase {
   status: "confirmed";
 }
+/** Marked by the municipality on the day; reverting it makes the booking confirmed again. */
+export interface NoShowBooking extends BookingBase {
+  status: "no_show";
+}
 export interface CancelledBooking extends BookingBase {
   status: "cancelled";
   cancelledAt: Temporal.Instant;
+  /** null for cancellations recorded before the field existed. */
+  cancelledBy: "citizen" | "municipality" | null;
+  /** Required when the municipality cancels. */
+  cancellationReason: string | null;
 }
-export type Booking = ConfirmedBooking | CancelledBooking;
+export type Booking = ConfirmedBooking | NoShowBooking | CancelledBooking;
+/** What the booking means to people: a confirmed booking that has ended counts as attended. */
+export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";

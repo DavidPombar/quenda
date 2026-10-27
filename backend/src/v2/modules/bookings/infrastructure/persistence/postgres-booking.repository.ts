@@ -16,6 +16,8 @@ interface Row {
   created_at: string;
   cancelled_at: string | null;
   cancellation_hours: number | null;
+  cancelled_by: "citizen" | "municipality" | null;
+  cancellation_reason: string | null;
   status: string;
   facility_name: string;
   sport: string;
@@ -33,11 +35,15 @@ function toDomain(row: Row): Booking {
   };
   if (row.status === "confirmed" && row.cancelled_at === null)
     return { ...base, status: "confirmed" };
+  if (row.status === "no_show" && row.cancelled_at === null)
+    return { ...base, status: "no_show" };
   if (row.status === "cancelled" && row.cancelled_at !== null)
     return {
       ...base,
       status: "cancelled",
       cancelledAt: Temporal.Instant.from(row.cancelled_at),
+      cancelledBy: row.cancelled_by,
+      cancellationReason: row.cancellation_reason,
     };
   throw new Error("Corrupt booking state");
 }
@@ -58,6 +64,46 @@ export class PostgresBookingRepository extends BookingRepository {
       [tenantId, userId, id],
     );
     return rows[0] ? toDomain(rows[0]) : null;
+  }
+  async findInTenant(tenantId: string, id: string) {
+    const { rows } = await this.db.query<Row>(
+      "SELECT * FROM bookings WHERE tenant_id=$1 AND id=$2 AND user_id IS NOT NULL",
+      [tenantId, id],
+    );
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+  async listStarting(args: {
+    tenantId: string;
+    from: Temporal.Instant;
+    to: Temporal.Instant;
+    facilityId?: string;
+  }) {
+    const { rows } = await this.db.query<Row & { display_name: string }>(
+      "SELECT b.*,f.name AS facility_name,f.sport,u.display_name FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN users u ON u.tenant_id=b.tenant_id AND u.id=b.user_id WHERE b.tenant_id=$1 AND b.starts_at>=$2 AND b.starts_at<$3 AND ($4::uuid IS NULL OR b.facility_id=$4) ORDER BY b.starts_at, f.name LIMIT 500",
+      [
+        args.tenantId,
+        args.from.toString(),
+        args.to.toString(),
+        args.facilityId ?? null,
+      ],
+    );
+    return rows.map((row) => ({
+      booking: toDomain(row),
+      facilityName: row.facility_name,
+      sport: row.sport,
+      displayName: row.display_name,
+    }));
+  }
+  async noShowStarts(
+    tenantId: string,
+    userId: string,
+    since: Temporal.Instant,
+  ) {
+    const { rows } = await this.db.query<{ starts_at: string }>(
+      "SELECT starts_at FROM bookings WHERE tenant_id=$1 AND user_id=$2 AND status='no_show' AND starts_at>=$3 ORDER BY starts_at",
+      [tenantId, userId, since.toString()],
+    );
+    return rows.map((row) => Temporal.Instant.from(row.starts_at));
   }
   async list(tenantId: string, userId: string) {
     const { rows } = await this.db.query<Row>(
@@ -84,7 +130,7 @@ export class PostgresBookingRepository extends BookingRepository {
     try {
       await this.db
         .query(
-          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
+          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
           [
             value.id,
             value.tenantId,
@@ -96,6 +142,8 @@ export class PostgresBookingRepository extends BookingRepository {
             value.createdAt.toString(),
             value.status === "cancelled" ? value.cancelledAt.toString() : null,
             value.cancellationHours,
+            value.status === "cancelled" ? value.cancelledBy : null,
+            value.status === "cancelled" ? value.cancellationReason : null,
           ],
         )
         .then((result) => {
