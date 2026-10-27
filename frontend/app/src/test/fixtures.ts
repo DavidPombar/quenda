@@ -11,9 +11,14 @@ export const municipality: Municipality = {
   cancellationHours: 2,
   maxActiveBookings: 5,
   contact: "deportes@vilaverde.example",
-  legalText: "Demostración con datos ficticios.",
+  legalTexts: {
+    gl: "Demostración con datos ficticios.",
+    es: "Demostración con datos ficticios en castellano.",
+  },
   legalVersion: "2026-10",
   retentionMonths: 24,
+  primaryColor: "#1f5b43",
+  logoUrl: null,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -66,7 +71,10 @@ export const account: Account = {
   currentLegalVersion: municipality.legalVersion,
   consentUpToDate: true,
   consents: [
-    { legalVersion: municipality.legalVersion, acceptedAt: "2026-10-18T09:30:00Z" },
+    {
+      legalVersion: municipality.legalVersion,
+      acceptedAt: "2026-10-18T09:30:00Z",
+    },
   ],
   bookings: 2,
   notifications: 3,

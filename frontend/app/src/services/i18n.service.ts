@@ -163,6 +163,7 @@ const gl = {
   demoNotice: "Versión de proba",
   browse: "Explorar instalacións",
   privacyTitle: "Privacidade nesta demostración",
+  logoAlt: "Logotipo do concello",
   previewCalendar:
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
@@ -355,6 +356,7 @@ const es: Record<TextKey, string> = {
   hoursBeforeShort: "horas antes",
   browse: "Explorar instalaciones",
   privacyTitle: "Privacidad en esta demostración",
+  logoAlt: "Logotipo del ayuntamiento",
   previewCalendar:
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",

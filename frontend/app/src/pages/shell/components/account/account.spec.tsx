@@ -30,7 +30,9 @@ describe("Account and privacy page", () => {
     await commands.navigate("/app/vilaverde/conta");
     await render(<App />);
     await expect
-      .element(page.getByRole("heading", { name: "Entra para ver a túa conta" }))
+      .element(
+        page.getByRole("heading", { name: "Entra para ver a túa conta" }),
+      )
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: "A miña conta" }))
@@ -99,9 +101,7 @@ describe("Account and privacy page", () => {
       .element(page.getByRole("status"))
       .toMatchTextContent("A túa conta foi eliminada.");
     await expect
-      .element(
-        page.getByRole("banner").getByRole("button", { name: "Entrar" }),
-      )
+      .element(page.getByRole("banner").getByRole("button", { name: "Entrar" }))
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: "A miña conta" }))
