@@ -68,7 +68,29 @@ try {
   await page
     .getByRole("link", { name: "Abrir a aplicación", exact: true })
     .click();
-  await page.waitForURL(/\/app\/[^/]+\/instalacions$/);
+  // The app opens on the catalogue shared by every municipality (#18); booking happens inside one.
+  await page.waitForURL(/\/app\/$/);
+  await page
+    .getByRole("heading", { name: "Instalacións deportivas da contorna" })
+    .waitFor();
+  // Every demo municipality has a "Pavillón municipal".
+  await page
+    .getByRole("heading", { name: "Pavillón municipal" })
+    .first()
+    .waitFor();
+  await audit("shared-catalog");
+  await page
+    .getByRole("link", { name: "Concello de Portomar", exact: true })
+    .first()
+    .click();
+  await page.waitForURL(/\/app\/portomar\/instalacions$/);
+  await page
+    .getByRole("heading", {
+      level: 1,
+      name: "Instalacións deportivas",
+      exact: true,
+    })
+    .waitFor();
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("heading", { name: "Pavillón municipal" }).waitFor();
   await audit("catalog");
@@ -155,7 +177,16 @@ try {
   await page
     .getByRole("link", { name: "Explorar a demo municipal", exact: true })
     .click();
-  await page.waitForURL(/\/admin\/[^/]+\/xestion$/);
+  // The backoffice opens on a choice between municipalities and the supramunicipal area (#18).
+  await page.waitForURL(/\/admin\/$/);
+  await page
+    .getByRole("link", { name: "Entrar na área supramunicipal" })
+    .waitFor();
+  await audit("admin-entry");
+  await page
+    .getByRole("link", { name: "Concello de Portomar", exact: true })
+    .click();
+  await page.waitForURL(/\/admin\/portomar\/xestion$/);
   await page
     .getByRole("heading", { name: "Este espazo é para o persoal municipal." })
     .waitFor();
@@ -210,7 +241,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Eleven accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Thirteen accessibility scans passed, including the shared catalogue and the backoffice entry.",
   );
 } finally {
   await browser.close();

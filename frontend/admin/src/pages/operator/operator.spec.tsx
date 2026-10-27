@@ -58,7 +58,8 @@ describe("supramunicipal operator area", () => {
     await commands.navigate("/admin/operador");
     await render(<App />);
     await page.getByRole("button", { name: "Entrar como operador/a" }).click();
-    expect(spy).toHaveBeenCalledOnce();
+    // The click only starts the request; wait for it rather than checking straight away.
+    await expect.poll(() => spy).toHaveBeenCalledOnce();
     await expect
       .element(
         page.getByRole("heading", { level: 2, name: "Concello de Vilaverde" }),
