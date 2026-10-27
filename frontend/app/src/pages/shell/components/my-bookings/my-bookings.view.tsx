@@ -5,12 +5,14 @@ import {
   PiCalendarCheck,
   PiCalendarX,
   PiClockClockwise,
+  PiSquareHalf,
   PiX,
 } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
+import { distinctResource } from "@/services/resources.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
@@ -130,6 +132,16 @@ export function MyBookings() {
                           )}
                         </strong>
                         <p>{notice.facilityName}</p>
+                        {distinctResource(
+                          notice.facilityName,
+                          notice.resourceName,
+                        ) && (
+                          <p className="resource-meta">
+                            <PiSquareHalf size={16} aria-hidden="true" />
+                            <span className="sr-only">{c.t("resource")}: </span>
+                            {notice.resourceName}
+                          </p>
+                        )}
                         <small>
                           {dateLabel(
                             notice.createdAt,
@@ -180,6 +192,16 @@ export function MyBookings() {
                 {c.cancelling && (
                   <div className="cancel-summary">
                     <strong>{c.cancelling.facilityName}</strong>
+                    {distinctResource(
+                      c.cancelling.facilityName,
+                      c.cancelling.resourceName,
+                    ) && (
+                      <span className="resource-meta">
+                        <PiSquareHalf size={18} aria-hidden="true" />
+                        <span className="sr-only">{c.t("resource")}: </span>
+                        {c.cancelling.resourceName}
+                      </span>
+                    )}
                     <span>
                       {bookingDayLabel(
                         c.cancelling.start,

@@ -6,6 +6,8 @@ interface BookingBase {
   /** Stays a string: retention detaches past rows (NULL user_id) but no read path returns them. */
   userId: string;
   facilityId: string;
+  /** Booked court or space of the facility; it determines the occupied units. */
+  resourceId: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
   createdAt: Temporal.Instant;

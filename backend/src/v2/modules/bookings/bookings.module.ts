@@ -4,6 +4,8 @@ import { FacilitiesModule } from "../facilities/facilities.module";
 import { BookingRepository } from "./domain/booking.repository";
 import { FacilitySchedule } from "./domain/facility-schedule";
 import { NotificationRepository } from "./domain/notification.repository";
+import { BookingUnitRepository } from "./domain/booking-unit.repository";
+import { PostgresBookingUnitRepository } from "./infrastructure/persistence/postgres-booking-unit.repository";
 import { PostgresBookingRepository } from "./infrastructure/persistence/postgres-booking.repository";
 import { PostgresFacilitySchedule } from "./infrastructure/persistence/postgres-facility-schedule";
 import { PostgresNotificationRepository } from "./infrastructure/persistence/postgres-notification.repository";
@@ -26,6 +28,7 @@ import { ListNotificationsController } from "./infrastructure/api/citizen/list-n
     ListNotifications,
     { provide: BookingRepository, useClass: PostgresBookingRepository },
     { provide: FacilitySchedule, useClass: PostgresFacilitySchedule },
+    { provide: BookingUnitRepository, useClass: PostgresBookingUnitRepository },
     {
       provide: NotificationRepository,
       useClass: PostgresNotificationRepository,

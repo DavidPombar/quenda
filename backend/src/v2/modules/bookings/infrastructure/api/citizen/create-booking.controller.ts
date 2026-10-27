@@ -39,6 +39,7 @@ export class CreateBookingController {
       principal,
       id: body.id,
       facilityId: body.facilityId,
+      resourceId: body.resourceId,
       start: body.start,
     });
     return result.fold(BookingResponseDTO.from, this.handleError);
@@ -53,7 +54,9 @@ export class CreateBookingController {
       | AppError<"booking_window">
       | AppError<"booking_limit">
       | AppError<"slot_taken">
-      | AppError<"id_reused">,
+      | AppError<"id_reused">
+      | AppError<"resource_required">
+      | AppError<"resource_unavailable">,
   ): never {
     switch (error.code) {
       case "forbidden":
@@ -72,6 +75,10 @@ export class CreateBookingController {
         throw new ProblemException(409, error);
       case "id_reused":
         throw new ProblemException(409, error);
+      case "resource_required":
+        throw new ProblemException(422, error);
+      case "resource_unavailable":
+        throw new ProblemException(422, error);
       default:
         return assertNever(error);
     }

@@ -11,12 +11,14 @@ interface Row {
   tenant_id: string;
   user_id: string;
   facility_id: string;
+  resource_id: string;
   starts_at: string;
   ends_at: string;
   created_at: string;
   cancelled_at: string | null;
   status: string;
   facility_name: string;
+  resource_name: string;
   sport: string;
 }
 function toDomain(row: Row): Booking {
@@ -25,6 +27,7 @@ function toDomain(row: Row): Booking {
     tenantId: row.tenant_id,
     userId: row.user_id,
     facilityId: row.facility_id,
+    resourceId: row.resource_id,
     start: Temporal.Instant.from(row.starts_at),
     end: Temporal.Instant.from(row.ends_at),
     createdAt: Temporal.Instant.from(row.created_at),
@@ -59,12 +62,13 @@ export class PostgresBookingRepository extends BookingRepository {
   }
   async list(tenantId: string, userId: string) {
     const { rows } = await this.db.query<Row>(
-      "SELECT b.*,f.name AS facility_name,f.sport FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
+      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
       [tenantId, userId],
     );
     return rows.map((row) => ({
       booking: toDomain(row),
       facilityName: row.facility_name,
+      resourceName: row.resource_name,
       sport: row.sport,
     }));
   }
@@ -82,7 +86,7 @@ export class PostgresBookingRepository extends BookingRepository {
     try {
       await this.db
         .query(
-          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
+          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,resource_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,resource_id=$10 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
           [
             value.id,
             value.tenantId,
@@ -93,6 +97,7 @@ export class PostgresBookingRepository extends BookingRepository {
             value.status,
             value.createdAt.toString(),
             value.status === "cancelled" ? value.cancelledAt.toString() : null,
+            value.resourceId,
           ],
         )
         .then((result) => {
@@ -104,8 +109,6 @@ export class PostgresBookingRepository extends BookingRepository {
       return Result.ok();
     } catch (error) {
       const pg = error as { code?: string; constraint?: string };
-      if (pg.code === "23P01" && pg.constraint === "bookings_no_overlap")
-        return Result.err(failure("slot_taken"));
       if (pg.code === "23505") return Result.err(failure("id_reused"));
       throw error;
     }

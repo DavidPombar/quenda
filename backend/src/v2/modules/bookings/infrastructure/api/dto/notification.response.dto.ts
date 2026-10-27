@@ -7,6 +7,9 @@ export class NotificationResponseDTO {
   @ApiProperty({ description: "Event kind" }) kind!:
     "confirmed" | "rescheduled" | "cancelled";
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
+  @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
+  @ApiProperty({ description: "Court or space display name" })
+  resourceName!: string;
   @ApiProperty({ description: "Event instant" }) createdAt!: string;
   static from(value: Notification): NotificationResponseDTO {
     return {
@@ -14,6 +17,8 @@ export class NotificationResponseDTO {
       bookingId: value.bookingId,
       kind: value.kind,
       facilityName: value.facilityName,
+      resourceId: value.resourceId,
+      resourceName: value.resourceName,
       createdAt: value.createdAt.toString(),
     };
   }

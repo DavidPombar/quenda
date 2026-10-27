@@ -5,5 +5,7 @@ export interface Notification {
   bookingId: string;
   kind: "confirmed" | "rescheduled" | "cancelled";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
 }

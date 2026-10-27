@@ -33,16 +33,37 @@ export interface Facility {
   priceCents: number;
   openingCalendar: string;
   rules: string;
+  resources: Resource[];
+}
+/** A bookable court or space; parts point to their composite through parentId. */
+export interface Resource {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  position: number;
 }
 export interface Slot {
   start: string;
   end: string;
   status: "available" | "booked" | "past";
 }
+export interface ResourceAvailability {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  slots: Slot[];
+}
+export interface Availability {
+  resources: ResourceAvailability[];
+}
 export interface Booking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: Sport;
   start: string;
   end: string;
@@ -53,6 +74,8 @@ export interface Notification {
   bookingId: string;
   kind: "confirmed" | "rescheduled" | "cancelled";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: string;
 }
 export interface Insights {
@@ -94,6 +117,8 @@ export interface AccountExport {
     id: string;
     facilityId: string;
     facilityName: string;
+    resourceId: string;
+    resourceName: string;
     sport: Sport;
     start: string;
     end: string;

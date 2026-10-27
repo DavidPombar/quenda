@@ -17,7 +17,5 @@ export abstract class BookingRepository {
     userId: string,
     now: Temporal.Instant,
   ): Promise<number>;
-  abstract save(
-    booking: Booking,
-  ): Promise<Result<void, AppError<"slot_taken"> | AppError<"id_reused">>>;
+  abstract save(booking: Booking): Promise<Result<void, AppError<"id_reused">>>;
 }

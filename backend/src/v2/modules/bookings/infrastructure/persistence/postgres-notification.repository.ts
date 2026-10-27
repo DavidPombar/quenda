@@ -26,7 +26,7 @@ export class PostgresNotificationRepository extends NotificationRepository {
     const { rows } = await this.db.query<
       Omit<Notification, "createdAt"> & { createdAt: string }
     >(
-      'SELECT n.id,n.booking_id AS "bookingId",n.kind,n.created_at AS "createdAt",f.name AS "facilityName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC LIMIT 50',
+      'SELECT n.id,n.booking_id AS "bookingId",n.kind,n.created_at AS "createdAt",f.name AS "facilityName",b.resource_id AS "resourceId",r.name AS "resourceName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id JOIN resources r ON r.id=b.resource_id AND r.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC LIMIT 50',
       [tenantId, userId],
     );
     return rows.map((row) => ({

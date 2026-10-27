@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Injectable } from "@nestjs/common";
 import { Facility } from "../../domain/facility.entity";
+import { FacilityDetails } from "../../domain/facility.read-model";
 import { FacilityRepository } from "../../domain/facility.repository";
+import { ResourceRepository } from "../../domain/resource.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
@@ -19,6 +21,7 @@ export type SaveFacilityError =
 export class SaveFacility {
   constructor(
     private readonly facilities: FacilityRepository,
+    private readonly resources: ResourceRepository,
     private readonly municipalities: Municipalities,
     private readonly calendar: OpeningCalendar,
     private readonly clock: Clock,
@@ -29,7 +32,7 @@ export class SaveFacility {
     id: string;
     patch: Partial<Omit<Facility, "id" | "tenantId">>;
     mode: "create" | "update";
-  }): Promise<Result<Facility, SaveFacilityError>> {
+  }): Promise<Result<FacilityDetails, SaveFacilityError>> {
     if (!can(args.principal, "facilities:manage"))
       return Result.err(failure("forbidden"));
     const municipality = await this.municipalities.find(
@@ -60,13 +63,18 @@ export class SaveFacility {
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
     );
-    if (existing && Object.keys(patch).length === 0) return Result.ok(existing);
+    const details = async (value: Facility): Promise<FacilityDetails> => ({
+      ...value,
+      resources: await this.resources.listByFacility(value.tenantId, value.id),
+    });
+    if (existing && Object.keys(patch).length === 0)
+      return Result.ok(await details(existing));
     const facility = { ...(existing ?? defaults), ...patch };
     if (existing && args.mode === "create") {
       return Object.entries(patch).every(
         ([key, value]) => existing[key as keyof Facility] === value,
       )
-        ? Result.ok(existing)
+        ? Result.ok(await details(existing))
         : Result.err(failure("id_reused"));
     }
     if (
@@ -89,17 +97,28 @@ export class SaveFacility {
       return Result.err(failure("calendar_in_use"));
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
-      return saved.fold<Result<Facility, SaveFacilityError>>(
-        () => Result.ok(facility),
+      return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
+        () => Result.ok({ ...facility, resources: [] }),
         (error) => Result.err(error),
       );
+    // A new facility is bookable at once through its default resource (same id and name).
+    if (!existing)
+      await this.resources.add({
+        id: facility.id,
+        tenantId: facility.tenantId,
+        facilityId: facility.id,
+        name: facility.name,
+        position: 0,
+        parentId: null,
+        active: true,
+      });
     await this.audit.record(
       args.principal,
       args.mode === "create" ? "facility.created" : "facility.updated",
       args.id,
       changes(existing, facility),
     );
-    return Result.ok(facility);
+    return Result.ok(await details(facility));
   }
 }
 type AuditedField = Exclude<

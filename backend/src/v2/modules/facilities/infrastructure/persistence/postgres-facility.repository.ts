@@ -67,11 +67,16 @@ export class PostgresFacilityRepository extends FacilityRepository {
     start: Temporal.Instant,
     end: Temporal.Instant,
   ) {
-    const { rows } = await this.db.query<{ start: string; end: string }>(
-      "SELECT starts_at AS start,ends_at AS end FROM bookings WHERE tenant_id=$1 AND facility_id=$2 AND status='confirmed' AND starts_at<$4 AND ends_at>$3",
+    const { rows } = await this.db.query<{
+      unitId: string;
+      start: string;
+      end: string;
+    }>(
+      'SELECT u.unit_id AS "unitId",u.starts_at AS start,u.ends_at AS end FROM booking_units u JOIN resources r ON r.tenant_id=u.tenant_id AND r.id=u.unit_id WHERE r.tenant_id=$1 AND r.facility_id=$2 AND u.starts_at<$4 AND u.ends_at>$3',
       [tenantId, id, start.toString(), end.toString()],
     );
     return rows.map((row) => ({
+      unitId: row.unitId,
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
     }));

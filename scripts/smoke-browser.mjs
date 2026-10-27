@@ -138,6 +138,33 @@ try {
       .count(),
     0,
   );
+  await page.getByRole("link", { name: "Instalacións", exact: true }).click();
+  await page
+    .getByRole("link", { name: "Pavillón municipal", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "Pavillón municipal", exact: true })
+    .waitFor();
+  await page
+    .getByRole("combobox", { name: "Pista", exact: true })
+    .selectOption({ label: "Todas as pistas" });
+  await page
+    .getByRole("table", { name: /Quendas de todas as pistas/ })
+    .waitFor();
+  await audit("resources-grid");
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+    "Resources grid mobile overflow",
+  );
+  await page.screenshot({
+    path: ".dev-logs/resources-grid-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("link", { name: "A miña conta", exact: true }).click();
   await page.getByRole("heading", { name: "Conta e privacidade" }).waitFor();
   await audit("account");
@@ -210,7 +237,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Eleven accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Twelve accessibility scans passed.",
   );
 } finally {
   await browser.close();

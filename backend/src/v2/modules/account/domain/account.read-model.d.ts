@@ -21,6 +21,8 @@ export interface ExportedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -33,6 +35,8 @@ export interface ExportedNotification {
   bookingId: string;
   kind: "confirmed" | "rescheduled" | "cancelled";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
 }
 export interface ExportedAuditEvent {

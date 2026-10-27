@@ -7,6 +7,7 @@ import { openingCalendar } from "../src/database/seed";
 import {
   availability,
   facility,
+  slotStatus,
   harness,
   patch,
   post,
@@ -33,14 +34,22 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     expect(
       (await anonymous.get("/v2/public/session").expect(200)).body.session,
     ).toBe(null);
-    expect(
-      (
-        await anonymous
-          .get("/v2/public/facilities")
-          .query({ slug: context.slug })
-          .expect(200)
-      ).body[0].id,
-    ).toBe(court.id);
+    const catalog = await anonymous
+      .get("/v2/public/facilities")
+      .query({ slug: context.slug })
+      .expect(200);
+    expect(catalog.body[0]).toMatchObject({
+      id: court.id,
+      resources: [
+        {
+          id: court.id,
+          name: court.name,
+          parentId: null,
+          active: true,
+          position: 0,
+        },
+      ],
+    });
     await anonymous.get("/v2/citizen/bookings").expect(401);
     await anonymous.get("/v2/manager/insights").expect(401);
     await anonymous
@@ -76,11 +85,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       }),
     ]);
     expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("booked");
+    expect(await slotStatus(context, court.id, begins)).toBe("booked");
     const noticeCount = await harness.db.query(
       "SELECT count(*)::int AS count FROM notifications WHERE tenant_id=$1",
       [context.id],
@@ -108,11 +113,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await patch(context.citizen, `citizen/bookings/${id}`, {
       start: later,
     }).expect(204);
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("available");
+    expect(await slotStatus(context, court.id, begins)).toBe("available");
     await patch(context.citizen, `citizen/bookings/${id}`, {
       status: "cancelled",
     }).expect(204);
@@ -128,6 +129,8 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       status: "cancelled",
       start: later,
       facilityName: court.name,
+      resourceId: court.id,
+      resourceName: court.name,
     });
     const notices = await context.citizen
       .get("/v2/citizen/notifications")
@@ -135,11 +138,11 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     expect(
       notices.body.map((item: { kind: string }) => item.kind).sort(),
     ).toEqual(["cancelled", "confirmed", "rescheduled"]);
-    expect(
-      (await availability(context, court.id, later)).body.find(
-        (slot: { start: string }) => slot.start === later,
-      ).status,
-    ).toBe("available");
+    expect(notices.body[0]).toMatchObject({
+      resourceId: court.id,
+      resourceName: court.name,
+    });
+    expect(await slotStatus(context, court.id, later)).toBe("available");
   });
   it("should conceal other municipalities and people when an authenticated user supplies their resource IDs", async () => {
     const a = await tenant();
@@ -252,7 +255,17 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await patch(context.manager, `manager/facilities/${court.id}`, {
       status: "maintenance",
     }).expect(204);
-    expect((await availability(context, court.id, start())).body).toEqual([]);
+    expect(
+      (await availability(context, court.id, start())).body.resources,
+    ).toEqual([
+      {
+        id: court.id,
+        name: court.name,
+        parentId: null,
+        active: true,
+        slots: [],
+      },
+    ]);
   });
   it("should honour a closure exception when a calendar removes a recurring opening", async () => {
     const context = await tenant();
@@ -266,7 +279,9 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       `EXDATE;TZID=Europe/Madrid:${stamp}T090000\r\nEND:VEVENT`,
     );
     const court = await facility(context, calendar);
-    expect((await availability(context, court.id, start())).body).toEqual([]);
+    expect(
+      (await availability(context, court.id, start())).body.resources[0].slots,
+    ).toEqual([]);
     expect(
       (
         await post(context.citizen, "citizen/bookings", {

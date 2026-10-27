@@ -4,13 +4,13 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import {
   LEGAL_VERSION,
-  availability,
   del,
   facility,
   harness,
   patch,
   post,
   setup,
+  slotStatus,
   start,
   teardown,
   tenant,
@@ -83,8 +83,8 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     }).expect(204);
     // History endpoints page at 200 rows; the export must not.
     await harness.db.query(
-      `INSERT INTO bookings (id, tenant_id, user_id, facility_id, starts_at, ends_at, status, created_at)
-       SELECT gen_random_uuid(), $1, $2, $3,
+      `INSERT INTO bookings (id, tenant_id, user_id, facility_id, resource_id, starts_at, ends_at, status, created_at)
+       SELECT gen_random_uuid(), $1, $2, $3, $3,
               now() - (n || ' days')::interval,
               now() - (n || ' days')::interval + interval '1 hour',
               'confirmed', now() - (n || ' days')::interval
@@ -112,7 +112,16 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
         (item: { status: string }) => item.status === "cancelled",
       ),
     ).toHaveLength(1);
+    expect(exported.body.bookings[0]).toMatchObject({
+      facilityName: court.name,
+      resourceId: court.id,
+      resourceName: court.name,
+    });
     expect(exported.body.notifications).toHaveLength(4);
+    expect(exported.body.notifications[0]).toMatchObject({
+      resourceId: court.id,
+      resourceName: court.name,
+    });
     expect(
       exported.body.auditEvents.map((item: { action: string }) => item.action),
     ).toEqual(expect.arrayContaining(["consent.accepted", "booking.created"]));
@@ -161,11 +170,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
       cancelledBookings: 1,
       revokedSessions: 1,
     });
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("available");
+    expect(await slotStatus(context, court.id, begins)).toBe("available");
     const stats = await context.manager.get("/v2/manager/insights").expect(200);
     expect(stats.body).toMatchObject({ confirmed: 0, cancelled: 1 });
   });

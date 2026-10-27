@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Button } from "@chakra-ui/react";
-import { PiCalendarBlank, PiCheck, PiClock, PiX } from "react-icons/pi";
+import {
+  PiCalendarBlank,
+  PiCheck,
+  PiClock,
+  PiSquareHalf,
+  PiX,
+} from "react-icons/pi";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
 import { bookingDayLabel, timeLabel } from "@/services/date.service";
+import { distinctResource } from "@/services/resources.service";
 import type { Booking, Locale, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 export function BookingRow(p: {
@@ -14,6 +21,10 @@ export function BookingRow(p: {
   onCancel: () => void;
   onChange: () => void;
 }) {
+  const resource = distinctResource(
+    p.booking.facilityName,
+    p.booking.resourceName,
+  );
   const StatusIcon = p.booking.status === "confirmed" ? PiCheck : PiX;
   return (
     <article className={`booking-row sport-${p.booking.sport}`}>
@@ -25,6 +36,13 @@ export function BookingRow(p: {
         </span>
       </div>
       <ul className="meta-list">
+        {resource && (
+          <li>
+            <PiSquareHalf size={20} aria-hidden="true" />
+            <span className="sr-only">{p.t("resource")}: </span>
+            {resource}
+          </li>
+        )}
         <li>
           <PiCalendarBlank size={20} aria-hidden="true" />
           {bookingDayLabel(p.booking.start, p.municipality.timezone, p.locale)}
