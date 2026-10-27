@@ -214,6 +214,15 @@ const gl = {
   deleteDone: "A túa conta foi eliminada. Grazas por probar Quenda.",
   consentLabel: "Lin e acepto o aviso de privacidade",
   consentRequired: "Marca a casilla para poder entrar.",
+  homeTitle: "Instalacións deportivas da contorna",
+  homeIntro:
+    "Busca nos concellos que usan Quenda. Para reservar, entras no concello da instalación coa túa conta dese concello.",
+  homeFilters: "Filtros da busca",
+  homeMunicipalities: "Concellos",
+  homeAccessible: "Só con acceso sen barreiras",
+  homeBook: "Ver horarios e reservar",
+  homeClear: "Quitar filtros",
+  homeGoTo: "Ir ao catálogo do concello",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -407,6 +416,15 @@ const es: Record<TextKey, string> = {
   deleteDone: "Tu cuenta ha sido eliminada. Gracias por probar Quenda.",
   consentLabel: "He leído y acepto el aviso de privacidad",
   consentRequired: "Marca la casilla para poder entrar.",
+  homeTitle: "Instalaciones deportivas del entorno",
+  homeIntro:
+    "Busca en los ayuntamientos que usan Quenda. Para reservar, entras en el ayuntamiento de la instalación con tu cuenta de ese ayuntamiento.",
+  homeFilters: "Filtros de la búsqueda",
+  homeMunicipalities: "Ayuntamientos",
+  homeAccessible: "Solo con acceso sin barreras",
+  homeBook: "Ver horarios y reservar",
+  homeClear: "Quitar filtros",
+  homeGoTo: "Ir al catálogo del ayuntamiento",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

@@ -119,3 +119,20 @@ export interface AccountExport {
     details: Record<string, unknown> | null;
   }[];
 }
+export interface CatalogEntry {
+  id: string;
+  name: string;
+  sport: Sport;
+  address: string;
+  description: string;
+  accessible: boolean;
+  slotMinutes: number;
+  priceCents: number;
+  municipality: { slug: string; name: string };
+}
+export interface CatalogFilters {
+  q: string;
+  sport: Sport | "";
+  accessible: boolean;
+  municipalities: string[];
+}
