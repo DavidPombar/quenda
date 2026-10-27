@@ -145,6 +145,8 @@ try {
   await page
     .getByRole("heading", { name: "Pavillón municipal", exact: true })
     .waitFor();
+  // Tomorrow always has open slots; late in the evening today has none and shows no grid.
+  await page.getByRole("button", { name: /^Mañá/ }).click();
   await page
     .getByRole("combobox", { name: "Pista", exact: true })
     .selectOption({ label: "Todas as pistas" });
