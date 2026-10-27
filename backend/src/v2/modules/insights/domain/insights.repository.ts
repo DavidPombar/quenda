@@ -1,17 +1,37 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-export interface FacilityUsage {
+import type { Temporal } from "@js-temporal/polyfill";
+export interface InsightsFacility {
   id: string;
   name: string;
-  openingCalendar: string;
+  sport: string;
   status: string;
-  bookings: number;
-  cancelled: number;
-  minutes: number;
+  openingCalendar: string;
+  followsMunicipalHolidays: boolean;
+}
+export interface StatusPeriod {
+  facilityId: string;
+  status: string;
+  start: Temporal.Instant;
+  /** Null while the period is still current. */
+  end: Temporal.Instant | null;
+}
+export interface BookingSpan {
+  facilityId: string;
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  status: "confirmed" | "cancelled";
 }
 export abstract class InsightsRepository {
-  abstract usage(
+  abstract facilities(tenantId: string): Promise<InsightsFacility[]>;
+  abstract statusPeriods(
     tenantId: string,
-    from: string,
-    to: string,
-  ): Promise<FacilityUsage[]>;
+    start: Temporal.Instant,
+    end: Temporal.Instant,
+  ): Promise<StatusPeriod[]>;
+  /** Bookings overlapping start–end, whatever their status. */
+  abstract bookings(
+    tenantId: string,
+    start: Temporal.Instant,
+    end: Temporal.Instant,
+  ): Promise<BookingSpan[]>;
 }

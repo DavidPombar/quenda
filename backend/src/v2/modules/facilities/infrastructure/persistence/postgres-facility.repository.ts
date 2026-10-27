@@ -52,6 +52,21 @@ export class PostgresFacilityRepository extends FacilityRepository {
     );
     return result.rowCount ? Result.ok() : Result.err(failure("id_reused"));
   }
+  async recordStatus(
+    tenantId: string,
+    id: string,
+    status: Facility["status"],
+    at: Temporal.Instant,
+  ) {
+    await this.db.query(
+      "UPDATE facility_status_periods SET ends_at=$3 WHERE tenant_id=$1 AND facility_id=$2 AND ends_at IS NULL",
+      [tenantId, id, at.toString()],
+    );
+    await this.db.query(
+      "INSERT INTO facility_status_periods (tenant_id,facility_id,status,starts_at) VALUES ($1,$2,$3,$4)",
+      [tenantId, id, status, at.toString()],
+    );
+  }
   async hasFutureBookings(tenantId: string, id: string, now: Temporal.Instant) {
     return (
       (

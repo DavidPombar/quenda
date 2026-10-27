@@ -94,6 +94,13 @@ export class SaveFacility {
         () => Result.ok(facility),
         (error) => Result.err(error),
       );
+    if (!existing || existing.status !== facility.status)
+      await this.facilities.recordStatus(
+        facility.tenantId,
+        facility.id,
+        facility.status,
+        this.clock.now(),
+      );
     await this.audit.record(
       args.principal,
       args.mode === "create" ? "facility.created" : "facility.updated",
