@@ -166,6 +166,7 @@ describe("Supramunicipal operator through HTTP and PostgreSQL", () => {
     await create(deputacion, municipality({ timezone: "Mars/Olympus" })).expect(
       400,
     );
+    await create(deputacion, municipality({ slug: "operador" })).expect(409);
     await create(deputacion, { ...first, name: "Outro nome" }).expect(409);
     await post(deputacion, `operator/municipalities/${randomUUID()}/managers`, {
       id: randomUUID(),

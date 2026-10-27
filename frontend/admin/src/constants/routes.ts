@@ -9,7 +9,13 @@ export const ROUTES = {
   audit: "auditoria",
   insights: "indicadores",
   settings: "axustes",
+  operator: "/operador",
+  deployment: "concellos",
+  deploymentInsights: "indicadores",
 } as const;
+export function operatorRouteFor(child: string) {
+  return `${ROUTES.operator}/${child}`;
+}
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;
 }

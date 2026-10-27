@@ -21,6 +21,8 @@ export type CreateMunicipalityError =
   | AppError<"validation">
   | AppError<"slug_taken">
   | AppError<"id_reused">;
+/** Path segments the admin uses outside a municipality (`/admin/operador`). */
+const RESERVED_SLUGS = ["operador"];
 export function isTimezone(value: string) {
   try {
     Temporal.PlainDate.from("2026-01-01").toZonedDateTime(value);
@@ -63,7 +65,10 @@ export class CreateMunicipality {
         : Result.err(failure("id_reused"));
     if (!isTimezone(args.timezone) || !args.name.trim())
       return Result.err(failure("validation"));
-    if (await this.deployment.slugTaken(args.slug))
+    if (
+      RESERVED_SLUGS.includes(args.slug) ||
+      (await this.deployment.slugTaken(args.slug))
+    )
       return Result.err(failure("slug_taken"));
     const now = this.clock.now();
     await this.deployment.createMunicipality({
