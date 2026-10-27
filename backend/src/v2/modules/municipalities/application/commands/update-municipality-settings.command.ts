@@ -58,6 +58,7 @@ export class UpdateMunicipalitySettings {
     if (!can(args.principal, "municipality:manage"))
       return Result.err(failure("forbidden"));
     const tenantId = args.principal.tenantId;
+    await this.settings.lock(tenantId);
     const existing = await this.municipalities.find(tenantId);
     if (!existing) return Result.err(failure("not_found"));
     const patch = {
@@ -79,7 +80,10 @@ export class UpdateMunicipalitySettings {
     if (!changed.length && !legalChanged)
       return Result.ok({ settings: existing, affectedBookings: 0 });
     const now = this.clock.now();
-    if (changed.length) await this.settings.save(tenantId, next);
+    await this.settings.save(
+      tenantId,
+      Object.fromEntries(changed.map((key) => [key, next[key]])),
+    );
     if (legalChanged && patch.legalTexts) {
       next.legalTexts = patch.legalTexts;
       next.legalVersion = await this.settings.publishLegalTexts(

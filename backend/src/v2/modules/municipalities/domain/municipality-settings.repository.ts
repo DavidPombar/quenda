@@ -16,7 +16,13 @@ export type EditableSettings = Pick<
   | "holidaysCalendar"
 >;
 export abstract class MunicipalitySettingsRepository {
-  abstract save(tenantId: string, settings: EditableSettings): Promise<void>;
+  /** Serialises concurrent edits of one municipality within the current transaction. */
+  abstract lock(tenantId: string): Promise<void>;
+  /** Writes only the given fields, so concurrent edits of other sections are kept. */
+  abstract save(
+    tenantId: string,
+    changes: Partial<EditableSettings>,
+  ): Promise<void>;
   /** Appends a privacy notice version dated `date` and makes it current; returns the version. */
   abstract publishLegalTexts(
     tenantId: string,

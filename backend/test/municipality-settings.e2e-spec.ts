@@ -175,6 +175,28 @@ describe("Municipal settings through HTTP and PostgreSQL", () => {
       locale: "es",
     });
   });
+  it("should keep both changes when two sections are saved at the same time", async () => {
+    const context = await tenant();
+    const calendar = holidays(localDate(start(5)));
+    await Promise.all([
+      patch(context.manager, "manager/municipality", {
+        primaryColor: "#1a4d8f",
+      }).expect(200),
+      patch(context.manager, "manager/municipality", {
+        holidaysCalendar: calendar,
+      }).expect(200),
+      patch(context.manager, "manager/municipality", {
+        cancellationHours: 12,
+      }).expect(200),
+    ]);
+    expect(
+      (await context.manager.get("/v2/manager/municipality").expect(200)).body,
+    ).toMatchObject({
+      primaryColor: "#1a4d8f",
+      holidaysCalendar: calendar,
+      cancellationHours: 12,
+    });
+  });
   it("should close facilities on municipal holidays unless they opt out, keeping existing bookings", async () => {
     const context = await tenant();
     const court = await facility(context);

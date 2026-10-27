@@ -8,24 +8,34 @@ import {
 import { Logo, LogoType } from "../../domain/logo";
 import { LegalTexts } from "../../../../shared/application/municipality-settings";
 import { Database } from "../../../../shared/infrastructure/database";
+const columns: Record<keyof EditableSettings, string> = {
+  locale: "locale",
+  advanceDays: "advance_days",
+  cancellationHours: "cancellation_hours",
+  maxActiveBookings: "max_active_bookings",
+  contact: "contact",
+  primaryColor: "primary_color",
+  holidaysCalendar: "holidays_calendar",
+};
 @Injectable()
 export class PostgresMunicipalitySettingsRepository extends MunicipalitySettingsRepository {
   constructor(private readonly db: Database) {
     super();
   }
-  async save(tenantId: string, value: EditableSettings) {
+  async lock(tenantId: string) {
     await this.db.query(
-      "UPDATE municipalities SET locale=$2, advance_days=$3, cancellation_hours=$4, max_active_bookings=$5, contact=$6, primary_color=$7, holidays_calendar=$8 WHERE id=$1",
-      [
-        tenantId,
-        value.locale,
-        value.advanceDays,
-        value.cancellationHours,
-        value.maxActiveBookings,
-        value.contact,
-        value.primaryColor,
-        value.holidaysCalendar,
-      ],
+      "SELECT id FROM municipalities WHERE id=$1 FOR UPDATE",
+      [tenantId],
+    );
+  }
+  async save(tenantId: string, changes: Partial<EditableSettings>) {
+    const keys = (Object.keys(columns) as (keyof EditableSettings)[]).filter(
+      (key) => changes[key] !== undefined,
+    );
+    if (!keys.length) return;
+    await this.db.query(
+      `UPDATE municipalities SET ${keys.map((key, index) => `${columns[key]}=$${index + 2}`).join(", ")} WHERE id=$1`,
+      [tenantId, ...keys.map((key) => changes[key])],
     );
   }
   async publishLegalTexts(
@@ -34,11 +44,7 @@ export class PostgresMunicipalitySettingsRepository extends MunicipalitySettings
     date: Temporal.PlainDate,
     publishedAt: Temporal.Instant,
   ) {
-    // The row lock serialises concurrent publications so sequence numbers stay unique.
-    await this.db.query(
-      "SELECT id FROM municipalities WHERE id=$1 FOR UPDATE",
-      [tenantId],
-    );
+    // The caller holds the municipality lock, so sequence numbers stay unique.
     const prefix = `${date.toString()}.`;
     const { rows } = await this.db.query<{ count: string }>(
       "SELECT count(*) FROM legal_texts WHERE tenant_id=$1 AND starts_with(version, $2)",
