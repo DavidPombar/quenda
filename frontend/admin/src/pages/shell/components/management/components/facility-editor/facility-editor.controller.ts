@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useSaveFacilityMutation } from "@/queries/facilities/save-facility.mutation";
+import { useGetFacilityImpactQuery } from "@/queries/facilities/get-facility-impact.query";
 import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
 import type { Facility, Municipality } from "@/types/models";
@@ -46,6 +47,15 @@ export function useFacilityEditorController(args: {
     Partial<Record<"name" | "address", TextKey>>
   >({});
   const mutation = useSaveFacilityMutation();
+  // Closing an active facility cancels its upcoming bookings, so it asks first (C3).
+  const shuttingDown =
+    !!args.facility &&
+    args.facility.status === "active" &&
+    draft.status !== "active";
+  const impact = useGetFacilityImpactQuery(draft.id, shuttingDown);
+  const [confirming, setConfirming] = useState(false);
+  const [closureReason, setClosureReason] = useState("");
+  const [reasonInvalid, setReasonInvalid] = useState(false);
   function setField<K extends keyof Facility>(key: K, value: Facility[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
     if (key === "name" || key === "address")
@@ -108,8 +118,25 @@ export function useFacilityEditorController(args: {
         ?.focus();
       return;
     }
+    if (shuttingDown && !confirming) {
+      const affected = (await impact.refetch()).data;
+      if (affected?.bookings) {
+        mutation.reset();
+        setConfirming(true);
+        return;
+      }
+    }
+    if (confirming && closureReason.trim().length < 3) {
+      setReasonInvalid(true);
+      document.querySelector<HTMLElement>('[name="closureReason"]')?.focus();
+      return;
+    }
     try {
-      await mutation.mutateAsync({ facility: draft, isNew: !args.facility });
+      await mutation.mutateAsync({
+        facility: draft,
+        isNew: !args.facility,
+        ...(confirming && { closureReason: closureReason.trim() }),
+      });
       args.onClose(true);
     } catch {
       /* Mutation state presents the error. */
@@ -132,5 +159,17 @@ export function useFacilityEditorController(args: {
     importCalendar,
     save,
     mutation,
+    impact,
+    confirming,
+    closureReason,
+    reasonInvalid,
+    setClosureReason: (value: string) => {
+      setClosureReason(value);
+      setReasonInvalid(false);
+    },
+    backToForm: () => {
+      mutation.reset();
+      setConfirming(false);
+    },
   };
 }

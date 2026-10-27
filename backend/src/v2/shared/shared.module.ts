@@ -4,6 +4,8 @@ import { Clock } from "./application/clock";
 import { IdGenerator } from "./application/id-generator";
 import { Audit } from "./application/audit";
 import { Municipalities } from "./application/municipality-settings";
+import { Outbox } from "./application/outbox";
+import { UnsubscribeTokens } from "./application/unsubscribe-tokens";
 import { Database } from "./infrastructure/database";
 import { Commands } from "./infrastructure/commands.locator";
 import { Queries } from "./infrastructure/queries.locator";
@@ -11,6 +13,8 @@ import { SystemClock } from "./infrastructure/system-clock";
 import { UuidGenerator } from "./infrastructure/uuid-generator";
 import { PostgresAudit } from "./infrastructure/postgres-audit";
 import { PostgresMunicipalities } from "./infrastructure/postgres-municipalities";
+import { PostgresOutbox } from "./infrastructure/postgres-outbox";
+import { HmacUnsubscribeTokens } from "./infrastructure/hmac-unsubscribe-tokens";
 import { PrincipalGuard } from "./infrastructure/api/principal.guard";
 import { OperatorGuard } from "./infrastructure/api/operator.guard";
 import { OperatorAudit } from "./application/operator-audit";
@@ -24,6 +28,8 @@ const bindings = [
   { provide: IdGenerator, useClass: UuidGenerator },
   { provide: Audit, useClass: PostgresAudit },
   { provide: Municipalities, useClass: PostgresMunicipalities },
+  { provide: Outbox, useClass: PostgresOutbox },
+  { provide: UnsubscribeTokens, useClass: HmacUnsubscribeTokens },
   { provide: SessionRepository, useClass: PostgresSessionRepository },
   { provide: OperatorAudit, useClass: PostgresOperatorAudit },
   {

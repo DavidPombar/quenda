@@ -37,6 +37,7 @@ export function FacilityOccupancy(p: {
             <th scope="col">{t("insightsOpenHours")}</th>
             <th scope="col">{t("insightsConfirmed")}</th>
             <th scope="col">{t("insightsCancelled")}</th>
+            <th scope="col">{t("insightsNoShows")}</th>
           </tr>
         </thead>
         <tbody>
@@ -70,6 +71,7 @@ export function FacilityOccupancy(p: {
               <td>{hoursLabel(facility.openMinutes, p.locale)}</td>
               <td>{facility.confirmed}</td>
               <td>{facility.cancelled}</td>
+              <td>{facility.noShows}</td>
             </tr>
           ))}
         </tbody>

@@ -160,7 +160,7 @@ describe("supramunicipal operator area", () => {
       total: 12,
       confirmed: 10,
       cancelled: 2,
-      noShows: null,
+      noShows: 1,
       bookedMinutes: 600,
       openMinutes: 6000,
       occupancy: 10,
@@ -175,7 +175,7 @@ describe("supramunicipal operator area", () => {
           total: 12,
           confirmed: 10,
           cancelled: 2,
-          noShows: null,
+          noShows: 1,
           bookedMinutes: 600,
           openMinutes: 6000,
           occupancy: 10,
@@ -199,6 +199,9 @@ describe("supramunicipal operator area", () => {
       .toBeVisible();
     await expect
       .element(table.getByRole("rowheader", { name: "Total do despregamento" }))
+      .toBeVisible();
+    await expect
+      .element(table.getByRole("columnheader", { name: "Non presentados" }))
       .toBeVisible();
     const url = new URL(spy.mock.calls.at(-1)![0].url);
     expect(url.searchParams.get("from")).toBe("2026-10-01");

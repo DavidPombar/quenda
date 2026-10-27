@@ -75,6 +75,7 @@ export class GetDeploymentInsights {
         | "total"
         | "confirmed"
         | "cancelled"
+        | "noShows"
         | "bookedMinutes"
         | "openMinutes"
         | "facilities",
@@ -84,7 +85,7 @@ export class GetDeploymentInsights {
       total: sum("total"),
       confirmed: sum("confirmed"),
       cancelled: sum("cancelled"),
-      noShows: null,
+      noShows: sum("noShows"),
       facilities: sum("facilities"),
       ...figures(sum("bookedMinutes"), sum("openMinutes")),
     });

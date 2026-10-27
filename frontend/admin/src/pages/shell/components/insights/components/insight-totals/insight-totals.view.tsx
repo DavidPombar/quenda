@@ -46,8 +46,9 @@ export function InsightTotals(p: {
     },
     {
       label: "insightsNoShows",
-      value: current.noShows ?? "—",
-      note: current.noShows === null ? t("insightsNoShowsPending") : undefined,
+      value: current.noShows,
+      before: previous?.noShows,
+      note: t("insightsNoShowsHint"),
     },
   ];
   return (

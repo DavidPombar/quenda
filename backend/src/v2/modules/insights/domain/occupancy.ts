@@ -14,7 +14,8 @@ export interface FacilityActivity {
   active: Span[];
   /** Municipal holidays the facility follows, as whole local days. */
   closed: Span[];
-  bookings: (Span & { status: "confirmed" | "cancelled" })[];
+  /** A no-show held the slot but was not used, so it counts apart and not as booked time. */
+  bookings: (Span & { status: "confirmed" | "cancelled" | "no_show" })[];
 }
 export interface Figures {
   bookedMinutes: number;
@@ -28,6 +29,7 @@ export interface FacilityReport extends Figures {
   sport: string;
   confirmed: number;
   cancelled: number;
+  noShows: number;
 }
 export interface HeatmapCell extends Figures {
   /** ISO weekday, 1 = Monday. */
@@ -38,6 +40,7 @@ export interface HeatmapCell extends Figures {
 export interface OccupancyReport extends Figures {
   confirmed: number;
   cancelled: number;
+  noShows: number;
   byFacility: FacilityReport[];
   /** Only weekday × hour cells with open time, so 0 % differs from "closed". */
   heatmap: HeatmapCell[];
@@ -172,6 +175,8 @@ export function occupancyReport(args: {
         .length,
       cancelled: starting.filter((booking) => booking.status === "cancelled")
         .length,
+      noShows: starting.filter((booking) => booking.status === "no_show")
+        .length,
       ...figures(minutes(booked), minutes(open)),
     };
   });
@@ -183,11 +188,13 @@ export function occupancyReport(args: {
     })
     .sort((a, b) => a.weekday - b.weekday || a.hour - b.hour);
   const sum = (
-    key: "bookedMinutes" | "openMinutes" | "confirmed" | "cancelled",
+    key:
+      "bookedMinutes" | "openMinutes" | "confirmed" | "cancelled" | "noShows",
   ) => byFacility.reduce((total, facility) => total + facility[key], 0);
   return {
     confirmed: sum("confirmed"),
     cancelled: sum("cancelled"),
+    noShows: sum("noShows"),
     ...figures(sum("bookedMinutes"), sum("openMinutes")),
     byFacility,
     heatmap,

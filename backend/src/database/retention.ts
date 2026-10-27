@@ -21,6 +21,8 @@ export async function retention() {
             `${municipality.slug}: cutoff ${summary.cutoff.toString()}, ` +
               `bookings detached ${summary.bookingsDetached}, ` +
               `notifications deleted ${summary.notificationsDeleted}, ` +
+              `messages deleted ${summary.messagesDeleted}, ` +
+              `blocks deleted ${summary.blocksDeleted}, ` +
               `audit pseudonymised ${summary.auditPseudonymised}, ` +
               `sessions purged ${summary.sessionsPurged}, ` +
               `consents deleted ${summary.consentsDeleted}, ` +

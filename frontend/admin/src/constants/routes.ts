@@ -12,6 +12,7 @@ export const ROUTES = {
   operator: "/operador",
   deployment: "concellos",
   deploymentInsights: "indicadores",
+  bookings: "reservas",
 } as const;
 export function operatorRouteFor(child: string) {
   return `${ROUTES.operator}/${child}`;

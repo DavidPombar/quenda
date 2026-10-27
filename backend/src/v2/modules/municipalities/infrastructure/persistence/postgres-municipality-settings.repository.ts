@@ -16,6 +16,9 @@ const columns: Record<keyof EditableSettings, string> = {
   contact: "contact",
   primaryColor: "primary_color",
   holidaysCalendar: "holidays_calendar",
+  noShowLimit: "no_show_limit",
+  noShowWindowDays: "no_show_window_days",
+  noShowBlockDays: "no_show_block_days",
 };
 @Injectable()
 export class PostgresMunicipalitySettingsRepository extends MunicipalitySettingsRepository {

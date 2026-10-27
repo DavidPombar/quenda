@@ -15,12 +15,15 @@ import { ListFacilitiesController } from "./infrastructure/api/public/list-facil
 import { GetAvailabilityController } from "./infrastructure/api/public/get-availability.controller";
 import { CreateFacilityController } from "./infrastructure/api/manager/create-facility.controller";
 import { UpdateFacilityController } from "./infrastructure/api/manager/update-facility.controller";
+import { GetFacilityImpact } from "./application/queries/get-facility-impact.query";
+import { GetFacilityImpactController } from "./infrastructure/api/manager/get-facility-impact.controller";
 @Module({
   providers: [
     ListFacilities,
     ListCatalog,
     GetAvailability,
     SaveFacility,
+    GetFacilityImpact,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
     { provide: OpeningCalendar, useClass: IcalOpeningCalendar },
     { provide: HolidayCalendar, useClass: IcalHolidayCalendar },
@@ -31,6 +34,7 @@ import { UpdateFacilityController } from "./infrastructure/api/manager/update-fa
     GetAvailabilityController,
     CreateFacilityController,
     UpdateFacilityController,
+    GetFacilityImpactController,
   ],
   exports: [OpeningCalendar, HolidayCalendar],
 })

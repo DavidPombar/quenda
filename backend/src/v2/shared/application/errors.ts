@@ -18,7 +18,9 @@ export type ErrorCode =
   | "invalid_holidays"
   | "unsupported_logo"
   | "logo_too_large"
-  | "slug_taken";
+  | "slug_taken"
+  | "booking_blocked"
+  | "attendance_window";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

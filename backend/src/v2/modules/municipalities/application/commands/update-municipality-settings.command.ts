@@ -32,6 +32,9 @@ const editable = [
   "contact",
   "primaryColor",
   "holidaysCalendar",
+  "noShowLimit",
+  "noShowWindowDays",
+  "noShowBlockDays",
 ] as const satisfies readonly (keyof EditableSettings)[];
 /**
  * New rules apply to new reservations and changes only: existing bookings keep the cancellation

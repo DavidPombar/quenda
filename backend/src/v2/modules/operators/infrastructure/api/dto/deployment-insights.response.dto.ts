@@ -10,11 +10,9 @@ class TotalsDTO {
   @ApiProperty() confirmed!: number;
   @ApiProperty() cancelled!: number;
   @ApiProperty({
-    type: Number,
-    nullable: true,
-    description: "Null until attendance tracking (#16)",
+    description: "Bookings marked as no-show; not counted as booked time",
   })
-  noShows!: number | null;
+  noShows!: number;
   @ApiProperty() bookedMinutes!: number;
   @ApiProperty() openMinutes!: number;
   @ApiProperty({ type: Number, nullable: true }) occupancy!: number | null;

@@ -4,6 +4,7 @@ import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
   PiBuildings,
+  PiCalendarCheck,
   PiChartBar,
   PiGearSix,
   PiListChecks,
@@ -64,6 +65,12 @@ export function Shell() {
             <PiBuildings size={20} aria-hidden="true" />
             {t("dashboard")}
           </NavLink>
+          {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.bookings)}>
+              <PiCalendarCheck size={20} aria-hidden="true" />
+              {t("dayBookings")}
+            </NavLink>
+          )}
           {c.session && (
             <NavLink to={routeFor(municipality.slug, ROUTES.insights)}>
               <PiChartBar size={20} aria-hidden="true" />

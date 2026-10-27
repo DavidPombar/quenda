@@ -21,7 +21,7 @@ async function booking(
   facilityId: string,
   start: string,
   end: string,
-  status: "confirmed" | "cancelled" = "confirmed",
+  status: "confirmed" | "cancelled" | "no_show" = "confirmed",
 ) {
   await harness.db.query(
     "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$5,$8)",
@@ -66,16 +66,24 @@ describe("Indicators through HTTP and PostgreSQL", () => {
       "2026-10-06T09:00:00Z",
       "cancelled",
     );
+    // A no-show held the slot but was not used: counted apart, not as booked time.
+    await booking(
+      context,
+      court.id,
+      "2026-10-07T08:00:00Z",
+      "2026-10-07T09:00:00Z",
+      "no_show",
+    );
     const result = await insights(context, "2026-10-05", "2026-10-11").expect(
       200,
     );
     expect(result.body).toMatchObject({
       from: "2026-10-05",
       to: "2026-10-11",
-      total: 2,
+      total: 3,
       confirmed: 1,
       cancelled: 1,
-      noShows: null,
+      noShows: 1,
       bookedMinutes: 60,
       openMinutes: 7 * DAY_MINUTES,
       occupancy: 1,
@@ -84,6 +92,7 @@ describe("Indicators through HTTP and PostgreSQL", () => {
       id: court.id,
       confirmed: 1,
       cancelled: 1,
+      noShows: 1,
       bookings: 1,
     });
     expect(
@@ -236,7 +245,7 @@ describe("Indicators through HTTP and PostgreSQL", () => {
     const text = response.body as string;
     expect(text.startsWith("﻿Periodo;2026-10-05;2026-10-11\r\n")).toBe(true);
     expect(text).toContain(
-      `${court.name};padel;1;0;;1,0;${(7 * DAY_MINUTES) / 60},0;1\r\n`,
+      `${court.name};padel;1;0;0;1,0;${(7 * DAY_MINUTES) / 60},0;1\r\n`,
     );
     expect(text).toContain("Lunes;10:00;1,0;1,0;100\r\n");
     const galician = await context.manager

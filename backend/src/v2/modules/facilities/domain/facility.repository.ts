@@ -17,6 +17,12 @@ export interface CatalogEntry extends Omit<
   municipality: { slug: string; name: string };
 }
 export const CATALOG_LIMIT = 200;
+export interface UpcomingBooking {
+  id: string;
+  userId: string;
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+}
 export abstract class FacilityRepository {
   /** Public, cross-municipality read of active facilities (R3, #18). */
   abstract catalog(filters: CatalogFilters): Promise<CatalogEntry[]>;
@@ -36,11 +42,19 @@ export abstract class FacilityRepository {
     status: Facility["status"],
     at: Temporal.Instant,
   ): Promise<void>;
-  abstract hasFutureBookings(
+  /** Confirmed bookings of people that have not ended yet. */
+  abstract upcomingBookings(
     tenantId: string,
     id: string,
     now: Temporal.Instant,
-  ): Promise<boolean>;
+  ): Promise<UpcomingBooking[]>;
+  /** Cancels bookings on behalf of the municipality and adds one notice per booking. */
+  abstract cancelBookings(args: {
+    tenantId: string;
+    bookings: readonly { id: string; userId: string; notificationId: string }[];
+    reason: string;
+    at: Temporal.Instant;
+  }): Promise<void>;
   abstract busy(
     tenantId: string,
     id: string,

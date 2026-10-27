@@ -66,6 +66,7 @@ export function DeploymentInsights() {
                 <th scope="col">{t("insightsOpenHours")}</th>
                 <th scope="col">{t("insightsConfirmed")}</th>
                 <th scope="col">{t("insightsCancelled")}</th>
+                <th scope="col">{t("insightsNoShows")}</th>
                 <th scope="col">{t("operatorFacilities")}</th>
               </tr>
             </thead>
@@ -78,6 +79,7 @@ export function DeploymentInsights() {
                   <td>{c.hours(row.openMinutes)}</td>
                   <td>{row.confirmed}</td>
                   <td>{row.cancelled}</td>
+                  <td>{row.noShows}</td>
                   <td>{row.facilities}</td>
                 </tr>
               ))}
@@ -90,6 +92,7 @@ export function DeploymentInsights() {
                 <td>{c.hours(c.insights.data.openMinutes)}</td>
                 <td>{c.insights.data.confirmed}</td>
                 <td>{c.insights.data.cancelled}</td>
+                <td>{c.insights.data.noShows}</td>
                 <td>{c.insights.data.facilities}</td>
               </tr>
             </tfoot>

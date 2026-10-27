@@ -40,6 +40,10 @@ export class MunicipalityResponseDTO {
   @ApiProperty({ description: "Personal data retention period in months" })
   retentionMonths!: number;
   @ApiProperty({
+    description: "Hours before a reservation its reminder is sent",
+  })
+  reminderHours!: number;
+  @ApiProperty({
     description: "Brand colour (#rrggbb) with at least 4.5:1 contrast on white",
   })
   primaryColor!: string;
@@ -49,6 +53,17 @@ export class MunicipalityResponseDTO {
     description: "Versioned logo URL, or null when none was uploaded",
   })
   logoUrl!: string | null;
+  @ApiProperty({
+    description:
+      "No-shows within the window that block new bookings; 0 disables the penalty",
+  })
+  noShowLimit!: number;
+  @ApiProperty({ description: "Days in which no-shows are counted" })
+  noShowWindowDays!: number;
+  @ApiProperty({
+    description: "Days without booking once the limit is reached",
+  })
+  noShowBlockDays!: number;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -63,10 +78,14 @@ export class MunicipalityResponseDTO {
       legalTexts: { gl: value.legalTexts.gl, es: value.legalTexts.es },
       legalVersion: value.legalVersion,
       retentionMonths: value.retentionMonths,
+      reminderHours: value.reminderHours,
       primaryColor: value.primaryColor,
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`
         : null,
+      noShowLimit: value.noShowLimit,
+      noShowWindowDays: value.noShowWindowDays,
+      noShowBlockDays: value.noShowBlockDays,
     };
   }
 }

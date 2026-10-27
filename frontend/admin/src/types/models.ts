@@ -15,6 +15,10 @@ export interface Municipality {
   legalVersion: string;
   primaryColor: string;
   logoUrl: string | null;
+  /** No-shows within the window that block new bookings; 0 disables the penalty. */
+  noShowLimit: number;
+  noShowWindowDays: number;
+  noShowBlockDays: number;
 }
 export interface LegalTexts {
   gl: string;
@@ -35,6 +39,9 @@ export type SettingsPatch = Partial<
     | "legalTexts"
     | "primaryColor"
     | "holidaysCalendar"
+    | "noShowLimit"
+    | "noShowWindowDays"
+    | "noShowBlockDays"
   >
 >;
 export interface SettingsUpdate {
@@ -67,21 +74,31 @@ export interface Slot {
   end: string;
   status: "available" | "booked" | "past";
 }
-export interface Booking {
+export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
+/** One person's reservation as the municipality sees it on the bookings page. */
+export interface ManagedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
   sport: Sport;
   start: string;
   end: string;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
+  outcome: BookingOutcome;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
+  displayName: string;
+  canMarkNoShow: boolean;
+  canRevert: boolean;
+  canCancel: boolean;
 }
-export interface Notification {
-  id: string;
-  bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
-  facilityName: string;
-  createdAt: string;
+export type BookingChange =
+  | { attendance: "no_show" | "attended" }
+  | { status: "cancelled"; reason: string };
+/** Upcoming bookings a closure would cancel. */
+export interface FacilityImpact {
+  bookings: number;
+  people: number;
 }
 export interface FacilityUsage {
   id: string;
@@ -90,6 +107,7 @@ export interface FacilityUsage {
   bookings: number;
   confirmed: number;
   cancelled: number;
+  noShows: number;
   bookedMinutes: number;
   openMinutes: number;
   /** Booked over open time, rounded percent; null when never open. */
@@ -111,8 +129,8 @@ export interface Insights extends DateRange {
   total: number;
   confirmed: number;
   cancelled: number;
-  /** Null until attendance tracking (#16) exists. */
-  noShows: number | null;
+  /** Booked but not used; not counted as booked time. */
+  noShows: number;
   bookedMinutes: number;
   openMinutes: number;
   occupancy: number | null;
@@ -172,7 +190,7 @@ export interface InsightTotals {
   total: number;
   confirmed: number;
   cancelled: number;
-  noShows: number | null;
+  noShows: number;
   bookedMinutes: number;
   openMinutes: number;
   occupancy: number | null;

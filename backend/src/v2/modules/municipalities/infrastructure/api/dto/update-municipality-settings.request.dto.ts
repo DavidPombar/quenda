@@ -81,4 +81,27 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @IsString()
   @MaxLength(65536)
   holidaysCalendar?: string;
+  @ApiPropertyOptional({
+    description:
+      "No-shows within the window that block bookings (0–20, 0 disables)",
+  })
+  @ValidateIf(defined)
+  @IsInt()
+  @Min(0)
+  @Max(20)
+  noShowLimit?: number;
+  @ApiPropertyOptional({ description: "Days in which no-shows count (1–365)" })
+  @ValidateIf(defined)
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  noShowWindowDays?: number;
+  @ApiPropertyOptional({
+    description: "Days without booking once blocked (1–365)",
+  })
+  @ValidateIf(defined)
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  noShowBlockDays?: number;
 }

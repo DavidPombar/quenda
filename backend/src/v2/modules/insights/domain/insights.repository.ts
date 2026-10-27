@@ -19,7 +19,7 @@ export interface BookingSpan {
   facilityId: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
 }
 export abstract class InsightsRepository {
   abstract facilities(tenantId: string): Promise<InsightsFacility[]>;

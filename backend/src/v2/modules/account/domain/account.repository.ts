@@ -3,8 +3,11 @@ import type { Temporal } from "@js-temporal/polyfill";
 import type {
   AccountProfile,
   ExportedAuditEvent,
+  ExportedBlock,
   ExportedBooking,
+  ExportedMessage,
   ExportedNotification,
+  NotificationPreferences,
 } from "./account.read-model";
 export abstract class AccountRepository {
   abstract lockUser(tenantId: string, userId: string): Promise<void>;
@@ -33,6 +36,27 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<number>;
+  /** Removes queued and delivered messages and notice preferences. */
+  abstract deleteMessaging(tenantId: string, userId: string): Promise<void>;
+  abstract setLocale(
+    tenantId: string,
+    userId: string,
+    locale: "gl" | "es",
+  ): Promise<void>;
+  abstract findPreferences(
+    tenantId: string,
+    userId: string,
+  ): Promise<NotificationPreferences>;
+  abstract setReminderEmails(
+    tenantId: string,
+    userId: string,
+    enabled: boolean,
+    now: Temporal.Instant,
+  ): Promise<void>;
+  abstract listMessagesAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedMessage[]>;
   abstract revokeSessions(tenantId: string, userId: string): Promise<number>;
   abstract listBookingsAll(
     tenantId: string,
@@ -42,6 +66,11 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<ExportedNotification[]>;
+  /** Temporary booking bans after repeated no-shows. */
+  abstract listBlocksAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedBlock[]>;
   abstract listAuditByActor(
     tenantId: string,
     userId: string,

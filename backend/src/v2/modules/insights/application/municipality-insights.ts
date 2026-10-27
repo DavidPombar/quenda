@@ -17,8 +17,6 @@ export interface Insights extends OccupancyReport {
   to: string;
   total: number;
   facilities: number;
-  /** Attendance tracking arrives with #16; null until then. */
-  noShows: null;
 }
 export interface DateRange {
   from: Temporal.PlainDate;
@@ -133,9 +131,8 @@ export class MunicipalityInsights {
       slug: settings.slug,
       from: from.toString(),
       to: to.toString(),
-      total: report.confirmed + report.cancelled,
+      total: report.confirmed + report.cancelled + report.noShows,
       facilities: facilities.length,
-      noShows: null,
     };
   }
 }
