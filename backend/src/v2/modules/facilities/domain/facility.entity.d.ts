@@ -12,4 +12,6 @@ export interface Facility {
   priceCents: number;
   openingCalendar: string;
   rules: string;
+  /** Whether the municipal holiday calendar closes this facility. */
+  followsMunicipalHolidays: boolean;
 }

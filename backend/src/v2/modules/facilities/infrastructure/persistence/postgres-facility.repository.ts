@@ -7,7 +7,7 @@ import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
 import { failure } from "../../../../shared/application/errors";
 const fields =
-  'id, tenant_id AS "tenantId", name, sport, address, description, accessible, status, slot_minutes AS "slotMinutes", price_cents AS "priceCents", opening_calendar AS "openingCalendar", rules';
+  'id, tenant_id AS "tenantId", name, sport, address, description, accessible, status, slot_minutes AS "slotMinutes", price_cents AS "priceCents", opening_calendar AS "openingCalendar", rules, follows_municipal_holidays AS "followsMunicipalHolidays"';
 @Injectable()
 export class PostgresFacilityRepository extends FacilityRepository {
   constructor(private readonly db: Database) {
@@ -33,7 +33,7 @@ export class PostgresFacilityRepository extends FacilityRepository {
   }
   async save(value: Facility) {
     const result = await this.db.query(
-      `INSERT INTO facilities (id,tenant_id,name,sport,address,description,accessible,status,slot_minutes,price_cents,opening_calendar,rules) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO UPDATE SET name=$3,sport=$4,address=$5,description=$6,accessible=$7,status=$8,slot_minutes=$9,price_cents=$10,opening_calendar=$11,rules=$12 WHERE facilities.tenant_id=$2 RETURNING id`,
+      `INSERT INTO facilities (id,tenant_id,name,sport,address,description,accessible,status,slot_minutes,price_cents,opening_calendar,rules,follows_municipal_holidays) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) ON CONFLICT(id) DO UPDATE SET name=$3,sport=$4,address=$5,description=$6,accessible=$7,status=$8,slot_minutes=$9,price_cents=$10,opening_calendar=$11,rules=$12,follows_municipal_holidays=$13 WHERE facilities.tenant_id=$2 RETURNING id`,
       [
         value.id,
         value.tenantId,
@@ -47,6 +47,7 @@ export class PostgresFacilityRepository extends FacilityRepository {
         value.priceCents,
         value.openingCalendar,
         value.rules,
+        value.followsMunicipalHolidays,
       ],
     );
     return result.rowCount ? Result.ok() : Result.err(failure("id_reused"));

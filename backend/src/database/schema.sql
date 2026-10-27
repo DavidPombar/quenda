@@ -78,3 +78,26 @@ ALTER TABLE bookings ALTER COLUMN user_id DROP NOT NULL;
 ALTER TABLE audit_events ALTER COLUMN actor_id DROP NOT NULL;
 ALTER TABLE audit_events ADD COLUMN IF NOT EXISTS actor_role text;
 ALTER TABLE audit_events ADD COLUMN IF NOT EXISTS details jsonb;
+-- Municipal settings editable by managers (R2, M2).
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS primary_color text NOT NULL DEFAULT '#1f5b43'
+  CHECK (primary_color ~ '^#[0-9a-f]{6}$');
+-- RFC 5545 VCALENDAR of all-day closures inherited by every facility; empty means none.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS holidays_calendar text NOT NULL DEFAULT '';
+-- Append-only privacy notice versions; consents.legal_version points here so the accepted text can be proven.
+CREATE TABLE IF NOT EXISTS legal_texts (
+  tenant_id uuid NOT NULL REFERENCES municipalities(id), version text NOT NULL,
+  text_gl text NOT NULL, text_es text NOT NULL, published_at timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, version)
+);
+INSERT INTO legal_texts (tenant_id, version, text_gl, text_es, published_at)
+  SELECT id, legal_version, legal_text, legal_text, now() FROM municipalities
+  ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS municipality_logos (
+  tenant_id uuid PRIMARY KEY REFERENCES municipalities(id),
+  content_type text NOT NULL CHECK (content_type IN ('image/png', 'image/jpeg', 'image/webp')),
+  data bytea NOT NULL CHECK (octet_length(data) BETWEEN 1 AND 2097152),
+  sha256 text NOT NULL, updated_at timestamptz NOT NULL
+);
+-- Cancellation deadline in force when the booking was made; NULL for older rows (current setting applies).
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_hours integer CHECK (cancellation_hours >= 0);
+ALTER TABLE facilities ADD COLUMN IF NOT EXISTS follows_municipal_holidays boolean NOT NULL DEFAULT true;

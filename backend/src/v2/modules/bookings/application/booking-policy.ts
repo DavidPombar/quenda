@@ -2,6 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { OpeningCalendar } from "../../facilities/domain/opening-calendar";
+import { HolidayCalendar } from "../../facilities/domain/holiday-calendar";
 import { MunicipalitySettings } from "../../../shared/application/municipality-settings";
 import { FacilityScheduleData } from "../domain/facility-schedule";
 import { Result } from "../../../shared/application/result";
@@ -12,7 +13,10 @@ export type BookingPolicyError =
   | AppError<"outside_opening">;
 @Injectable()
 export class BookingPolicy {
-  constructor(private readonly calendar: OpeningCalendar) {}
+  constructor(
+    private readonly calendar: OpeningCalendar,
+    private readonly holidays: HolidayCalendar,
+  ) {}
   validate(args: {
     start: string;
     facility: FacilityScheduleData;
@@ -43,6 +47,10 @@ export class BookingPolicy {
     const end = start.add({ minutes: args.facility.slotMinutes });
     const fits =
       args.facility.status === "active" &&
+      !(
+        args.facility.followsMunicipalHolidays &&
+        this.holidays.isHoliday(args.settings.holidaysCalendar, localDate)
+      ) &&
       this.calendar
         .expand({
           calendar: args.facility.openingCalendar,

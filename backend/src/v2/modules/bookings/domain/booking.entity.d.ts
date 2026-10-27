@@ -9,6 +9,8 @@ interface BookingBase {
   start: Temporal.Instant;
   end: Temporal.Instant;
   createdAt: Temporal.Instant;
+  /** Deadline in force when booked or last rescheduled; null for rows older than the snapshot. */
+  cancellationHours: number | null;
 }
 export interface ConfirmedBooking extends BookingBase {
   status: "confirmed";

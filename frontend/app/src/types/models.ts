@@ -5,14 +5,18 @@ export interface Municipality {
   slug: string;
   name: string;
   timezone: string;
-  locale: string;
+  /** Default language; the person's saved choice takes precedence. */
+  locale: Locale;
   advanceDays: number;
   cancellationHours: number;
   maxActiveBookings: number;
   contact: string;
-  legalText: string;
+  /** Current privacy notice in each language. */
+  legalTexts: { gl: string; es: string };
   legalVersion: string;
   retentionMonths: number;
+  primaryColor: string;
+  logoUrl: string | null;
 }
 export interface Session {
   userId: string;

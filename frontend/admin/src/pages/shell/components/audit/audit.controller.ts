@@ -23,6 +23,9 @@ const AUDIT_ACTIONS = [
   ["account.deleted", "auditAccountDeleted"],
   ["consent.accepted", "auditConsentAccepted"],
   ["retention.applied", "auditRetentionApplied"],
+  ["municipality.updated", "auditMunicipalityUpdated"],
+  ["municipality.logo_updated", "auditLogoUpdated"],
+  ["municipality.logo_deleted", "auditLogoDeleted"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {

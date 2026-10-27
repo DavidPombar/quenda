@@ -67,4 +67,11 @@ export class UpdateFacilityRequestDTO {
   @IsString()
   @MaxLength(2000)
   rules?: string;
+  @ApiPropertyOptional({
+    description:
+      "Whether municipal holidays close this facility (default true)",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @IsBoolean()
+  followsMunicipalHolidays?: boolean;
 }

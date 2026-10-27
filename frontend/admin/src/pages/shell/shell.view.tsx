@@ -4,6 +4,7 @@ import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
   PiBuildings,
+  PiGearSix,
   PiListChecks,
   PiSignOut,
   PiX,
@@ -50,6 +51,13 @@ export function Shell() {
           </span>
         </NavLink>
         <p className="brand-tagline">{t("management")}</p>
+        {municipality.logoUrl && (
+          <img
+            className="municipal-logo"
+            src={municipality.logoUrl}
+            alt={`${t("logoAlt")}: ${municipality.name}`}
+          />
+        )}
         <nav aria-label={t("municipalArea")} className="main-nav">
           <NavLink to={routeFor(municipality.slug, ROUTES.management)}>
             <PiBuildings size={20} aria-hidden="true" />
@@ -59,6 +67,12 @@ export function Shell() {
             <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
               <PiListChecks size={20} aria-hidden="true" />
               {t("audit")}
+            </NavLink>
+          )}
+          {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.settings)}>
+              <PiGearSix size={20} aria-hidden="true" />
+              {t("settings")}
             </NavLink>
           )}
         </nav>
@@ -195,7 +209,7 @@ export function Shell() {
                 <Dialog.Title>{t("privacyTitle")}</Dialog.Title>
               </Dialog.Header>
               <Dialog.Body>
-                <p>{municipality.legalText}</p>
+                <p lang={c.locale}>{municipality.legalTexts[c.locale]}</p>
                 <p className="muted">{municipality.contact}</p>
               </Dialog.Body>
               <Dialog.CloseTrigger asChild>

@@ -11,7 +11,13 @@ export const municipality: Municipality = {
   cancellationHours: 2,
   maxActiveBookings: 5,
   contact: "deportes@vilaverde.example",
-  legalText: "Demostración con datos ficticios.",
+  legalTexts: {
+    gl: "Demostración con datos ficticios.",
+    es: "Demostración con datos ficticios en castellano.",
+  },
+  legalVersion: "2026-10",
+  primaryColor: "#1f5b43",
+  logoUrl: null,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -25,6 +31,7 @@ export const facility: Facility = {
   priceCents: 400,
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
+  followsMunicipalHolidays: true,
 };
 export function stubShell(authenticated = false) {
   stubJsonResponse({

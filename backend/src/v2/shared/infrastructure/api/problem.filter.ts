@@ -26,6 +26,12 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     demo_disabled: "O acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar o aviso de privacidade vixente para continuar.",
+    insufficient_contrast:
+      "A cor non ten contraste suficiente co branco (mínimo 4,5:1, WCAG AA).",
+    invalid_holidays:
+      "O calendario de festivos non é un iCalendar válido de días completos.",
+    unsupported_logo: "O logotipo debe ser unha imaxe PNG, JPEG ou WebP.",
+    logo_too_large: "O logotipo non pode superar os 2 MB.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -44,6 +50,12 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     demo_disabled: "El acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar el aviso de privacidad vigente para continuar.",
+    insufficient_contrast:
+      "El color no tiene contraste suficiente con el blanco (mínimo 4,5:1, WCAG AA).",
+    invalid_holidays:
+      "El calendario de festivos no es un iCalendar válido de días completos.",
+    unsupported_logo: "El logotipo debe ser una imagen PNG, JPEG o WebP.",
+    logo_too_large: "El logotipo no puede superar los 2 MB.",
   },
 };
 @Catch(HttpException)
