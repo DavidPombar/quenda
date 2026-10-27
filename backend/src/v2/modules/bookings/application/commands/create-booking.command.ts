@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { BookingRepository } from "../../domain/booking.repository";
 import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
+import { BookingBlockRepository } from "../../domain/booking-block.repository";
 import { Booking } from "../../domain/booking.entity";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
 import { Principal, can } from "../../../../shared/application/principal";
@@ -18,6 +19,7 @@ export type CreateBookingError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"booking_limit">
+  | AppError<"booking_blocked">
   | AppError<"slot_taken">
   | AppError<"id_reused">;
 @Injectable()
@@ -31,6 +33,7 @@ export class CreateBooking {
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
+    private readonly blocks: BookingBlockRepository,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -58,6 +61,8 @@ export class CreateBooking {
     const facility = await this.facilities.lock(tenantId, args.facilityId);
     if (!settings || !facility) return Result.err(failure("not_found"));
     const now = this.clock.now();
+    if (await this.blocks.active(tenantId, userId, now))
+      return Result.err(failure("booking_blocked"));
     if (
       (await this.bookings.countActive(tenantId, userId, now)) >=
       settings.maxActiveBookings

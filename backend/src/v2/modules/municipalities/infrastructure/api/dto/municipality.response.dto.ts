@@ -49,6 +49,17 @@ export class MunicipalityResponseDTO {
     description: "Versioned logo URL, or null when none was uploaded",
   })
   logoUrl!: string | null;
+  @ApiProperty({
+    description:
+      "No-shows within the window that block new bookings; 0 disables the penalty",
+  })
+  noShowLimit!: number;
+  @ApiProperty({ description: "Days in which no-shows are counted" })
+  noShowWindowDays!: number;
+  @ApiProperty({
+    description: "Days without booking once the limit is reached",
+  })
+  noShowBlockDays!: number;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -67,6 +78,9 @@ export class MunicipalityResponseDTO {
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`
         : null,
+      noShowLimit: value.noShowLimit,
+      noShowWindowDays: value.noShowWindowDays,
+      noShowBlockDays: value.noShowBlockDays,
     };
   }
 }

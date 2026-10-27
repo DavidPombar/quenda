@@ -1467,3 +1467,31 @@ a.account:hover .account-name strong {
   object-fit: contain;
   object-position: left center;
 }
+/* No-shows and municipal cancellations (C3) */
+.booking-status.no_show {
+  color: var(--danger);
+}
+.booking-status.attended {
+  color: var(--ink-2);
+}
+.booking-reason,
+.notice-detail {
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}
+.notices-panel li.cancelled_by_municipality > svg,
+.notices-panel li.no_show > svg,
+.notices-panel li.blocked > svg {
+  color: var(--danger);
+}
+.penalty-banner {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--maintenance);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+}
+.penalty-banner.blocked {
+  border-left-color: var(--danger);
+}

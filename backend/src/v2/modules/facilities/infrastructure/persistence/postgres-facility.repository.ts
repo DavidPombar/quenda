@@ -52,14 +52,48 @@ export class PostgresFacilityRepository extends FacilityRepository {
     );
     return result.rowCount ? Result.ok() : Result.err(failure("id_reused"));
   }
-  async hasFutureBookings(tenantId: string, id: string, now: Temporal.Instant) {
-    return (
-      (
-        await this.db.query(
-          "SELECT id FROM bookings WHERE tenant_id=$1 AND facility_id=$2 AND status='confirmed' AND ends_at>$3 LIMIT 1",
-          [tenantId, id, now.toString()],
-        )
-      ).rows.length > 0
+  async upcomingBookings(tenantId: string, id: string, now: Temporal.Instant) {
+    const { rows } = await this.db.query<{
+      id: string;
+      userId: string;
+      start: string;
+      end: string;
+    }>(
+      'SELECT id, user_id AS "userId", starts_at AS "start", ends_at AS "end" FROM bookings WHERE tenant_id=$1 AND facility_id=$2 AND status=\'confirmed\' AND ends_at>$3 AND user_id IS NOT NULL ORDER BY starts_at',
+      [tenantId, id, now.toString()],
+    );
+    return rows.map((row) => ({
+      ...row,
+      start: Temporal.Instant.from(row.start),
+      end: Temporal.Instant.from(row.end),
+    }));
+  }
+  async cancelBookings(args: {
+    tenantId: string;
+    bookings: readonly { id: string; userId: string; notificationId: string }[];
+    reason: string;
+    at: Temporal.Instant;
+  }) {
+    if (!args.bookings.length) return;
+    await this.db.query(
+      "UPDATE bookings SET status='cancelled', cancelled_at=$3, cancelled_by='municipality', cancellation_reason=$4 WHERE tenant_id=$1 AND id=ANY($2::uuid[]) AND status='confirmed'",
+      [
+        args.tenantId,
+        args.bookings.map((booking) => booking.id),
+        args.at.toString(),
+        args.reason,
+      ],
+    );
+    await this.db.query(
+      "INSERT INTO notifications (id,tenant_id,user_id,booking_id,kind,created_at,details) SELECT n.id,$1,n.user_id,n.booking_id,'cancelled_by_municipality',$5,jsonb_build_object('reason',$6::text) FROM unnest($2::uuid[],$3::uuid[],$4::uuid[]) AS n(id,user_id,booking_id)",
+      [
+        args.tenantId,
+        args.bookings.map((booking) => booking.notificationId),
+        args.bookings.map((booking) => booking.userId),
+        args.bookings.map((booking) => booking.id),
+        args.at.toString(),
+        args.reason,
+      ],
     );
   }
   async busy(

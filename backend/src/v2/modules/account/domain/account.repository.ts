@@ -3,6 +3,7 @@ import type { Temporal } from "@js-temporal/polyfill";
 import type {
   AccountProfile,
   ExportedAuditEvent,
+  ExportedBlock,
   ExportedBooking,
   ExportedNotification,
 } from "./account.read-model";
@@ -42,6 +43,11 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<ExportedNotification[]>;
+  /** Temporary booking bans after repeated no-shows. */
+  abstract listBlocksAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedBlock[]>;
   abstract listAuditByActor(
     tenantId: string,
     userId: string,

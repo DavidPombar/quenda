@@ -7,6 +7,7 @@ import { ExportMunicipalityResponseDTO } from "./export-municipality.response.dt
 import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
 import { ExportedNotificationResponseDTO } from "./exported-notification.response.dto";
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
+import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -36,6 +37,11 @@ export class AccountExportResponseDTO {
   })
   notifications!: ExportedNotificationResponseDTO[];
   @ApiProperty({
+    description: "Booking bans after repeated no-shows",
+    type: [ExportedBlockResponseDTO],
+  })
+  blocks!: ExportedBlockResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -50,6 +56,7 @@ export class AccountExportResponseDTO {
       notifications: value.notifications.map(
         ExportedNotificationResponseDTO.from,
       ),
+      blocks: value.blocks.map(ExportedBlockResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

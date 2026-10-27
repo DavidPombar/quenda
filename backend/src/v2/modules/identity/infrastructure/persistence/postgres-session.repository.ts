@@ -19,6 +19,7 @@ function principal(user: Omit<Principal, "grants">): Principal {
             "insights:view",
             "audit:view",
             "municipality:manage",
+            "bookings:manage",
           ]
         : ["bookings:own", "account:own"],
   };

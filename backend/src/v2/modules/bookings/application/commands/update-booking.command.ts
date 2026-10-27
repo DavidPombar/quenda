@@ -69,6 +69,8 @@ export class UpdateBooking {
       ...existing,
       status: "cancelled",
       cancelledAt: now,
+      cancelledBy: "citizen",
+      cancellationReason: null,
     };
     if (args.start) {
       const validity = this.policy.validate({

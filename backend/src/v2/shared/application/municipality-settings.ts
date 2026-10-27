@@ -24,6 +24,10 @@ export interface MunicipalitySettings {
   holidaysCalendar: string;
   /** Content hash prefix of the uploaded logo, or null when there is none. */
   logoVersion: string | null;
+  /** No-shows within the window that block new bookings; 0 disables the penalty. */
+  noShowLimit: number;
+  noShowWindowDays: number;
+  noShowBlockDays: number;
 }
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;

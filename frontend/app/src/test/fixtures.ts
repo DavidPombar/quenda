@@ -19,6 +19,9 @@ export const municipality: Municipality = {
   retentionMonths: 24,
   primaryColor: "#1f5b43",
   logoUrl: null,
+  noShowLimit: 3,
+  noShowWindowDays: 30,
+  noShowBlockDays: 7,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",

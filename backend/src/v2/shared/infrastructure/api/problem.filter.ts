@@ -22,7 +22,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     booking_cancelled: "Esta reserva xa está cancelada.",
     id_reused: "Esta solicitude xa se usou con outros datos.",
     calendar_in_use:
-      "Hai reservas futuras. Non se pode cambiar o horario ou pechar a instalación.",
+      "Hai reservas futuras. Non se pode cambiar o horario; para pechar a instalación indica un motivo e cancelaranse.",
     demo_disabled: "O acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar o aviso de privacidade vixente para continuar.",
@@ -32,6 +32,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "O calendario de festivos non é un iCalendar válido de días completos.",
     unsupported_logo: "O logotipo debe ser unha imaxe PNG, JPEG ou WebP.",
     logo_too_large: "O logotipo non pode superar os 2 MB.",
+    booking_blocked:
+      "Non podes facer reservas temporalmente por acumular ausencias sen avisar.",
+    attendance_window:
+      "Só se pode marcar como non presentada unha reserva xa comezada e no mesmo día.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -46,7 +50,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     booking_cancelled: "Esta reserva ya está cancelada.",
     id_reused: "Esta solicitud ya se usó con otros datos.",
     calendar_in_use:
-      "Hay reservas futuras. No se puede cambiar el horario o cerrar la instalación.",
+      "Hay reservas futuras. No se puede cambiar el horario; para cerrar la instalación indica un motivo y se cancelarán.",
     demo_disabled: "El acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar el aviso de privacidad vigente para continuar.",
@@ -56,6 +60,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "El calendario de festivos no es un iCalendar válido de días completos.",
     unsupported_logo: "El logotipo debe ser una imagen PNG, JPEG o WebP.",
     logo_too_large: "El logotipo no puede superar los 2 MB.",
+    booking_blocked:
+      "No puedes hacer reservas temporalmente por acumular ausencias sin avisar.",
+    attendance_window:
+      "Solo se puede marcar como no presentada una reserva ya empezada y en el mismo día.",
   },
 };
 @Catch(HttpException)

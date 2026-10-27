@@ -7,9 +7,13 @@ export function useSaveFacilityMutation() {
     mutationFn: facilitiesRepository.save,
     onSuccess: async () => {
       await Promise.all(
-        ["facilities", "availability", "insights"].map((key) =>
-          cache.invalidateQueries({ queryKey: [key] }),
-        ),
+        [
+          "facilities",
+          "availability",
+          "insights",
+          "managed-bookings",
+          "facility-impact",
+        ].map((key) => cache.invalidateQueries({ queryKey: [key] })),
       );
     },
   });

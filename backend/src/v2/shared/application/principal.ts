@@ -5,7 +5,8 @@ export type Permission =
   | "facilities:manage"
   | "insights:view"
   | "audit:view"
-  | "municipality:manage";
+  | "municipality:manage"
+  | "bookings:manage";
 export interface Principal {
   userId: string;
   tenantId: string;

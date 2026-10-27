@@ -5,6 +5,7 @@ import { AccountRepository } from "../../domain/account.repository";
 import {
   AccountProfile,
   ExportedAuditEvent,
+  ExportedBlock,
   ExportedBooking,
   ExportedNotification,
 } from "../../domain/account.read-model";
@@ -16,9 +17,11 @@ interface BookingRow {
   sport: string;
   start: string;
   end: string;
-  status: "confirmed" | "cancelled";
+  status: ExportedBooking["status"];
   createdAt: string;
   cancelledAt: string | null;
+  cancelledBy: ExportedBooking["cancelledBy"];
+  cancellationReason: string | null;
 }
 interface NotificationRow {
   id: string;
@@ -26,6 +29,7 @@ interface NotificationRow {
   kind: ExportedNotification["kind"];
   facilityName: string;
   createdAt: string;
+  details: Record<string, unknown> | null;
 }
 interface AuditRow {
   id: string;
@@ -79,7 +83,7 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     const { rowCount } = await this.db.query(
-      "UPDATE bookings SET status='cancelled', cancelled_at=$3 WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3",
+      "UPDATE bookings SET status='cancelled', cancelled_at=$3, cancelled_by='citizen' WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3",
       [tenantId, userId, now.toString()],
     );
     return rowCount ?? 0;
@@ -100,7 +104,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listBookingsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<BookingRow>(
-      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
+      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.cancelled_by AS "cancelledBy", b.cancellation_reason AS "cancellationReason" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedBooking => ({
@@ -116,12 +120,28 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listNotificationsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<NotificationRow>(
-      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", f.name AS "facilityName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
+      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedNotification => ({
       ...row,
       createdAt: Temporal.Instant.from(row.createdAt),
+    }));
+  }
+  async listBlocksAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      start: string;
+      end: string;
+      liftedAt: string | null;
+    }>(
+      'SELECT starts_at AS "start", ends_at AS "end", lifted_at AS "liftedAt" FROM booking_blocks WHERE tenant_id=$1 AND user_id=$2 ORDER BY starts_at DESC',
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedBlock => ({
+      start: Temporal.Instant.from(row.start),
+      end: Temporal.Instant.from(row.end),
+      liftedAt:
+        row.liftedAt === null ? null : Temporal.Instant.from(row.liftedAt),
     }));
   }
   async listAuditByActor(tenantId: string, userId: string) {

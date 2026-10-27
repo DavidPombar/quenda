@@ -52,6 +52,7 @@ export class CreateBookingController {
       | AppError<"outside_opening">
       | AppError<"booking_window">
       | AppError<"booking_limit">
+      | AppError<"booking_blocked">
       | AppError<"slot_taken">
       | AppError<"id_reused">,
   ): never {
@@ -65,6 +66,8 @@ export class CreateBookingController {
       case "outside_opening":
         throw new ProblemException(422, error);
       case "booking_window":
+        throw new ProblemException(422, error);
+      case "booking_blocked":
         throw new ProblemException(422, error);
       case "booking_limit":
         throw new ProblemException(422, error);

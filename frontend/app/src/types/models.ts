@@ -17,6 +17,10 @@ export interface Municipality {
   retentionMonths: number;
   primaryColor: string;
   logoUrl: string | null;
+  /** No-shows within the window that block new bookings; 0 disables the penalty. */
+  noShowLimit: number;
+  noShowWindowDays: number;
+  noShowBlockDays: number;
 }
 export interface Session {
   userId: string;
@@ -50,14 +54,39 @@ export interface Booking {
   sport: Sport;
   start: string;
   end: string;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
+  /** A confirmed booking that has ended counts as attended. */
+  outcome: "upcoming" | "attended" | "no_show" | "cancelled";
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
+}
+/** No-shows against the municipal penalty; blockedUntil is set while bookings are blocked. */
+export interface PenaltyStanding {
+  enabled: boolean;
+  count: number;
+  limit: number;
+  windowDays: number;
+  blockDays: number;
+  remaining: number;
+  blockedUntil: string | null;
 }
 export interface Notification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind:
+    | "confirmed"
+    | "rescheduled"
+    | "cancelled"
+    | "cancelled_by_municipality"
+    | "no_show"
+    | "blocked"
+    | "unblocked";
   facilityName: string;
   createdAt: string;
+  details: {
+    reason?: string;
+    standing?: Omit<PenaltyStanding, "enabled">;
+  } | null;
 }
 export interface Insights {
   total: number;
@@ -101,16 +130,20 @@ export interface AccountExport {
     sport: Sport;
     start: string;
     end: string;
-    status: "confirmed" | "cancelled";
+    status: Booking["status"];
     createdAt: string;
     cancelledAt: string | null;
+    cancelledBy: Booking["cancelledBy"];
+    cancellationReason: string | null;
   }[];
   notifications: {
     id: string;
     bookingId: string;
     kind: Notification["kind"];
     createdAt: string;
+    details: Notification["details"];
   }[];
+  blocks: { start: string; end: string; liftedAt: string | null }[];
   auditEvents: {
     id: string;
     action: string;

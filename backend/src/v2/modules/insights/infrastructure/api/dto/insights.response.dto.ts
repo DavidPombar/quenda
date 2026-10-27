@@ -7,6 +7,7 @@ export class InsightsResponseDTO {
   total!: number;
   @ApiProperty({ description: "Confirmed bookings" }) confirmed!: number;
   @ApiProperty({ description: "Cancelled bookings" }) cancelled!: number;
+  @ApiProperty({ description: "Bookings marked as no-show" }) noShows!: number;
   @ApiProperty({
     description:
       "Confirmed minutes divided by currently scheduled opening minutes, rounded percent",
@@ -25,6 +26,7 @@ export class InsightsResponseDTO {
       total: value.total,
       confirmed: value.confirmed,
       cancelled: value.cancelled,
+      noShows: value.noShows,
       occupancy: value.occupancy,
       facilities: value.facilities,
       from: value.from,
