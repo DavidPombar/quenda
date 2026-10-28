@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
-import { readFile } from "node:fs/promises";
+import { createServer } from "node:net";
+import { migrate } from "../src/database/migrate";
 import { Pool } from "pg";
 import request from "supertest";
 import type { INestApplication } from "@nestjs/common";
@@ -19,32 +20,65 @@ const baseUrl =
   "postgres://quenda:quenda_local@127.0.0.1:55432/quenda";
 let admin: Pool | undefined;
 let databaseName: string | undefined;
+let savedEnv: Record<string, string | undefined> = {};
 export const harness = {} as Harness;
+/** Reserves a free loopback port so the app's own base URL is known before it boots. */
+function freePort() {
+  return new Promise<number>((resolve, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      server.close(() =>
+        typeof address === "object" && address
+          ? resolve(address.port)
+          : reject(new Error("No port")),
+      );
+    });
+  });
+}
+export interface SetupOptions {
+  /** Extra environment for the app, given its base URL (e.g. PUBLIC_URL); restored on teardown. */
+  env?: (baseUrl: string) => Record<string, string | undefined>;
+}
 // Each spec file boots the compiled app against its own disposable database.
-export async function setup() {
+// Takes no parameters so it can be passed to beforeAll directly.
+export function setup() {
+  return setupWith({});
+}
+/** Like setup(), with extra environment for the app (e.g. an OIDC provider). */
+export async function setupWith(options: SetupOptions) {
   databaseName = `quenda_test_${randomUUID().replaceAll("-", "")}`;
   const testUrl = new URL(baseUrl);
   testUrl.pathname = `/${databaseName}`;
   process.env.NODE_ENV = "test";
+  process.env.SESSION_RATE_LIMIT_PER_MINUTE = "1000";
   process.env.DEMO_MODE = "true";
   process.env.DATABASE_URL = testUrl.toString();
   admin = new Pool({ connectionString: baseUrl });
   await admin.query(`CREATE DATABASE "${databaseName}"`);
   harness.db = new Pool({ connectionString: testUrl.toString() });
-  await harness.db.query(
-    await readFile(
-      new URL("../src/database/schema.sql", import.meta.url),
-      "utf8",
-    ),
+  await migrate(testUrl.toString(), () => undefined);
+  const port = options.env ? await freePort() : 0;
+  const extra = options.env?.(`http://127.0.0.1:${port}`) ?? {};
+  savedEnv = Object.fromEntries(
+    Object.keys(extra).map((key) => [key, process.env[key]]),
   );
+  for (const [key, value] of Object.entries(extra))
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
   const { createApp } = require("../dist/bootstrap.js") as {
     createApp: () => Promise<INestApplication>;
   };
   harness.app = await createApp();
-  await harness.app.listen(0, "127.0.0.1");
+  await harness.app.listen(port, "127.0.0.1");
 }
 export async function teardown() {
   if (harness.app) await harness.app.close();
+  for (const [key, value] of Object.entries(savedEnv))
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  savedEnv = {};
   if (harness.db) await harness.db.end();
   if (admin) {
     await admin.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
@@ -127,6 +161,13 @@ export async function facility(context: Tenant, calendar?: string) {
   await post(context.manager, "manager/facilities", body).expect(201);
   return body;
 }
+export interface ResourceSlots {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  slots: { start: string; end: string; status: string }[];
+}
 export async function availability(
   context: Tenant,
   id: string,
@@ -140,4 +181,60 @@ export async function availability(
     .get(`/v2/public/availability/${id}`)
     .query({ slug: context.slug, date })
     .expect(200);
+}
+/** Status of the slot starting at `instant` for a resource (default: the facility's first). */
+export async function slotStatus(
+  context: Tenant,
+  facilityId: string,
+  instant: string,
+  resourceId = facilityId,
+) {
+  const resources = (await availability(context, facilityId, instant)).body
+    .resources as ResourceSlots[];
+  return resources
+    .find((resource) => resource.id === resourceId)
+    ?.slots.find((slot) => slot.start === instant)?.status;
+}
+// Extra courts are inserted directly until the manager API for resources exists.
+export async function addResources(
+  context: Tenant,
+  facilityId: string,
+  items: { name: string; parentId?: string; active?: boolean }[],
+) {
+  const ids: string[] = [];
+  for (const item of items) {
+    const id = randomUUID();
+    await harness.db.query(
+      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active)
+      SELECT $1,$2,$3,$4,coalesce(max(position),-1)+1,$5,$6 FROM resources WHERE tenant_id=$2 AND facility_id=$3`,
+      [
+        id,
+        context.id,
+        facilityId,
+        item.name,
+        item.parentId ?? null,
+        item.active ?? true,
+      ],
+    );
+    ids.push(id);
+  }
+  return ids;
+}
+/** An empty disposable database on the test server, for schema migration checks. */
+export async function emptyDatabase() {
+  const name = `quenda_test_${randomUUID().replaceAll("-", "")}`;
+  const url = new URL(baseUrl);
+  url.pathname = `/${name}`;
+  const server = new Pool({ connectionString: baseUrl });
+  await server.query(`CREATE DATABASE "${name}"`);
+  const db = new Pool({ connectionString: url.toString() });
+  return {
+    db,
+    url: url.toString(),
+    async drop() {
+      await db.end();
+      await server.query(`DROP DATABASE IF EXISTS "${name}"`);
+      await server.end();
+    },
+  };
 }

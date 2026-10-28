@@ -7,6 +7,7 @@ import {
   PiCalendarCheck,
   PiChartBar,
   PiGearSix,
+  PiIdentificationCard,
   PiListChecks,
   PiSignOut,
   PiX,
@@ -84,6 +85,12 @@ export function Shell() {
             </NavLink>
           )}
           {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.categories)}>
+              <PiIdentificationCard size={20} aria-hidden="true" />
+              {t("categories")}
+            </NavLink>
+          )}
+          {c.session && (
             <NavLink to={routeFor(municipality.slug, ROUTES.settings)}>
               <PiGearSix size={20} aria-hidden="true" />
               {t("settings")}
@@ -109,6 +116,11 @@ export function Shell() {
               <button type="button" onClick={() => c.setPrivacyOpen(true)}>
                 {t("privacy")}
               </button>
+            </li>
+            <li>
+              <NavLink to={routeFor(municipality.slug, ROUTES.accessibility)}>
+                {t("accessibility")}
+              </NavLink>
             </li>
           </ul>
           <p className="sidebar-note">{t("openSource")}</p>
@@ -197,6 +209,12 @@ export function Shell() {
         <footer className="footer">
           <span>{t("demo")}</span>
           <span>{t("demoNotice")}</span>
+          <NavLink
+            className="footer-link"
+            to={routeFor(municipality.slug, ROUTES.accessibility)}
+          >
+            {t("accessibility")}
+          </NavLink>
         </footer>
       </div>
       <SessionDialog

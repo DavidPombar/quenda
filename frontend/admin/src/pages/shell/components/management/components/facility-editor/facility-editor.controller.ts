@@ -5,7 +5,8 @@ import { useSaveFacilityMutation } from "@/queries/facilities/save-facility.muta
 import { useGetFacilityImpactQuery } from "@/queries/facilities/get-facility-impact.query";
 import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
-import type { Facility, Municipality } from "@/types/models";
+import { centsFromInput } from "@/services/tariff.service";
+import type { Category, Facility, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 export function useFacilityEditorController(args: {
   facility?: Facility;
@@ -26,8 +27,11 @@ export function useFacilityEditorController(args: {
       status: "active",
       slotMinutes: 60,
       priceCents: 0,
+      prices: [],
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
       openingCalendar: weeklyCalendar({
         id,
         timezone: args.municipality.timezone,
@@ -44,8 +48,34 @@ export function useFacilityEditorController(args: {
   const [calendarMessage, setCalendarMessage] = useState("");
   const [calendarError, setCalendarError] = useState("");
   const [errors, setErrors] = useState<
-    Partial<Record<"name" | "address", TextKey>>
+    Partial<
+      Record<
+        "name" | "address" | "latitude" | "longitude" | `price-${Category}`,
+        TextKey
+      >
+    >
   >({});
+  // Only the categories the municipality offers are editable; other stored prices are kept.
+  const offered = args.municipality.enabledCategories;
+  const [priceInputs, setPriceInputs] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      offered.map((category) => {
+        const price = args.facility?.prices.find(
+          (entry) => entry.category === category,
+        );
+        return [category, price ? String(price.priceCents / 100) : ""];
+      }),
+    ),
+  );
+  function setCategoryPrice(category: Category, value: string) {
+    setPriceInputs((current) => ({ ...current, [category]: value }));
+    setErrors((current) => ({ ...current, [`price-${category}`]: undefined }));
+  }
+  // Coordinates are edited as text so a half-typed number is not lost; parsed when saving.
+  const [coordinates, setCoordinates] = useState(() => ({
+    latitude: args.facility?.latitude?.toString() ?? "",
+    longitude: args.facility?.longitude?.toString() ?? "",
+  }));
   const mutation = useSaveFacilityMutation();
   // Closing an active facility cancels its upcoming bookings, so it asks first (C3).
   const shuttingDown =
@@ -61,10 +91,40 @@ export function useFacilityEditorController(args: {
     if (key === "name" || key === "address")
       setErrors((current) => ({ ...current, [key]: undefined }));
   }
+  function setCoordinate(key: "latitude" | "longitude", value: string) {
+    setCoordinates((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({
+      ...current,
+      latitude: undefined,
+      longitude: undefined,
+    }));
+  }
+  function parsedCoordinates() {
+    const parse = (text: string) =>
+      text.trim() === "" ? null : Number(text.trim().replace(",", "."));
+    return {
+      latitude: parse(coordinates.latitude),
+      longitude: parse(coordinates.longitude),
+    };
+  }
   function validate() {
     const next: typeof errors = {};
     if (draft.name.trim().length < 2) next.name = "nameRequired";
     if (draft.address.trim().length < 2) next.address = "addressRequired";
+    for (const category of offered)
+      if (Number.isNaN(centsFromInput(priceInputs[category] ?? "")))
+        next[`price-${category}`] = "categoryPriceError";
+    const { latitude, longitude } = parsedCoordinates();
+    if (latitude !== null && !(Math.abs(latitude) <= 90))
+      next.latitude = "latitudeInvalid";
+    if (longitude !== null && !(Math.abs(longitude) <= 180))
+      next.longitude = "longitudeInvalid";
+    if (
+      !next.latitude &&
+      !next.longitude &&
+      (latitude === null) !== (longitude === null)
+    )
+      next[latitude === null ? "latitude" : "longitude"] = "coordinatesPair";
     setErrors(next);
     return next;
   }
@@ -132,8 +192,15 @@ export function useFacilityEditorController(args: {
       return;
     }
     try {
+      const prices = [
+        ...draft.prices.filter((price) => !offered.includes(price.category)),
+        ...offered.flatMap((category) => {
+          const cents = centsFromInput(priceInputs[category] ?? "");
+          return cents === null ? [] : [{ category, priceCents: cents }];
+        }),
+      ];
       await mutation.mutateAsync({
-        facility: draft,
+        facility: { ...draft, prices, ...parsedCoordinates() },
         isNew: !args.facility,
         ...(confirming && { closureReason: closureReason.trim() }),
       });
@@ -145,7 +212,12 @@ export function useFacilityEditorController(args: {
   return {
     draft,
     setField,
+    coordinates,
+    setCoordinate,
     errors,
+    offered,
+    priceInputs,
+    setCategoryPrice,
     days,
     toggleDay,
     times: dayTimes(),

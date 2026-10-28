@@ -211,7 +211,13 @@ describe("Municipal settings through HTTP and PostgreSQL", () => {
       holidaysCalendar: holidays(date),
     }).expect(200);
     expect(updated.body.affectedBookings).toBe(1);
-    expect((await availability(context, court.id, begins)).body).toEqual([]);
+    expect(
+      (
+        (await availability(context, court.id, begins)).body.resources as {
+          slots: unknown[];
+        }[]
+      ).every((resource) => resource.slots.length === 0),
+    ).toBe(true);
     expect(
       (
         await post(context.citizen, "citizen/bookings", {
@@ -225,7 +231,8 @@ describe("Municipal settings through HTTP and PostgreSQL", () => {
       followsMunicipalHolidays: false,
     }).expect(204);
     expect(
-      (await availability(context, court.id, begins)).body.length,
+      (await availability(context, court.id, begins)).body.resources[0].slots
+        .length,
     ).toBeGreaterThan(0);
     await post(context.citizen, "citizen/bookings", {
       id: randomUUID(),

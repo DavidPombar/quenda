@@ -36,7 +36,13 @@ async function booking(
 ) {
   const id = randomUUID();
   await harness.db.query(
-    "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
+    // The facility's default resource has its id; the booking holds that unit like an API booking.
+    `WITH booking AS (
+      INSERT INTO bookings (id,tenant_id,user_id,facility_id,resource_id,starts_at,ends_at,status,created_at)
+      VALUES ($1,$2,$3,$4,$4,$5,$6,$7,$8) RETURNING id
+    )
+    INSERT INTO booking_units (tenant_id,booking_id,unit_id,starts_at,ends_at)
+    SELECT $2,id,$4,$5,$6 FROM booking`,
     [
       id,
       context.id,

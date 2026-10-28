@@ -25,6 +25,7 @@ export async function retention() {
               `blocks deleted ${summary.blocksDeleted}, ` +
               `audit pseudonymised ${summary.auditPseudonymised}, ` +
               `sessions purged ${summary.sessionsPurged}, ` +
+              `login attempts purged ${summary.loginAttemptsPurged}, ` +
               `consents deleted ${summary.consentsDeleted}, ` +
               `users purged ${summary.usersPurged}`,
           ),

@@ -8,6 +8,8 @@ export interface FacilityActivity {
   id: string;
   name: string;
   sport: string;
+  /** Active leaf resources: whole-court reservations occupy every child unit. */
+  unitIds?: readonly string[];
   /** Opening intervals from the facility calendar. */
   open: Span[];
   /** When the facility was in service (status `active`). */
@@ -15,7 +17,10 @@ export interface FacilityActivity {
   /** Municipal holidays the facility follows, as whole local days. */
   closed: Span[];
   /** A no-show held the slot but was not used, so it counts apart and not as booked time. */
-  bookings: (Span & { status: "confirmed" | "cancelled" | "no_show" })[];
+  bookings: (Span & {
+    status: "confirmed" | "cancelled" | "no_show";
+    unitIds?: readonly string[];
+  })[];
 }
 export interface Figures {
   bookedMinutes: number;
@@ -150,13 +155,21 @@ export function occupancyReport(args: {
       intersect(intersect(facility.open, facility.active), [range]),
       facility.closed,
     );
-    const booked = intersect(
-      facility.bookings.filter((booking) => booking.status === "confirmed"),
-      open,
+    const unitIds = facility.unitIds ?? [facility.id];
+    // Union overlaps within each unit only; simultaneous independent courts count separately.
+    const booked = unitIds.flatMap((unitId) =>
+      intersect(
+        facility.bookings.filter(
+          (booking) =>
+            booking.status === "confirmed" &&
+            (booking.unitIds ?? [facility.id]).includes(unitId),
+        ),
+        open,
+      ),
     );
     for (const span of open)
       byLocalHour(span, args.timezone, (weekday, hour, value) => {
-        cell(weekday, hour).open += value;
+        cell(weekday, hour).open += value * unitIds.length;
       });
     for (const span of booked)
       byLocalHour(span, args.timezone, (weekday, hour, value) => {
@@ -177,7 +190,7 @@ export function occupancyReport(args: {
         .length,
       noShows: starting.filter((booking) => booking.status === "no_show")
         .length,
-      ...figures(minutes(booked), minutes(open)),
+      ...figures(minutes(booked), minutes(open) * unitIds.length),
     };
   });
   const heatmap = [...cells.entries()]

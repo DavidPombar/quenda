@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   facility,
+  addResources,
   harness,
   patch,
   setup,
@@ -22,9 +23,10 @@ async function booking(
   start: string,
   end: string,
   status: "confirmed" | "cancelled" | "no_show" = "confirmed",
+  resourceId = facilityId,
 ) {
   await harness.db.query(
-    "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$5,$8)",
+    "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,resource_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$5,$8,$9)",
     [
       randomUUID(),
       context.id,
@@ -34,6 +36,7 @@ async function booking(
       end,
       status,
       status === "cancelled" ? start : null,
+      resourceId,
     ],
   );
 }
@@ -48,6 +51,65 @@ function insights(context: Tenant, from: string, to: string) {
   return context.manager.get("/v2/manager/insights").query({ from, to });
 }
 describe("Indicators through HTTP and PostgreSQL", () => {
+  it("should report no capacity before a facility existed", async () => {
+    const context = await tenant();
+    await facility(context);
+    await activeSince2026(context);
+    const result = await insights(context, "2025-12-01", "2025-12-31").expect(
+      200,
+    );
+    expect(result.body).toMatchObject({
+      openMinutes: 0,
+      bookedMinutes: 0,
+      occupancy: null,
+    });
+  });
+  it("should count two simultaneous courts independently and a whole court as both parts", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const [second] = await addResources(context, court.id, [
+      { name: "Court 2" },
+    ]);
+    await activeSince2026(context);
+    const begins = "2026-10-05T07:00:00Z";
+    const ends = "2026-10-05T20:00:00Z";
+    await booking(context, court.id, begins, ends);
+    const half = await insights(context, "2026-10-05", "2026-10-05").expect(
+      200,
+    );
+    expect(half.body).toMatchObject({
+      confirmed: 1,
+      bookedMinutes: DAY_MINUTES,
+      openMinutes: 2 * DAY_MINUTES,
+      occupancy: 50,
+    });
+    await booking(context, court.id, begins, ends, "confirmed", second);
+    const full = await insights(context, "2026-10-05", "2026-10-05").expect(
+      200,
+    );
+    expect(full.body).toMatchObject({
+      confirmed: 2,
+      bookedMinutes: 2 * DAY_MINUTES,
+      openMinutes: 2 * DAY_MINUTES,
+      occupancy: 100,
+    });
+    const hall = await facility(context);
+    await addResources(context, hall.id, [
+      { name: "Left", parentId: hall.id },
+      { name: "Right", parentId: hall.id },
+    ]);
+    await activeSince2026(context);
+    await booking(context, hall.id, begins, ends);
+    const combined = await insights(context, "2026-10-05", "2026-10-05").expect(
+      200,
+    );
+    expect(combined.body).toMatchObject({
+      confirmed: 3,
+      bookedMinutes: 4 * DAY_MINUTES,
+      openMinutes: 4 * DAY_MINUTES,
+      occupancy: 100,
+    });
+  });
   it("should report booked against open time per facility and weekday × hour for a range", async () => {
     const context = await tenant();
     const court = await facility(context);
@@ -187,7 +249,10 @@ describe("Indicators through HTTP and PostgreSQL", () => {
     );
     await harness.db.query(
       await readFile(
-        new URL("../src/database/schema.sql", import.meta.url),
+        new URL(
+          "../src/database/migrations/0010_insights.sql",
+          import.meta.url,
+        ),
         "utf8",
       ),
     );

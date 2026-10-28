@@ -1,0 +1,181 @@
+{
+  "realm": "clave-sim",
+  "displayName": "Cl@ve SIMULADO (entorno local de pruebas, no es Cl@ve)",
+  "displayNameHtml": "<strong>Cl@ve SIMULADO</strong> &middot; entorno local de pruebas, no es Cl@ve",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["es", "gl", "en"],
+  "defaultLocale": "es",
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}}, {\"name\": \"email\", \"displayName\": \"${email}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"nif\", \"displayName\": \"NIF\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"validations\": {\"length\": {\"max\": 16}}}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}]}"
+          ]
+        }
+      }
+    ],
+    "org.keycloak.keys.KeyProvider": [
+      {
+        "name": "clave-sim-local-signing-NOT-SECRET",
+        "providerId": "rsa",
+        "subComponents": {},
+        "config": {
+          "priority": ["200"],
+          "enabled": ["true"],
+          "active": ["true"],
+          "algorithm": ["RS256"],
+          "privateKey": [
+            "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOA6R33m1Usryw8jsL5iBYvdVeCiVCthw48KD2v7axKSMVlD9oRgDg6gTpds0FKKvD5zwPfIwdekI/p/unR7xlCU1PabJ2jorsDfxHiQL53Yyi3VEn0DYnctrmnGb6OVPxDDKAHCuB4G7xI1Yzhs4yA6C1+NyNzWKG+UiQbRvdlD9LjcrqgAfpSvMcOk7Ta10bIib+CdZ2FY5t6BJ/UEvn8eroGoJp8qJIi0wYVSszgYtVX+VRibhaMM46EFgMKTg9/TYK4yricHmpdMz6hZwffXcRsCJxy5yqTDXAeprm1ttag7+7IWqHnjphXRCa24DDGyBU0swzl3K3n59WOLEVAgMBAAECggEACTJLMEgDJHz+oybMlBSu+5AvhQt7JjrM0RMkGVaI6igT0Y3sHUCLRgVhlAzRcggUN3d9+DLEkBQeviiOr2KB3LkhfIcHu423iVnOgINq4etq9BEI9F8TYrKZYl22fXXA7dcwXgN0/dAe3xa+uk98gtihS6d2AOjP/JWgEVo/d7XNQYp4mvBi68HOvUKGQdvfLV3fH43ABi2xl8lqHUIz37YYpj32c2LAJeAJn9ckdjSOY4SNGhx+9i3mLlQva59gMZjwW46yV+ei965mxUAWFdUuqCtbvNaDtor1oKZOTa53Qa/UDoxvpgB+8k6N0StjRR37neyf7xKV1IOpf/trcQKBgQC/IPry+49mc6wxHMCZGoKgAFZYg0fhdCQJPjEbZK7Izm5vt4b4uDz3uctD3UgVztAy2C0Kwbyynn9UZn3dt+jDRFF2H+hwqXWmCMb0qLUMxed+FlcAf/UYYJAlTbgkT6E6zJTi8CIY8S2jmQrkb0BBNW4bIsFguRx5tht3EU3DywKBgQC+NyMAJHHYdoqUsXcVurYBy5eo/q+lJcpyRvAIzDH4us/yHwvlTMgIIyCTN2K4ayVdyvSQz2cjAhh7QqkNhcmEHgk/xG5tlE5g0ZOjf/ft0RCDoyij+9YAPjuxKmEMbWvb5onmyI4GZuYJOOi5lAI/w6W80Q7lGkxZ0HIuUp2CnwKBgB4tqvIq3l2i7hFjJNYH5ZA1/WxEblke6YG8HCzjHOYAElf5dopXLOlAoOO6UOOAoEcm8xW7uXvKovhEpqMXot0SMHqiVyVS3Iy23hNLgCrgJMk35cziZ2TN+nSpbOXu3NpX6zpaCEg/7KDkTV/8YPzq3tPSDQ6kq+Zb5sJKLSk5AoGBAJJkUNWdNtkHcmQ5qJLanZUIIXJ4gKmzSfllSvsaXCM3cy6+YiNZUmGg10M1zw5rt9hViJ+iX5f71ueWSBEWNB8wFqIzBWHkT+YHpX6h0CgBTJpjCbYa7XpGax5QpVwxIl+dL+ij1Vpr+wKB/+pDVO/KHVYR90qvUK+W0yl/f6W1AoGAU2PDqT4k5Km3tJXIooP+Xvi3Xjl4OKit/IWCbFQCGa04SPk8+vkoM/g2rOU0YZYq26N0NPY/MSM6iiQpEn0PYvNnymXAlRc8EI4TIzp/bdHpYVpVsXh14phnud8IH3pGghk/LwVLakwOn8P3mZWEGOx9id/sVe1YZ6xSL7FeTNQ="
+          ],
+          "certificate": [
+            "MIIDSTCCAjGgAwIBAgIUIfr5uGiEltobIgqs61pvjPpnh98wDQYJKoZIhvcNAQELBQAwNDEyMDAGA1UEAwwpY2xhdmUtc2ltIChTSU1VTEFDSU9OIGxvY2FsLCBubyBlcyBDbEB2ZSkwHhcNMjYxMDI3MTgyNDM0WhcNMzYxMDI0MTgyNDM0WjA0MTIwMAYDVQQDDCljbGF2ZS1zaW0gKFNJTVVMQUNJT04gbG9jYWwsIG5vIGVzIENsQHZlKTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAI4DpHfebVSyvLDyOwvmIFi91V4KJUK2HDjwoPa/trEpIxWUP2hGAODqBOl2zQUoq8PnPA98jB16Qj+n+6dHvGUJTU9psnaOiuwN/EeJAvndjKLdUSfQNidy2uacZvo5U/EMMoAcK4HgbvEjVjOGzjIDoLX43I3NYob5SJBtG92UP0uNyuqAB+lK8xw6TtNrXRsiJv4J1nYVjm3oEn9QS+fx6ugagmnyokiLTBhVKzOBi1Vf5VGJuFowzjoQWAwpOD39NgrjKuJweal0zPqFnB99dxGwInHLnKpMNcB6mubW21qDv7shaoeeOmFdEJrbgMMbIFTSzDOXcrefn1Y4sRUCAwEAAaNTMFEwHQYDVR0OBBYEFJtALRhRJef2c3QRU6o1/FaUm0TDMB8GA1UdIwQYMBaAFJtALRhRJef2c3QRU6o1/FaUm0TDMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABAOsLnUQOTWJC8Zf1+AxytLLYJXWbjLlYCFPoX4dj0rIFe4ECQsTAlExFhxphp8jJApeKk9WFbSsUrApFaGjfNt5YoNQfcR6MzdxW/q+5lEg7UXi7lvDOb5tYmvL37cvQXfYMzCwAn3majHeRIQ54wCkxtK28npzQJcRzZu/szLaKtGV3YMeGOnlRIWySdiQYeEHNCDbbLrhKOeANti+JCiav0FkNuI7avx+sJ81RUUHR/RKK50hUApXIjHvA8MC+yABbhUepsAetUGXcSMEIXy2ufKmI3x1xvMmCCV3t4xCEJqqsT0VHze48WWXj78NX23uD7TXU1r394ntWQCcuM="
+          ]
+        }
+      },
+      {
+        "name": "hmac-generated",
+        "providerId": "hmac-generated",
+        "subComponents": {},
+        "config": {
+          "priority": ["100"],
+          "algorithm": ["HS512"]
+        }
+      },
+      {
+        "name": "aes-generated",
+        "providerId": "aes-generated",
+        "subComponents": {},
+        "config": {
+          "priority": ["100"]
+        }
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "http://127.0.0.1:8081/realms/quenda",
+      "name": "Quenda (broker Keycloak) — SP de la SIMULACIÓN de Cl@ve",
+      "description": "SIMULACIÓN de Cl@ve para pruebas locales. Personas, NIF y claves ficticios.",
+      "protocol": "saml",
+      "enabled": true,
+      "frontchannelLogout": true,
+      "fullScopeAllowed": false,
+      "redirectUris": [
+        "http://127.0.0.1:8081/realms/quenda/broker/clave/endpoint"
+      ],
+      "attributes": {
+        "saml.server.signature": "true",
+        "saml.signature.algorithm": "RSA_SHA256",
+        "saml.server.signature.keyinfo.ext": "false",
+        "saml.server.signature.keyinfo.xmlSigKeyInfoKeyNameTransformer": "KEY_ID",
+        "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#",
+        "saml.assertion.signature": "false",
+        "saml.client.signature": "false",
+        "saml.encrypt": "false",
+        "saml.authnstatement": "true",
+        "saml.force.post.binding": "true",
+        "saml_force_name_id_format": "true",
+        "saml_name_id_format": "username",
+        "saml_assertion_consumer_url_post": "http://127.0.0.1:8081/realms/quenda/broker/clave/endpoint",
+        "saml_single_logout_service_url_post": "http://127.0.0.1:8081/realms/quenda/broker/clave/endpoint"
+      },
+      "protocolMappers": [
+        {
+          "name": "nombre",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.name": "nombre",
+            "attribute.nameformat": "Basic",
+            "friendly.name": "Nombre",
+            "user.attribute": "firstName"
+          }
+        },
+        {
+          "name": "apellidos",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.name": "apellidos",
+            "attribute.nameformat": "Basic",
+            "friendly.name": "Apellidos",
+            "user.attribute": "lastName"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.name": "email",
+            "attribute.nameformat": "Basic",
+            "friendly.name": "Correo",
+            "user.attribute": "email"
+          }
+        },
+        {
+          "name": "nif",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.name": "nif",
+            "attribute.nameformat": "Basic",
+            "friendly.name": "NIF",
+            "user.attribute": "nif"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "99999999r",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Uxía",
+      "lastName": "Fernández Rial",
+      "email": "uxia.fernandez@example.org",
+      "attributes": {
+        "nif": ["99999999R"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "clave-local",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "11111111h",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Brais",
+      "lastName": "Lorenzo Otero",
+      "email": "brais.lorenzo@example.org",
+      "attributes": {
+        "nif": ["11111111H"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "clave-local",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

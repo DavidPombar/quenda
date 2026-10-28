@@ -5,6 +5,7 @@ import { ROUTES, routeFor } from "@/constants/routes";
 import {
   PiCheck,
   PiClock,
+  PiDownloadSimple,
   PiLock,
   PiPencilSimple,
   PiPlus,
@@ -28,10 +29,20 @@ export function Management() {
           <p className="page-subtitle">{c.t("managementSubtitle")}</p>
         </div>
         {c.isManager && (
-          <Button colorPalette="court" onClick={() => c.setEditing("new")}>
-            <PiPlus size={18} aria-hidden="true" />
-            {c.t("newFacility")}
-          </Button>
+          <div className="page-actions">
+            <Button
+              variant="outline"
+              onClick={c.exportData}
+              loading={c.exporting.isPending}
+            >
+              <PiDownloadSimple size={18} aria-hidden="true" />
+              {c.t("exportData")}
+            </Button>
+            <Button colorPalette="court" onClick={() => c.setEditing("new")}>
+              <PiPlus size={18} aria-hidden="true" />
+              {c.t("newFacility")}
+            </Button>
+          </div>
         )}
       </div>
       {!c.isManager ? (
@@ -45,6 +56,17 @@ export function Management() {
         </div>
       ) : (
         <>
+          {c.exporting.isSuccess && (
+            <p role="status" className="success-message">
+              <PiCheck size={18} aria-hidden="true" />
+              {c.t("exportDone")}
+            </p>
+          )}
+          {c.exporting.isError && (
+            <p role="alert" className="error-text">
+              {c.t("exportError")}
+            </p>
+          )}
           {c.saved && (
             <p role="status" className="success-message">
               <PiCheck size={18} aria-hidden="true" />

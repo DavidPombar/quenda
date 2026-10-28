@@ -8,7 +8,9 @@ export const ROUTES = {
   management: "xestion",
   audit: "auditoria",
   insights: "indicadores",
+  accessibility: "accesibilidade",
   settings: "axustes",
+  categories: "categorias",
   bookings: "reservas",
 } as const;
 export function routeFor(slug: string, child: string) {

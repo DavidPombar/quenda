@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
@@ -53,6 +53,18 @@ export function Shell() {
         >
           {t("privacy")}
         </button>
+        <NavLink
+          className="help-link"
+          to={routeFor(municipality.slug, ROUTES.accessibility)}
+        >
+          {t("accessibility")}
+        </NavLink>
+        <Link
+          className="help-link"
+          to={routeFor(municipality.slug, ROUTES.openData)}
+        >
+          {t("openData")}
+        </Link>
       </div>
       <span className="help-note">{t("openSource")}</span>
     </>
@@ -218,6 +230,19 @@ export function Shell() {
               {t(c.notice)}
             </p>
           )}
+          {c.authErrorMessage && (
+            <div role="alert" className="page-alert">
+              <p>{c.authErrorMessage}</p>
+              <div className="page-alert-actions">
+                <Button size="sm" colorPalette="court" onClick={c.retryAuth}>
+                  {t("retry")}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={c.dismissAuthError}>
+                  {t("dismiss")}
+                </Button>
+              </div>
+            </div>
+          )}
           <Outlet context={c.context} />
         </main>
         <footer className="footer">
@@ -230,6 +255,13 @@ export function Shell() {
         onClose={c.closeLogin}
         onSelect={() => {
           void c.signIn();
+        }}
+        onEid={c.signInWithEid}
+        eidLabel={c.eidButtonLabel}
+        demo={c.authMethods.data?.demo ?? false}
+        methodsStatus={c.authMethods.status}
+        onRetryMethods={() => {
+          void c.authMethods.refetch();
         }}
         pending={c.create.isPending}
         error={c.create.error?.message ?? ""}

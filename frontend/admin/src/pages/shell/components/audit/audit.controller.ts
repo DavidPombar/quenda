@@ -31,6 +31,11 @@ const AUDIT_ACTIONS = [
   ["municipality.updated", "auditMunicipalityUpdated"],
   ["municipality.logo_updated", "auditLogoUpdated"],
   ["municipality.logo_deleted", "auditLogoDeleted"],
+  ["category.requested", "auditCategoryRequested"],
+  ["category.verified", "auditCategoryVerified"],
+  ["category.rejected", "auditCategoryRejected"],
+  ["category.assigned", "auditCategoryAssigned"],
+  ["category.revoked", "auditCategoryRevoked"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {

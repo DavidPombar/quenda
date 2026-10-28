@@ -32,8 +32,9 @@ export default defineConfig({
     proxy: {
       "/app": { target: "http://127.0.0.1:5174", ws: true },
       "/admin": { target: "http://127.0.0.1:5175", ws: true },
-      "/v2": "http://127.0.0.1:3001",
-      "/api": "http://127.0.0.1:3001",
+      // Keep the browser's Host so the API builds absolute URLs (open data) for this origin.
+      "/v2": { target: "http://127.0.0.1:3001", changeOrigin: false },
+      "/api": { target: "http://127.0.0.1:3001", changeOrigin: false },
     },
   },
 });

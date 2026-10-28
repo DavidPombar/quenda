@@ -26,5 +26,7 @@ export interface Notification {
   /** Municipal reason or penalty standing at the time of the notice. */
   details: NotificationDetails | null;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
 }

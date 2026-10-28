@@ -14,6 +14,7 @@ export type EditableSettings = Pick<
   | "contact"
   | "primaryColor"
   | "holidaysCalendar"
+  | "enabledCategories"
   | "noShowLimit"
   | "noShowWindowDays"
   | "noShowBlockDays"

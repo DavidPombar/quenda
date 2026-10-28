@@ -177,4 +177,28 @@ describe("municipal settings", () => {
       .toBeVisible();
     expect(localStorage.getItem("quenda.locale")).toBe("gl");
   });
+  test("should send the offered user categories in catalogue order", async () => {
+    stubManager({ enabledCategories: ["senior"] });
+    const { spy } = stubPatch();
+    await open();
+    const section = page.getByRole("region", { name: "Categorías de usuario" });
+    await section.getByRole("checkbox", { name: "Persoa empadroada" }).click();
+    await section
+      .getByRole("checkbox", { name: "Persoa con discapacidade" })
+      .click();
+    await expect
+      .element(
+        section.getByText("A discapacidade é un dato de saúde", {
+          exact: false,
+        }),
+      )
+      .toBeVisible();
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Cambios gardados.");
+    expect(spy.mock.calls.at(-1)![0].body).toEqual({
+      enabledCategories: ["resident", "disability", "senior"],
+    });
+  });
 });

@@ -1,5 +1,52 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+export const CATEGORIES: readonly Category[] = [
+  "resident",
+  "family",
+  "local_club",
+  "minor",
+  "large_family",
+  "disability",
+  "senior",
+];
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface CategoryRequest {
+  userId: string;
+  displayName: string;
+  category: Category;
+  requestedAt: string;
+}
+export interface CitizenCategories {
+  userId: string;
+  displayName: string;
+  categories: UserCategory[];
+}
+export interface Accessibility {
+  unit: string;
+  email: string;
+  phone: string;
+  reviewedOn: string;
+  method: "self" | "external";
+  exceptions: Record<Locale, string>;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -15,10 +62,12 @@ export interface Municipality {
   legalVersion: string;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  accessibility: Accessibility;
 }
 export interface LegalTexts {
   gl: string;
@@ -39,6 +88,7 @@ export type SettingsPatch = Partial<
     | "legalTexts"
     | "primaryColor"
     | "holidaysCalendar"
+    | "enabledCategories"
     | "noShowLimit"
     | "noShowWindowDays"
     | "noShowBlockDays"
@@ -65,9 +115,13 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position, published as open data; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface Slot {
   start: string;
@@ -155,4 +209,11 @@ export interface AuditFilters {
   to?: string;
   action?: string;
   limit?: number;
+}
+/** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
+export interface MunicipalityExport {
+  format: "quenda-municipality-export";
+  version: number;
+  exportedAt: string;
+  municipality: { slug: string };
 }

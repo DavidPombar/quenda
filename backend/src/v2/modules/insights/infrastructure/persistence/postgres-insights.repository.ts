@@ -15,7 +15,7 @@ export class PostgresInsightsRepository extends InsightsRepository {
   async facilities(tenantId: string) {
     return (
       await this.db.query<InsightsFacility>(
-        'SELECT id, name, sport, status, opening_calendar AS "openingCalendar", follows_municipal_holidays AS "followsMunicipalHolidays" FROM facilities WHERE tenant_id=$1 ORDER BY name',
+        'SELECT id, name, sport, status, opening_calendar AS "openingCalendar", follows_municipal_holidays AS "followsMunicipalHolidays", ARRAY(SELECT r.id FROM resources r WHERE r.tenant_id=f.tenant_id AND r.facility_id=f.id AND r.active AND NOT EXISTS (SELECT 1 FROM resources part WHERE part.tenant_id=r.tenant_id AND part.parent_id=r.id) ORDER BY r.id) AS "unitIds", EXISTS(SELECT 1 FROM facility_status_periods h WHERE h.tenant_id=f.tenant_id AND h.facility_id=f.id) AS "hasStatusHistory" FROM facilities f WHERE tenant_id=$1 ORDER BY name',
         [tenantId],
       )
     ).rows;
@@ -51,8 +51,9 @@ export class PostgresInsightsRepository extends InsightsRepository {
       start: string;
       end: string;
       status: BookingSpan["status"];
+      unitIds: string[];
     }>(
-      'SELECT facility_id AS "facilityId", starts_at AS start, ends_at AS end, status FROM bookings WHERE tenant_id=$1 AND starts_at<$3 AND ends_at>$2',
+      'SELECT b.facility_id AS "facilityId", b.starts_at AS start, b.ends_at AS end, b.status, ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=b.tenant_id AND r.id=b.resource_id ORDER BY coalesce(part.id,r.id)) AS "unitIds" FROM bookings b WHERE b.tenant_id=$1 AND b.starts_at<$3 AND b.ends_at>$2',
       [tenantId, start.toString(), end.toString()],
     );
     return rows.map((row) => ({
@@ -60,6 +61,7 @@ export class PostgresInsightsRepository extends InsightsRepository {
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
       status: row.status,
+      unitIds: row.unitIds,
     }));
   }
 }

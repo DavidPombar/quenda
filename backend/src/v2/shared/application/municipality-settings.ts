@@ -1,4 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { Category } from "./categories";
+export type AccessibilityMethod = "self" | "external";
+export interface AccessibilitySettings {
+  unit: string;
+  email: string;
+  phone: string;
+  /** Last review of the statement as an ISO calendar date. */
+  reviewedOn: string;
+  method: AccessibilityMethod;
+  exceptions: { gl: string; es: string };
+}
 export type MunicipalityLocale = "gl" | "es";
 export interface LegalTexts {
   gl: string;
@@ -19,6 +30,8 @@ export interface MunicipalitySettings {
   legalTexts: LegalTexts;
   legalVersion: string;
   retentionMonths: number;
+  /** Residency verification is enabled: the NIF from eID sign-in is kept, encrypted. */
+  storeNif: boolean;
   /** Lead time of the single booking reminder. */
   reminderHours: number;
   /** Display name for outgoing email; blank means the municipality name. */
@@ -30,11 +43,25 @@ export interface MunicipalitySettings {
   holidaysCalendar: string;
   /** Content hash prefix of the uploaded logo, or null when there is none. */
   logoVersion: string | null;
+  /** Categories residents can request and facilities can price (M2). */
+  enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  accessibility: AccessibilitySettings;
+  /** SPDX identifier of the licence of the published open data. */
+  dataLicense: DataLicense;
+  /** DIR3 code of the council, the DCAT publisher; null when not configured. */
+  dir3Code: string | null;
 }
+export const dataLicenses = [
+  "CC-BY-4.0",
+  "CC-BY-SA-4.0",
+  "CC0-1.0",
+  "ODbL-1.0",
+] as const;
+export type DataLicense = (typeof dataLicenses)[number];
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;
   abstract find(id: string): Promise<MunicipalitySettings | null>;
