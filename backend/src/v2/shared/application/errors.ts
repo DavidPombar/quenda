@@ -14,6 +14,8 @@ export type ErrorCode =
   | "calendar_in_use"
   | "demo_disabled"
   | "consent_required"
+  | "resource_required"
+  | "resource_unavailable"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"

@@ -32,10 +32,13 @@ export abstract class FacilityRepository {
     reason: string;
     at: Temporal.Instant;
   }): Promise<void>;
+  /** Occupied units of the facility's resources overlapping the interval. */
   abstract busy(
     tenantId: string,
     id: string,
     dateStart: Temporal.Instant,
     dateEnd: Temporal.Instant,
-  ): Promise<{ start: Temporal.Instant; end: Temporal.Instant }[]>;
+  ): Promise<
+    { unitId: string; start: Temporal.Instant; end: Temporal.Instant }[]
+  >;
 }

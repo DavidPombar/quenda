@@ -42,7 +42,13 @@ export function bookingCalendar(document: CalendarDocument) {
       "status",
       entry.status === "cancelled" ? "CANCELLED" : "CONFIRMED",
     );
-    event.addPropertyWithValue("summary", entry.facilityName);
+    // The court is named only when it differs from the facility (a facility with several).
+    event.addPropertyWithValue(
+      "summary",
+      entry.resourceName === entry.facilityName
+        ? entry.facilityName
+        : `${entry.facilityName}, ${entry.resourceName}`,
+    );
     event.addPropertyWithValue("location", entry.facilityAddress);
     event.addPropertyWithValue("description", entry.municipalityName);
     event.addPropertyWithValue("transp", "OPAQUE");

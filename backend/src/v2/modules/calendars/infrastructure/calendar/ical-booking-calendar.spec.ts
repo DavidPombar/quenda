@@ -11,6 +11,7 @@ const entry = {
   sequence: 2,
   createdAt: Temporal.Instant.from("2026-10-20T08:00:00Z"),
   facilityName: "Pistas de pádel, Carballeira",
+  resourceName: "Pistas de pádel, Carballeira",
   facilityAddress: "Rúa da Carballeira, 12",
   municipalityName: "Concello de Vilaverde",
 };
@@ -34,5 +35,16 @@ describe("RFC 5545 booking calendar", () => {
     expect(String(component.getFirstPropertyValue("dtstamp"))).toBe(
       "2026-10-21T07:30:00Z",
     );
+  });
+  it("should name the court in the summary when the facility has several", () => {
+    const text = bookingCalendar({
+      entries: [
+        { ...entry, facilityName: "Pavillón", resourceName: "Tercio A" },
+      ],
+      generatedAt: Temporal.Instant.from("2026-10-21T07:30:00Z"),
+    });
+    const root = new ICAL.Component(ICAL.parse(text));
+    const event = new ICAL.Event(root.getFirstSubcomponent("vevent"));
+    expect(event.summary).toBe("Pavillón, Tercio A");
   });
 });

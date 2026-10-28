@@ -26,6 +26,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     demo_disabled: "O acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar o aviso de privacidade vixente para continuar.",
+    resource_required: "Escolle a pista ou o espazo que queres reservar.",
+    resource_unavailable:
+      "Esta pista está fóra de servizo. Escolle outra pista.",
     insufficient_contrast:
       "A cor non ten contraste suficiente co branco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:
@@ -55,6 +58,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     demo_disabled: "El acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar el aviso de privacidad vigente para continuar.",
+    resource_required: "Elige la pista o el espacio que quieres reservar.",
+    resource_unavailable:
+      "Esta pista está fuera de servicio. Elige otra pista.",
     insufficient_contrast:
       "El color no tiene contraste suficiente con el blanco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:

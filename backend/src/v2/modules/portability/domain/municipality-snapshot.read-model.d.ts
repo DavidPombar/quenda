@@ -38,6 +38,16 @@ export interface MunicipalitySnapshot {
     rules: string;
     followsMunicipalHolidays: boolean;
   }[];
+  /** Courts and spaces, parents before their parts. */
+  resources: {
+    id: string;
+    facilityId: string;
+    name: string;
+    position: number;
+    parentId: string | null;
+    active: boolean;
+    createdAt: Temporal.Instant;
+  }[];
   users: {
     id: string;
     displayName: string;
@@ -50,6 +60,7 @@ export interface MunicipalitySnapshot {
     id: string;
     userId: string | null;
     facilityId: string;
+    resourceId: string;
     start: Temporal.Instant;
     end: Temporal.Instant;
     status: string;

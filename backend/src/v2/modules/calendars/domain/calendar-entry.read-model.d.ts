@@ -10,6 +10,8 @@ export interface CalendarEntry {
   sequence: number;
   createdAt: Temporal.Instant;
   facilityName: string;
+  /** Booked court or space; the facility's own name when it has a single one. */
+  resourceName: string;
   facilityAddress: string;
   municipalityName: string;
 }

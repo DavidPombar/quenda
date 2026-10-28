@@ -137,11 +137,62 @@ export async function seed(url = databaseUrl) {
             "Trae calzado deportivo. Respecta a quenda e deixa o espazo como che gustaría atopalo.",
           ],
         );
+        await seedResources(db, tenant, id, label, i, j);
       }
     }
   } finally {
     await db.end();
   }
+}
+/**
+ * Default resource (same id as the facility) plus demo courts. Idempotent: existing rows and names
+ * changed by a manager are kept. Parts are only added to a hall without upcoming reservations, so
+ * already used demo databases never get a whole-court booking that would overlap new parts.
+ */
+async function seedResources(
+  db: Pool,
+  tenant: string,
+  facility: string,
+  label: string,
+  i: number,
+  j: number,
+) {
+  const resource = (k: number) =>
+    `30000000-0000-4000-8000-000000000${i}${j}${k}`;
+  await db.query(
+    "INSERT INTO resources (id,tenant_id,facility_id,name,position) VALUES ($1,$2,$1,$3,0) ON CONFLICT(id) DO NOTHING",
+    [facility, tenant, label],
+  );
+  const courts: Record<number, { rename: string; others: string[] }> = {
+    1: { rename: "Pista 1", others: ["Pista 2"] },
+    2: {
+      rename: "Pista completa",
+      others: ["Tercio A", "Tercio B", "Tercio C"],
+    },
+  };
+  const plan = courts[j];
+  if (!plan) return;
+  await db.query(
+    "UPDATE resources SET name=$3 WHERE tenant_id=$1 AND id=$2 AND name=$4",
+    [tenant, facility, plan.rename, label],
+  );
+  for (const [index, name] of plan.others.entries())
+    await db.query(
+      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id)
+      SELECT $1::uuid,$2::uuid,$3::uuid,$4::text,$5::int,$6::uuid
+      WHERE $6::uuid IS NULL OR NOT EXISTS (
+        SELECT 1 FROM bookings WHERE tenant_id=$2 AND facility_id=$3 AND status='confirmed' AND ends_at>now()
+      )
+      ON CONFLICT(id) DO NOTHING`,
+      [
+        resource(index + 1),
+        tenant,
+        facility,
+        name,
+        index + 1,
+        j === 2 ? facility : null,
+      ],
+    );
 }
 if (require.main === module)
   void seed().catch((error) => {

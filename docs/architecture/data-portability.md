@@ -18,8 +18,9 @@ manager can only export their own. The file is named
 | `exportedAt` | ISO 8601 instant |
 | `municipality` | All persisted settings, including branding, holidays, retention, no-show rules and email configuration |
 | `facilities` | Every facility, including closed ones, with its RFC 5545 opening calendar verbatim |
+| `resources` | Courts and spaces of each facility, parents before their parts, including out-of-service ones. Optional: a package without them gets one resource per facility, with the facility's id |
 | `users` | Id, display name, role, deletion state, email and preferred language |
-| `bookings` | All statuses, including no-shows and anonymised history, cancellation details and calendar revision |
+| `bookings` | All statuses, including no-shows and anonymised history, the booked court (`resourceId`), cancellation details and calendar revision. The occupied units are derived on import from the court and its parts |
 | `notifications` | In-app notices and their details |
 | `auditEvents` | Audit trail, including nullable actors, actor role and details |
 | `consents`, `legalTexts` | Accepted privacy notice versions and their complete bilingual texts |
@@ -66,6 +67,6 @@ exists in the target is refused: the import neither merges nor clones.
   also accepts [version 1](export-format.v1.schema.json), using database defaults
   for fields absent from those older packages and preserving their legacy notice.
 
-New data (organizations, season allocations, fees, resources) is added to the
+New data (organizations, season allocations, fees) is added to the
 package as it is implemented, so a migration never needs manual work. CSV exports
 are not part of this version.

@@ -15,6 +15,8 @@ interface BookingRow {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: string;
   start: string;
   end: string;
@@ -29,6 +31,8 @@ interface NotificationRow {
   bookingId: string;
   kind: ExportedNotification["kind"];
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: string;
   details: Record<string, unknown> | null;
 }
@@ -90,11 +94,18 @@ export class PostgresAccountRepository extends AccountRepository {
     userId: string,
     now: Temporal.Instant,
   ) {
-    const { rowCount } = await this.db.query(
-      "UPDATE bookings SET status='cancelled', cancelled_at=$3, cancelled_by='citizen' WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3",
+    // Cancelling also frees the occupied units, in the same statement.
+    const { rows } = await this.db.query<{ count: number }>(
+      `WITH cancelled AS (
+        UPDATE bookings SET status='cancelled', cancelled_at=$3, cancelled_by='citizen'
+        WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3 RETURNING id
+      ), released AS (
+        DELETE FROM booking_units u USING cancelled c WHERE u.tenant_id=$1 AND u.booking_id=c.id
+      )
+      SELECT count(*)::int AS count FROM cancelled`,
       [tenantId, userId, now.toString()],
     );
-    return rowCount ?? 0;
+    return rows[0].count;
   }
   async deleteNotifications(tenantId: string, userId: string) {
     const { rowCount } = await this.db.query(
@@ -161,7 +172,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listBookingsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<BookingRow>(
-      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.cancelled_by AS "cancelledBy", b.cancellation_reason AS "cancellationReason" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
+      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", b.resource_id AS "resourceId", r.name AS "resourceName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.cancelled_by AS "cancelledBy", b.cancellation_reason AS "cancellationReason" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedBooking => ({
@@ -177,7 +188,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listNotificationsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<NotificationRow>(
-      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
+      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName", b.resource_id AS "resourceId", r.name AS "resourceName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id JOIN resources r ON r.id=b.resource_id AND r.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedNotification => ({

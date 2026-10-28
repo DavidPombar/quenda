@@ -39,6 +39,20 @@ class ExportedFacilityDTO {
   @ApiProperty() rules!: string;
   @ApiProperty() followsMunicipalHolidays!: boolean;
 }
+class ExportedResourceDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty() position!: number;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Whole court this resource is a part of",
+  })
+  parentId!: string | null;
+  @ApiProperty() active!: boolean;
+  @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
+}
 class ExportedUserDTO {
   @ApiProperty() id!: string;
   @ApiProperty() displayName!: string;
@@ -52,6 +66,7 @@ class ExportedBookingDTO {
   @ApiProperty() id!: string;
   @ApiProperty({ type: String, nullable: true }) userId!: string | null;
   @ApiProperty() facilityId!: string;
+  @ApiProperty({ description: "Booked court or space" }) resourceId!: string;
   @ApiProperty({ type: String, format: "date-time" }) start!: string;
   @ApiProperty({ type: String, format: "date-time" }) end!: string;
   @ApiProperty() status!: string;
@@ -142,6 +157,11 @@ export class MunicipalityExportResponseDTO {
   municipality!: ExportedMunicipalityDTO;
   @ApiProperty({ type: [ExportedFacilityDTO] })
   facilities!: ExportedFacilityDTO[];
+  @ApiProperty({
+    type: [ExportedResourceDTO],
+    description: "Courts and spaces, parents before their parts",
+  })
+  resources!: ExportedResourceDTO[];
   @ApiProperty({ type: [ExportedUserDTO] }) users!: ExportedUserDTO[];
   @ApiProperty({ type: [ExportedBookingDTO] }) bookings!: ExportedBookingDTO[];
   @ApiProperty({ type: [ExportedNotificationDTO] })
@@ -165,6 +185,10 @@ export class MunicipalityExportResponseDTO {
       exportedAt: value.exportedAt.toString(),
       municipality: snapshot.municipality,
       facilities: snapshot.facilities,
+      resources: snapshot.resources.map((value) => ({
+        ...value,
+        createdAt: value.createdAt.toString(),
+      })),
       users: snapshot.users.map((value) => ({
         ...value,
         deletedAt: value.deletedAt?.toString() ?? null,

@@ -178,6 +178,50 @@
         "additionalProperties": false
       }
     },
+    "resources": {
+      "description": "Courts and spaces, parents before their parts. Optional: packages without it get one resource per facility, with the facility's id.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "facilityId",
+          "name",
+          "position",
+          "parentId",
+          "active",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "users": {
       "type": "array",
       "items": {
@@ -253,6 +297,10 @@
           },
           "facilityId": {
             "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "Booked court or space. Optional: defaults to the facility's default resource."
           },
           "start": {
             "type": "string",

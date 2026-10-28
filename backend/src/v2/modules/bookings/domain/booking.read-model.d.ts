@@ -3,6 +3,7 @@ import type { Booking } from "./booking.entity";
 export interface BookingReadModel {
   booking: Booking;
   facilityName: string;
+  resourceName: string;
   sport: string;
 }
 export interface ManagedBookingReadModel extends BookingReadModel {

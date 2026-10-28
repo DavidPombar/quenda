@@ -11,7 +11,7 @@ import {
 } from "../../../../../shared/application/errors";
 import { IdPathRequestDTO } from "../dto/id-path.request.dto";
 import { AvailabilityRequestDTO } from "../dto/availability.request.dto";
-import { SlotResponseDTO } from "../dto/slot.response.dto";
+import { AvailabilityResponseDTO } from "../dto/availability.response.dto";
 @V2Controller("public/availability")
 export class GetAvailabilityController {
   private readonly operation;
@@ -23,22 +23,19 @@ export class GetAvailabilityController {
   @ApiResponse({
     status: 200,
     description: "Successful operation",
-    type: SlotResponseDTO,
-    isArray: true,
+    type: AvailabilityResponseDTO,
+    isArray: false,
   })
   async handle(
     @Param() path: IdPathRequestDTO,
     @Query() query: AvailabilityRequestDTO,
-  ): Promise<SlotResponseDTO[]> {
+  ): Promise<AvailabilityResponseDTO> {
     const result = await this.operation.execute({
       id: path.id,
       slug: query.slug,
       date: query.date,
     });
-    return result.fold(
-      (values) => values.map(SlotResponseDTO.from),
-      this.handleError,
-    );
+    return result.fold(AvailabilityResponseDTO.from, this.handleError);
   }
   private handleError(
     this: void,
