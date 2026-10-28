@@ -38,7 +38,7 @@ export class PostgresCalendarFeedRepository extends CalendarFeedRepository {
   }
   async findOwner(token: string) {
     const { rows } = await this.db.query<CalendarFeedOwner>(
-      'SELECT tenant_id AS "tenantId", user_id AS "userId" FROM calendar_feeds WHERE token_hash=$1',
+      'SELECT c.tenant_id AS "tenantId", c.user_id AS "userId" FROM calendar_feeds c JOIN users u ON u.tenant_id=c.tenant_id AND u.id=c.user_id WHERE c.token_hash=$1 AND u.deleted_at IS NULL',
       [hash(token)],
     );
     return rows[0] ?? null;

@@ -14,19 +14,30 @@ manager can only export their own. The file is named
 
 | Field | Content |
 |-------|---------|
-| `format`, `version` | `quenda-municipality-export`, `1` |
+| `format`, `version` | `quenda-municipality-export`, `2` |
 | `exportedAt` | ISO 8601 instant |
-| `municipality` | Settings: slug, name, time zone, language, booking rules, contact, legal text |
+| `municipality` | All persisted settings, including branding, holidays, retention, no-show rules and email configuration |
 | `facilities` | Every facility, including closed ones, with its RFC 5545 opening calendar verbatim |
-| `users` | Minimum account data: id, display name, role. Never sessions or credentials |
-| `bookings` | Every booking, confirmed and cancelled, with instants in UTC |
-| `notifications` | In-app notices |
-| `auditEvents` | The audit trail |
+| `users` | Id, display name, role, deletion state, email and preferred language |
+| `bookings` | All statuses, including no-shows and anonymised history, cancellation details and calendar revision |
+| `notifications` | In-app notices and their details |
+| `auditEvents` | Audit trail, including nullable actors, actor role and details |
+| `consents`, `legalTexts` | Accepted privacy notice versions and their complete bilingual texts |
+| `logos` | Image bytes encoded as base64, content type, hash and update time |
+| `bookingBlocks` | No-show penalties and their lifting history |
+| `notificationPreferences` | Reminder opt-outs and their update time |
+| `messages` | Transactional email outbox, including delivery state, attempts and deduplication keys |
+
+Sessions and calendar subscription credentials are deliberately excluded. People
+sign in again and create new subscription links on the destination. Deleted
+accounts remain deleted. Stop source writes and the email worker for the final
+transfer, and only run the destination worker afterwards: a snapshot does not
+coordinate two live deployments or prevent both from sending a pending message.
 
 All collections are read in one SQL statement, so they form a single consistent
 snapshot. The export itself is recorded as a `municipality.exported` audit event
 in the same transaction, which is why it is a command and not a query. The package
-contains personal data (display names and reservation history): store and send it
+contains personal data (contact information, consents and reservation history): store and send it
 as such (T4).
 
 ## Import
@@ -50,6 +61,10 @@ exists in the target is refused: the import neither merges nor clones.
 - The importer accepts the versions listed in `SUPPORTED_VERSIONS` and refuses the
   rest instead of guessing.
 - Each new version gets its own schema file; old ones are kept.
+- Version 2 includes the municipal lifecycle, attendance and email data introduced
+  on `main`, and permits anonymised booking owners and audit actors. The importer
+  also accepts [version 1](export-format.v1.schema.json), using database defaults
+  for fields absent from those older packages and preserving their legacy notice.
 
 New data (organizations, season allocations, fees, resources) is added to the
 package as it is implemented, so a migration never needs manual work. CSV exports

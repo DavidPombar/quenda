@@ -13,6 +13,16 @@ the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
   schema changes always go in a new file.
 - `0001_initial.sql` is the V0 schema. It keeps `IF NOT EXISTS`, so a database
   created by the V0 is adopted without data loss on the first run.
+- `0001` and `0002` retain their original checksums. `0003` adopts the schema from
+  `main` at `d6d45be`, including privacy, municipal settings, attendance and email.
+  Both an original V0 database and an existing unversioned `main` database can
+  upgrade without recreating their data (R1, R3, T4).
+- `0004` updates calendar revisions for every booking mutation, including
+  municipal cancellations, and allows retention to remove obsolete feed owners.
+
+Contributions based on the former `backend/src/database/schema.sql` must move
+their new schema changes into the next numbered migration instead of restoring
+that file. HTTP tests use the migration runner through the shared harness.
 
 Migrations must preserve existing municipal data: add columns with defaults or a
 backfill, and move data explicitly when a table is split. Rollbacks are done by

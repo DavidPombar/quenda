@@ -11,43 +11,28 @@ type Raw<T> = {
       ? string | null
       : T[K];
 };
-interface Row {
-  municipality: MunicipalitySnapshot["municipality"];
-  facilities: MunicipalitySnapshot["facilities"];
-  users: MunicipalitySnapshot["users"];
-  bookings: Raw<MunicipalitySnapshot["bookings"][number]>[];
-  notifications: Raw<MunicipalitySnapshot["notifications"][number]>[];
-  auditEvents: Raw<MunicipalitySnapshot["auditEvents"][number]>[];
-}
-const instant = (value: string) => Temporal.Instant.from(value);
-// One statement, so every collection comes from the same MVCC snapshot.
-const sql = `
-SELECT
-  json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone,
-    'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours,
-    'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text
-  ) AS municipality,
-  coalesce((SELECT json_agg(json_build_object('id', f.id, 'name', f.name, 'sport', f.sport,
-    'address', f.address, 'description', f.description, 'accessible', f.accessible,
-    'status', f.status, 'slotMinutes', f.slot_minutes, 'priceCents', f.price_cents,
-    'openingCalendar', f.opening_calendar, 'rules', f.rules) ORDER BY f.id)
-    FROM facilities f WHERE f.tenant_id = m.id), '[]') AS facilities,
-  coalesce((SELECT json_agg(json_build_object('id', u.id, 'displayName', u.display_name,
-    'role', u.role) ORDER BY u.id)
-    FROM users u WHERE u.tenant_id = m.id), '[]') AS users,
-  coalesce((SELECT json_agg(json_build_object('id', b.id, 'userId', b.user_id,
-    'facilityId', b.facility_id, 'start', b.starts_at, 'end', b.ends_at, 'status', b.status,
-    'createdAt', b.created_at, 'cancelledAt', b.cancelled_at) ORDER BY b.starts_at, b.id)
-    FROM bookings b WHERE b.tenant_id = m.id), '[]') AS bookings,
-  coalesce((SELECT json_agg(json_build_object('id', n.id, 'userId', n.user_id,
-    'bookingId', n.booking_id, 'kind', n.kind, 'createdAt', n.created_at)
-    ORDER BY n.created_at, n.id)
-    FROM notifications n WHERE n.tenant_id = m.id), '[]') AS notifications,
-  coalesce((SELECT json_agg(json_build_object('id', a.id, 'actorId', a.actor_id,
-    'action', a.action, 'resourceId', a.resource_id, 'occurredAt', a.occurred_at)
-    ORDER BY a.occurred_at, a.id)
-    FROM audit_events a WHERE a.tenant_id = m.id), '[]') AS "auditEvents"
-FROM municipalities m WHERE m.id = $1`;
+type Row = {
+  [
+    K in keyof MunicipalitySnapshot
+  ]: MunicipalitySnapshot[K] extends (infer Item)[]
+    ? Raw<Item>[]
+    : Raw<MunicipalitySnapshot[K]>;
+};
+// One SQL statement gives every collection the same MVCC snapshot.
+const sql = `SELECT
+json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone, 'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours, 'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text, 'legalVersion', m.legal_version, 'retentionMonths', m.retention_months, 'primaryColor', m.primary_color, 'holidaysCalendar', m.holidays_calendar, 'noShowLimit', m.no_show_limit, 'noShowWindowDays', m.no_show_window_days, 'noShowBlockDays', m.no_show_block_days, 'reminderHours', m.reminder_hours, 'mailSenderName', m.mail_sender_name, 'mailReplyTo', m.mail_reply_to) AS municipality,
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'name', r.name, 'sport', r.sport, 'address', r.address, 'description', r.description, 'accessible', r.accessible, 'status', r.status, 'slotMinutes', r.slot_minutes, 'priceCents', r.price_cents, 'openingCalendar', r.opening_calendar, 'rules', r.rules, 'followsMunicipalHolidays', r.follows_municipal_holidays) ORDER BY r.id) FROM facilities r WHERE r.tenant_id=m.id), '[]') AS "facilities",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'displayName', r.display_name, 'role', r.role, 'deletedAt', r.deleted_at, 'email', r.email, 'locale', r.locale) ORDER BY r.id) FROM users r WHERE r.tenant_id=m.id), '[]') AS "users",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'facilityId', r.facility_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'createdAt', r.created_at, 'cancelledAt', r.cancelled_at, 'cancellationHours', r.cancellation_hours, 'cancelledBy', r.cancelled_by, 'cancellationReason', r.cancellation_reason, 'sequence', r.sequence) ORDER BY r.id, r.user_id) FROM bookings r WHERE r.tenant_id=m.id), '[]') AS "bookings",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'kind', r.kind, 'createdAt', r.created_at, 'details', r.details) ORDER BY r.id, r.user_id, r.kind) FROM notifications r WHERE r.tenant_id=m.id), '[]') AS "notifications",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'actorId', r.actor_id, 'action', r.action, 'resourceId', r.resource_id, 'occurredAt', r.occurred_at, 'actorRole', r.actor_role, 'details', r.details) ORDER BY r.id) FROM audit_events r WHERE r.tenant_id=m.id), '[]') AS "auditEvents",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'legalVersion', r.legal_version, 'acceptedAt', r.accepted_at) ORDER BY r.id, r.user_id) FROM consents r WHERE r.tenant_id=m.id), '[]') AS "consents",
+coalesce((SELECT json_agg(json_build_object('version', r.version, 'textGl', r.text_gl, 'textEs', r.text_es, 'publishedAt', r.published_at) ORDER BY r.version) FROM legal_texts r WHERE r.tenant_id=m.id), '[]') AS "legalTexts",
+coalesce((SELECT json_agg(json_build_object('contentType', r.content_type, 'data', encode(r.data, 'base64'), 'sha256', r.sha256, 'updatedAt', r.updated_at) ORDER BY r.tenant_id) FROM municipality_logos r WHERE r.tenant_id=m.id), '[]') AS "logos",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'start', r.starts_at, 'end', r.ends_at, 'liftedAt', r.lifted_at) ORDER BY r.id, r.user_id) FROM booking_blocks r WHERE r.tenant_id=m.id), '[]') AS "bookingBlocks",
+coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'kind', r.kind, 'channel', r.channel, 'enabled', r.enabled, 'updatedAt', r.updated_at) ORDER BY r.user_id, r.kind, r.channel) FROM notification_preferences r WHERE r.tenant_id=m.id), '[]') AS "notificationPreferences",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'kind', r.kind, 'channel', r.channel, 'dedupeKey', r.dedupe_key, 'createdAt', r.created_at, 'availableAt', r.available_at, 'attempts', r.attempts, 'lockedUntil', r.locked_until, 'sentAt', r.sent_at, 'lastError', r.last_error) ORDER BY r.id, r.user_id, r.kind, r.channel) FROM outbox r WHERE r.tenant_id=m.id), '[]') AS "messages"
+FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
   constructor(private readonly db: Database) {
@@ -59,21 +44,66 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
     return {
       municipality: row.municipality,
       facilities: row.facilities,
-      users: row.users,
-      bookings: row.bookings.map((booking) => ({
-        ...booking,
-        start: instant(booking.start),
-        end: instant(booking.end),
-        createdAt: instant(booking.createdAt),
-        cancelledAt: booking.cancelledAt ? instant(booking.cancelledAt) : null,
+      users: row.users.map((value) => ({
+        ...value,
+        deletedAt:
+          value.deletedAt === null
+            ? null
+            : Temporal.Instant.from(value.deletedAt),
       })),
-      notifications: row.notifications.map((notification) => ({
-        ...notification,
-        createdAt: instant(notification.createdAt),
+      bookings: row.bookings.map((value) => ({
+        ...value,
+        start: Temporal.Instant.from(value.start),
+        end: Temporal.Instant.from(value.end),
+        createdAt: Temporal.Instant.from(value.createdAt),
+        cancelledAt:
+          value.cancelledAt === null
+            ? null
+            : Temporal.Instant.from(value.cancelledAt),
       })),
-      auditEvents: row.auditEvents.map((event) => ({
-        ...event,
-        occurredAt: instant(event.occurredAt),
+      notifications: row.notifications.map((value) => ({
+        ...value,
+        createdAt: Temporal.Instant.from(value.createdAt),
+      })),
+      auditEvents: row.auditEvents.map((value) => ({
+        ...value,
+        occurredAt: Temporal.Instant.from(value.occurredAt),
+      })),
+      consents: row.consents.map((value) => ({
+        ...value,
+        acceptedAt: Temporal.Instant.from(value.acceptedAt),
+      })),
+      legalTexts: row.legalTexts.map((value) => ({
+        ...value,
+        publishedAt: Temporal.Instant.from(value.publishedAt),
+      })),
+      logos: row.logos.map((value) => ({
+        ...value,
+        updatedAt: Temporal.Instant.from(value.updatedAt),
+      })),
+      bookingBlocks: row.bookingBlocks.map((value) => ({
+        ...value,
+        start: Temporal.Instant.from(value.start),
+        end: Temporal.Instant.from(value.end),
+        liftedAt:
+          value.liftedAt === null
+            ? null
+            : Temporal.Instant.from(value.liftedAt),
+      })),
+      notificationPreferences: row.notificationPreferences.map((value) => ({
+        ...value,
+        updatedAt: Temporal.Instant.from(value.updatedAt),
+      })),
+      messages: row.messages.map((value) => ({
+        ...value,
+        createdAt: Temporal.Instant.from(value.createdAt),
+        availableAt: Temporal.Instant.from(value.availableAt),
+        lockedUntil:
+          value.lockedUntil === null
+            ? null
+            : Temporal.Instant.from(value.lockedUntil),
+        sentAt:
+          value.sentAt === null ? null : Temporal.Instant.from(value.sentAt),
       })),
     };
   }

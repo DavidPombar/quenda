@@ -287,7 +287,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       facilityId: court.id,
       start: start(),
     }).expect(201);
-    const anonymous = request(app.getHttpServer());
+    const anonymous = request(harness.app.getHttpServer());
     const download = await context.citizen
       .get(`/v2/citizen/bookings/${id}/calendar.ics`)
       .expect(200)
@@ -334,6 +334,30 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await anonymous
       .get("/v2/public/calendar-feeds/not-a-token.ics")
       .expect(400);
+  });
+  it("should update calendar revisions when the municipality cancels a reservation", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const id = randomUUID();
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(),
+    }).expect(201);
+    const feed = await post(
+      context.citizen,
+      "citizen/calendar-feed",
+      {},
+    ).expect(201);
+    await patch(context.manager, `manager/bookings/${id}`, {
+      status: "cancelled",
+      reason: "Maintenance",
+    }).expect(204);
+    const calendar = await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(200);
+    expect(calendar.text).toContain("SEQUENCE:1");
+    expect(calendar.text).toContain("STATUS:CANCELLED");
   });
   it("should revoke the session when the user signs out", async () => {
     const context = await tenant();

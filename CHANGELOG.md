@@ -12,6 +12,15 @@ All notable changes to Quenda are documented here. The format follows
   advisory lock; V0 databases are adopted without data loss (#6, R1).
 - Reuse metadata: `publiccode.yml`, `CONTRIBUTING.md`, `SECURITY.md`,
   `CODE_OF_CONDUCT.md` and this changelog (#19).
+- Municipal privacy rights, consent history, audit and retention (T4), editable
+  settings and branding (R2, M2), attendance and cancellations (C3, M3), and
+  transactional email notices and reminders (C4), integrated from `main`.
+- Complete municipal export/import, including the current lifecycle and email
+  data, with a versioned JSON format and backward-compatible import (#7, T3, R3).
+- Personal iCalendar downloads and revocable subscriptions, including municipal
+  cancellations and revocation when an account is deleted (#22, C3, C4, T3, T4).
+- Deployment headers, Secure cookies, per-process rate limits and periodic
+  expired-session cleanup (#10, T4).
 
 ## [0.1.0] - 2026-10-18
 

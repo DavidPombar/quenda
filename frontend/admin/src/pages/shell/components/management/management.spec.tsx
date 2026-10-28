@@ -130,7 +130,7 @@ test("should download the municipality's open data package when a manager export
       exports++;
       return {
         format: "quenda-municipality-export",
-        version: 1,
+        version: 2,
         exportedAt: "2026-10-20T08:00:00Z",
         municipality: { slug: municipality.slug },
       };

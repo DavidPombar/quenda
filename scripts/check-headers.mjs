@@ -34,11 +34,11 @@ assert.equal(api.status, 200);
 assert.equal(api.headers.get("x-frame-options"), "SAMEORIGIN");
 assert.equal(api.headers.get("cache-control"), "no-store");
 assert.ok(api.headers.get("x-ratelimit-limit-requests"), "rate limit");
-const [{ slug }] = await api.json();
+const [{ slug, legalVersion }] = await api.json();
 const session = await head("/v2/public/sessions", {
   method: "POST",
   headers: { "content-type": "application/json", "x-quenda-request": "1" },
-  body: JSON.stringify({ slug, role: "citizen" }),
+  body: JSON.stringify({ slug, role: "citizen", legalVersion }),
 });
 const cookie = session.headers.get("set-cookie") ?? "";
 if (session.status === 201) {

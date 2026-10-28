@@ -57,7 +57,10 @@ const notices: Notification[] = [
 ];
 test("should explain no-shows, municipal cancellations and an active booking block in the person's history", async () => {
   stubShell(true);
-  stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: { active: false, createdAt: null } });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [base, closed] });
   stubJsonResponse({ path: "*/v2/citizen/notifications", response: notices });
   stubJsonResponse({ path: "*/v2/citizen/penalty", response: standing });
@@ -91,7 +94,10 @@ test("should explain no-shows, municipal cancellations and an active booking blo
 });
 test("should tell the person how many more absences the municipality allows before a block", async () => {
   stubShell(true);
-  stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: { active: false, createdAt: null } });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
   stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
   stubJsonResponse({
@@ -108,7 +114,10 @@ test("should tell the person how many more absences the municipality allows befo
 });
 test("should list a booking reminder among the notices", async () => {
   stubShell(true);
-  stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: { active: false, createdAt: null } });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
   stubJsonResponse({
     path: "*/v2/citizen/notifications",
@@ -149,11 +158,17 @@ const booking = {
 const token = "a".repeat(64);
 function stubBookings(feed: { active: boolean; createdAt: string | null }) {
   stubShell(true);
-  stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: { active: false, createdAt: null } });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [booking] });
   stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
   stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: feed });
-  stubJsonResponse({ path: "*/v2/citizen/penalty", response: { ...standing, count: 0, blockedUntil: null } });
+  stubJsonResponse({
+    path: "*/v2/citizen/penalty",
+    response: { ...standing, count: 0, blockedUntil: null },
+  });
 }
 test("should offer each confirmed reservation as an iCalendar download", async () => {
   stubBookings({ active: false, createdAt: null });

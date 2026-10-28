@@ -5,7 +5,7 @@ import { Pool } from "pg";
 import { databaseUrl } from "./config";
 import { migrate } from "./migrate";
 const FORMAT = "quenda-municipality-export";
-const SUPPORTED_VERSIONS = [1];
+const SUPPORTED_VERSIONS = [1, 2];
 type Row = Record<string, unknown>;
 export interface MunicipalityPackage {
   format: string;
@@ -17,6 +17,12 @@ export interface MunicipalityPackage {
   bookings: Row[];
   notifications: Row[];
   auditEvents: Row[];
+  consents: Row[];
+  legalTexts: Row[];
+  logos: Row[];
+  bookingBlocks: Row[];
+  notificationPreferences: Row[];
+  messages: Row[];
 }
 const collections = [
   "facilities",
@@ -34,6 +40,17 @@ function parse(value: unknown): MunicipalityPackage {
     throw new Error("The package has no municipality");
   for (const name of collections)
     if (!Array.isArray(data[name])) throw new Error(`Missing ${name}`);
+  for (const name of [
+    "consents",
+    "legalTexts",
+    "logos",
+    "bookingBlocks",
+    "notificationPreferences",
+    "messages",
+  ] as const) {
+    if (data.version === 1) data[name] = [];
+    if (!Array.isArray(data[name])) throw new Error(`Missing ${name}`);
+  }
   return data as MunicipalityPackage;
 }
 // Column order of each table, mapped from the package's camelCase fields.
@@ -49,16 +66,20 @@ const tables = {
     max_active_bookings: "maxActiveBookings",
     contact: "contact",
     legal_text: "legalText",
-  },
-  users: {
-    id: "id",
-    tenant_id: "tenantId",
-    display_name: "displayName",
-    role: "role",
+    legal_version: "legalVersion",
+    retention_months: "retentionMonths",
+    primary_color: "primaryColor",
+    holidays_calendar: "holidaysCalendar",
+    no_show_limit: "noShowLimit",
+    no_show_window_days: "noShowWindowDays",
+    no_show_block_days: "noShowBlockDays",
+    reminder_hours: "reminderHours",
+    mail_sender_name: "mailSenderName",
+    mail_reply_to: "mailReplyTo",
   },
   facilities: {
-    id: "id",
     tenant_id: "tenantId",
+    id: "id",
     name: "name",
     sport: "sport",
     address: "address",
@@ -69,10 +90,20 @@ const tables = {
     price_cents: "priceCents",
     opening_calendar: "openingCalendar",
     rules: "rules",
+    follows_municipal_holidays: "followsMunicipalHolidays",
+  },
+  users: {
+    tenant_id: "tenantId",
+    id: "id",
+    display_name: "displayName",
+    role: "role",
+    deleted_at: "deletedAt",
+    email: "email",
+    locale: "locale",
   },
   bookings: {
-    id: "id",
     tenant_id: "tenantId",
+    id: "id",
     user_id: "userId",
     facility_id: "facilityId",
     starts_at: "start",
@@ -80,22 +111,82 @@ const tables = {
     status: "status",
     created_at: "createdAt",
     cancelled_at: "cancelledAt",
+    cancellation_hours: "cancellationHours",
+    cancelled_by: "cancelledBy",
+    cancellation_reason: "cancellationReason",
+    sequence: "sequence",
   },
   notifications: {
-    id: "id",
     tenant_id: "tenantId",
+    id: "id",
     user_id: "userId",
     booking_id: "bookingId",
     kind: "kind",
     created_at: "createdAt",
+    details: "details",
   },
   audit_events: {
-    id: "id",
     tenant_id: "tenantId",
+    id: "id",
     actor_id: "actorId",
     action: "action",
     resource_id: "resourceId",
     occurred_at: "occurredAt",
+    actor_role: "actorRole",
+    details: "details",
+  },
+  consents: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    legal_version: "legalVersion",
+    accepted_at: "acceptedAt",
+  },
+  legal_texts: {
+    tenant_id: "tenantId",
+    version: "version",
+    text_gl: "textGl",
+    text_es: "textEs",
+    published_at: "publishedAt",
+  },
+  municipality_logos: {
+    tenant_id: "tenantId",
+    content_type: "contentType",
+    data: "data",
+    sha256: "sha256",
+    updated_at: "updatedAt",
+  },
+  booking_blocks: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    booking_id: "bookingId",
+    starts_at: "start",
+    ends_at: "end",
+    lifted_at: "liftedAt",
+  },
+  notification_preferences: {
+    tenant_id: "tenantId",
+    user_id: "userId",
+    kind: "kind",
+    channel: "channel",
+    enabled: "enabled",
+    updated_at: "updatedAt",
+  },
+  outbox: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    booking_id: "bookingId",
+    kind: "kind",
+    channel: "channel",
+    dedupe_key: "dedupeKey",
+    created_at: "createdAt",
+    available_at: "availableAt",
+    attempts: "attempts",
+    locked_until: "lockedUntil",
+    sent_at: "sentAt",
+    last_error: "lastError",
   },
 } as const;
 /**
@@ -128,14 +219,21 @@ export async function importMunicipality(
         `Municipality ${tenantId} already exists in this instance`,
       );
     async function insert(table: keyof typeof tables, rows: readonly Row[]) {
-      const columns = Object.entries(tables[table]);
-      for (const row of rows)
+      for (const row of rows) {
+        const columns = Object.entries(tables[table]).filter(
+          ([, field]) => field === "tenantId" || row[field] !== undefined,
+        );
         await client.query(
           `INSERT INTO ${table} (${columns.map(([column]) => column).join(",")}) VALUES (${columns.map((_, i) => `$${i + 1}`).join(",")})`,
           columns.map(([, field]) =>
-            field === "tenantId" ? tenantId : (row[field] ?? null),
+            field === "tenantId"
+              ? tenantId
+              : table === "municipality_logos" && field === "data"
+                ? Buffer.from(String(row[field]), "base64")
+                : (row[field] ?? null),
           ),
         );
+      }
     }
     await insert("municipalities", [{ ...data.municipality, slug }]);
     await insert("users", data.users);
@@ -143,6 +241,18 @@ export async function importMunicipality(
     await insert("bookings", data.bookings);
     await insert("notifications", data.notifications);
     await insert("audit_events", data.auditEvents);
+    await insert("consents", data.consents);
+    await insert("legal_texts", data.legalTexts);
+    await insert("municipality_logos", data.logos);
+    await insert("booking_blocks", data.bookingBlocks);
+    await insert("notification_preferences", data.notificationPreferences);
+    await insert("outbox", data.messages);
+    if (data.version === 1) {
+      await client.query(
+        "INSERT INTO legal_texts (tenant_id,version,text_gl,text_es,published_at) SELECT id,legal_version,legal_text,legal_text,now() FROM municipalities WHERE id=$1 ON CONFLICT DO NOTHING",
+        [tenantId],
+      );
+    }
     await client.query("COMMIT");
     return { id: tenantId, slug };
   } catch (error) {

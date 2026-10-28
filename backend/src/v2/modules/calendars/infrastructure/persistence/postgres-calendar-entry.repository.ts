@@ -8,7 +8,7 @@ interface Row {
   id: string;
   starts_at: string;
   ends_at: string;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
   sequence: number;
   created_at: string;
   facility_name: string;
@@ -22,7 +22,7 @@ function toEntry(row: Row): CalendarEntry {
     bookingId: row.id,
     start: Temporal.Instant.from(row.starts_at),
     end: Temporal.Instant.from(row.ends_at),
-    status: row.status,
+    status: row.status === "no_show" ? "cancelled" : row.status,
     sequence: row.sequence,
     createdAt: Temporal.Instant.from(row.created_at),
     facilityName: row.facility_name,

@@ -131,7 +131,18 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
       facilityId: court.id,
       start: begins,
     }).expect(201);
+    const feed = await post(
+      context.citizen,
+      "citizen/calendar-feed",
+      {},
+    ).expect(201);
+    await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(200);
     await del(context.citizen, "citizen/me").expect(204);
+    await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(404);
     await context.citizen.get("/v2/citizen/bookings").expect(401);
     const user = await harness.db.query(
       "SELECT display_name, deleted_at FROM users WHERE id=$1",
@@ -146,7 +157,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     expect(bookings.rows).toHaveLength(1);
     expect(bookings.rows[0].status).toBe("cancelled");
     expect(bookings.rows[0].cancelled_at).not.toBeNull();
-    for (const table of ["notifications", "sessions"]) {
+    for (const table of ["notifications", "sessions", "calendar_feeds"]) {
       const rows = await harness.db.query(
         `SELECT count(*)::int AS count FROM ${table} WHERE tenant_id=$1 AND user_id=$2`,
         [context.id, context.users.citizen],
