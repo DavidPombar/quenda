@@ -44,6 +44,19 @@ export async function seed(url = databaseUrl) {
           24,
         ],
       );
+      // Only fills statements nobody has configured yet.
+      await db.query(
+        "UPDATE municipalities SET accessibility_unit=$2, accessibility_email=$3, accessibility_phone=$4, accessibility_reviewed_on=$5, accessibility_method='self', accessibility_exceptions_gl=$6, accessibility_exceptions_es=$7 WHERE id=$1 AND accessibility_unit=''",
+        [
+          tenant,
+          `Servizo de Deportes do ${name}`,
+          `accesibilidade@${slug}.example`,
+          `+34 986 000 00${i}`,
+          "2026-10-27",
+          "Os textos que redacta o concello (descricións das instalacións e normas de uso) aínda non se revisaron con criterios de accesibilidade e linguaxe clara.",
+          "Los textos que redacta el ayuntamiento (descripciones de las instalaciones y normas de uso) aún no se han revisado con criterios de accesibilidad y lenguaje claro.",
+        ],
+      );
       // Versioned notice in both languages; the row above keeps the Galician text for older readers.
       await db.query(
         "INSERT INTO legal_texts (tenant_id,version,text_gl,text_es,published_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",

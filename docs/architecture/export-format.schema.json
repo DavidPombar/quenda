@@ -128,6 +128,29 @@
         "dir3Code": {
           "type": ["string", "null"],
           "description": "DIR3 code of the council, the open data publisher. Optional."
+        },
+        "accessibilityUnit": {
+          "type": "string"
+        },
+        "accessibilityEmail": {
+          "type": "string"
+        },
+        "accessibilityPhone": {
+          "type": "string"
+        },
+        "accessibilityReviewedOn": {
+          "type": "string",
+          "format": "date"
+        },
+        "accessibilityMethod": {
+          "type": "string",
+          "enum": ["self", "external"]
+        },
+        "accessibilityExceptionsGl": {
+          "type": "string"
+        },
+        "accessibilityExceptionsEs": {
+          "type": "string"
         }
       },
       "additionalProperties": false

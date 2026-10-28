@@ -5,6 +5,7 @@ import { Shell } from "./shell.view";
 import { catalogRoute } from "./components/catalog/catalog.route";
 import { myBookingsRoute } from "./components/my-bookings/my-bookings.route";
 import { accountRoute } from "./components/account/account.route";
+import { accessibilityRoute } from "./components/accessibility/accessibility.route";
 import { unsubscribeRoute } from "./components/unsubscribe/unsubscribe.route";
 import { openDataRoute } from "./components/open-data/open-data.route";
 export const shellRoute = {
@@ -15,6 +16,7 @@ export const shellRoute = {
     catalogRoute,
     myBookingsRoute,
     accountRoute,
+    accessibilityRoute,
     unsubscribeRoute,
     openDataRoute,
   ],

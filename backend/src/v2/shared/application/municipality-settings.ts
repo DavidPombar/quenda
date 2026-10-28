@@ -1,4 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+export type AccessibilityMethod = "self" | "external";
+export interface AccessibilitySettings {
+  unit: string;
+  email: string;
+  phone: string;
+  /** Last review of the statement as an ISO calendar date. */
+  reviewedOn: string;
+  method: AccessibilityMethod;
+  exceptions: { gl: string; es: string };
+}
 export type MunicipalityLocale = "gl" | "es";
 export interface LegalTexts {
   gl: string;
@@ -36,6 +46,7 @@ export interface MunicipalitySettings {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  accessibility: AccessibilitySettings;
   /** SPDX identifier of the licence of the published open data. */
   dataLicense: DataLicense;
   /** DIR3 code of the council, the DCAT publisher; null when not configured. */

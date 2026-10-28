@@ -133,7 +133,7 @@ describe("Municipality data portability", () => {
 
     // Data introduced on main must survive transfer as well as the original V0 catalog.
     await db.query(
-      "UPDATE municipalities SET retention_months=18,primary_color='#123456',no_show_limit=2,reminder_hours=12,mail_sender_name='Sports desk',mail_reply_to='sports@example.invalid' WHERE id=$1",
+      "UPDATE municipalities SET retention_months=18,primary_color='#123456',no_show_limit=2,reminder_hours=12,mail_sender_name='Sports desk',mail_reply_to='sports@example.invalid',accessibility_unit='Accessibility office',accessibility_email='accessibility@example.invalid',accessibility_phone='+34986000001',accessibility_reviewed_on='2026-10-01',accessibility_method='external',accessibility_exceptions_gl='Revisión pendente',accessibility_exceptions_es='Revisión pendiente' WHERE id=$1",
       [tenantId],
     );
     await db.query(

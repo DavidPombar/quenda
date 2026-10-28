@@ -8,6 +8,7 @@ export const ROUTES = {
   detail: "instalacions/:id",
   bookings: "reservas",
   account: "conta",
+  accessibility: "accesibilidade",
   unsubscribe: "baixa",
   openData: "datos-abertos",
 } as const;

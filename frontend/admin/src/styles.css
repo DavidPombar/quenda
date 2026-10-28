@@ -398,6 +398,15 @@ main {
   font-size: var(--t-tiny);
 }
 
+.footer-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer-link:hover {
+  color: var(--court);
+}
+
 /* Page structure */
 .page-heading {
   display: flex;
@@ -1374,4 +1383,48 @@ main {
   .bookings-filters {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+/* Accessibility statement */
+.statement {
+  max-width: 70ch;
+}
+.statement-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.statement-section h2 {
+  font-size: var(--t-2);
+}
+.statement-section h3 {
+  font-size: var(--t-body);
+  font-weight: 650;
+}
+.statement-section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 24px;
+  list-style: disc;
+}
+.statement-section a {
+  color: var(--court);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.statement .facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 24px;
+}
+.statement .facts dt {
+  font-size: var(--t-small);
+  font-weight: 650;
+  color: var(--ink-2);
+}
+.statement .facts dd {
+  margin: 4px 0 0;
 }

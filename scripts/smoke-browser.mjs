@@ -66,6 +66,22 @@ try {
     fullPage: true,
   });
   await page
+    .getByRole("link", { name: "Declaración de accesibilidade", exact: true })
+    .click();
+  await page.waitForURL(/\/accesibilidade$/);
+  await page
+    .getByRole("heading", { level: 1, name: "Declaración de accesibilidade" })
+    .waitFor();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+    "Website statement mobile overflow",
+  );
+  await audit("accessibility-website");
+  await page.goto(base);
+  await page
     .getByRole("link", { name: "Abrir a aplicación", exact: true })
     .click();
   await page.waitForURL(/\/app\/[^/]+\/instalacions$/);
@@ -76,6 +92,17 @@ try {
     path: ".dev-logs/catalog-desktop.png",
     fullPage: true,
   });
+  await page
+    .getByRole("link", { name: "Accesibilidade", exact: true })
+    .first()
+    .click();
+  await page.waitForURL(/\/app\/[^/]+\/accesibilidade$/);
+  await page
+    .getByRole("heading", { level: 1, name: "Declaración de accesibilidade" })
+    .waitFor();
+  await audit("accessibility-app");
+  await page.goBack();
+  await page.getByRole("heading", { name: "Pavillón municipal" }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(
     await page.evaluate(
@@ -280,6 +307,15 @@ try {
   await page.getByRole("heading", { level: 1, name: "Auditoría" }).waitFor();
   await audit("audit-log");
   await page.screenshot({ path: ".dev-logs/audit-log.png", fullPage: true });
+  await page
+    .getByRole("link", { name: "Accesibilidade", exact: true })
+    .first()
+    .click();
+  await page.waitForURL(/\/admin\/[^/]+\/accesibilidade$/);
+  await page
+    .getByRole("heading", { level: 1, name: "Declaración de accesibilidade" })
+    .waitFor();
+  await audit("accessibility-admin");
   await page.getByRole("link", { name: "Panel", exact: true }).click();
   await page.getByRole("button", { name: "Nova instalación" }).waitFor();
   await page.getByRole("button", { name: "Nova instalación" }).click();
@@ -311,7 +347,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and fourteen accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and seventeen accessibility scans, including the three accessibility statements passed.",
   );
 } finally {
   await browser.close();

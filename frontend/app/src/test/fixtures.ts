@@ -24,6 +24,17 @@ export const municipality: Municipality = {
   },
   legalVersion: "2026-10",
   retentionMonths: 24,
+  accessibility: {
+    unit: "Servizo de Deportes do Concello de Vilaverde",
+    email: "accesibilidade@vilaverde.example",
+    phone: "+34 986 000 001",
+    reviewedOn: "2026-10-27",
+    method: "self",
+    exceptions: {
+      gl: "As descricións das instalacións aínda non se revisaron.",
+      es: "Las descripciones de las instalaciones aún no se han revisado.",
+    },
+  },
   reminderHours: 24,
   primaryColor: "#1f5b43",
   logoUrl: null,

@@ -11,6 +11,17 @@ export const municipality: Municipality = {
   cancellationHours: 2,
   maxActiveBookings: 5,
   contact: "deportes@vilaverde.example",
+  accessibility: {
+    unit: "Servizo de Deportes do Concello de Vilaverde",
+    email: "accesibilidade@vilaverde.example",
+    phone: "+34 986 000 001",
+    reviewedOn: "2026-10-27",
+    method: "self",
+    exceptions: {
+      gl: "As descricións das instalacións aínda non se revisaron.",
+      es: "Las descripciones de las instalaciones aún no se han revisado.",
+    },
+  },
   legalTexts: {
     gl: "Demostración con datos ficticios.",
     es: "Demostración con datos ficticios en castellano.",

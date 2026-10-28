@@ -32,6 +32,17 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       ),
     ).toBe(true);
     expect(
+      municipalities.body.find((item: { id: string }) => item.id === context.id)
+        .accessibility,
+    ).toEqual({
+      unit: "",
+      email: "",
+      phone: "",
+      reviewedOn: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      method: "self",
+      exceptions: { gl: "", es: "" },
+    });
+    expect(
       (await anonymous.get("/v2/public/session").expect(200)).body.session,
     ).toBe(null);
     const catalog = await anonymous

@@ -1,11 +1,46 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  AccessibilityMethod,
+  AccessibilitySettings,
   DataLicense,
   dataLicenses,
   MunicipalityLocale,
   MunicipalitySettings,
 } from "../../../../../shared/application/municipality-settings";
+export class AccessibilityExceptionsResponseDTO {
+  @ApiProperty({ description: "Non-accessible content in Galician" })
+  gl!: string;
+  @ApiProperty({ description: "Non-accessible content in Spanish" })
+  es!: string;
+}
+export class AccessibilityResponseDTO {
+  @ApiProperty({ description: "Unit responsible for accessibility" })
+  unit!: string;
+  @ApiProperty({ description: "Contact address for accessibility requests" })
+  email!: string;
+  @ApiProperty({ description: "Contact phone for accessibility requests" })
+  phone!: string;
+  @ApiProperty({ description: "Last statement review (YYYY-MM-DD)" })
+  reviewedOn!: string;
+  @ApiProperty({
+    enum: ["self", "external"],
+    description: "Self-assessment or external audit",
+  })
+  method!: AccessibilityMethod;
+  @ApiProperty({ type: AccessibilityExceptionsResponseDTO })
+  exceptions!: AccessibilityExceptionsResponseDTO;
+  static from(value: AccessibilitySettings): AccessibilityResponseDTO {
+    return {
+      unit: value.unit,
+      email: value.email,
+      phone: value.phone,
+      reviewedOn: value.reviewedOn,
+      method: value.method,
+      exceptions: { gl: value.exceptions.gl, es: value.exceptions.es },
+    };
+  }
+}
 export class LegalTextsDTO {
   @ApiProperty({ description: "Privacy notice in Galician" }) gl!: string;
   @ApiProperty({ description: "Privacy notice in Spanish" }) es!: string;
@@ -67,6 +102,11 @@ export class MunicipalityResponseDTO {
   })
   noShowBlockDays!: number;
   @ApiProperty({
+    type: AccessibilityResponseDTO,
+    description: "Accessibility statement data (RD 1112/2018)",
+  })
+  accessibility!: AccessibilityResponseDTO;
+  @ApiProperty({
     description: "SPDX licence identifier of the municipality's open data",
     enum: dataLicenses,
   })
@@ -99,6 +139,7 @@ export class MunicipalityResponseDTO {
       noShowLimit: value.noShowLimit,
       noShowWindowDays: value.noShowWindowDays,
       noShowBlockDays: value.noShowBlockDays,
+      accessibility: AccessibilityResponseDTO.from(value.accessibility),
       dataLicense: value.dataLicense,
       dir3Code: value.dir3Code,
     };

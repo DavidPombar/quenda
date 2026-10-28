@@ -7,6 +7,7 @@ export const ROUTES = {
   shell: "/:slug",
   management: "xestion",
   audit: "auditoria",
+  accessibility: "accesibilidade",
   settings: "axustes",
   bookings: "reservas",
 } as const;

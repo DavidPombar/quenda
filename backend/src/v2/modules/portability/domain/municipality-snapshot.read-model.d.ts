@@ -24,6 +24,13 @@ export interface MunicipalitySnapshot {
     mailSenderName: string;
     mailReplyTo: string;
     storeNif: boolean;
+    accessibilityUnit: string;
+    accessibilityEmail: string;
+    accessibilityPhone: string;
+    accessibilityReviewedOn: string;
+    accessibilityMethod: string;
+    accessibilityExceptionsGl: string;
+    accessibilityExceptionsEs: string;
     dataLicense: string;
     dir3Code: string | null;
   };

@@ -38,3 +38,5 @@ that file. HTTP tests use the migration runner through the shared harness.
 Migrations must preserve existing municipal data: add columns with defaults or a
 backfill, and move data explicitly when a table is split. Rollbacks are done by
 restoring a backup taken before the upgrade, not by down migrations.
+
+- `0008` adds municipal accessibility statement settings (T5). Existing migration checksums stay unchanged; exports preserve all statement fields (R1, R3).

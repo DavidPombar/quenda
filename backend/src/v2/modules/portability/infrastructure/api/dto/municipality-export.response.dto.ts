@@ -25,6 +25,13 @@ class ExportedMunicipalityDTO {
   @ApiProperty() mailSenderName!: string;
   @ApiProperty() mailReplyTo!: string;
   @ApiProperty() storeNif!: boolean;
+  @ApiProperty() accessibilityUnit!: string;
+  @ApiProperty() accessibilityEmail!: string;
+  @ApiProperty() accessibilityPhone!: string;
+  @ApiProperty() accessibilityReviewedOn!: string;
+  @ApiProperty() accessibilityMethod!: string;
+  @ApiProperty() accessibilityExceptionsGl!: string;
+  @ApiProperty() accessibilityExceptionsEs!: string;
   @ApiProperty({ description: "SPDX licence of the open data" })
   dataLicense!: string;
   @ApiProperty({ type: String, nullable: true }) dir3Code!: string | null;
