@@ -11,11 +11,13 @@ export interface Insights {
   total: number;
   confirmed: number;
   cancelled: number;
+  /** Booked but not used (M3); excluded from occupancy. */
+  noShows: number;
   occupancy: number;
   facilities: number;
   from: string;
   to: string;
-  byFacility: { id: string; name: string; bookings: number }[];
+  byFacility: { id: string; name: string; bookings: number; noShows: number }[];
 }
 @Injectable()
 export class GetInsights {
@@ -46,6 +48,7 @@ export class GetInsights {
       from.toString(),
       to.toString(),
     );
+    // Capacity is opening minutes times active units, so a divisible hall counts each part.
     let capacity = 0;
     for (const row of rows.filter((item) => item.status === "active"))
       for (let i = 0; i < 7; i++)
@@ -64,14 +67,16 @@ export class GetInsights {
             date.add({ days: i + 1 }).toZonedDateTime(settings.timezone)
               .epochMilliseconds,
           );
-          capacity += (end - start) / 60000;
+          capacity += ((end - start) / 60000) * row.units;
         }
     const confirmed = rows.reduce((sum, row) => sum + row.bookings, 0);
     const cancelled = rows.reduce((sum, row) => sum + row.cancelled, 0);
+    const noShows = rows.reduce((sum, row) => sum + row.noShows, 0);
     const result: Insights = {
-      total: confirmed + cancelled,
+      total: confirmed + cancelled + noShows,
       confirmed,
       cancelled,
+      noShows,
       facilities: rows.length,
       occupancy: capacity
         ? Math.round(
@@ -84,6 +89,7 @@ export class GetInsights {
         id: row.id,
         name: row.name,
         bookings: row.bookings,
+        noShows: row.noShows,
       })),
     };
     return Result.ok(result);

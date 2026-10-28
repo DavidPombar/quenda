@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountExport } from "../../../domain/account.read-model";
-import { AccountProfileResponseDTO } from "./account-profile.response.dto";
+import { ExportedProfileResponseDTO } from "./exported-profile.response.dto";
+import { ExportedIdentityResponseDTO } from "./exported-identity.response.dto";
 import { ConsentResponseDTO } from "./consent.response.dto";
 import { ExportMunicipalityResponseDTO } from "./export-municipality.response.dto";
 import { ExportedCategoryResponseDTO } from "./exported-category.response.dto";
 import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
 import { ExportedNotificationResponseDTO } from "./exported-notification.response.dto";
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
+import { ExportedMessageResponseDTO } from "./exported-message.response.dto";
+import { NotificationPreferencesResponseDTO } from "./notification-preferences.response.dto";
+import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -17,10 +21,16 @@ export class AccountExportResponseDTO {
   })
   municipality!: ExportMunicipalityResponseDTO;
   @ApiProperty({
-    description: "Account profile",
-    type: AccountProfileResponseDTO,
+    description: "Account profile with the personal data stored on it",
+    type: ExportedProfileResponseDTO,
   })
-  profile!: AccountProfileResponseDTO;
+  profile!: ExportedProfileResponseDTO;
+  @ApiProperty({
+    description:
+      "External identities (eID issuer and subject) linked to the account",
+    type: [ExportedIdentityResponseDTO],
+  })
+  identities!: ExportedIdentityResponseDTO[];
   @ApiProperty({
     description: "Accepted privacy notice versions",
     type: [ConsentResponseDTO],
@@ -46,6 +56,21 @@ export class AccountExportResponseDTO {
   })
   notifications!: ExportedNotificationResponseDTO[];
   @ApiProperty({
+    description: "Notice preferences",
+    type: NotificationPreferencesResponseDTO,
+  })
+  preferences!: NotificationPreferencesResponseDTO;
+  @ApiProperty({
+    description: "Email messages queued or delivered (without their text)",
+    type: [ExportedMessageResponseDTO],
+  })
+  messages!: ExportedMessageResponseDTO[];
+  @ApiProperty({
+    description: "Booking bans after repeated no-shows",
+    type: [ExportedBlockResponseDTO],
+  })
+  blocks!: ExportedBlockResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -54,7 +79,8 @@ export class AccountExportResponseDTO {
     return {
       generatedAt: value.generatedAt.toString(),
       municipality: ExportMunicipalityResponseDTO.from(value.municipality),
-      profile: AccountProfileResponseDTO.from(value.profile),
+      profile: ExportedProfileResponseDTO.from(value.profile),
+      identities: value.identities.map(ExportedIdentityResponseDTO.from),
       consents: value.consents.map(ConsentResponseDTO.from),
       categories: value.categories.map(ExportedCategoryResponseDTO.from),
       prefersFamilyTariff: value.prefersFamilyTariff,
@@ -62,6 +88,9 @@ export class AccountExportResponseDTO {
       notifications: value.notifications.map(
         ExportedNotificationResponseDTO.from,
       ),
+      preferences: NotificationPreferencesResponseDTO.from(value.preferences),
+      messages: value.messages.map(ExportedMessageResponseDTO.from),
+      blocks: value.blocks.map(ExportedBlockResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

@@ -2,14 +2,14 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { Pool, PoolClient, QueryResultRow, types } from "pg";
-import { databaseUrl } from "../../../database/config";
+import { currentDatabaseUrl } from "../../../database/config";
 import { Result } from "../application/result";
 types.setTypeParser(1184, (value) => value);
 types.setTypeParser(1114, (value) => value);
 class Rollback extends Error {}
 @Injectable()
 export class Database implements OnModuleDestroy {
-  private readonly pool = new Pool({ connectionString: databaseUrl });
+  private readonly pool = new Pool({ connectionString: currentDatabaseUrl() });
   private readonly context = new AsyncLocalStorage<PoolClient>();
   query<T extends QueryResultRow = QueryResultRow>(
     sql: string,

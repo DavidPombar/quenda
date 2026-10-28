@@ -16,7 +16,15 @@ export class PostgresInsightsRepository extends InsightsRepository {
         `SELECT f.id,f.name,f.opening_calendar AS "openingCalendar",f.status,
       count(b.id) FILTER(WHERE b.status='confirmed')::int AS bookings,
       count(b.id) FILTER(WHERE b.status='cancelled')::int AS cancelled,
-      coalesce(sum(extract(epoch FROM (least(b.ends_at,$3::timestamptz)-greatest(b.starts_at,$2::timestamptz)))/60) FILTER(WHERE b.status='confirmed'),0)::float AS minutes
+      count(b.id) FILTER(WHERE b.status='no_show')::int AS "noShows",
+      -- Unit-minutes of confirmed bookings only: no-shows keep their units but are not occupancy.
+      (SELECT coalesce(sum(extract(epoch FROM (least(u.ends_at,$3::timestamptz)-greatest(u.starts_at,$2::timestamptz)))/60),0)::float
+        FROM booking_units u JOIN resources r ON r.tenant_id=u.tenant_id AND r.id=u.unit_id
+        JOIN bookings ub ON ub.tenant_id=u.tenant_id AND ub.id=u.booking_id AND ub.status='confirmed'
+        WHERE r.tenant_id=f.tenant_id AND r.facility_id=f.id AND u.starts_at<$3 AND u.ends_at>$2) AS minutes,
+      (SELECT count(*)::int FROM resources r
+        WHERE r.tenant_id=f.tenant_id AND r.facility_id=f.id AND r.active
+          AND NOT EXISTS (SELECT 1 FROM resources part WHERE part.tenant_id=r.tenant_id AND part.parent_id=r.id)) AS units
       FROM facilities f LEFT JOIN bookings b ON f.id=b.facility_id AND f.tenant_id=b.tenant_id AND b.starts_at<$3 AND b.ends_at>$2
       WHERE f.tenant_id=$1 GROUP BY f.id ORDER BY f.name`,
         [tenantId, from, to],

@@ -39,6 +39,14 @@ export interface CitizenCategories {
   displayName: string;
   categories: UserCategory[];
 }
+export interface Accessibility {
+  unit: string;
+  email: string;
+  phone: string;
+  reviewedOn: string;
+  method: "self" | "external";
+  exceptions: Record<Locale, string>;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -55,6 +63,11 @@ export interface Municipality {
   primaryColor: string;
   logoUrl: string | null;
   enabledCategories: Category[];
+  /** No-shows within the window that block new bookings; 0 disables the penalty. */
+  noShowLimit: number;
+  noShowWindowDays: number;
+  noShowBlockDays: number;
+  accessibility: Accessibility;
 }
 export interface LegalTexts {
   gl: string;
@@ -76,6 +89,9 @@ export type SettingsPatch = Partial<
     | "primaryColor"
     | "holidaysCalendar"
     | "enabledCategories"
+    | "noShowLimit"
+    | "noShowWindowDays"
+    | "noShowBlockDays"
   >
 >;
 export interface SettingsUpdate {
@@ -103,37 +119,51 @@ export interface Facility {
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position, published as open data; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface Slot {
   start: string;
   end: string;
   status: "available" | "booked" | "past";
 }
-export interface Booking {
+export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
+/** One person's reservation as the municipality sees it on the bookings page. */
+export interface ManagedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
   sport: Sport;
   start: string;
   end: string;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
+  outcome: BookingOutcome;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
+  displayName: string;
+  canMarkNoShow: boolean;
+  canRevert: boolean;
+  canCancel: boolean;
 }
-export interface Notification {
-  id: string;
-  bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
-  facilityName: string;
-  createdAt: string;
+export type BookingChange =
+  | { attendance: "no_show" | "attended" }
+  | { status: "cancelled"; reason: string };
+/** Upcoming bookings a closure would cancel. */
+export interface FacilityImpact {
+  bookings: number;
+  people: number;
 }
 export interface Insights {
   total: number;
   confirmed: number;
   cancelled: number;
+  noShows: number;
   occupancy: number;
   facilities: number;
   from: string;
   to: string;
-  byFacility: { id: string; name: string; bookings: number }[];
+  byFacility: { id: string; name: string; bookings: number; noShows: number }[];
 }
 export type AuditActorRole = "citizen" | "manager" | "system";
 export interface AuditEvent {
@@ -151,4 +181,11 @@ export interface AuditFilters {
   to?: string;
   action?: string;
   limit?: number;
+}
+/** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
+export interface MunicipalityExport {
+  format: "quenda-municipality-export";
+  version: number;
+  exportedAt: string;
+  municipality: { slug: string };
 }

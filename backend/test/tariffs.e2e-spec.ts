@@ -2,6 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import request from "supertest";
+import { Temporal } from "@js-temporal/polyfill";
 import {
   del,
   facility,
@@ -33,7 +34,7 @@ async function citizen(context: Tenant, displayName: string) {
     createHash("sha256").update(token).digest("hex"),
     context.id,
     id,
-    new Date(Date.now() + 3600_000).toISOString(),
+    Temporal.Now.instant().add({ hours: 1 }).toString(),
   ]);
   const agent = request.agent(harness.app.getHttpServer());
   agent.set("Cookie", `quenda_session=${token}`);

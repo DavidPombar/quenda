@@ -4,10 +4,43 @@ import type {
   Category,
   TariffCategory,
 } from "../../../shared/application/categories";
+import type { Assurance } from "../../../shared/application/principal";
+import type { MessageKind } from "../../../shared/application/outbox";
 export interface AccountProfile {
   userId: string;
   displayName: string;
   role: "citizen" | "manager";
+  /** Optional address for email notices. */
+  email: string | null;
+  /** Language for outgoing messages; NULL until the person picks one. */
+  locale: "gl" | "es" | null;
+}
+export interface NotificationPreferences {
+  reminderEmails: boolean;
+}
+export interface ExportedMessage {
+  id: string;
+  kind: MessageKind;
+  channel: "email";
+  createdAt: Temporal.Instant;
+  sentAt: Temporal.Instant | null;
+}
+/** Personal data kept on the account row; the NIF arrives here still encrypted. */
+export interface AccountPersonalData {
+  email: string | null;
+  assurance: Assurance;
+  nifCiphertext: string | null;
+}
+export interface ExportedProfile extends AccountProfile {
+  email: string | null;
+  assurance: Assurance;
+  /** Decrypted NIF, or null when none is stored or it cannot be decrypted with the current key. */
+  nif: string | null;
+}
+export interface ExportedIdentity {
+  issuer: string;
+  subject: string;
+  createdAt: Temporal.Instant;
 }
 export interface ConsentRecord {
   legalVersion: string;
@@ -20,17 +53,22 @@ export interface AccountSummary {
   consents: ConsentRecord[];
   bookings: number;
   notifications: number;
+  preferences: NotificationPreferences;
 }
 export interface ExportedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "no_show";
   createdAt: Temporal.Instant;
   cancelledAt: Temporal.Instant | null;
+  cancelledBy: "citizen" | "municipality" | null;
+  cancellationReason: string | null;
   tariffCategory: TariffCategory | null;
   priceCents: number | null;
 }
@@ -43,9 +81,25 @@ export interface ExportedCategory {
 export interface ExportedNotification {
   id: string;
   bookingId: string;
-  kind: "confirmed" | "rescheduled" | "cancelled";
+  kind:
+    | "confirmed"
+    | "rescheduled"
+    | "cancelled"
+    | "cancelled_by_municipality"
+    | "no_show"
+    | "blocked"
+    | "unblocked"
+    | "reminder";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
+  details: Record<string, unknown> | null;
+}
+export interface ExportedBlock {
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  liftedAt: Temporal.Instant | null;
 }
 export interface ExportedAuditEvent {
   id: string;
@@ -63,11 +117,15 @@ export interface AccountExport {
     legalVersion: string;
     retentionMonths: number;
   };
-  profile: AccountProfile;
+  profile: ExportedProfile;
+  identities: ExportedIdentity[];
   consents: ConsentRecord[];
   categories: ExportedCategory[];
   prefersFamilyTariff: boolean;
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
+  preferences: NotificationPreferences;
+  messages: ExportedMessage[];
+  blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];
 }

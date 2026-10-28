@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
-import { Facility } from "../../../domain/facility.entity";
 import { CategoryPriceResponseDTO } from "./category-price.response.dto";
+import { FacilityDetails } from "../../../domain/facility.read-model";
+import { ResourceResponseDTO } from "./resource.response.dto";
 export class FacilityResponseDTO {
   @ApiProperty({ description: "Facility UUID" }) id!: string;
   @ApiProperty({ description: "Facility name" }) name!: string;
@@ -34,7 +35,24 @@ export class FacilityResponseDTO {
     description: "Whether municipal holidays close this facility",
   })
   followsMunicipalHolidays!: boolean;
-  static from(value: Facility): FacilityResponseDTO {
+  @ApiProperty({
+    description: "WGS 84 latitude, or null when not set",
+    type: Number,
+    nullable: true,
+  })
+  latitude!: number | null;
+  @ApiProperty({
+    description: "WGS 84 longitude, or null when not set",
+    type: Number,
+    nullable: true,
+  })
+  longitude!: number | null;
+  @ApiProperty({
+    description: "Bookable courts or spaces, ordered by position and name",
+    type: [ResourceResponseDTO],
+  })
+  resources!: ResourceResponseDTO[];
+  static from(value: FacilityDetails): FacilityResponseDTO {
     return {
       id: value.id,
       name: value.name,
@@ -49,6 +67,9 @@ export class FacilityResponseDTO {
       openingCalendar: value.openingCalendar,
       rules: value.rules,
       followsMunicipalHolidays: value.followsMunicipalHolidays,
+      latitude: value.latitude,
+      longitude: value.longitude,
+      resources: value.resources.map(ResourceResponseDTO.from),
     };
   }
 }

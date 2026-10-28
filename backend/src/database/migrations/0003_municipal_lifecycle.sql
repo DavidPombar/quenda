@@ -101,29 +101,76 @@ CREATE TABLE IF NOT EXISTS municipality_logos (
 -- Cancellation deadline in force when the booking was made; NULL for older rows (current setting applies).
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_hours integer CHECK (cancellation_hours >= 0);
 ALTER TABLE facilities ADD COLUMN IF NOT EXISTS follows_municipal_holidays boolean NOT NULL DEFAULT true;
--- User categories and per-category tariffs (M2, R2). The facility price_cents is the general
--- tariff; categories only apply once a manager verifies them.
-ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS enabled_categories text[] NOT NULL DEFAULT '{}'
-  CHECK (enabled_categories <@ ARRAY['resident','family','local_club','minor','large_family','disability','senior']);
-CREATE TABLE IF NOT EXISTS facility_prices (
-  tenant_id uuid NOT NULL, facility_id uuid NOT NULL,
-  category text NOT NULL CHECK (category IN ('resident','family','local_club','minor','large_family','disability','senior')),
-  price_cents integer NOT NULL CHECK (price_cents >= 0),
-  PRIMARY KEY (tenant_id, facility_id, category),
-  FOREIGN KEY (tenant_id, facility_id) REFERENCES facilities(tenant_id, id)
+-- Attendance, no-shows and municipal cancellations (C3, M3). Attended is derived: a confirmed
+-- booking that has ended. Constraints are recreated by name so the upgrade stays idempotent.
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_check1;
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_valid;
+ALTER TABLE bookings ADD CONSTRAINT bookings_status_valid
+  CHECK (status IN ('confirmed', 'cancelled', 'no_show'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_by text CHECK (cancelled_by IN ('citizen', 'municipality'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_reason text CHECK (length(cancellation_reason) <= 500);
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_cancellation_valid;
+ALTER TABLE bookings ADD CONSTRAINT bookings_cancellation_valid CHECK (
+  (status IN ('confirmed', 'no_show') AND cancelled_at IS NULL AND cancelled_by IS NULL AND cancellation_reason IS NULL)
+  OR (status = 'cancelled' AND cancelled_at IS NOT NULL
+    AND (cancelled_by IS DISTINCT FROM 'municipality' OR cancellation_reason IS NOT NULL))
 );
--- Only the category and its state are kept; supporting documents are checked outside the platform.
--- Rows are deleted with the account (they can reveal special-category data), so retention never meets them.
-CREATE TABLE IF NOT EXISTS user_categories (
+-- No-show penalty: no_show_limit absences within no_show_window_days block new bookings for
+-- no_show_block_days. A limit of 0 disables it.
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_limit integer NOT NULL DEFAULT 3
+  CHECK (no_show_limit BETWEEN 0 AND 20);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_window_days integer NOT NULL DEFAULT 30
+  CHECK (no_show_window_days BETWEEN 1 AND 365);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS no_show_block_days integer NOT NULL DEFAULT 7
+  CHECK (no_show_block_days BETWEEN 1 AND 365);
+-- booking_id is the no-show that reached the limit; lifted_at is set when it is corrected.
+CREATE TABLE IF NOT EXISTS booking_blocks (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL, booking_id uuid NOT NULL,
+  starts_at timestamptz NOT NULL, ends_at timestamptz NOT NULL, lifted_at timestamptz,
+  CHECK (ends_at > starts_at),
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id),
+  FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
+);
+CREATE INDEX IF NOT EXISTS booking_blocks_user ON booking_blocks(tenant_id, user_id, ends_at);
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;
+ALTER TABLE notifications ADD CONSTRAINT notifications_kind_check CHECK (kind IN (
+  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'no_show', 'blocked', 'unblocked',
+  'reminder'
+));
+-- Snapshot shown with the notice: the municipal reason or the penalty standing at that moment.
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS details jsonb;
+-- Email notices (C4): optional contact data, per-municipality sender and reminder lead time.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locale text CHECK (locale IN ('gl', 'es'));
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS reminder_hours integer NOT NULL DEFAULT 24
+  CHECK (reminder_hours BETWEEN 1 AND 168);
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS mail_sender_name text NOT NULL DEFAULT '';
+ALTER TABLE municipalities ADD COLUMN IF NOT EXISTS mail_reply_to text NOT NULL DEFAULT '';
+-- A missing row means the default: every notice is enabled.
+CREATE TABLE IF NOT EXISTS notification_preferences (
   tenant_id uuid NOT NULL, user_id uuid NOT NULL,
-  category text NOT NULL CHECK (category IN ('resident','family','local_club','minor','large_family','disability','senior')),
-  status text NOT NULL CHECK (status IN ('requested','verified','rejected')),
-  requested_at timestamptz, decided_at timestamptz,
-  PRIMARY KEY (tenant_id, user_id, category),
+  kind text NOT NULL CHECK (kind IN ('reminder')),
+  channel text NOT NULL CHECK (channel IN ('email')),
+  enabled boolean NOT NULL, updated_at timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, user_id, kind, channel),
   FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id)
 );
-CREATE INDEX IF NOT EXISTS user_categories_pending ON user_categories(tenant_id, requested_at) WHERE status='requested';
-ALTER TABLE users ADD COLUMN IF NOT EXISTS prefers_family_tariff boolean NOT NULL DEFAULT false;
--- Tariff in force when the booking was made or last rescheduled; NULL for older rows.
-ALTER TABLE bookings ADD COLUMN IF NOT EXISTS tariff_category text;
-ALTER TABLE bookings ADD COLUMN IF NOT EXISTS price_cents integer CHECK (price_cents >= 0);
+-- Transactional outbox: rows commit with the booking change; a worker delivers them afterwards.
+-- Recipient and text are resolved at delivery time, so no copy of personal data is kept here.
+CREATE TABLE IF NOT EXISTS outbox (
+  id uuid PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL, booking_id uuid NOT NULL,
+  kind text NOT NULL,
+  channel text NOT NULL CHECK (channel IN ('email')),
+  dedupe_key text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL, available_at timestamptz NOT NULL,
+  attempts integer NOT NULL DEFAULT 0, locked_until timestamptz,
+  sent_at timestamptz, last_error text,
+  FOREIGN KEY (tenant_id, user_id) REFERENCES users(tenant_id, id),
+  FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
+);
+CREATE INDEX IF NOT EXISTS outbox_pending ON outbox(available_at) WHERE sent_at IS NULL;
+ALTER TABLE outbox DROP CONSTRAINT IF EXISTS outbox_kind_check;
+ALTER TABLE outbox ADD CONSTRAINT outbox_kind_check CHECK (kind IN (
+  'confirmed', 'rescheduled', 'cancelled', 'cancelled_by_municipality', 'reminder'
+));

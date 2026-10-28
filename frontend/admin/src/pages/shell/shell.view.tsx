@@ -4,6 +4,7 @@ import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
   PiBuildings,
+  PiCalendarCheck,
   PiGearSix,
   PiIdentificationCard,
   PiListChecks,
@@ -65,6 +66,12 @@ export function Shell() {
             {t("dashboard")}
           </NavLink>
           {c.session && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.bookings)}>
+              <PiCalendarCheck size={20} aria-hidden="true" />
+              {t("dayBookings")}
+            </NavLink>
+          )}
+          {c.session && (
             <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
               <PiListChecks size={20} aria-hidden="true" />
               {t("audit")}
@@ -102,6 +109,11 @@ export function Shell() {
               <button type="button" onClick={() => c.setPrivacyOpen(true)}>
                 {t("privacy")}
               </button>
+            </li>
+            <li>
+              <NavLink to={routeFor(municipality.slug, ROUTES.accessibility)}>
+                {t("accessibility")}
+              </NavLink>
             </li>
           </ul>
           <p className="sidebar-note">{t("openSource")}</p>
@@ -190,6 +202,12 @@ export function Shell() {
         <footer className="footer">
           <span>{t("demo")}</span>
           <span>{t("demoNotice")}</span>
+          <NavLink
+            className="footer-link"
+            to={routeFor(municipality.slug, ROUTES.accessibility)}
+          >
+            {t("accessibility")}
+          </NavLink>
         </footer>
       </div>
       <SessionDialog

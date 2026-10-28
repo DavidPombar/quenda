@@ -13,5 +13,39 @@ services:
       interval: 2s
       timeout: 5s
       retries: 20
+  # Catches development email; open http://127.0.0.1:8025 to read it.
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
+  # Keycloak de referencia (OIDC) con un realm «clave-sim» que SIMULA Cl@ve por SAML.
+  # Opcional: solo arranca con `npm run identity:up` (perfil `identity`), nunca con `db:up`/`setup`.
+  # Memoria: reserva ~1 GB de RAM para este contenedor (JVM). Usuario/contraseña de admin
+  # por defecto solo para uso local en 127.0.0.1; sobrescríbelos con KEYCLOAK_ADMIN_USER/PASSWORD.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    profiles: ["identity"]
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_local}
+      # El navegador y el `issuer` usan siempre 127.0.0.1:8081; las llamadas de servidor
+      # (token, JWKS) pueden entrar por http://keycloak:8080 dentro de la red de compose.
+      KC_HOSTNAME: http://127.0.0.1:8081
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports: ["127.0.0.1:8081:8080"]
+    volumes: ["./deploy/keycloak:/opt/keycloak/data/import:ro"]
+    healthcheck:
+      # La imagen no trae curl: petición HTTP a mano al puerto de gestión (9000).
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3",
+        ]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 30
 volumes:
   quenda-data:

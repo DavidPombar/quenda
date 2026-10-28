@@ -22,10 +22,17 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     booking_cancelled: "Esta reserva xa está cancelada.",
     id_reused: "Esta solicitude xa se usou con outros datos.",
     calendar_in_use:
-      "Hai reservas futuras. Non se pode cambiar o horario ou pechar a instalación.",
+      "Hai reservas futuras. Non se pode cambiar o horario; para pechar a instalación indica un motivo e cancelaranse.",
     demo_disabled: "O acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar o aviso de privacidade vixente para continuar.",
+    oidc_unavailable:
+      "A identificación electrónica non está dispoñible agora. Téntao máis tarde.",
+    login_expired: "O inicio de sesión caducou. Volve tentalo.",
+    login_rejected: "Non se puido completar o inicio de sesión.",
+    resource_required: "Escolle a pista ou o espazo que queres reservar.",
+    resource_unavailable:
+      "Esta pista está fóra de servizo. Escolle outra pista.",
     insufficient_contrast:
       "A cor non ten contraste suficiente co branco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:
@@ -35,6 +42,11 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     category_not_enabled: "O concello non ofrece esta categoría.",
     category_already_requested:
       "Xa solicitaches esta categoría ou xa a tes verificada.",
+    booking_blocked:
+      "Non podes facer reservas temporalmente por acumular ausencias sen avisar.",
+    attendance_window:
+      "Só se pode marcar como non presentada unha reserva xa comezada e no mesmo día.",
+    rate_limited: "Demasiadas solicitudes. Agarda un minuto e téntao de novo.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -49,10 +61,17 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     booking_cancelled: "Esta reserva ya está cancelada.",
     id_reused: "Esta solicitud ya se usó con otros datos.",
     calendar_in_use:
-      "Hay reservas futuras. No se puede cambiar el horario o cerrar la instalación.",
+      "Hay reservas futuras. No se puede cambiar el horario; para cerrar la instalación indica un motivo y se cancelarán.",
     demo_disabled: "El acceso de demostración está desactivado.",
     consent_required:
       "Debes aceptar el aviso de privacidad vigente para continuar.",
+    oidc_unavailable:
+      "La identificación electrónica no está disponible ahora. Inténtalo más tarde.",
+    login_expired: "El inicio de sesión ha caducado. Vuelve a intentarlo.",
+    login_rejected: "No se pudo completar el inicio de sesión.",
+    resource_required: "Elige la pista o el espacio que quieres reservar.",
+    resource_unavailable:
+      "Esta pista está fuera de servicio. Elige otra pista.",
     insufficient_contrast:
       "El color no tiene contraste suficiente con el blanco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:
@@ -62,6 +81,12 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     category_not_enabled: "El ayuntamiento no ofrece esta categoría.",
     category_already_requested:
       "Ya solicitaste esta categoría o ya la tienes verificada.",
+    booking_blocked:
+      "No puedes hacer reservas temporalmente por acumular ausencias sin avisar.",
+    attendance_window:
+      "Solo se puede marcar como no presentada una reserva ya empezada y en el mismo día.",
+    rate_limited:
+      "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
   },
 };
 @Catch(HttpException)
@@ -79,10 +104,18 @@ export class ProblemFilter implements ExceptionFilter {
             ? "forbidden"
             : status === 404
               ? "not_found"
-              : "validation";
+              : status === 429
+                ? "rate_limited"
+                : "validation";
     const locale = request.headers["accept-language"]?.startsWith("es")
       ? "es"
       : "gl";
+    // Named throttlers emit `Retry-After-<name>`; expose the standard header too.
+    const retryAfter = response
+      .getHeaderNames()
+      .find((name) => name.startsWith("retry-after"));
+    if (status === 429 && retryAfter)
+      response.setHeader("Retry-After", String(response.getHeader(retryAfter)));
     response.status(status).type("application/problem+json").send({
       type: "about:blank",
       title: code,

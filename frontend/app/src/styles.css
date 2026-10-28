@@ -939,6 +939,71 @@ main {
 .time-slot:disabled strong {
   font-weight: 550;
 }
+/* All courts at once: the table scrolls inside its region, never the page. */
+.resource-grid {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+.resource-grid table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+.resource-grid th,
+.resource-grid td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.resource-grid tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.resource-grid thead th {
+  background: var(--ground);
+  font-size: var(--t-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: center;
+}
+.resource-grid th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 112px;
+  max-width: 160px;
+  padding-inline: var(--space-2);
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  font-size: var(--t-small);
+  font-weight: 650;
+  text-align: left;
+}
+.resource-grid thead th:first-child {
+  background: var(--ground);
+}
+.resource-grid th.resource-part {
+  padding-left: var(--space-6);
+  font-weight: 550;
+}
+.grid-slot {
+  width: 100%;
+  min-width: 72px;
+  min-height: 44px;
+}
+/* Stays readable beside the sticky court column while the row scrolls. */
+.out-of-service {
+  position: sticky;
+  left: 168px;
+  display: inline-block;
+  padding: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--t-small);
+  font-weight: 550;
+}
 .past-toggle {
   display: inline-flex;
   align-items: center;
@@ -1038,6 +1103,16 @@ main {
   padding: var(--space-3) 0;
   border-block: 1px solid var(--line);
 }
+/* Court shown beside its facility: an icon and the name, never "A · B". */
+.resource-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.resource-meta svg {
+  flex-shrink: 0;
+  color: var(--ink-2);
+}
 .cancel-summary span {
   color: var(--ink-2);
   font-size: var(--t-small);
@@ -1136,6 +1211,9 @@ main {
 .notices-panel li.rescheduled > svg {
   color: var(--maintenance);
 }
+.notices-panel li.reminder > svg {
+  color: var(--ink-2);
+}
 .notices-panel li strong {
   font-size: var(--t-small);
   font-weight: 700;
@@ -1146,6 +1224,28 @@ main {
 .notices-panel li small {
   font-size: var(--t-tiny);
   color: var(--ink-2);
+}
+.calendar-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.calendar-feed > p,
+.calendar-feed .muted {
+  font-size: var(--t-small);
+}
+.calendar-feed-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.calendar-feed-warning {
+  font-size: var(--t-small);
+  font-weight: 650;
 }
 
 /* Responsive: breakpoints match the Chakra theme (480, 768, 1024, 1280). */
@@ -1422,6 +1522,36 @@ a.account:hover .account-name strong {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+.statement {
+  max-width: 70ch;
+}
+.statement-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line);
+}
+.statement-section h2 {
+  font-size: var(--t-2);
+}
+.statement-section h3 {
+  font-size: var(--t-body);
+  font-weight: 650;
+}
+.statement-section ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-6);
+  list-style: disc;
+}
+.statement-section a {
+  color: var(--court);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
 .notice-warning {
   display: flex;
   gap: var(--space-2);
@@ -1461,6 +1591,23 @@ a.account:hover .account-name strong {
   font-weight: 500;
   line-height: 1.4;
 }
+.page-alert {
+  margin: var(--space-4) max(var(--gutter), calc((100% - 1280px) / 2)) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--danger-tint);
+  border-radius: var(--radius-control);
+  color: var(--danger);
+  font-weight: 650;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.page-alert-actions {
+  display: flex;
+  gap: var(--space-2);
+}
 
 /* Municipal branding */
 .municipal-logo {
@@ -1474,4 +1621,97 @@ a.account:hover .account-name strong {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+/* No-shows and municipal cancellations (C3) */
+.booking-status.no_show {
+  color: var(--danger);
+}
+.booking-status.attended {
+  color: var(--ink-2);
+}
+.booking-reason,
+.notice-detail {
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}
+.notices-panel li.cancelled_by_municipality > svg,
+.notices-panel li.no_show > svg,
+.notices-panel li.blocked > svg {
+  color: var(--danger);
+}
+.penalty-banner {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--maintenance);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+}
+.penalty-banner.blocked {
+  border-left-color: var(--danger);
+}
+.download-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+}
+.download-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+.download-list li > a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 650;
+  min-height: 44px;
+}
+.download-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}
+.download-meta code {
+  overflow-wrap: anywhere;
+}
+.download-schema {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+}
+.open-data-privacy {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.open-data-page a {
+  color: var(--court);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.open-data-page a:hover {
+  text-decoration-thickness: 2px;
+}
+.open-data-page a svg {
+  display: inline;
+  vertical-align: -3px;
+  margin-left: var(--space-1);
+}
+.open-data-page .download-list li > a svg,
+.open-data-page .download-schema svg {
+  margin-left: 0;
+}
+.open-data-api {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
 }

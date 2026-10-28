@@ -13,6 +13,7 @@ import type { Facility, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 import { categoryLabel } from "@/services/tariff.service";
 import { useFacilityEditorController } from "./facility-editor.controller";
+import { ClosureConfirmation } from "./components/closure-confirmation/closure-confirmation.view";
 const WEEKDAYS = [
   ["MO", "mon"],
   ["TU", "tue"],
@@ -53,7 +54,22 @@ export function FacilityEditor(p: {
               </Dialog.Description>
             </Dialog.Header>
             <Dialog.Body>
+              {c.confirming && c.impact.data && (
+                <ClosureConfirmation
+                  impact={c.impact.data}
+                  status={c.draft.status}
+                  reason={c.closureReason}
+                  invalid={c.reasonInvalid}
+                  error={c.mutation.error?.message}
+                  t={t}
+                  onReasonChange={c.setClosureReason}
+                  onSubmit={(event) => {
+                    void c.save(event);
+                  }}
+                />
+              )}
               <form
+                hidden={c.confirming}
                 id="facility-form"
                 noValidate
                 onSubmit={(event) => {
@@ -106,6 +122,29 @@ export function FacilityEditor(p: {
                         <Field.ErrorText>{t(c.errors.address)}</Field.ErrorText>
                       )}
                     </Field.Root>
+                    {(["latitude", "longitude"] as const).map((key) => (
+                      <Field.Root
+                        key={key}
+                        className="field"
+                        invalid={!!c.errors[key]}
+                      >
+                        <Field.Label>{t(key)}</Field.Label>
+                        <Input
+                          name={key}
+                          inputMode="decimal"
+                          autoComplete="off"
+                          value={c.coordinates[key]}
+                          onChange={(event) =>
+                            c.setCoordinate(key, event.target.value)
+                          }
+                        />
+                        {c.errors[key] ? (
+                          <Field.ErrorText>{t(c.errors[key])}</Field.ErrorText>
+                        ) : (
+                          <Field.HelperText>{t(`${key}Hint`)}</Field.HelperText>
+                        )}
+                      </Field.Root>
+                    ))}
                     <Field.Root className="field">
                       <Field.Label>{t("sport")}</Field.Label>
                       <NativeSelect.Root>
@@ -401,7 +440,7 @@ export function FacilityEditor(p: {
                   )}
                   <p className="notice">{t("calendarNote")}</p>
                 </fieldset>
-                {c.mutation.error && (
+                {c.mutation.error && !c.confirming && (
                   <p role="alert" className="error-text">
                     {c.mutation.error.message}
                   </p>
@@ -411,18 +450,22 @@ export function FacilityEditor(p: {
             <Dialog.Footer>
               <Button
                 variant="outline"
-                onClick={() => p.onClose()}
+                onClick={() => (c.confirming ? c.backToForm() : p.onClose())}
                 disabled={c.mutation.isPending}
               >
                 {t("cancel")}
               </Button>
               <Button
-                colorPalette="court"
+                colorPalette={c.confirming ? "red" : "court"}
                 type="submit"
-                form="facility-form"
-                loading={c.mutation.isPending}
+                form={c.confirming ? "closure-form" : "facility-form"}
+                loading={c.mutation.isPending || c.impact.isFetching}
               >
-                {p.facility ? t("save") : t("create")}
+                {c.confirming
+                  ? t("closeAndCancel")
+                  : p.facility
+                    ? t("save")
+                    : t("create")}
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>

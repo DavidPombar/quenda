@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useSaveFacilityMutation } from "@/queries/facilities/save-facility.mutation";
+import { useGetFacilityImpactQuery } from "@/queries/facilities/get-facility-impact.query";
 import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
 import { centsFromInput } from "@/services/tariff.service";
@@ -29,6 +30,8 @@ export function useFacilityEditorController(args: {
       prices: [],
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
       openingCalendar: weeklyCalendar({
         id,
         timezone: args.municipality.timezone,
@@ -45,7 +48,12 @@ export function useFacilityEditorController(args: {
   const [calendarMessage, setCalendarMessage] = useState("");
   const [calendarError, setCalendarError] = useState("");
   const [errors, setErrors] = useState<
-    Partial<Record<"name" | "address" | `price-${Category}`, TextKey>>
+    Partial<
+      Record<
+        "name" | "address" | "latitude" | "longitude" | `price-${Category}`,
+        TextKey
+      >
+    >
   >({});
   // Only the categories the municipality offers are editable; other stored prices are kept.
   const offered = args.municipality.enabledCategories;
@@ -63,11 +71,41 @@ export function useFacilityEditorController(args: {
     setPriceInputs((current) => ({ ...current, [category]: value }));
     setErrors((current) => ({ ...current, [`price-${category}`]: undefined }));
   }
+  // Coordinates are edited as text so a half-typed number is not lost; parsed when saving.
+  const [coordinates, setCoordinates] = useState(() => ({
+    latitude: args.facility?.latitude?.toString() ?? "",
+    longitude: args.facility?.longitude?.toString() ?? "",
+  }));
   const mutation = useSaveFacilityMutation();
+  // Closing an active facility cancels its upcoming bookings, so it asks first (C3).
+  const shuttingDown =
+    !!args.facility &&
+    args.facility.status === "active" &&
+    draft.status !== "active";
+  const impact = useGetFacilityImpactQuery(draft.id, shuttingDown);
+  const [confirming, setConfirming] = useState(false);
+  const [closureReason, setClosureReason] = useState("");
+  const [reasonInvalid, setReasonInvalid] = useState(false);
   function setField<K extends keyof Facility>(key: K, value: Facility[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
     if (key === "name" || key === "address")
       setErrors((current) => ({ ...current, [key]: undefined }));
+  }
+  function setCoordinate(key: "latitude" | "longitude", value: string) {
+    setCoordinates((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({
+      ...current,
+      latitude: undefined,
+      longitude: undefined,
+    }));
+  }
+  function parsedCoordinates() {
+    const parse = (text: string) =>
+      text.trim() === "" ? null : Number(text.trim().replace(",", "."));
+    return {
+      latitude: parse(coordinates.latitude),
+      longitude: parse(coordinates.longitude),
+    };
   }
   function validate() {
     const next: typeof errors = {};
@@ -76,6 +114,17 @@ export function useFacilityEditorController(args: {
     for (const category of offered)
       if (Number.isNaN(centsFromInput(priceInputs[category] ?? "")))
         next[`price-${category}`] = "categoryPriceError";
+    const { latitude, longitude } = parsedCoordinates();
+    if (latitude !== null && !(Math.abs(latitude) <= 90))
+      next.latitude = "latitudeInvalid";
+    if (longitude !== null && !(Math.abs(longitude) <= 180))
+      next.longitude = "longitudeInvalid";
+    if (
+      !next.latitude &&
+      !next.longitude &&
+      (latitude === null) !== (longitude === null)
+    )
+      next[latitude === null ? "latitude" : "longitude"] = "coordinatesPair";
     setErrors(next);
     return next;
   }
@@ -129,6 +178,19 @@ export function useFacilityEditorController(args: {
         ?.focus();
       return;
     }
+    if (shuttingDown && !confirming) {
+      const affected = (await impact.refetch()).data;
+      if (affected?.bookings) {
+        mutation.reset();
+        setConfirming(true);
+        return;
+      }
+    }
+    if (confirming && closureReason.trim().length < 3) {
+      setReasonInvalid(true);
+      document.querySelector<HTMLElement>('[name="closureReason"]')?.focus();
+      return;
+    }
     try {
       const prices = [
         ...draft.prices.filter((price) => !offered.includes(price.category)),
@@ -138,8 +200,9 @@ export function useFacilityEditorController(args: {
         }),
       ];
       await mutation.mutateAsync({
-        facility: { ...draft, prices },
+        facility: { ...draft, prices, ...parsedCoordinates() },
         isNew: !args.facility,
+        ...(confirming && { closureReason: closureReason.trim() }),
       });
       args.onClose(true);
     } catch {
@@ -149,6 +212,8 @@ export function useFacilityEditorController(args: {
   return {
     draft,
     setField,
+    coordinates,
+    setCoordinate,
     errors,
     offered,
     priceInputs,
@@ -166,5 +231,17 @@ export function useFacilityEditorController(args: {
     importCalendar,
     save,
     mutation,
+    impact,
+    confirming,
+    closureReason,
+    reasonInvalid,
+    setClosureReason: (value: string) => {
+      setClosureReason(value);
+      setReasonInvalid(false);
+    },
+    backToForm: () => {
+      mutation.reset();
+      setConfirming(false);
+    },
   };
 }

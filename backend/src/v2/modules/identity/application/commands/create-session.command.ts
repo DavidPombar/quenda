@@ -49,6 +49,8 @@ export class CreateSession {
         tenantId: municipality.id,
         role: "citizen",
         displayName: demoCitizenName,
+        // Synthetic address at a reserved domain, so demo notices land in the local mail catcher.
+        email: `alex@${municipality.slug}.example`,
       });
     if (!principal) return Result.err(failure("not_found"));
     const now = this.clock.now();

@@ -2,18 +2,35 @@
 import { Link } from "react-router-dom";
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import {
+  PiBell,
   PiCalendarCheck,
   PiCalendarX,
+  PiCheckCircle,
   PiClockClockwise,
+  PiSquareHalf,
+  PiProhibit,
+  PiUserMinus,
   PiX,
 } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
+import { distinctResource } from "@/services/resources.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
+import { CalendarFeed } from "./components/calendar-feed/calendar-feed.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
+const NOTICE_ICONS = {
+  confirmed: PiCalendarCheck,
+  rescheduled: PiClockClockwise,
+  cancelled: PiCalendarX,
+  cancelled_by_municipality: PiCalendarX,
+  no_show: PiUserMinus,
+  blocked: PiProhibit,
+  unblocked: PiCheckCircle,
+  reminder: PiBell,
+};
 export function MyBookings() {
   const c = useMyBookingsController();
   return (
@@ -32,6 +49,14 @@ export function MyBookings() {
       ) : (
         <div className="bookings-layout">
           <section>
+            {c.penaltyMessage && (
+              <p
+                className={`penalty-banner${c.blocked ? " blocked" : ""}`}
+                role={c.blocked ? "alert" : "status"}
+              >
+                {c.penaltyMessage}
+              </p>
+            )}
             <div className="tabs" role="group" aria-label={c.t("bookings")}>
               {(["upcoming", "history"] as const).map((tab) => (
                 <button
@@ -66,6 +91,7 @@ export function MyBookings() {
                     locale={c.locale}
                     t={c.t}
                     canChange={c.canChange(booking)}
+                    calendarHref={c.calendarHref(booking.id)}
                     onCancel={() => {
                       c.update.reset();
                       c.setCancelling(booking);
@@ -110,36 +136,42 @@ export function MyBookings() {
             ) : c.visibleNotices.length ? (
               <>
                 <ul>
-                  {c.visibleNotices.map((notice) => (
-                    <li key={notice.id} className={notice.kind}>
-                      {notice.kind === "confirmed" ? (
-                        <PiCalendarCheck size={20} aria-hidden="true" />
-                      ) : notice.kind === "cancelled" ? (
-                        <PiCalendarX size={20} aria-hidden="true" />
-                      ) : (
-                        <PiClockClockwise size={20} aria-hidden="true" />
-                      )}
-                      <div>
-                        <strong>
-                          {c.t(
-                            notice.kind === "confirmed"
-                              ? "noticeConfirmed"
-                              : notice.kind === "cancelled"
-                                ? "noticeCancelled"
-                                : "noticeRescheduled",
+                  {c.visibleNotices.map((notice) => {
+                    const Icon = NOTICE_ICONS[notice.kind];
+                    return (
+                      <li key={notice.id} className={notice.kind}>
+                        <Icon size={20} aria-hidden="true" />
+                        <div>
+                          <strong>{c.noticeTitle(notice)}</strong>
+                          <p>{notice.facilityName}</p>
+                          {c.noticeDetail(notice) && (
+                            <p className="notice-detail">
+                              {c.noticeDetail(notice)}
+                            </p>
                           )}
-                        </strong>
-                        <p>{notice.facilityName}</p>
-                        <small>
-                          {dateLabel(
-                            notice.createdAt,
-                            c.municipality.timezone,
-                            c.locale,
+                          {distinctResource(
+                            notice.facilityName,
+                            notice.resourceName,
+                          ) && (
+                            <p className="resource-meta">
+                              <PiSquareHalf size={16} aria-hidden="true" />
+                              <span className="sr-only">
+                                {c.t("resource")}:{" "}
+                              </span>
+                              {notice.resourceName}
+                            </p>
                           )}
-                        </small>
-                      </div>
-                    </li>
-                  ))}
+                          <small>
+                            {dateLabel(
+                              notice.createdAt,
+                              c.municipality.timezone,
+                              c.locale,
+                            )}
+                          </small>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
                 {c.hiddenNotices > 0 && (
                   <button
@@ -157,6 +189,12 @@ export function MyBookings() {
             ) : (
               <p className="muted">{c.t("noNotices")}</p>
             )}
+            <CalendarFeed
+              userId={c.session.userId}
+              timezone={c.municipality.timezone}
+              locale={c.locale}
+              t={c.t}
+            />
           </aside>
         </div>
       )}
@@ -180,6 +218,16 @@ export function MyBookings() {
                 {c.cancelling && (
                   <div className="cancel-summary">
                     <strong>{c.cancelling.facilityName}</strong>
+                    {distinctResource(
+                      c.cancelling.facilityName,
+                      c.cancelling.resourceName,
+                    ) && (
+                      <span className="resource-meta">
+                        <PiSquareHalf size={18} aria-hidden="true" />
+                        <span className="sr-only">{c.t("resource")}: </span>
+                        {c.cancelling.resourceName}
+                      </span>
+                    )}
                     <span>
                       {bookingDayLabel(
                         c.cancelling.start,

@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Injectable } from "@nestjs/common";
 import { Facility } from "../../domain/facility.entity";
+import { FacilityDetails } from "../../domain/facility.read-model";
 import { FacilityRepository } from "../../domain/facility.repository";
+import { ResourceRepository } from "../../domain/resource.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
 import { CATEGORIES } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
+import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Audit } from "../../../../shared/application/audit";
+import { Outbox } from "../../../../shared/application/outbox";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityError =
@@ -20,17 +24,25 @@ export type SaveFacilityError =
 export class SaveFacility {
   constructor(
     private readonly facilities: FacilityRepository,
+    private readonly resources: ResourceRepository,
     private readonly municipalities: Municipalities,
     private readonly calendar: OpeningCalendar,
     private readonly clock: Clock,
     private readonly audit: Audit,
+    private readonly ids: IdGenerator,
+    private readonly outbox: Outbox,
   ) {}
   async execute(args: {
     principal: Principal;
     id: string;
     patch: Partial<Omit<Facility, "id" | "tenantId">>;
     mode: "create" | "update";
-  }): Promise<Result<Facility, SaveFacilityError>> {
+    /**
+     * Unexpected closure (C3): when the status leaves "active" with upcoming bookings, they are
+     * cancelled with this reason and each person is notified. Without it the change is refused.
+     */
+    closureReason?: string;
+  }): Promise<Result<FacilityDetails, SaveFacilityError>> {
     if (!can(args.principal, "facilities:manage"))
       return Result.err(failure("forbidden"));
     const municipality = await this.municipalities.find(
@@ -59,11 +71,18 @@ export class SaveFacility {
       openingCalendar: "",
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
     };
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
     );
-    if (existing && Object.keys(patch).length === 0) return Result.ok(existing);
+    const details = async (value: Facility): Promise<FacilityDetails> => ({
+      ...value,
+      resources: await this.resources.listByFacility(value.tenantId, value.id),
+    });
+    if (existing && Object.keys(patch).length === 0)
+      return Result.ok(await details(existing));
     const merged: Facility = { ...(existing ?? defaults), ...patch };
     const facility: Facility = {
       ...merged,
@@ -76,7 +95,7 @@ export class SaveFacility {
       return Object.keys(patch).every((key) =>
         same(existing[key as keyof Facility], facility[key as keyof Facility]),
       )
-        ? Result.ok(existing)
+        ? Result.ok(await details(existing))
         : Result.err(failure("id_reused"));
     }
     if (
@@ -84,34 +103,97 @@ export class SaveFacility {
         facility.prices.length ||
       !facility.name.trim() ||
       !facility.address.trim() ||
+      (facility.latitude === null) !== (facility.longitude === null) ||
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
     )
       return Result.err(failure("validation"));
-    if (
-      existing &&
+    const now = this.clock.now();
+    const scheduleChanged =
+      !!existing &&
       (existing.openingCalendar !== facility.openingCalendar ||
-        existing.slotMinutes !== facility.slotMinutes ||
-        existing.status !== facility.status) &&
-      (await this.facilities.hasFutureBookings(
-        municipality.id,
-        args.id,
-        this.clock.now(),
-      ))
-    )
+        existing.slotMinutes !== facility.slotMinutes);
+    const closing =
+      !!existing &&
+      existing.status !== facility.status &&
+      facility.status !== "active";
+    const reason = args.closureReason?.trim();
+    const upcoming =
+      scheduleChanged || (existing && existing.status !== facility.status)
+        ? await this.facilities.upcomingBookings(municipality.id, args.id, now)
+        : [];
+    if (upcoming.length && (scheduleChanged || !closing || !reason))
       return Result.err(failure("calendar_in_use"));
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
-      return saved.fold<Result<Facility, SaveFacilityError>>(
-        () => Result.ok(facility),
+      return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
+        () => Result.ok({ ...facility, resources: [] }),
         (error) => Result.err(error),
       );
+    // A new facility is bookable at once through its default resource (same id and name).
+    if (!existing)
+      await this.resources.add({
+        id: facility.id,
+        tenantId: facility.tenantId,
+        facilityId: facility.id,
+        name: facility.name,
+        position: 0,
+        parentId: null,
+        active: true,
+      });
+    if (upcoming.length && reason) {
+      const cancelled = upcoming.map((booking) => ({
+        id: booking.id,
+        userId: booking.userId,
+        notificationId: this.ids.next(),
+      }));
+      await this.facilities.cancelBookings({
+        tenantId: municipality.id,
+        bookings: cancelled,
+        reason,
+        at: now,
+      });
+      for (const booking of cancelled)
+        await this.outbox.enqueue({
+          id: this.ids.next(),
+          tenantId: municipality.id,
+          userId: booking.userId,
+          bookingId: booking.id,
+          kind: "cancelled_by_municipality",
+          channel: "email",
+          dedupeKey: `cancelled_by_municipality:${booking.notificationId}`,
+          createdAt: now,
+        });
+      for (const booking of upcoming)
+        await this.audit.record(
+          args.principal,
+          "booking.cancelled_by_municipality",
+          booking.id,
+          {
+            facilityId: args.id,
+            start: booking.start.toString(),
+            end: booking.end.toString(),
+            reason,
+          },
+        );
+    }
     await this.audit.record(
       args.principal,
       args.mode === "create" ? "facility.created" : "facility.updated",
       args.id,
-      changes(existing, facility),
+      {
+        ...changes(existing, facility),
+        ...(upcoming.length && reason
+          ? {
+              closure: {
+                reason,
+                cancelledBookings: upcoming.length,
+                people: new Set(upcoming.map((booking) => booking.userId)).size,
+              },
+            }
+          : {}),
+      },
     );
-    return Result.ok(facility);
+    return Result.ok(await details(facility));
   }
 }
 type AuditedField = Exclude<

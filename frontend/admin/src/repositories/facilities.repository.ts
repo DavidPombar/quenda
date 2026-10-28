@@ -1,21 +1,50 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { apiClient } from "@/client/api-client";
-import type { Facility } from "@/types/models";
+import type { Facility, FacilityImpact } from "@/types/models";
 export const facilitiesRepository = {
   list: (slug: string) =>
     apiClient.request<Facility[]>(
       `public/facilities?slug=${encodeURIComponent(slug)}`,
     ),
-  save: (args: { facility: Facility; isNew: boolean }) =>
+  impact: (id: string) =>
+    apiClient.request<FacilityImpact>(`manager/facilities/${id}/impact`),
+  save: (args: {
+    facility: Facility;
+    isNew: boolean;
+    /** Cancels upcoming bookings with this reason when closing. */
+    closureReason?: string;
+  }) =>
     apiClient.request<Facility | void>(
       `manager/facilities${args.isNew ? "" : `/${args.facility.id}`}`,
       {
         method: args.isNew ? "POST" : "PATCH",
         body: JSON.stringify(
           args.isNew
-            ? args.facility
-            : (({ id: _id, ...fields }) => fields)(args.facility),
+            ? { id: args.facility.id, ...editable(args.facility) }
+            : { ...editable(args.facility), closureReason: args.closureReason },
         ),
       },
     ),
 };
+/**
+ * Only the fields the API accepts: the public listing also returns read-only data such as the
+ * courts, and the API rejects unknown properties.
+ */
+function editable(facility: Facility) {
+  return {
+    name: facility.name,
+    sport: facility.sport,
+    address: facility.address,
+    description: facility.description,
+    accessible: facility.accessible,
+    status: facility.status,
+    slotMinutes: facility.slotMinutes,
+    priceCents: facility.priceCents,
+    prices: facility.prices,
+    openingCalendar: facility.openingCalendar,
+    rules: facility.rules,
+    followsMunicipalHolidays: facility.followsMunicipalHolidays,
+    latitude: facility.latitude,
+    longitude: facility.longitude,
+  };
+}

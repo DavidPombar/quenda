@@ -22,6 +22,7 @@ import {
 } from "@/services/date.service";
 import { categoryLabel } from "@/services/tariff.service";
 import { BookingDialog } from "./components/booking-dialog/booking-dialog.view";
+import { ResourceGrid } from "./components/resource-grid/resource-grid.view";
 import { useFacilityDetailsController } from "./facility-details.controller";
 export function FacilityDetails() {
   const c = useFacilityDetailsController();
@@ -157,6 +158,27 @@ export function FacilityDetails() {
               <NativeSelect.Indicator />
             </NativeSelect.Root>
           </label>
+          {c.multiple && (
+            <label className="field">
+              <span>{c.t("resource")}</span>
+              <NativeSelect.Root size="lg">
+                <NativeSelect.Field
+                  value={c.view}
+                  onChange={(event) => c.setView(event.target.value)}
+                >
+                  {c.resourceOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                  <option value={c.allResourcesValue}>
+                    {c.t("allResources")}
+                  </option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </label>
+          )}
           <p className="muted small">{c.t("localTimes")}</p>
           {c.availability.isPending ? (
             <Feedback message={c.t("loading")} />
@@ -169,6 +191,21 @@ export function FacilityDetails() {
                 void c.availability.refetch();
               }}
             />
+          ) : c.grid ? (
+            c.visibleColumns.length ? (
+              <ResourceGrid
+                caption={`${c.t("resourceGridCaption")}, ${longDayLabel(c.date, c.locale)}`}
+                resourceHeader={c.t("resource")}
+                outOfService={c.t("resourceOutOfService")}
+                columns={c.visibleColumns}
+                rows={c.rows}
+              />
+            ) : (
+              <div className="empty-state small-empty">
+                <SpotArt kind="bookings" size="sm" />
+                <p>{c.t(c.pastCount ? "noSlotsLeft" : "noSlots")}</p>
+              </div>
+            )
           ) : c.visibleSlots.length ? (
             <div className="slots-grid">
               {c.visibleSlots.map((slot) => (
@@ -216,6 +253,7 @@ export function FacilityDetails() {
         facility={f}
         tariff={c.tariff}
         hasCategoryPrices={c.prices.length > 0}
+        resourceName={c.selectedResource}
         municipality={c.municipality}
         locale={c.locale}
         t={c.t}

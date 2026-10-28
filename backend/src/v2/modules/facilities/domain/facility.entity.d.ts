@@ -18,4 +18,7 @@ export interface Facility {
   rules: string;
   /** Whether the municipal holiday calendar closes this facility. */
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }

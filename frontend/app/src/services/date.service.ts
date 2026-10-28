@@ -122,3 +122,14 @@ export function money(cents: number, locale: Locale) {
     currency: "EUR",
   }).format(cents / 100);
 }
+// "27 de outubro de 2026"
+export function fullDateLabel(date: string, locale: Locale) {
+  const value = Temporal.PlainDate.from(date);
+  if (locale === "gl" && !intlSupports("gl"))
+    return `${value.day} de ${GL_MONTHS[value.month - 1]} de ${value.year}`;
+  return value.toLocaleString(LOCALE_TAGS[locale], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
