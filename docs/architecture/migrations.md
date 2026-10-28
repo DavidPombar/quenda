@@ -23,6 +23,8 @@ the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
   existing facility gets a default resource with its own id, existing reservations
   point at it and keep their occupied slot, and the per-facility exclusion constraint
   is replaced by the per-unit one. A change of court also bumps the calendar revision.
+- `0006` adds the open data settings: each municipality's `data_license`
+  (CC BY 4.0 by default) and `dir3_code`, and optional facility coordinates.
 
 Contributions based on the former `backend/src/database/schema.sql` must move
 their new schema changes into the next numbered migration instead of restoring

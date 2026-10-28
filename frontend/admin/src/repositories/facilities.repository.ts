@@ -43,5 +43,7 @@ function editable(facility: Facility) {
     openingCalendar: facility.openingCalendar,
     rules: facility.rules,
     followsMunicipalHolidays: facility.followsMunicipalHolidays,
+    latitude: facility.latitude,
+    longitude: facility.longitude,
   };
 }

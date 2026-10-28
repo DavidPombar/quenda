@@ -137,6 +137,17 @@ export async function seed(url = databaseUrl) {
             "Trae calzado deportivo. Respecta a quenda e deixa o espazo como che gustaría atopalo.",
           ],
         );
+        // Fictitious positions in Galicia for the open data GeoJSON; a manager's values are kept.
+        const [latitude, longitude] = i === 1 ? [42.61, -8.12] : [42.49, -8.86];
+        await db.query(
+          "UPDATE facilities SET latitude=$3, longitude=$4 WHERE tenant_id=$1 AND id=$2 AND latitude IS NULL",
+          [
+            tenant,
+            id,
+            Number((latitude + j * 0.002).toFixed(6)),
+            Number((longitude + j * 0.003).toFixed(6)),
+          ],
+        );
         await seedResources(db, tenant, id, label, i, j);
       }
     }

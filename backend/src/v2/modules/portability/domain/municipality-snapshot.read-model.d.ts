@@ -23,6 +23,8 @@ export interface MunicipalitySnapshot {
     reminderHours: number;
     mailSenderName: string;
     mailReplyTo: string;
+    dataLicense: string;
+    dir3Code: string | null;
   };
   facilities: {
     id: string;
@@ -37,6 +39,8 @@ export interface MunicipalitySnapshot {
     openingCalendar: string;
     rules: string;
     followsMunicipalHolidays: boolean;
+    latitude: number | null;
+    longitude: number | null;
   }[];
   /** Courts and spaces, parents before their parts. */
   resources: {

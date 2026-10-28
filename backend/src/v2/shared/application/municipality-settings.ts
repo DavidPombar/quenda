@@ -34,7 +34,18 @@ export interface MunicipalitySettings {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** SPDX identifier of the licence of the published open data. */
+  dataLicense: DataLicense;
+  /** DIR3 code of the council, the DCAT publisher; null when not configured. */
+  dir3Code: string | null;
 }
+export const dataLicenses = [
+  "CC-BY-4.0",
+  "CC-BY-SA-4.0",
+  "CC0-1.0",
+  "ODbL-1.0",
+] as const;
+export type DataLicense = (typeof dataLicenses)[number];
 export abstract class Municipalities {
   abstract list(): Promise<MunicipalitySettings[]>;
   abstract find(id: string): Promise<MunicipalitySettings | null>;

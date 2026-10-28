@@ -202,3 +202,62 @@ test("should send only editable fields when a manager saves an existing facility
   expect(body).not.toHaveProperty("id");
   expect(body).toMatchObject({ name: facility.name });
 });
+test("should ask for both coordinates and save them as numbers when a manager places a facility", async () => {
+  stubShell();
+  stubJsonResponse({
+    path: "*/v2/public/session",
+    response: {
+      session: {
+        userId: "manager",
+        tenantId: municipality.id,
+        displayName: "Uxía",
+        role: "manager",
+      },
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/manager/insights",
+    response: {
+      confirmed: 0,
+      cancelled: 0,
+      occupancy: 0,
+      facilities: 1,
+      byFacility: [],
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/public/facilities",
+    response: [{ ...facility, latitude: null, longitude: null }],
+  });
+  const { spy } = stubJsonResponse({
+    path: `*/v2/manager/facilities/${facility.id}`,
+    method: "PATCH",
+    status: 204,
+    response: undefined,
+  });
+  await commands.navigate("/admin/vilaverde/xestion");
+  await render(<App />);
+  await page.getByRole("button", { name: `Editar ${facility.name}` }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("textbox", { name: "Latitude" }).fill("42,605");
+  await dialog.getByRole("button", { name: "Gardar cambios" }).click();
+  await expect
+    .element(
+      dialog.getByText(
+        "Escribe a latitude e a lonxitude, ou deixa as dúas baleiras.",
+      ),
+    )
+    .toBeVisible();
+  await expect
+    .element(dialog.getByRole("textbox", { name: "Lonxitude" }))
+    .toHaveFocus();
+  expect(spy).not.toHaveBeenCalled();
+  await dialog.getByRole("textbox", { name: "Lonxitude" }).fill("-8.118");
+  await dialog.getByRole("button", { name: "Gardar cambios" }).click();
+  await expect.poll(() => spy.mock.calls.length).toBe(1);
+  expect(spy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      body: expect.objectContaining({ latitude: 42.605, longitude: -8.118 }),
+    }),
+  );
+});

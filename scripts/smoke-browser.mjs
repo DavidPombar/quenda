@@ -199,6 +199,24 @@ try {
     fullPage: true,
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // The help links live in the sidebar on desktop and in the footer on small screens.
+  await page.getByRole("link", { name: "Datos abertos", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Datos abertos", level: 1 })
+    .waitFor();
+  await audit("open-data");
+  const geojson = await page.request.get(
+    await page
+      .getByRole("link", { name: "GeoJSON", exact: true })
+      .getAttribute("href")
+      .then((href) => new URL(href, page.url()).toString()),
+  );
+  assert.equal(geojson.status(), 200, "Open data GeoJSON download");
+  assert.equal(
+    (await geojson.json()).type,
+    "FeatureCollection",
+    "Open data GeoJSON type",
+  );
   await page.getByRole("link", { name: "A miña conta", exact: true }).click();
   await page.getByRole("heading", { name: "Conta e privacidade" }).waitFor();
   await audit("account");
@@ -293,7 +311,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and thirteen accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and fourteen accessibility scans passed.",
   );
 } finally {
   await browser.close();

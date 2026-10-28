@@ -121,6 +121,29 @@ export function FacilityEditor(p: {
                         <Field.ErrorText>{t(c.errors.address)}</Field.ErrorText>
                       )}
                     </Field.Root>
+                    {(["latitude", "longitude"] as const).map((key) => (
+                      <Field.Root
+                        key={key}
+                        className="field"
+                        invalid={!!c.errors[key]}
+                      >
+                        <Field.Label>{t(key)}</Field.Label>
+                        <Input
+                          name={key}
+                          inputMode="decimal"
+                          autoComplete="off"
+                          value={c.coordinates[key]}
+                          onChange={(event) =>
+                            c.setCoordinate(key, event.target.value)
+                          }
+                        />
+                        {c.errors[key] ? (
+                          <Field.ErrorText>{t(c.errors[key])}</Field.ErrorText>
+                        ) : (
+                          <Field.HelperText>{t(`${key}Hint`)}</Field.HelperText>
+                        )}
+                      </Field.Root>
+                    ))}
                     <Field.Root className="field">
                       <Field.Label>{t("sport")}</Field.Label>
                       <NativeSelect.Root>

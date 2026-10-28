@@ -69,6 +69,8 @@ export class SaveFacility {
       openingCalendar: "",
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
     };
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
@@ -90,6 +92,7 @@ export class SaveFacility {
     if (
       !facility.name.trim() ||
       !facility.address.trim() ||
+      (facility.latitude === null) !== (facility.longitude === null) ||
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
     )
       return Result.err(failure("validation"));

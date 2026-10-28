@@ -199,6 +199,22 @@ const gl = {
   facilityStatus: "Estado da instalación",
   timetable: "Quendas do día",
   account: "A miña conta",
+  openData: "Datos abertos",
+  openDataSubtitle:
+    "Descarga e reutiliza a información das instalacións deportivas en formatos abertos.",
+  openDataLicense: "Licenza",
+  openDataLicenseBody:
+    "Podes copiar, adaptar e redistribuír estes datos, tamén con fins comerciais, segundo a licenza:",
+  openDataFacilities: "Instalacións deportivas",
+  openDataFacilitiesBody:
+    "Nome, deporte, tipo de espazo segundo o Censo Nacional de Instalacións Deportivas (CNID), enderezo, coordenadas, accesibilidade, estado, prezo indicativo e número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe os conxuntos de datos para que os portais datos.gob.es e abertos.xunta.gal poidan recollelos automaticamente.",
+  openDataPrivacy:
+    "Non se publican datos persoais: nin persoas, nin reservas individuais.",
+  openDataApi: "Documentación da API (OpenAPI)",
   accountTitle: "Conta e privacidade",
   accountSubtitle:
     "Consulta os teus datos, descárgaos nun ficheiro ou elimina a túa conta.",
@@ -445,6 +461,22 @@ const es: Record<TextKey, string> = {
   facilityStatus: "Estado de la instalación",
   timetable: "Turnos del día",
   account: "Mi cuenta",
+  openData: "Datos abiertos",
+  openDataSubtitle:
+    "Descarga y reutiliza la información de las instalaciones deportivas en formatos abiertos.",
+  openDataLicense: "Licencia",
+  openDataLicenseBody:
+    "Puedes copiar, adaptar y redistribuir estos datos, también con fines comerciales, según la licencia:",
+  openDataFacilities: "Instalaciones deportivas",
+  openDataFacilitiesBody:
+    "Nombre, deporte, tipo de espacio según el Censo Nacional de Instalaciones Deportivas (CNID), dirección, coordenadas, accesibilidad, estado, precio indicativo y número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe los conjuntos de datos para que los portales datos.gob.es y abertos.xunta.gal puedan recogerlos automáticamente.",
+  openDataPrivacy:
+    "No se publican datos personales: ni personas, ni reservas individuales.",
+  openDataApi: "Documentación de la API (OpenAPI)",
   accountTitle: "Cuenta y privacidad",
   accountSubtitle:
     "Consulta tus datos, descárgalos en un archivo o elimina tu cuenta.",

@@ -22,6 +22,8 @@ export interface Municipality {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** SPDX identifier of the licence of the municipality's open data. */
+  dataLicense: "CC-BY-4.0" | "CC-BY-SA-4.0" | "CC0-1.0" | "ODbL-1.0";
 }
 export interface Session {
   userId: string;

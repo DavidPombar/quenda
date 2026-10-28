@@ -78,6 +78,8 @@ const tables = {
     reminder_hours: "reminderHours",
     mail_sender_name: "mailSenderName",
     mail_reply_to: "mailReplyTo",
+    data_license: "dataLicense",
+    dir3_code: "dir3Code",
   },
   facilities: {
     tenant_id: "tenantId",
@@ -93,6 +95,8 @@ const tables = {
     opening_calendar: "openingCalendar",
     rules: "rules",
     follows_municipal_holidays: "followsMunicipalHolidays",
+    latitude: "latitude",
+    longitude: "longitude",
   },
   resources: {
     tenant_id: "tenantId",

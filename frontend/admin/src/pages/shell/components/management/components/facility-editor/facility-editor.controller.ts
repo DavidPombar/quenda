@@ -28,6 +28,8 @@ export function useFacilityEditorController(args: {
       priceCents: 0,
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
       openingCalendar: weeklyCalendar({
         id,
         timezone: args.municipality.timezone,
@@ -44,8 +46,13 @@ export function useFacilityEditorController(args: {
   const [calendarMessage, setCalendarMessage] = useState("");
   const [calendarError, setCalendarError] = useState("");
   const [errors, setErrors] = useState<
-    Partial<Record<"name" | "address", TextKey>>
+    Partial<Record<"name" | "address" | "latitude" | "longitude", TextKey>>
   >({});
+  // Coordinates are edited as text so a half-typed number is not lost; parsed when saving.
+  const [coordinates, setCoordinates] = useState(() => ({
+    latitude: args.facility?.latitude?.toString() ?? "",
+    longitude: args.facility?.longitude?.toString() ?? "",
+  }));
   const mutation = useSaveFacilityMutation();
   // Closing an active facility cancels its upcoming bookings, so it asks first (C3).
   const shuttingDown =
@@ -61,10 +68,37 @@ export function useFacilityEditorController(args: {
     if (key === "name" || key === "address")
       setErrors((current) => ({ ...current, [key]: undefined }));
   }
+  function setCoordinate(key: "latitude" | "longitude", value: string) {
+    setCoordinates((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({
+      ...current,
+      latitude: undefined,
+      longitude: undefined,
+    }));
+  }
+  function parsedCoordinates() {
+    const parse = (text: string) =>
+      text.trim() === "" ? null : Number(text.trim().replace(",", "."));
+    return {
+      latitude: parse(coordinates.latitude),
+      longitude: parse(coordinates.longitude),
+    };
+  }
   function validate() {
     const next: typeof errors = {};
     if (draft.name.trim().length < 2) next.name = "nameRequired";
     if (draft.address.trim().length < 2) next.address = "addressRequired";
+    const { latitude, longitude } = parsedCoordinates();
+    if (latitude !== null && !(Math.abs(latitude) <= 90))
+      next.latitude = "latitudeInvalid";
+    if (longitude !== null && !(Math.abs(longitude) <= 180))
+      next.longitude = "longitudeInvalid";
+    if (
+      !next.latitude &&
+      !next.longitude &&
+      (latitude === null) !== (longitude === null)
+    )
+      next[latitude === null ? "latitude" : "longitude"] = "coordinatesPair";
     setErrors(next);
     return next;
   }
@@ -133,7 +167,7 @@ export function useFacilityEditorController(args: {
     }
     try {
       await mutation.mutateAsync({
-        facility: draft,
+        facility: { ...draft, ...parsedCoordinates() },
         isNew: !args.facility,
         ...(confirming && { closureReason: closureReason.trim() }),
       });
@@ -145,6 +179,8 @@ export function useFacilityEditorController(args: {
   return {
     draft,
     setField,
+    coordinates,
+    setCoordinate,
     errors,
     days,
     toggleDay,

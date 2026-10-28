@@ -115,6 +115,23 @@
         },
         "mailReplyTo": {
           "type": "string"
+        },
+        "dataLicense": {
+          "type": "string",
+          "enum": [
+            "CC-BY-4.0",
+            "CC-BY-SA-4.0",
+            "CC0-1.0",
+            "ODbL-1.0"
+          ],
+          "description": "Licence of the open data. Optional: defaults to CC-BY-4.0."
+        },
+        "dir3Code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "DIR3 code of the council, the open data publisher. Optional."
         }
       },
       "additionalProperties": false
@@ -173,6 +190,24 @@
           },
           "followsMunicipalHolidays": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -90,
+            "maximum": 90,
+            "description": "WGS 84. Optional; set together with longitude."
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -180,
+            "maximum": 180,
+            "description": "WGS 84. Optional; set together with latitude."
           }
         },
         "additionalProperties": false

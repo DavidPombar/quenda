@@ -24,6 +24,9 @@ class ExportedMunicipalityDTO {
   @ApiProperty() reminderHours!: number;
   @ApiProperty() mailSenderName!: string;
   @ApiProperty() mailReplyTo!: string;
+  @ApiProperty({ description: "SPDX licence of the open data" })
+  dataLicense!: string;
+  @ApiProperty({ type: String, nullable: true }) dir3Code!: string | null;
 }
 class ExportedFacilityDTO {
   @ApiProperty() id!: string;
@@ -38,6 +41,8 @@ class ExportedFacilityDTO {
   @ApiProperty() openingCalendar!: string;
   @ApiProperty() rules!: string;
   @ApiProperty() followsMunicipalHolidays!: boolean;
+  @ApiProperty({ type: Number, nullable: true }) latitude!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) longitude!: number | null;
 }
 class ExportedResourceDTO {
   @ApiProperty() id!: string;
