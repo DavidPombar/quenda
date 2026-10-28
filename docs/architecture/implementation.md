@@ -36,6 +36,8 @@ Attendance and no-shows (C3, M3). `bookings.status` adds `no_show`; "attended" i
 
 Default listeners and Compose ports are loopback-only. The supplied demo does not implement production identity proof or regulatory compliance. Enabling an internet-facing service requires a separate deployment and identity implementation, HTTPS, operational hardening and the remaining T4 work listed in the README.
 
+A global throttler guard limits requests per client IP, with a stricter limit on endpoints marked `@SensitiveEndpoint()` (sign-in); 429s are RFC 7807 problems. A scheduler entry point runs the `PurgeExpiredSessions` command at start-up and periodically, resolving it through `Commands` and using the injected `Clock`. TLS terminates in a front proxy (`deploy/Caddyfile`); nginx adds the SPA security headers and forwards `X-Forwarded-For`/`X-Forwarded-Proto`.
+
 ## Scope and rollout
 
 The first usable slice covers catalog → calendar availability → reservation → reschedule/cancel → history/notices. Manager facility administration and basic aggregate indicators complete the demonstration path. Prices are informational; there is no payment processing. Schedule changes require future bookings to be resolved first; closing a facility with upcoming bookings requires a reason and cancels them on behalf of the municipality. Data remains durable across restarts.

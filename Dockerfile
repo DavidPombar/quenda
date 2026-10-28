@@ -22,12 +22,13 @@ COPY frontend/web/package.json frontend/web/package.json
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/backend/dist backend/dist
 USER node
-ENV HOST=0.0.0.0 PORT=3001 DEMO_MODE=false
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001 DEMO_MODE=false
 EXPOSE 3001
 CMD ["node", "backend/dist/main.js"]
 
 FROM nginx:1.29-alpine AS web
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /app/frontend/web/dist /usr/share/nginx/html
 COPY --from=build /app/frontend/app/dist /usr/share/nginx/html/app
 COPY --from=build /app/frontend/admin/dist /usr/share/nginx/html/admin

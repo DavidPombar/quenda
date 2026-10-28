@@ -35,6 +35,23 @@ docker compose -f compose.yml -f compose.demo.yml up --build --wait
 
 Open http://127.0.0.1:8080 for the website, http://127.0.0.1:8080/app/ for citizens or http://127.0.0.1:8080/admin/ for municipal management. This starts all three independent frontend builds, API, notice worker, migrations and synthetic seed data; email sent by the demo appears in Mailpit at http://127.0.0.1:8025. Nginx serves the website at `/`, the citizen app at `/app/` and the backoffice at `/admin/`, including reloads of nested routes. All host ports bind to loopback. The demo Compose file intentionally enables demo accounts; it is not a production deployment configuration. The base images and services are self-hostable and do not require a proprietary cloud.
 
+## Demo vs production
+
+The container images are the same for both; the difference is configuration and what sits in front of them (T4, R1).
+
+| | Demo (`compose.demo.yml`) | Production |
+|---|---|---|
+| Demo accounts | `DEMO_MODE=true` | `DEMO_MODE=false` (image default); real sign-in is still future work |
+| Transport | Plain HTTP on `127.0.0.1:8080` | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS |
+| Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false` |
+| Seed data | Synthetic municipalities and accounts | No seed; municipalities are configured explicitly |
+
+The `web` container (nginx) sends a Content Security Policy, `X-Frame-Options`, `Permissions-Policy` and `nosniff` for the three SPAs; the API sends its own headers. Only the TLS proxy may reach the `web` container, because the API trusts `X-Forwarded-For` from private-network proxies (`TRUST_PROXY`, default `loopback, uniquelocal`) to identify clients.
+
+The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) and `SESSION_RATE_LIMIT_PER_MINUTE` sign-ins (default 30) per minute and answers `429` with an RFC 7807 problem and `Retry-After`. Limits are in memory per API process. Expired sessions are deleted at start-up and every `SESSION_PURGE_MINUTES` (default 60; `0` disables it).
+
+`HEADERS_URL=https://reservas.example EXPECT_SECURE_COOKIE=true npm run test:headers` checks a running instance's headers and session cookie.
+
 ## Included
 
 - **C1:** public facility catalog, search and sport filters, details, rules, accessible-access information and real availability.
@@ -60,7 +77,7 @@ HTTP tests create and destroy their own uniquely named database, never the devel
 
 ## V0 boundaries
 
-This is a functional prototype with synthetic accounts, not a service ready to process residents' personal data. Citizens accept the municipality's versioned privacy notice when opening a demo session, can download their data as JSON from **A miña conta** and can delete their account: future reservations are cancelled, sessions are revoked and the account row is anonymised while past reservations stay in the aggregate history. Managers can review the municipality's audit log, with the detail of each change, under **Auditoría** in the backoffice. A retention job (`npm run db:retention`) detaches reservations, notices and audit actors older than each municipality's `retention_months`, purges expired sessions and removes accounts deleted before that cutoff; it has no built-in scheduler and must be run by cron or a systemd timer (see [architecture](docs/architecture/implementation.md)). Production onboarding/OIDC (Cl@ve/Chave365), real identities, SMS and push delivery, rate limiting, operational backups, hardening and an independent accessibility/security review remain future work. No GDPR/ENS compliance or WCAG certification is claimed.
+This is a functional prototype with synthetic accounts, not a service ready to process residents' personal data. Citizens accept the municipality's versioned privacy notice when opening a demo session, can download their data as JSON from **A miña conta** and can delete their account: future reservations are cancelled, sessions are revoked and the account row is anonymised while past reservations stay in the aggregate history. Managers can review the municipality's audit log, with the detail of each change, under **Auditoría** in the backoffice. A retention job (`npm run db:retention`) detaches reservations, notices and audit actors older than each municipality's `retention_months`, purges expired sessions and removes accounts deleted before that cutoff; it has no built-in scheduler and must be run by cron or a systemd timer (see [architecture](docs/architecture/implementation.md)). Production onboarding/OIDC (Cl@ve/Chave365), real identities, SMS and push delivery, distributed rate limiting across API replicas, operational backups and an independent accessibility/security review remain future work. No GDPR/ENS compliance or WCAG certification is claimed.
 
 Facilities are closed or put into maintenance rather than deleted; historical bookings remain intact. Photos, multiple independently reservable courts per facility, residency-dependent rules, payments, QR entry and personal-calendar subscriptions are outside this V0. Municipal settings are bootstrap/database configuration; the manager UI currently edits facilities and their rules. A schedule/state change with future reservations is rejected to avoid silently invalidating bookings. The API returns at most 200 history entries and 50 notices; the citizen app shows them ten at a time. Production needs server-side pagination.
 

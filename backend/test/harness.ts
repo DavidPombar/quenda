@@ -26,6 +26,7 @@ export async function setup() {
   const testUrl = new URL(baseUrl);
   testUrl.pathname = `/${databaseName}`;
   process.env.NODE_ENV = "test";
+  process.env.SESSION_RATE_LIMIT_PER_MINUTE = "1000";
   process.env.DEMO_MODE = "true";
   process.env.DATABASE_URL = testUrl.toString();
   admin = new Pool({ connectionString: baseUrl });
