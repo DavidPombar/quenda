@@ -1,0 +1,182 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { Pool } from "pg";
+import { databaseUrl } from "./config";
+import { migrate } from "./migrate";
+const FORMAT = "quenda-municipality-export";
+const SUPPORTED_VERSIONS = [1];
+type Row = Record<string, unknown>;
+export interface MunicipalityPackage {
+  format: string;
+  version: number;
+  exportedAt: string;
+  municipality: Row & { id: string; slug: string };
+  facilities: Row[];
+  users: Row[];
+  bookings: Row[];
+  notifications: Row[];
+  auditEvents: Row[];
+}
+const collections = [
+  "facilities",
+  "users",
+  "bookings",
+  "notifications",
+  "auditEvents",
+] as const;
+function parse(value: unknown): MunicipalityPackage {
+  const data = value as Partial<MunicipalityPackage> | null;
+  if (data?.format !== FORMAT) throw new Error(`Not a ${FORMAT} package`);
+  if (!SUPPORTED_VERSIONS.includes(data.version as number))
+    throw new Error(`Unsupported package version ${String(data.version)}`);
+  if (typeof data.municipality?.id !== "string")
+    throw new Error("The package has no municipality");
+  for (const name of collections)
+    if (!Array.isArray(data[name])) throw new Error(`Missing ${name}`);
+  return data as MunicipalityPackage;
+}
+// Column order of each table, mapped from the package's camelCase fields.
+const tables = {
+  municipalities: {
+    id: "id",
+    slug: "slug",
+    name: "name",
+    timezone: "timezone",
+    locale: "locale",
+    advance_days: "advanceDays",
+    cancellation_hours: "cancellationHours",
+    max_active_bookings: "maxActiveBookings",
+    contact: "contact",
+    legal_text: "legalText",
+  },
+  users: {
+    id: "id",
+    tenant_id: "tenantId",
+    display_name: "displayName",
+    role: "role",
+  },
+  facilities: {
+    id: "id",
+    tenant_id: "tenantId",
+    name: "name",
+    sport: "sport",
+    address: "address",
+    description: "description",
+    accessible: "accessible",
+    status: "status",
+    slot_minutes: "slotMinutes",
+    price_cents: "priceCents",
+    opening_calendar: "openingCalendar",
+    rules: "rules",
+  },
+  bookings: {
+    id: "id",
+    tenant_id: "tenantId",
+    user_id: "userId",
+    facility_id: "facilityId",
+    starts_at: "start",
+    ends_at: "end",
+    status: "status",
+    created_at: "createdAt",
+    cancelled_at: "cancelledAt",
+  },
+  notifications: {
+    id: "id",
+    tenant_id: "tenantId",
+    user_id: "userId",
+    booking_id: "bookingId",
+    kind: "kind",
+    created_at: "createdAt",
+  },
+  audit_events: {
+    id: "id",
+    tenant_id: "tenantId",
+    actor_id: "actorId",
+    action: "action",
+    resource_id: "resourceId",
+    occurred_at: "occurredAt",
+  },
+} as const;
+/**
+ * Loads a municipality export into this instance in one transaction (criterion 4,
+ * T3, R3). Identifiers are kept: they are UUIDs and stay unique across instances.
+ */
+export async function importMunicipality(
+  input: unknown,
+  options: { url?: string; slug?: string } = {},
+) {
+  const data = parse(input);
+  const url = options.url ?? databaseUrl;
+  await migrate(url, () => undefined);
+  const tenantId = data.municipality.id;
+  const slug = options.slug ?? data.municipality.slug;
+  const pool = new Pool({ connectionString: url });
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const existing = await client.query<{ id: string; slug: string }>(
+      "SELECT id, slug FROM municipalities WHERE slug=$1 OR id=$2",
+      [slug, tenantId],
+    );
+    if (existing.rows.some((row) => row.slug === slug))
+      throw new Error(
+        `Municipality slug "${slug}" already exists; choose another with --slug`,
+      );
+    if (existing.rows.length)
+      throw new Error(
+        `Municipality ${tenantId} already exists in this instance`,
+      );
+    async function insert(table: keyof typeof tables, rows: readonly Row[]) {
+      const columns = Object.entries(tables[table]);
+      for (const row of rows)
+        await client.query(
+          `INSERT INTO ${table} (${columns.map(([column]) => column).join(",")}) VALUES (${columns.map((_, i) => `$${i + 1}`).join(",")})`,
+          columns.map(([, field]) =>
+            field === "tenantId" ? tenantId : (row[field] ?? null),
+          ),
+        );
+    }
+    await insert("municipalities", [{ ...data.municipality, slug }]);
+    await insert("users", data.users);
+    await insert("facilities", data.facilities);
+    await insert("bookings", data.bookings);
+    await insert("notifications", data.notifications);
+    await insert("audit_events", data.auditEvents);
+    await client.query("COMMIT");
+    return { id: tenantId, slug };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
+async function main(args: string[]) {
+  const slugAt = args.indexOf("--slug");
+  const slug = slugAt >= 0 ? args[slugAt + 1] : undefined;
+  const file = args.find(
+    (arg, i) => !arg.startsWith("--") && (slugAt < 0 || i !== slugAt + 1),
+  );
+  if (!file || (slugAt >= 0 && !slug))
+    throw new Error(
+      "Usage: npm run db:import -- <file.json> [--slug new-slug]",
+    );
+  const imported = await importMunicipality(
+    // npm runs workspace scripts from the workspace; resolve from where it was invoked.
+    JSON.parse(
+      await readFile(
+        resolve(process.env.INIT_CWD ?? process.cwd(), file),
+        "utf8",
+      ),
+    ),
+    { slug },
+  );
+  console.log(`Imported municipality ${imported.slug} (${imported.id})`);
+}
+if (require.main === module)
+  void main(process.argv.slice(2)).catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });

@@ -12,6 +12,7 @@ import { AuditModule } from "./v2/modules/audit/audit.module";
 import { RetentionModule } from "./v2/modules/retention/retention.module";
 import { NotificationsModule } from "./v2/modules/notifications/notifications.module";
 import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
+import { PortabilityModule } from "./v2/modules/portability/portability.module";
 @Module({
   imports: [
     SharedModule,
@@ -26,6 +27,7 @@ import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
     RetentionModule,
     NotificationsModule,
     CalendarsModule,
+    PortabilityModule,
   ],
 })
 export class AppModule {}

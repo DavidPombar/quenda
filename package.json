@@ -19,6 +19,7 @@
     "db:seed": "npm run db:seed -w backend",
     "db:retention": "npm run db:retention -w backend",
     "worker": "npm run build -w backend && npm run worker -w backend",
+    "db:import": "npm run db:import -w backend --",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed",
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",

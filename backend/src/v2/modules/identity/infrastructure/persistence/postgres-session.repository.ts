@@ -20,6 +20,7 @@ function principal(user: Omit<Principal, "grants">): Principal {
             "audit:view",
             "municipality:manage",
             "bookings:manage",
+            "data:export",
           ]
         : ["bookings:own", "account:own"],
   };

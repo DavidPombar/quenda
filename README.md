@@ -62,6 +62,7 @@ The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) 
 - **M3:** seven-day reservation, cancellation and scheduled-occupancy indicators, broken down by facility.
 - **Personal calendars (optional, point 1.3):** each confirmed reservation downloads as `.ics`, and a revocable `webcal://` subscription keeps the person's calendar app in sync with changes and cancellations.
 - **R1–R3:** repeatable setup and container images; data-driven municipal identity, language, time zone, booking limits and legal/contact text; protected operations derive their municipality from the session.
+- **Data portability (criterion 4, T3):** a manager exports all of the municipality's data as one versioned, documented JSON package (`GET /v2/manager/export`, **Exportar datos** in the backoffice); `npm run db:import -- <file> [--slug new-slug]` loads it into another instance. See [data portability](docs/architecture/data-portability.md).
 
 Calendars are stored as RFC 5545 `VCALENDAR` text with `VEVENT`, `RRULE`, `EXDATE`, `RDATE` and individual `RECURRENCE-ID` exceptions. Temporal handles local dates, IANA zones, instants and daylight-saving transitions. See [calendar semantics](docs/architecture/calendars.md).
 
@@ -82,7 +83,7 @@ This is a functional prototype with synthetic accounts, not a service ready to p
 
 Facilities are closed or put into maintenance rather than deleted; historical bookings remain intact. Photos, multiple independently reservable courts per facility, residency-dependent rules, payments, QR entry are outside this V0. Municipal settings are bootstrap/database configuration; the manager UI currently edits facilities and their rules. A schedule/state change with future reservations is rejected to avoid silently invalidating bookings. The API returns at most 200 history entries and 50 notices; the citizen app shows them ten at a time. Production needs server-side pagination.
 
-See [architecture](docs/architecture/implementation.md), [database migrations](docs/architecture/migrations.md), [data protection lifecycle](docs/architecture/data-protection.md), [design guidelines](docs/architecture/design-guidelines.md), [calendar semantics](docs/architecture/calendars.md), and the original [scope](docs/contexto/01-alcance-funcional.md). Councils adopting Quenda can start from the Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md) and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md); both must be reviewed by the council's data protection officer.
+See [architecture](docs/architecture/implementation.md), [database migrations](docs/architecture/migrations.md), [data portability](docs/architecture/data-portability.md), [data protection lifecycle](docs/architecture/data-protection.md), [design guidelines](docs/architecture/design-guidelines.md), [calendar semantics](docs/architecture/calendars.md), and the original [scope](docs/contexto/01-alcance-funcional.md). Councils adopting Quenda can start from the Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md) and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md); both must be reviewed by the council's data protection officer.
 
 ## Contributing and reuse
 
