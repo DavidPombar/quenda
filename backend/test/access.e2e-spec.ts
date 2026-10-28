@@ -80,7 +80,7 @@ async function bookingNow(context: Tenant) {
   const id = randomUUID();
   const now = Temporal.Now.instant();
   await harness.db.query(
-    "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at) VALUES ($1,$2,$3,$4,$5,$6,'confirmed',$7)",
+    "INSERT INTO bookings (id,tenant_id,user_id,facility_id,resource_id,starts_at,ends_at,status,created_at) VALUES ($1,$2,$3,$4,$4,$5,$6,'confirmed',$7)",
     [
       id,
       context.id,
@@ -134,6 +134,7 @@ describe("QR access passes, door checks and the access-control connector", () =>
       iss: context.slug,
       sub: id,
       fac: court.id,
+      seq: 0,
       nbf: opening.epochMilliseconds / 1000,
       exp:
         Temporal.Instant.from(begins).add({ hours: 1 }).epochMilliseconds /
@@ -143,6 +144,26 @@ describe("QR access passes, door checks and the access-control connector", () =>
     const other = await tenant();
     await post(other.citizen, `citizen/bookings/${id}/access-pass`, {}).expect(
       404,
+    );
+  });
+  it("should share one initial key between concurrent pass requests", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const id = randomUUID();
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(2, 10),
+    }).expect(201);
+    const responses = await Promise.all(
+      [0, 1].map(() =>
+        post(context.citizen, `citizen/bookings/${id}/access-pass`, {}).expect(
+          200,
+        ),
+      ),
+    );
+    expect(decode(responses[0].body.token).header.kid).toBe(
+      decode(responses[1].body.token).header.kid,
     );
   });
   it("should list the day for the door and revoke a reservation once it is cancelled", async () => {
@@ -238,7 +259,12 @@ describe("QR access passes, door checks and the access-control connector", () =>
     }).expect(201);
     const now = Temporal.Now.instant().toString();
     const items = [present, present, cancelled, later, randomUUID()].map(
-      (bookingId) => ({ bookingId, checkedInAt: now, method: "qr" }),
+      (bookingId) => ({
+        bookingId,
+        sequence: 0,
+        checkedInAt: now,
+        method: "qr",
+      }),
     );
     const { results } = (
       await post(access, "access/check-ins", { items }).expect(200)
@@ -264,6 +290,57 @@ describe("QR access passes, door checks and the access-control connector", () =>
     );
     expect(audit.rows[0].n).toBe(1);
   });
+  it("should reject queued entries for a changed reservation and keep attendance per revision", async () => {
+    const context = await tenant();
+    const access = await withAccessStaff(context);
+    const id = await bookingNow(context);
+    const checkedInAt = Temporal.Now.instant().toString();
+    const item = { bookingId: id, sequence: 0, checkedInAt, method: "qr" };
+    const before = (
+      await post(
+        context.citizen,
+        `citizen/bookings/${id}/access-pass`,
+        {},
+      ).expect(200)
+    ).body;
+    await post(access, "access/check-ins", { items: [item] })
+      .expect(200)
+      .expect(({ body }) => expect(body.results[0].outcome).toBe("recorded"));
+    await harness.db.query(
+      "UPDATE bookings SET ends_at=ends_at + interval '5 minutes' WHERE id=$1",
+      [id],
+    );
+    const after = (
+      await post(
+        context.citizen,
+        `citizen/bookings/${id}/access-pass`,
+        {},
+      ).expect(200)
+    ).body;
+    expect(decode(before.token).claims).toMatchObject({ seq: 0 });
+    expect(decode(after.token).claims).toMatchObject({ seq: 1 });
+    const synced = (await access.get("/v2/access/day").expect(200)).body;
+    expect(
+      synced.bookings.find((booking: { id: string }) => booking.id === id),
+    ).toMatchObject({ sequence: 1, checkedInAt: null });
+    await post(access, "access/check-ins", {
+      items: [item, { ...item, sequence: 1 }],
+    })
+      .expect(200)
+      .expect(({ body }) =>
+        expect(body.results.map((r: { outcome: string }) => r.outcome)).toEqual(
+          ["stale", "recorded"],
+        ),
+      );
+    expect(
+      (
+        await harness.db.query(
+          "SELECT count(*)::int AS n FROM check_ins WHERE booking_id=$1",
+          [id],
+        )
+      ).rows[0].n,
+    ).toBe(2);
+  });
   it("should give access staff the door and nothing else", async () => {
     const context = await tenant();
     const court = await facility(context);
@@ -288,7 +365,12 @@ describe("QR access passes, door checks and the access-control connector", () =>
     await context.citizen.get("/v2/access/day").expect(403);
     await post(context.citizen, "access/check-ins", {
       items: [
-        { bookingId: id, checkedInAt: new Date().toISOString(), method: "qr" },
+        {
+          bookingId: id,
+          sequence: 0,
+          checkedInAt: Temporal.Now.instant().toString(),
+          method: "qr",
+        },
       ],
     }).expect(403);
   });

@@ -102,9 +102,17 @@ export class IcalOpeningCalendar extends OpeningCalendar {
     timezone: string;
     date: Temporal.PlainDate;
   }): OpeningInterval[] {
+    return this.expandRange({ ...args, from: args.date, to: args.date });
+  }
+  expandRange(args: {
+    calendar: string;
+    timezone: string;
+    from: Temporal.PlainDate;
+    to: Temporal.PlainDate;
+  }): OpeningInterval[] {
     const components = parse(args.calendar, args.timezone);
-    const dayStart = args.date.toZonedDateTime(args.timezone).toInstant();
-    const dayEnd = args.date
+    const dayStart = args.from.toZonedDateTime(args.timezone).toInstant();
+    const dayEnd = args.to
       .add({ days: 1 })
       .toZonedDateTime(args.timezone)
       .toInstant();
@@ -158,7 +166,7 @@ export class IcalOpeningCalendar extends OpeningCalendar {
           month: occurrence.month,
           day: occurrence.day,
         });
-        if (Temporal.PlainDate.compare(date, args.date.add({ days: 2 })) > 0)
+        if (Temporal.PlainDate.compare(date, args.to.add({ days: 2 })) > 0)
           break;
         if (exceptions.includes(occurrence.toString())) continue;
         const details = event.getOccurrenceDetails(occurrence);

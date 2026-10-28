@@ -1,5 +1,42 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+/** "general" is the facility's base tariff, paid without a verified category. */
+export type TariffCategory = Category | "general";
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface Tariff {
+  category: TariffCategory;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface MyCategories {
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
+}
+export interface Accessibility {
+  unit: string;
+  email: string;
+  phone: string;
+  reviewedOn: string;
+  method: "self" | "external";
+  exceptions: Record<Locale, string>;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -15,13 +52,17 @@ export interface Municipality {
   legalTexts: { gl: string; es: string };
   legalVersion: string;
   retentionMonths: number;
+  accessibility: Accessibility;
   reminderHours: number;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** SPDX identifier of the licence of the municipality's open data. */
+  dataLicense: "CC-BY-4.0" | "CC-BY-SA-4.0" | "CC0-1.0" | "ODbL-1.0";
 }
 export interface Session {
   userId: string;
@@ -40,21 +81,45 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
+  resources: Resource[];
+}
+/** A bookable court or space; parts point to their composite through parentId. */
+export interface Resource {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  position: number;
 }
 export interface Slot {
   start: string;
   end: string;
   status: "available" | "booked" | "past";
 }
+export interface ResourceAvailability {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  slots: Slot[];
+}
+export interface Availability {
+  resources: ResourceAvailability[];
+}
 export interface Booking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: Sport;
   start: string;
   end: string;
+  tariffCategory: TariffCategory | null;
+  priceCents: number | null;
   status: "confirmed" | "cancelled" | "no_show";
   /** A confirmed booking that has ended counts as attended. */
   outcome: "upcoming" | "attended" | "no_show" | "cancelled";
@@ -84,11 +149,21 @@ export interface Notification {
     | "unblocked"
     | "reminder";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: string;
   details: {
     reason?: string;
     standing?: Omit<PenaltyStanding, "enabled">;
   } | null;
+}
+export interface CalendarFeed {
+  active: boolean;
+  createdAt: string | null;
+}
+export interface CalendarFeedLink {
+  path: string;
+  createdAt: string;
 }
 export interface Insights {
   total: number;
@@ -128,16 +203,22 @@ export interface AccountExport {
   };
   profile: { userId: string; displayName: string; role: "citizen" | "manager" };
   consents: Consent[];
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
   bookings: {
     id: string;
     facilityId: string;
     facilityName: string;
+    resourceId: string;
+    resourceName: string;
     sport: Sport;
     start: string;
     end: string;
     status: Booking["status"];
     createdAt: string;
     cancelledAt: string | null;
+    tariffCategory: TariffCategory | null;
+    priceCents: number | null;
     cancelledBy: Booking["cancelledBy"];
     cancellationReason: string | null;
   }[];
@@ -163,4 +244,26 @@ export interface AccessPass {
   code: string;
   validFrom: string;
   validUntil: string;
+}
+export interface CatalogEntry {
+  id: string;
+  name: string;
+  sport: Sport;
+  address: string;
+  description: string;
+  accessible: boolean;
+  slotMinutes: number;
+  priceCents: number;
+  municipality: { slug: string; name: string };
+}
+export interface CatalogFilters {
+  q: string;
+  sport: Sport | "";
+  accessible: boolean;
+  municipalities: string[];
+}
+export interface AuthMethods {
+  demo: boolean;
+  oidc: { label: string } | null;
+  email: boolean;
 }

@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { BookingRepository } from "../../domain/booking.repository";
 import { BookingBlockRepository } from "../../domain/booking-block.repository";
+import { BookingUnitRepository } from "../../domain/booking-unit.repository";
 import { NotificationRepository } from "../../domain/notification.repository";
 import { Booking } from "../../domain/booking.entity";
 import {
@@ -52,6 +53,7 @@ export class ManageBooking {
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
     private readonly outbox: Outbox,
+    private readonly units: BookingUnitRepository,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -104,6 +106,8 @@ export class ManageBooking {
       cancelledBy: "municipality",
       cancellationReason: reason,
     });
+    // The court is free again for other people.
+    await this.units.release(existing.tenantId, existing.id);
     const notificationId = this.ids.next();
     await this.notifications.add({
       id: notificationId,

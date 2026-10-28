@@ -1,5 +1,52 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+export const CATEGORIES: readonly Category[] = [
+  "resident",
+  "family",
+  "local_club",
+  "minor",
+  "large_family",
+  "disability",
+  "senior",
+];
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface CategoryRequest {
+  userId: string;
+  displayName: string;
+  category: Category;
+  requestedAt: string;
+}
+export interface CitizenCategories {
+  userId: string;
+  displayName: string;
+  categories: UserCategory[];
+}
+export interface Accessibility {
+  unit: string;
+  email: string;
+  phone: string;
+  reviewedOn: string;
+  method: "self" | "external";
+  exceptions: Record<Locale, string>;
+}
 export interface Municipality {
   id: string;
   slug: string;
@@ -15,10 +62,12 @@ export interface Municipality {
   legalVersion: string;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  accessibility: Accessibility;
 }
 export interface LegalTexts {
   gl: string;
@@ -39,6 +88,7 @@ export type SettingsPatch = Partial<
     | "legalTexts"
     | "primaryColor"
     | "holidaysCalendar"
+    | "enabledCategories"
     | "noShowLimit"
     | "noShowWindowDays"
     | "noShowBlockDays"
@@ -65,9 +115,13 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position, published as open data; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface Slot {
   start: string;
@@ -100,16 +154,44 @@ export interface FacilityImpact {
   bookings: number;
   people: number;
 }
-export interface Insights {
-  total: number;
+export interface FacilityUsage {
+  id: string;
+  name: string;
+  sport: Sport;
+  bookings: number;
   confirmed: number;
   cancelled: number;
   noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  /** Booked over open time, rounded percent; null when never open. */
+  occupancy: number | null;
+}
+export interface HeatmapCell {
+  /** ISO weekday, 1 = Monday. */
+  weekday: number;
+  hour: number;
+  bookedMinutes: number;
+  openMinutes: number;
   occupancy: number;
-  facilities: number;
+}
+export interface DateRange {
   from: string;
   to: string;
-  byFacility: { id: string; name: string; bookings: number; noShows: number }[];
+}
+export interface Insights extends DateRange {
+  total: number;
+  confirmed: number;
+  cancelled: number;
+  /** Booked but not used; not counted as booked time. */
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number | null;
+  facilities: number;
+  byFacility: FacilityUsage[];
+  /** Only weekday × hour cells with open time. */
+  heatmap: HeatmapCell[];
 }
 export type AuditActorRole = "citizen" | "manager" | "access" | "system";
 export interface AuditEvent {
@@ -130,6 +212,8 @@ export interface AuditFilters {
 }
 /** One reservation as the door sees it on the day. */
 export interface AccessBooking {
+  sequence: number;
+  validFrom: string;
   id: string;
   code: string;
   facilityId: string;
@@ -150,6 +234,7 @@ export interface AccessDay {
   revoked: string[];
 }
 export interface CheckIn {
+  sequence: number;
   bookingId: string;
   checkedInAt: string;
   method: "qr" | "manual";
@@ -160,9 +245,65 @@ export type CheckInOutcome =
   | "cancelled"
   | "no_show"
   | "out_of_window"
-  | "not_found";
+  | "not_found"
+  | "stale";
 export interface AccessSettings {
   webhookUrl: string;
   hasWebhookSecret: boolean;
   keys: { kid: string; createdAt: string; retiredAt: string | null }[];
+}
+export interface OperatorSession {
+  operatorId: string;
+  displayName: string;
+}
+export interface StaffMember {
+  id: string;
+  municipalityId: string;
+  displayName: string;
+  email: string | null;
+}
+export interface DeploymentMunicipality {
+  settings: MunicipalitySettings;
+  facilities: number;
+  activeFacilities: number;
+  managers: StaffMember[];
+}
+export interface NewMunicipality {
+  id: string;
+  slug: string;
+  name: string;
+  timezone: string;
+  locale: Locale;
+  contact: string;
+  legalTexts: LegalTexts;
+}
+export interface NewManager {
+  id: string;
+  displayName: string;
+  email: string;
+}
+export interface InsightTotals {
+  total: number;
+  confirmed: number;
+  cancelled: number;
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number | null;
+  facilities: number;
+}
+export interface MunicipalityTotals extends InsightTotals, DateRange {
+  id: string;
+  slug: string;
+  name: string;
+}
+export interface DeploymentInsights extends InsightTotals {
+  municipalities: MunicipalityTotals[];
+}
+/** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
+export interface MunicipalityExport {
+  format: "quenda-municipality-export";
+  version: number;
+  exportedAt: string;
+  municipality: { slug: string };
 }

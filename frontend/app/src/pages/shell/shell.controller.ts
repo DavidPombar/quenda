@@ -1,13 +1,26 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
 import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.mutation";
+import { useGetAuthMethodsQuery } from "@/queries/auth/get-auth-methods.query";
+import { APP_BASE_PATH, ROUTES, routeFor } from "@/constants/routes";
 import { useUpdateLocaleMutation } from "@/queries/account/update-locale.mutation";
-import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
+import {
+  AUTH_ERROR_PARAM,
+  authErrorMessageKey,
+  oidcStartUrl,
+  withProvider,
+} from "@/services/auth.service";
+import { navigationService } from "@/services/navigation.service";
 import { BRAND_VARIABLES, brandVariables } from "@/services/color.service";
 import type { Locale } from "@/types/models";
 // Pages may hand the shell a one-off status line through navigation state.
@@ -16,6 +29,8 @@ export function useShellController() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const authMethods = useGetAuthMethodsQuery();
   const municipalities = useListMunicipalitiesQuery();
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
@@ -29,6 +44,17 @@ export function useShellController() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [consent, setConsent] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  // The backend sends failed eID logins back with ?authError=<code>; it is read
+  // once on mount and then removed so a reload does not show it again.
+  const [authError, setAuthError] = useState<string | null>(() =>
+    searchParams.get(AUTH_ERROR_PARAM),
+  );
+  useEffect(() => {
+    if (!searchParams.has(AUTH_ERROR_PARAM)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete(AUTH_ERROR_PARAM);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const municipality = municipalities.data?.find((item) => item.slug === slug);
   const locale: Locale = chosenLocale ?? municipality?.locale ?? "gl";
   function setLocale(next: Locale) {
@@ -80,6 +106,23 @@ export function useShellController() {
     setConsent(false);
     create.reset();
   }
+  function signInWithEid() {
+    if (!municipality || !consent || !authMethods.data?.oidc) return;
+    const query = new URLSearchParams(searchParams);
+    query.delete(AUTH_ERROR_PARAM);
+    const search = query.size ? `?${query.toString()}` : "";
+    navigationService.assign(
+      oidcStartUrl({
+        slug: municipality.slug,
+        legalVersion: municipality.legalVersion,
+        returnTo: `${APP_BASE_PATH}${location.pathname}${search}`,
+      }),
+    );
+  }
+  function retryAuth() {
+    setAuthError(null);
+    setLoginOpen(true);
+  }
   async function signIn() {
     if (!municipality || !consent) return;
     try {
@@ -114,6 +157,14 @@ export function useShellController() {
     privacyOpen,
     setPrivacyOpen,
     signIn,
+    signInWithEid,
+    authMethods,
+    eidButtonLabel: authMethods.data?.oidc
+      ? withProvider(t("signInWithEid"), authMethods.data.oidc.label)
+      : null,
+    authErrorMessage: authError ? t(authErrorMessageKey(authError)) : null,
+    retryAuth,
+    dismissAuthError: () => setAuthError(null),
     create,
     remove,
     signOut: () => remove.mutate(),

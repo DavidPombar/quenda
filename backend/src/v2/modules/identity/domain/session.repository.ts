@@ -23,4 +23,6 @@ export abstract class SessionRepository {
     now: Temporal.Instant,
   ): Promise<Principal | null>;
   abstract remove(token: string): Promise<void>;
+  /** Deletes sessions that expired at or before `now`; returns how many. */
+  abstract removeExpired(now: Temporal.Instant): Promise<number>;
 }

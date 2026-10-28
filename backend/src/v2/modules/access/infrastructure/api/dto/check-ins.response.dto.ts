@@ -11,6 +11,7 @@ export class CheckInResultResponseDTO {
       "no_show",
       "out_of_window",
       "not_found",
+      "stale",
     ],
   })
   outcome!: CheckInOutcome;

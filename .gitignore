@@ -12,3 +12,4 @@ playwright-report/
 .dev-logs/
 __screenshots__/
 .vitest/
+.claude/worktrees/

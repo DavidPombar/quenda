@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Injectable } from "@nestjs/common";
 import { Facility } from "../../domain/facility.entity";
+import { FacilityDetails } from "../../domain/facility.read-model";
 import { FacilityRepository } from "../../domain/facility.repository";
+import { ResourceRepository } from "../../domain/resource.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
+import { CATEGORIES } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
@@ -24,6 +27,7 @@ export type SaveFacilityError =
 export class SaveFacility {
   constructor(
     private readonly facilities: FacilityRepository,
+    private readonly resources: ResourceRepository,
     private readonly municipalities: Municipalities,
     private readonly calendar: OpeningCalendar,
     private readonly clock: Clock,
@@ -41,7 +45,7 @@ export class SaveFacility {
      * cancelled with this reason and each person is notified. Without it the change is refused.
      */
     closureReason?: string;
-  }): Promise<Result<Facility, SaveFacilityError>> {
+  }): Promise<Result<FacilityDetails, SaveFacilityError>> {
     if (!can(args.principal, "facilities:manage"))
       return Result.err(failure("forbidden"));
     const municipality = await this.municipalities.find(
@@ -66,25 +70,43 @@ export class SaveFacility {
       status: "active",
       slotMinutes: 60,
       priceCents: 0,
+      prices: [],
       openingCalendar: "",
       rules: "",
       followsMunicipalHolidays: true,
+      latitude: null,
+      longitude: null,
     };
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
     );
-    if (existing && Object.keys(patch).length === 0) return Result.ok(existing);
-    const facility = { ...(existing ?? defaults), ...patch };
+    const details = async (value: Facility): Promise<FacilityDetails> => ({
+      ...value,
+      resources: await this.resources.listByFacility(value.tenantId, value.id),
+    });
+    if (existing && Object.keys(patch).length === 0)
+      return Result.ok(await details(existing));
+    const merged: Facility = { ...(existing ?? defaults), ...patch };
+    const facility: Facility = {
+      ...merged,
+      prices: [...merged.prices].sort(
+        (a, b) =>
+          CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category),
+      ),
+    };
     if (existing && args.mode === "create") {
-      return Object.entries(patch).every(
-        ([key, value]) => existing[key as keyof Facility] === value,
+      return Object.keys(patch).every((key) =>
+        same(existing[key as keyof Facility], facility[key as keyof Facility]),
       )
-        ? Result.ok(existing)
+        ? Result.ok(await details(existing))
         : Result.err(failure("id_reused"));
     }
     if (
+      new Set(facility.prices.map((price) => price.category)).size !==
+        facility.prices.length ||
       !facility.name.trim() ||
       !facility.address.trim() ||
+      (facility.latitude === null) !== (facility.longitude === null) ||
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
     )
       return Result.err(failure("validation"));
@@ -106,10 +128,28 @@ export class SaveFacility {
       return Result.err(failure("calendar_in_use"));
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
-      return saved.fold<Result<Facility, SaveFacilityError>>(
-        () => Result.ok(facility),
+      return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
+        () => Result.ok({ ...facility, resources: [] }),
         (error) => Result.err(error),
       );
+    if (!existing || existing.status !== facility.status)
+      await this.facilities.recordStatus(
+        facility.tenantId,
+        facility.id,
+        facility.status,
+        now,
+      );
+    // A new facility is bookable at once through its default resource (same id and name).
+    if (!existing)
+      await this.resources.add({
+        id: facility.id,
+        tenantId: facility.tenantId,
+        facilityId: facility.id,
+        name: facility.name,
+        position: 0,
+        parentId: null,
+        active: true,
+      });
     if (upcoming.length && reason) {
       const cancelled = upcoming.map((booking) => ({
         id: booking.id,
@@ -163,7 +203,7 @@ export class SaveFacility {
           : {}),
       },
     );
-    return Result.ok(facility);
+    return Result.ok(await details(facility));
   }
 }
 type AuditedField = Exclude<
@@ -180,7 +220,7 @@ function changes(existing: Facility | null, facility: Facility) {
       key !== "id" &&
       key !== "tenantId" &&
       key !== "openingCalendar" &&
-      (!existing || existing[key] !== facility[key]),
+      (!existing || !same(existing[key], facility[key])),
   );
   const pick = (source: Facility) =>
     Object.fromEntries(fields.map((key) => [key, source[key]]));
@@ -191,4 +231,7 @@ function changes(existing: Facility | null, facility: Facility) {
       ? { openingCalendarChanged: true }
       : {}),
   };
+}
+function same(a: unknown, b: unknown) {
+  return JSON.stringify(a) === JSON.stringify(b);
 }

@@ -5,7 +5,9 @@ import {
   PiArrowSquareOut,
   PiBuildings,
   PiCalendarCheck,
+  PiChartBar,
   PiGearSix,
+  PiIdentificationCard,
   PiListChecks,
   PiQrCode,
   PiSignOut,
@@ -80,9 +82,21 @@ export function Shell() {
             </NavLink>
           )}
           {c.isManager && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.insights)}>
+              <PiChartBar size={20} aria-hidden="true" />
+              {t("insights")}
+            </NavLink>
+          )}
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
               <PiListChecks size={20} aria-hidden="true" />
               {t("audit")}
+            </NavLink>
+          )}
+          {c.isManager && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.categories)}>
+              <PiIdentificationCard size={20} aria-hidden="true" />
+              {t("categories")}
             </NavLink>
           )}
           {c.isManager && (
@@ -108,9 +122,17 @@ export function Shell() {
               <a href={CITIZEN_APP_URL}>{t("citizenApp")}</a>
             </li>
             <li>
+              <NavLink to={ROUTES.operator}>{t("operatorArea")}</NavLink>
+            </li>
+            <li>
               <button type="button" onClick={() => c.setPrivacyOpen(true)}>
                 {t("privacy")}
               </button>
+            </li>
+            <li>
+              <NavLink to={routeFor(municipality.slug, ROUTES.accessibility)}>
+                {t("accessibility")}
+              </NavLink>
             </li>
           </ul>
           <p className="sidebar-note">{t("openSource")}</p>
@@ -206,6 +228,12 @@ export function Shell() {
         <footer className="footer">
           <span>{t("demo")}</span>
           <span>{t("demoNotice")}</span>
+          <NavLink
+            className="footer-link"
+            to={routeFor(municipality.slug, ROUTES.accessibility)}
+          >
+            {t("accessibility")}
+          </NavLink>
         </footer>
       </div>
       <SessionDialog

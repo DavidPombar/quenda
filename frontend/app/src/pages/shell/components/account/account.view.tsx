@@ -4,6 +4,7 @@ import { PiDownloadSimple, PiWarningCircle } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { dateLabel } from "@/services/date.service";
+import { UserCategories } from "./components/user-categories/user-categories.view";
 import { DeleteAccountDialog } from "./components/delete-account-dialog/delete-account-dialog.view";
 import { useAccountController } from "./account.controller";
 export function Account() {
@@ -55,6 +56,11 @@ export function Account() {
               </div>
             </dl>
           </section>
+          <UserCategories
+            userId={c.account.userId}
+            municipality={c.municipality}
+            t={c.t}
+          />
           <section className="account-section">
             <h2>{c.t("privacySection")}</h2>
             <dl className="facts">

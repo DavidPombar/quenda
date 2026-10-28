@@ -6,20 +6,25 @@ import { Booking } from "../../domain/booking.entity";
 import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
 import { failure } from "../../../../shared/application/errors";
+import { TariffCategory } from "../../../../shared/application/categories";
 interface Row {
   id: string;
   tenant_id: string;
   user_id: string;
   facility_id: string;
+  resource_id: string;
   starts_at: string;
   ends_at: string;
   created_at: string;
   cancelled_at: string | null;
   cancellation_hours: number | null;
+  tariff_category: TariffCategory | null;
+  price_cents: number | null;
   cancelled_by: "citizen" | "municipality" | null;
   cancellation_reason: string | null;
   status: string;
   facility_name: string;
+  resource_name: string;
   sport: string;
 }
 function toDomain(row: Row): Booking {
@@ -28,10 +33,13 @@ function toDomain(row: Row): Booking {
     tenantId: row.tenant_id,
     userId: row.user_id,
     facilityId: row.facility_id,
+    resourceId: row.resource_id,
     start: Temporal.Instant.from(row.starts_at),
     end: Temporal.Instant.from(row.ends_at),
     createdAt: Temporal.Instant.from(row.created_at),
     cancellationHours: row.cancellation_hours,
+    tariffCategory: row.tariff_category,
+    priceCents: row.price_cents,
   };
   if (row.status === "confirmed" && row.cancelled_at === null)
     return { ...base, status: "confirmed" };
@@ -66,8 +74,13 @@ export class PostgresBookingRepository extends BookingRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
   async hasCheckIn(tenantId: string, id: string) {
+    // Serialize an absence with a concurrent door entry; re-read attendance after the lock.
+    await this.db.query(
+      "SELECT id FROM bookings WHERE tenant_id=$1 AND id=$2 FOR UPDATE",
+      [tenantId, id],
+    );
     const { rowCount } = await this.db.query(
-      "SELECT 1 FROM check_ins WHERE tenant_id=$1 AND booking_id=$2",
+      "SELECT 1 FROM check_ins c JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id AND b.sequence=c.booking_sequence WHERE c.tenant_id=$1 AND c.booking_id=$2",
       [tenantId, id],
     );
     return (rowCount ?? 0) > 0;
@@ -86,7 +99,7 @@ export class PostgresBookingRepository extends BookingRepository {
     facilityId?: string;
   }) {
     const { rows } = await this.db.query<Row & { display_name: string }>(
-      "SELECT b.*,f.name AS facility_name,f.sport,u.display_name FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN users u ON u.tenant_id=b.tenant_id AND u.id=b.user_id WHERE b.tenant_id=$1 AND b.starts_at>=$2 AND b.starts_at<$3 AND ($4::uuid IS NULL OR b.facility_id=$4) ORDER BY b.starts_at, f.name LIMIT 500",
+      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport,u.display_name FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id JOIN users u ON u.tenant_id=b.tenant_id AND u.id=b.user_id WHERE b.tenant_id=$1 AND b.starts_at>=$2 AND b.starts_at<$3 AND ($4::uuid IS NULL OR b.facility_id=$4) ORDER BY b.starts_at, f.name LIMIT 500",
       [
         args.tenantId,
         args.from.toString(),
@@ -97,6 +110,7 @@ export class PostgresBookingRepository extends BookingRepository {
     return rows.map((row) => ({
       booking: toDomain(row),
       facilityName: row.facility_name,
+      resourceName: row.resource_name,
       sport: row.sport,
       displayName: row.display_name,
     }));
@@ -114,12 +128,13 @@ export class PostgresBookingRepository extends BookingRepository {
   }
   async list(tenantId: string, userId: string) {
     const { rows } = await this.db.query<Row>(
-      "SELECT b.*,f.name AS facility_name,f.sport FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
+      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
       [tenantId, userId],
     );
     return rows.map((row) => ({
       booking: toDomain(row),
       facilityName: row.facility_name,
+      resourceName: row.resource_name,
       sport: row.sport,
     }));
   }
@@ -137,7 +152,7 @@ export class PostgresBookingRepository extends BookingRepository {
     try {
       await this.db
         .query(
-          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
+          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason,resource_id,tariff_category,price_cents) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12,resource_id=$13,tariff_category=$14,price_cents=$15 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
           [
             value.id,
             value.tenantId,
@@ -151,6 +166,9 @@ export class PostgresBookingRepository extends BookingRepository {
             value.cancellationHours,
             value.status === "cancelled" ? value.cancelledBy : null,
             value.status === "cancelled" ? value.cancellationReason : null,
+            value.resourceId,
+            value.tariffCategory,
+            value.priceCents,
           ],
         )
         .then((result) => {
@@ -162,8 +180,6 @@ export class PostgresBookingRepository extends BookingRepository {
       return Result.ok();
     } catch (error) {
       const pg = error as { code?: string; constraint?: string };
-      if (pg.code === "23P01" && pg.constraint === "bookings_no_overlap")
-        return Result.err(failure("slot_taken"));
       if (pg.code === "23505") return Result.err(failure("id_reused"));
       throw error;
     }

@@ -2,11 +2,15 @@
 import { Module } from "@nestjs/common";
 import { FacilityRepository } from "./domain/facility.repository";
 import { OpeningCalendar } from "./domain/opening-calendar";
+import { ResourceRepository } from "./domain/resource.repository";
+import { PostgresResourceRepository } from "./infrastructure/persistence/postgres-resource.repository";
 import { PostgresFacilityRepository } from "./infrastructure/persistence/postgres-facility.repository";
 import { IcalOpeningCalendar } from "./infrastructure/calendar/ical-opening-calendar";
 import { HolidayCalendar } from "./domain/holiday-calendar";
 import { IcalHolidayCalendar } from "./infrastructure/calendar/ical-holiday-calendar";
 import { ListFacilities } from "./application/queries/list-facilities.query";
+import { ListCatalog } from "./application/queries/list-catalog.query";
+import { ListCatalogController } from "./infrastructure/api/public/list-catalog.controller";
 import { GetAvailability } from "./application/queries/get-availability.query";
 import { SaveFacility } from "./application/commands/save-facility.command";
 import { ListFacilitiesController } from "./infrastructure/api/public/list-facilities.controller";
@@ -18,15 +22,18 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
 @Module({
   providers: [
     ListFacilities,
+    ListCatalog,
     GetAvailability,
     SaveFacility,
     GetFacilityImpact,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
+    { provide: ResourceRepository, useClass: PostgresResourceRepository },
     { provide: OpeningCalendar, useClass: IcalOpeningCalendar },
     { provide: HolidayCalendar, useClass: IcalHolidayCalendar },
   ],
   controllers: [
     ListFacilitiesController,
+    ListCatalogController,
     GetAvailabilityController,
     CreateFacilityController,
     UpdateFacilityController,

@@ -5,6 +5,8 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsInt,
+  Min,
   IsIn,
   IsString,
   IsUUID,
@@ -15,6 +17,13 @@ export class CheckInItemRequestDTO {
   @ApiProperty({ description: "Reservation UUID" })
   @IsUUID()
   bookingId!: string;
+  @ApiProperty({
+    description: "Reservation revision seen by the door",
+    minimum: 0,
+  })
+  @IsInt()
+  @Min(0)
+  sequence!: number;
   @ApiProperty({ description: "Instant the person was let in" })
   @IsString()
   @MaxLength(64)

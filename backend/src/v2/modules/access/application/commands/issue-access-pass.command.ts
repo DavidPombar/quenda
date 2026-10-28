@@ -67,6 +67,7 @@ export class IssueAccessPass {
       iss: settings.slug,
       sub: target.bookingId,
       fac: target.facilityId,
+      seq: target.sequence,
       iat: seconds(now),
       nbf: seconds(window.from),
       exp: seconds(window.until),

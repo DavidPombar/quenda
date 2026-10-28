@@ -11,4 +11,11 @@ export abstract class OpeningCalendar {
     timezone: string;
     date: Temporal.PlainDate;
   }): OpeningInterval[];
+  /** Merged opening intervals overlapping the local dates from–to (inclusive), parsed once. */
+  abstract expandRange(args: {
+    calendar: string;
+    timezone: string;
+    from: Temporal.PlainDate;
+    to: Temporal.PlainDate;
+  }): OpeningInterval[];
 }

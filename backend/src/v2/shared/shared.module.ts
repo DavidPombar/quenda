@@ -3,6 +3,10 @@ import { Global, Module } from "@nestjs/common";
 import { Clock } from "./application/clock";
 import { IdGenerator } from "./application/id-generator";
 import { Audit } from "./application/audit";
+import { SecretGenerator } from "./application/secret-generator";
+import { DataProtector } from "./application/data-protector";
+import { NodeSecretGenerator } from "./infrastructure/node-secret-generator";
+import { AesDataProtector } from "./infrastructure/aes-data-protector";
 import { Municipalities } from "./application/municipality-settings";
 import { Outbox } from "./application/outbox";
 import { SecretBox } from "./application/secret-box";
@@ -18,6 +22,11 @@ import { PostgresOutbox } from "./infrastructure/postgres-outbox";
 import { AesSecretBox } from "./infrastructure/aes-secret-box";
 import { HmacUnsubscribeTokens } from "./infrastructure/hmac-unsubscribe-tokens";
 import { PrincipalGuard } from "./infrastructure/api/principal.guard";
+import { OperatorGuard } from "./infrastructure/api/operator.guard";
+import { OperatorAudit } from "./application/operator-audit";
+import { PostgresOperatorAudit } from "./infrastructure/postgres-operator-audit";
+import { OperatorSessionRepository } from "../modules/operators/domain/operator-session.repository";
+import { PostgresOperatorSessionRepository } from "../modules/operators/infrastructure/persistence/postgres-operator-session.repository";
 import { SessionRepository } from "../modules/identity/domain/session.repository";
 import { PostgresSessionRepository } from "../modules/identity/infrastructure/persistence/postgres-session.repository";
 const bindings = [
@@ -29,15 +38,33 @@ const bindings = [
   { provide: SecretBox, useClass: AesSecretBox },
   { provide: UnsubscribeTokens, useClass: HmacUnsubscribeTokens },
   { provide: SessionRepository, useClass: PostgresSessionRepository },
+  { provide: OperatorAudit, useClass: PostgresOperatorAudit },
+  {
+    provide: OperatorSessionRepository,
+    useClass: PostgresOperatorSessionRepository,
+  },
+  { provide: SecretGenerator, useClass: NodeSecretGenerator },
+  {
+    provide: DataProtector,
+    useFactory: () => new AesDataProtector(process.env.QUENDA_DATA_KEY),
+  },
 ];
 @Global()
 @Module({
-  providers: [Database, Commands, Queries, PrincipalGuard, ...bindings],
+  providers: [
+    Database,
+    Commands,
+    Queries,
+    PrincipalGuard,
+    OperatorGuard,
+    ...bindings,
+  ],
   exports: [
     Database,
     Commands,
     Queries,
     PrincipalGuard,
+    OperatorGuard,
     ...bindings.map((binding) => binding.provide),
   ],
 })

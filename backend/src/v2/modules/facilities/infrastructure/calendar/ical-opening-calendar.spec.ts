@@ -37,6 +37,22 @@ describe("Opening calendar", () => {
       ["2026-03-29T12:00:00Z", "2026-03-29T14:00:00Z"],
     ]);
   });
+  it("should expand a whole range at once, honouring DST, EXDATE and RDATE", () => {
+    expect(
+      engine
+        .expandRange({
+          calendar,
+          timezone: "Europe/Madrid",
+          from: Temporal.PlainDate.from("2026-03-22"),
+          to: Temporal.PlainDate.from("2026-04-06"),
+        })
+        .map((value) => value.start.toString()),
+    ).toEqual([
+      "2026-03-22T08:00:00Z",
+      "2026-03-29T07:00:00Z",
+      "2026-04-06T07:00:00Z",
+    ]);
+  });
   it("should reject malformed or unbounded high-frequency calendars when validating", () => {
     expect(engine.validate("nonsense", "Europe/Madrid")).toBe(false);
     expect(

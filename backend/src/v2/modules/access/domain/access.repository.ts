@@ -12,12 +12,16 @@ export abstract class AccessRepository {
     tenantId: string,
     from: Temporal.Instant,
     to: Temporal.Instant,
-  ): Promise<AccessDayBooking[]>;
+  ): Promise<
+    (Omit<AccessDayBooking, "validFrom"> & { openingCalendar: string })[]
+  >;
   abstract findForCheckIn(
     tenantId: string,
     bookingId: string,
   ): Promise<{
     status: PassTarget["status"];
+    sequence: number;
+    openingCalendar: string;
     start: Temporal.Instant;
     end: Temporal.Instant;
   } | null>;
@@ -26,6 +30,7 @@ export abstract class AccessRepository {
     id: string;
     tenantId: string;
     bookingId: string;
+    sequence: number;
     actorId: string;
     method: "qr" | "manual";
     checkedInAt: Temporal.Instant;

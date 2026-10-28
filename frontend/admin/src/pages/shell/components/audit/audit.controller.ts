@@ -36,6 +36,11 @@ const AUDIT_ACTIONS = [
   ["access_webhook.updated", "auditAccessWebhookUpdated"],
   ["notification_preferences.updated", "auditPreferencesUpdated"],
   ["notification_preferences.unsubscribed", "auditPreferencesUnsubscribed"],
+  ["category.requested", "auditCategoryRequested"],
+  ["category.verified", "auditCategoryVerified"],
+  ["category.rejected", "auditCategoryRejected"],
+  ["category.assigned", "auditCategoryAssigned"],
+  ["category.revoked", "auditCategoryRevoked"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {

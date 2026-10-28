@@ -1,18 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { Temporal } from "@js-temporal/polyfill";
 import { describe, test, expect } from "vitest";
 import { page, commands } from "vitest/browser";
 import { render } from "vitest-browser-react";
-import { stubJsonResponse } from "@frontend-testing/server-stubs";
+import { http, HttpResponse } from "msw";
+import {
+  serverManager,
+  stubJsonResponse,
+} from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { municipality, stubShell } from "@/test/fixtures";
 import type { AccessDay } from "@/types/models";
 const booking = {
   id: "50000000-0000-4000-8000-000000000001",
   code: "50000000",
+  sequence: 0,
+  validFrom: Temporal.Now.instant().subtract({ hours: 1 }).toString(),
   facilityId: "20000000-0000-4000-8000-000000000011",
   facilityName: "Pistas de pádel da Carballeira",
-  start: "2030-03-17T10:00:00Z",
-  end: "2030-03-17T11:00:00Z",
+  start: Temporal.Now.instant().subtract({ minutes: 1 }).toString(),
+  end: Temporal.Now.instant().add({ hours: 1 }).toString(),
   status: "confirmed" as const,
   holder: "Alex",
   checkedInAt: null,
@@ -152,5 +159,88 @@ describe("Access control at the door", () => {
         body: { items: [expect.objectContaining({ bookingId: booking.id })] },
       }),
     );
+  });
+  test("should refuse cached door data when the session is rejected", async () => {
+    stubAccessStaff();
+    localStorage.setItem(
+      `quenda.access.${municipality.slug}.day`,
+      JSON.stringify(day),
+    );
+    stubJsonResponse({
+      path: "*/v2/access/day",
+      status: 403,
+      response: { code: "forbidden", detail: "Forbidden" },
+    });
+    await commands.navigate("/admin/vilaverde/acceso");
+    await render(<App />);
+    await expect
+      .element(page.getByRole("button", { name: "Sincronizar" }))
+      .toBeVisible();
+    await expect
+      .element(
+        page.getByRole("button", {
+          name: `Rexistrar entrada: ${booking.code}`,
+        }),
+      )
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByText(/Sen conexión: usando a sincronización/))
+      .not.toBeInTheDocument();
+  });
+  test("should keep a newer entry while an earlier batch is still being sent", async () => {
+    stubAccessStaff();
+    const second = {
+      ...booking,
+      id: "50000000-0000-4000-8000-000000000002",
+      code: "SECOND",
+    };
+    const entered = new Set<string>();
+    let release!: () => void;
+    const firstDelivery = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    stubJsonResponse({
+      path: "*/v2/access/day",
+      response: () => ({
+        ...day,
+        bookings: [booking, second].map((b) => ({
+          ...b,
+          checkedInAt: entered.has(b.id) ? "2030-03-17T10:05:00Z" : null,
+        })),
+      }),
+    });
+    const deliveries: unknown[] = [];
+    serverManager.getServer().use(
+      http.post("*/v2/access/check-ins", async ({ request }) => {
+        deliveries.push(await request.json());
+        const first = ++calls === 1;
+        if (first) await firstDelivery;
+        const id = first ? booking.id : second.id;
+        entered.add(id);
+        return HttpResponse.json({
+          results: [{ bookingId: id, outcome: "recorded" }],
+        });
+      }),
+    );
+    await commands.navigate("/admin/vilaverde/acceso");
+    await render(<App />);
+    await page
+      .getByRole("button", { name: `Rexistrar entrada: ${booking.code}` })
+      .click();
+    await page
+      .getByRole("button", { name: "Rexistrar entrada: SECOND" })
+      .click();
+    await expect
+      .element(page.getByText(/2 entradas pendentes de enviar/))
+      .toBeVisible();
+    release();
+    await expect
+      .element(page.getByText(/entradas pendentes de enviar/))
+      .not.toBeInTheDocument();
+    expect(deliveries).toHaveLength(2);
+    expect(deliveries[1]).toEqual({
+      items: [expect.objectContaining({ bookingId: second.id, sequence: 0 })],
+    });
   });
 });

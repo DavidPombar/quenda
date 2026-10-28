@@ -6,7 +6,8 @@ import logoMark from "@/assets/illustrations/logo-mark.svg";
 import tennis from "@/assets/illustrations/facility-tennis.svg";
 import padel from "@/assets/illustrations/facility-padel.svg";
 import swimming from "@/assets/illustrations/facility-swimming.svg";
-import { APP_URL, ADMIN_URL } from "@/constants/routes";
+import { APP_URL, ADMIN_URL, ROUTES } from "@/constants/routes";
+import { SiteFooter } from "@/components/site-footer/site-footer.view";
 import { useHomeController } from "./home.controller";
 const STEP_ART = [tennis, padel, swimming];
 const LICENSE_URL = "https://www.gnu.org/licenses/agpl-3.0.html";
@@ -23,6 +24,9 @@ export function Home() {
           quenda
         </a>
         <nav aria-label={t.navigation}>
+          <a className="section-link" href={ROUTES.search}>
+            {t.searchNav}
+          </a>
           <a className="section-link" href="#como-funciona">
             {t.how}
           </a>
@@ -55,6 +59,9 @@ export function Home() {
               <Button asChild colorPalette="court">
                 <a href={APP_URL}>{t.openApp}</a>
               </Button>
+              <a className="text-link" href={ROUTES.search}>
+                {t.searchCta}
+              </a>
               <a className="text-link" href="#como-funciona">
                 {t.discover}
               </a>
@@ -146,37 +153,7 @@ export function Home() {
           </ul>
         </section>
       </main>
-      <footer className="site-footer">
-        <div className="wrap footer-grid">
-          <div className="footer-brand">
-            <a className="brand" href="/" aria-label="Quenda">
-              <img className="brand-symbol" src={logoMark} alt="" />
-              quenda
-            </a>
-            <p>{t.footerTagline}</p>
-          </div>
-          <nav aria-label={t.footerLinks}>
-            <ul>
-              <li>
-                <a href={APP_URL}>{t.footerAppLink}</a>
-              </li>
-              <li>
-                <a href={ADMIN_URL}>{t.footerAdminLink}</a>
-              </li>
-              <li>
-                <a href={LICENSE_URL} rel="license noreferrer">
-                  {t.footerLicense}
-                  <PiArrowSquareOut size={16} aria-hidden="true" />
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <div className="footer-legal">
-            <p>{t.footerPrivacy}</p>
-            <p>{t.footerContest}</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter t={t} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { AccessWindow } from "../access-window";
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { AccessRepository } from "../../domain/access.repository";
@@ -20,6 +21,7 @@ export class GetAccessDay {
     private readonly keys: AccessKeyRepository,
     private readonly municipalities: Municipalities,
     private readonly clock: Clock,
+    private readonly window: AccessWindow,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -54,7 +56,14 @@ export class GetAccessDay {
         settings.id,
         now.subtract({ hours: RETIRED_KEY_HOURS }),
       ),
-      bookings,
+      bookings: bookings.map(({ openingCalendar, ...booking }) => ({
+        ...booking,
+        validFrom: this.window.of({
+          ...booking,
+          openingCalendar,
+          timezone: settings.timezone,
+        }).from,
+      })),
       revoked: bookings
         .filter((booking) => booking.status !== "confirmed")
         .map((booking) => booking.id),

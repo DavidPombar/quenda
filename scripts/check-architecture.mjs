@@ -133,9 +133,12 @@ for (const file of roots.flatMap((directory) =>
       if (
         !source.includes('V2Controller("public/') &&
         !source.includes("V2Controller('public/") &&
-        !source.includes("@UseGuards(PrincipalGuard)")
+        !source.includes("@UseGuards(PrincipalGuard)") &&
+        !source.includes("@UseGuards(OperatorGuard)")
       )
-        reject("Non-public controllers require the principal guard");
+        reject(
+          "Non-public controllers require the principal or operator guard",
+        );
     }
   }
   const dependencies = imports

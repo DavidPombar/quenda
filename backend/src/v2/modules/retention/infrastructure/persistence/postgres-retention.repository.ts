@@ -62,6 +62,13 @@ export class PostgresRetentionRepository extends RetentionRepository {
       now,
     );
   }
+  purgeLoginAttempts(tenantId: string, now: Temporal.Instant) {
+    return this.run(
+      "DELETE FROM login_attempts WHERE tenant_id=$1 AND expires_at<$2",
+      tenantId,
+      now,
+    );
+  }
   deleteConsentsOfPurgedUsers(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       `DELETE FROM consents c USING users u
@@ -80,6 +87,7 @@ export class PostgresRetentionRepository extends RetentionRepository {
         AND NOT EXISTS (SELECT 1 FROM sessions s WHERE s.tenant_id=u.tenant_id AND s.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM audit_events a WHERE a.tenant_id=u.tenant_id AND a.actor_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM consents c WHERE c.tenant_id=u.tenant_id AND c.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM identities i WHERE i.tenant_id=u.tenant_id AND i.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM outbox o WHERE o.tenant_id=u.tenant_id AND o.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM notification_preferences p WHERE p.tenant_id=u.tenant_id AND p.user_id=u.id)`,
       tenantId,

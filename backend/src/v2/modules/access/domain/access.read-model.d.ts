@@ -15,6 +15,7 @@ export interface AccessKeyRecord extends AccessKey {
 export interface PassTarget {
   bookingId: string;
   facilityId: string;
+  sequence: number;
   status: "confirmed" | "cancelled" | "no_show";
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -28,9 +29,11 @@ export interface AccessPass {
   validUntil: Temporal.Instant;
 }
 export interface AccessDayBooking {
+  validFrom: Temporal.Instant;
   id: string;
   code: string;
   facilityId: string;
+  sequence: number;
   facilityName: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -54,7 +57,8 @@ export type CheckInOutcome =
   | "cancelled"
   | "no_show"
   | "out_of_window"
-  | "not_found";
+  | "not_found"
+  | "stale";
 export interface AccessSettings {
   webhookUrl: string;
   hasWebhookSecret: boolean;

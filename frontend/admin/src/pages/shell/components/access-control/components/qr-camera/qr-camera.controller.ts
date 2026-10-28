@@ -16,7 +16,7 @@ export function useQrCameraController(onCode: (text: string) => void) {
     const scanner = new QrScanner(
       video.current,
       ({ data }) => {
-        const now = Date.now();
+        const now = performance.now();
         if (data === last.text && now - last.at < REPEAT_MS) return;
         last = { text: data, at: now };
         handler.current(data);

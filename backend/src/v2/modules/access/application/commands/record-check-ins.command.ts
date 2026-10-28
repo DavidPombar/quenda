@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { AccessWindow } from "../access-window";
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { AccessRepository } from "../../domain/access.repository";
@@ -14,6 +15,7 @@ import { AppError, failure } from "../../../../shared/application/errors";
 const CLOCK_SKEW_MINUTES = 5;
 export interface CheckInRequest {
   bookingId: string;
+  sequence: number;
   checkedInAt: string;
   method: "qr" | "manual";
 }
@@ -29,6 +31,7 @@ export class RecordCheckIns {
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
     private readonly audit: Audit,
+    private readonly window: AccessWindow,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -80,11 +83,11 @@ export class RecordCheckIns {
     if (!booking) return "not_found";
     if (booking.status === "cancelled") return "cancelled";
     if (booking.status === "no_show") return "no_show";
-    const day = (instant: Temporal.Instant) =>
-      instant.toZonedDateTimeISO(timezone).toPlainDate();
+    if (item.sequence !== booking.sequence) return "stale";
+    const window = this.window.of({ ...booking, timezone });
     if (
-      !day(at).equals(day(booking.start)) ||
-      Temporal.Instant.compare(at, booking.end) > 0 ||
+      Temporal.Instant.compare(at, window.from.subtract({ minutes: 1 })) < 0 ||
+      Temporal.Instant.compare(at, booking.end.add({ minutes: 1 })) > 0 ||
       Temporal.Instant.compare(at, now.add({ minutes: CLOCK_SKEW_MINUTES })) > 0
     )
       return "out_of_window";
@@ -92,6 +95,7 @@ export class RecordCheckIns {
       id: this.ids.next(),
       tenantId: principal.tenantId,
       bookingId: item.bookingId,
+      sequence: item.sequence,
       actorId: principal.userId,
       method: item.method,
       checkedInAt: at,

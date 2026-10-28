@@ -6,15 +6,20 @@ export type Permission =
   | "insights:view"
   | "audit:view"
   | "municipality:manage"
+  | "categories:manage"
   | "bookings:manage"
+  | "data:export"
   | "access:control";
-/** Access staff only check people in and mark absences at the facility. */
+/** Door staff only record entries and attendance. */
 export type Role = "citizen" | "manager" | "access";
+/** How strongly the account's identity was proven: demo account, e-mail code, eID (OIDC) or local credentials. */
+export type Assurance = "demo" | "email" | "eid" | "local";
 export interface Principal {
   userId: string;
   tenantId: string;
   displayName: string;
   role: Role;
+  assurance: Assurance;
   grants: readonly Permission[];
 }
 export function can(principal: Principal, permission: Permission) {

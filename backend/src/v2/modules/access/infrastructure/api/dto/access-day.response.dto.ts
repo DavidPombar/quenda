@@ -2,6 +2,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { AccessDay, AccessDayBooking } from "../../../domain/access.read-model";
 export class AccessDayBookingResponseDTO {
+  @ApiProperty({ description: "Reservation revision" }) sequence!: number;
+  @ApiProperty({ description: "Earliest permitted entry instant" })
+  validFrom!: string;
   @ApiProperty({ description: "Reservation UUID" }) id!: string;
   @ApiProperty({ description: "Short code shown with the QR" }) code!: string;
   @ApiProperty({ description: "Facility UUID" }) facilityId!: string;
@@ -21,6 +24,8 @@ export class AccessDayBookingResponseDTO {
   static from(value: AccessDayBooking): AccessDayBookingResponseDTO {
     return {
       id: value.id,
+      sequence: value.sequence,
+      validFrom: value.validFrom.toString(),
       code: value.code,
       facilityId: value.facilityId,
       facilityName: value.facilityName,

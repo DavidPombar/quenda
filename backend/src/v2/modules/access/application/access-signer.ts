@@ -4,6 +4,7 @@ export interface PassClaims {
   iss: string;
   sub: string;
   fac: string;
+  seq: number;
   iat: number;
   nbf: number;
   exp: number;

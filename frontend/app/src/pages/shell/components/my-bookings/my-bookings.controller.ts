@@ -8,6 +8,7 @@ import { useUpdateBookingMutation } from "@/queries/bookings/update-booking.muta
 import { useGetPenaltyStandingQuery } from "@/queries/bookings/get-penalty-standing.query";
 import { dateLabel } from "@/services/date.service";
 import { fill, type TextKey } from "@/services/i18n.service";
+import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
 import type { AppContext } from "@/types/app-context";
 import type { Booking, Notification, PenaltyStanding } from "@/types/models";
 const NOTICE_TITLES = {
@@ -40,6 +41,7 @@ export function useMyBookingsController() {
     ? allNotices
     : allNotices.slice(0, NOTICE_PREVIEW);
   const update = useUpdateBookingMutation();
+  const calendarHref = useBookingCalendarLink();
   const now = Temporal.Now.instant();
   const allBookings =
     query.data
@@ -134,5 +136,6 @@ export function useMyBookingsController() {
     canShowPass,
     showingPass,
     setShowingPass,
+    calendarHref,
   };
 }

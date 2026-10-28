@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Temporal } from "@js-temporal/polyfill";
 import { useGetAccessDayQuery } from "@/queries/access/get-access-day.query";
@@ -19,6 +19,7 @@ const REJECTIONS = {
   no_show: "accessReasonNoShow",
   out_of_window: "accessReasonWindow",
   not_found: "accessReasonNotFound",
+  stale: "accessReasonStale",
 } as const satisfies Partial<Record<CheckInOutcome, TextKey>>;
 /**
  * Door mode: verifies passes against the last synced day, records entries and keeps those it
@@ -35,6 +36,8 @@ export function useAccessControlController() {
   const [pending, setPending] = useState<CheckIn[]>(() =>
     pendingCheckIns(slug),
   );
+  const queue = useRef(pending);
+  const syncing = useRef(false);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [result, setResult] = useState<PassCheck | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -45,16 +48,27 @@ export function useAccessControlController() {
     ...(day?.bookings
       .filter((item) => item.checkedInAt)
       .map((item) => item.id) ?? []),
-    ...pending.map((item) => item.bookingId),
+    ...pending
+      .filter((item) =>
+        day?.bookings.some(
+          (booking) =>
+            booking.id === item.bookingId && booking.sequence === item.sequence,
+        ),
+      )
+      .map((item) => item.bookingId),
   ]);
   function remember(items: CheckIn[]) {
+    queue.current = items;
     setPending(items);
     storePendingCheckIns(slug, items);
   }
   async function flush(items: CheckIn[]) {
-    if (!items.length) return;
+    if (!items.length || syncing.current) return;
+    syncing.current = true;
+    const batch = items.slice(0, 200);
+    let delivered = false;
     try {
-      const { results } = await record.mutateAsync(items);
+      const { results } = await record.mutateAsync(batch);
       const codes = new Map(day?.bookings.map((item) => [item.id, item.code]));
       setConflicts(
         results.flatMap(({ bookingId, outcome }) =>
@@ -68,17 +82,58 @@ export function useAccessControlController() {
             : [],
         ),
       );
-      remember([]);
+      const sent = new Set(
+        batch.map(
+          (item) => `${item.bookingId}:${item.sequence}:${item.checkedInAt}`,
+        ),
+      );
+      remember(
+        queue.current.filter(
+          (item) =>
+            !sent.has(`${item.bookingId}:${item.sequence}:${item.checkedInAt}`),
+        ),
+      );
+      delivered = true;
     } catch {
       /* Offline: the entries stay queued for the next sync. */
+    } finally {
+      syncing.current = false;
     }
+    if (delivered && queue.current.length) await flush(queue.current);
   }
   function checkIn(booking: AccessBooking, method: CheckIn["method"]) {
+    const now = Temporal.Now.instant();
+    if (booking.status !== "confirmed") {
+      setResult({ result: "revoked", booking });
+      return;
+    }
+    if (
+      Temporal.Instant.compare(
+        now,
+        Temporal.Instant.from(booking.validFrom).subtract({ minutes: 1 }),
+      ) < 0 ||
+      Temporal.Instant.compare(
+        now,
+        Temporal.Instant.from(booking.end).add({ minutes: 1 }),
+      ) > 0
+    ) {
+      setResult({ result: "out_of_window", booking });
+      return;
+    }
+    if (
+      booking.checkedInAt ||
+      queue.current.some(
+        (item) =>
+          item.bookingId === booking.id && item.sequence === booking.sequence,
+      )
+    )
+      return;
     const next = [
-      ...pending,
+      ...queue.current,
       {
         bookingId: booking.id,
-        checkedInAt: Temporal.Now.instant().toString(),
+        sequence: booking.sequence,
+        checkedInAt: now.toString(),
         method,
       },
     ];
@@ -126,7 +181,7 @@ export function useAccessControlController() {
       ? fill(t("accessPending"), { count: pending.length })
       : "",
     sync: async () => {
-      await flush(pending);
+      await flush(queue.current);
       await dayQuery.refetch();
     },
     conflicts,

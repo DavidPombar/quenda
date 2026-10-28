@@ -5,6 +5,7 @@ import type { Response } from "express";
 import { V2Controller } from "../../../../../shared/infrastructure/api/v2-controller.decorator";
 import { Commands } from "../../../../../shared/infrastructure/commands.locator";
 import { ProblemException } from "../../../../../shared/infrastructure/api/problem";
+import { SensitiveEndpoint } from "../../../../../shared/infrastructure/api/rate-limit";
 import { assertNever } from "../../../../../shared/application/errors";
 import {
   CreateSession,
@@ -12,6 +13,7 @@ import {
 } from "../../../application/commands/create-session.command";
 import { CreateSessionRequestDTO } from "../dto/create-session.request.dto";
 import { SessionResponseDTO } from "../dto/session.response.dto";
+import { setSessionCookie } from "./auth-cookies";
 @V2Controller("public/sessions")
 export class CreateSessionController {
   private readonly operation;
@@ -19,6 +21,7 @@ export class CreateSessionController {
     this.operation = commands.get(CreateSession);
   }
   @Post()
+  @SensitiveEndpoint()
   @ApiOperation({
     summary: "Open a demo session; explicitly disabled unless DEMO_MODE=true",
   })
@@ -33,13 +36,7 @@ export class CreateSessionController {
       legalVersion: body.legalVersion,
     });
     return result.fold((value) => {
-      response.cookie("quenda_session", value.token, {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 8 * 60 * 60 * 1000,
-        path: "/",
-      });
+      setSessionCookie(response, value.token);
       return SessionResponseDTO.from(value.principal);
     }, this.handleError);
   }

@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Module } from "@nestjs/common";
 import { FacilitiesModule } from "../facilities/facilities.module";
+import { TariffsModule } from "../tariffs/tariffs.module";
 import { BookingRepository } from "./domain/booking.repository";
 import { FacilitySchedule } from "./domain/facility-schedule";
 import { NotificationRepository } from "./domain/notification.repository";
+import { BookingUnitRepository } from "./domain/booking-unit.repository";
+import { PostgresBookingUnitRepository } from "./infrastructure/persistence/postgres-booking-unit.repository";
 import { PostgresBookingRepository } from "./infrastructure/persistence/postgres-booking.repository";
 import { PostgresFacilitySchedule } from "./infrastructure/persistence/postgres-facility-schedule";
 import { PostgresNotificationRepository } from "./infrastructure/persistence/postgres-notification.repository";
@@ -25,7 +28,7 @@ import { UpdateBookingController } from "./infrastructure/api/citizen/update-boo
 import { ListBookingsController } from "./infrastructure/api/citizen/list-bookings.controller";
 import { ListNotificationsController } from "./infrastructure/api/citizen/list-notifications.controller";
 @Module({
-  imports: [FacilitiesModule],
+  imports: [FacilitiesModule, TariffsModule],
   providers: [
     BookingPolicy,
     CreateBooking,
@@ -41,6 +44,7 @@ import { ListNotificationsController } from "./infrastructure/api/citizen/list-n
     },
     { provide: BookingRepository, useClass: PostgresBookingRepository },
     { provide: FacilitySchedule, useClass: PostgresFacilitySchedule },
+    { provide: BookingUnitRepository, useClass: PostgresBookingUnitRepository },
     {
       provide: NotificationRepository,
       useClass: PostgresNotificationRepository,

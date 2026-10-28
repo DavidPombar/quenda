@@ -34,6 +34,7 @@ export class PostgresAccessKeyRepository extends AccessKeyRepository {
     super();
   }
   async active(tenantId: string) {
+    await this.lock(tenantId);
     const { rows } = await this.db.query<KeyRow>(
       `SELECT ${columns} FROM access_keys WHERE tenant_id=$1 AND retired_at IS NULL`,
       [tenantId],
@@ -66,7 +67,14 @@ export class PostgresAccessKeyRepository extends AccessKeyRepository {
       ],
     );
   }
+  private async lock(tenantId: string) {
+    await this.db.query(
+      "SELECT id FROM municipalities WHERE id=$1 FOR UPDATE",
+      [tenantId],
+    );
+  }
   async retireActive(tenantId: string, at: Temporal.Instant) {
+    await this.lock(tenantId);
     await this.db.query(
       "UPDATE access_keys SET retired_at=$2 WHERE tenant_id=$1 AND retired_at IS NULL",
       [tenantId, at.toString()],

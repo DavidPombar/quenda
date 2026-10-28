@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { Temporal } from "@js-temporal/polyfill";
 import { describe, expect, test } from "vitest";
 import { SignJWT, exportJWK, generateKeyPair } from "jose";
 import type { AccessDay } from "@/types/models";
@@ -18,7 +19,7 @@ async function issuer(kid: string) {
       claims: { sub: string; nbf: number; exp: number },
       iss = "vilaverde",
     ) =>
-      new SignJWT({})
+      new SignJWT({ fac: "f1", seq: 0 })
         .setProtectedHeader({ alg: "ES256", kid })
         .setIssuer(iss)
         .setSubject(claims.sub)
@@ -40,10 +41,16 @@ function day(
     bookings: ["b1", "b2"].map((id) => ({
       id,
       code: id.toUpperCase(),
+      sequence: 0,
+      validFrom: Temporal.Instant.fromEpochMilliseconds(
+        (NOW - 60) * 1000,
+      ).toString(),
       facilityId: "f1",
       facilityName: "Pista 1",
       start: "2030-03-17T10:00:00Z",
-      end: "2030-03-17T11:00:00Z",
+      end: Temporal.Instant.fromEpochMilliseconds(
+        (NOW + 600) * 1000,
+      ).toString(),
       status: revoked.includes(id) ? "cancelled" : "confirmed",
       holder: "Alex",
       checkedInAt: null,
@@ -101,5 +108,31 @@ describe("offline pass check", () => {
       (await checkPass("not-a-token", day([published.jwk]), new Set(), NOW))
         .result,
     ).toBe("invalid");
+  });
+  test("should reject an old pass after a same-day move, even inside its original window", async () => {
+    const key = await issuer("k1");
+    const token = await key.sign({ sub: "b1", nbf: NOW - 60, exp: NOW + 600 });
+    for (const change of [
+      { sequence: 1 },
+      {
+        end: Temporal.Instant.fromEpochMilliseconds(
+          (NOW - 120) * 1000,
+        ).toString(),
+      },
+      { facilityId: "f2" },
+      {
+        validFrom: Temporal.Instant.fromEpochMilliseconds(
+          (NOW + 120) * 1000,
+        ).toString(),
+      },
+      { status: "cancelled" as const },
+      { status: "no_show" as const },
+    ]) {
+      const synced = day([key.jwk]);
+      Object.assign(synced.bookings[0], change);
+      expect((await checkPass(token, synced, new Set(), NOW)).result).toBe(
+        "revoked",
+      );
+    }
   });
 });

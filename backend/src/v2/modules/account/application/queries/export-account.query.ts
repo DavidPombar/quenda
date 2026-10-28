@@ -4,6 +4,7 @@ import { AccountRepository } from "../../domain/account.repository";
 import { ConsentRepository } from "../../domain/consent.repository";
 import { AccountExport } from "../../domain/account.read-model";
 import { Principal, can } from "../../../../shared/application/principal";
+import { DataProtector } from "../../../../shared/application/data-protector";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
@@ -16,6 +17,7 @@ export class ExportAccount {
     private readonly accounts: AccountRepository,
     private readonly consents: ConsentRepository,
     private readonly municipalities: Municipalities,
+    private readonly protector: DataProtector,
     private readonly clock: Clock,
     private readonly audit: Audit,
   ) {}
@@ -27,7 +29,9 @@ export class ExportAccount {
     const { tenantId, userId } = args.principal;
     const settings = await this.municipalities.find(tenantId);
     const profile = await this.accounts.find(tenantId, userId);
-    if (!settings || !profile) return Result.err(failure("not_found"));
+    const personal = await this.accounts.findPersonalData(tenantId, userId);
+    if (!settings || !profile || !personal)
+      return Result.err(failure("not_found"));
     const result: AccountExport = {
       generatedAt: this.clock.now(),
       municipality: {
@@ -37,8 +41,17 @@ export class ExportAccount {
         legalVersion: settings.legalVersion,
         retentionMonths: settings.retentionMonths,
       },
-      profile,
+      profile: {
+        ...profile,
+        email: personal.email,
+        assurance: personal.assurance,
+        nif: personal.nifCiphertext
+          ? this.protector.decrypt(personal.nifCiphertext)
+          : null,
+      },
+      identities: await this.accounts.listIdentities(tenantId, userId),
       consents: await this.consents.listByUser(tenantId, userId),
+      ...(await this.accounts.listCategories(tenantId, userId)),
       bookings: await this.accounts.listBookingsAll(tenantId, userId),
       notifications: await this.accounts.listNotificationsAll(tenantId, userId),
       preferences: await this.accounts.findPreferences(tenantId, userId),

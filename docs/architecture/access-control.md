@@ -13,6 +13,7 @@ lights) when a reservation should open the door. No hardware is supplied and non
 | `iss` | Municipality slug; the door rejects passes from another council |
 | `sub` | Reservation id |
 | `fac` | Facility id |
+| `seq` | Reservation revision; a reschedule or resource change invalidates the old pass |
 | `nbf` | First opening of the facility on the reservation's local day (its RFC 5545 calendar), or midnight when there is none; never later than the start |
 | `exp` | End of the reservation |
 | `iat` | Issue time |
@@ -44,16 +45,18 @@ no-show). The backoffice page **Control de accesos** stores this snapshot on the
 every five minutes and on demand, and says how old it is when there is no network.
 
 A scanned pass is checked locally with `jose` (MIT): ES256 signature with the published key,
-issuer, window (one minute of clock tolerance), revocation list and previous entries. A cancelled
+issuer, window (one minute of clock tolerance), current revision, facility and window in the synced reservation, revocation list and previous entries. A cancelled
 reservation **stops validating at the next sync**, as required. Staff without a camera, or helping
 someone who cannot show a code, use the searchable list with **Rexistrar entrada** and **Non
 presentado** buttons.
 
 Entries are sent with `POST /v2/access/check-ins` in batches; entries made offline wait in a local
-queue and go out on the next sync. Each item gets its own outcome (`recorded`, `duplicate`,
-`cancelled`, `no_show`, `out_of_window`, `not_found`) and the device shows the rejected ones.
+queue and go out on the next sync. Batches are limited to 200 and serialized so a successful earlier batch cannot erase newer pending entries. Each item gets its own outcome (`recorded`, `duplicate`,
+`cancelled`, `no_show`, `out_of_window`, `not_found`, `stale`) and the device shows the rejected ones.
 `check_ins` is the evidence of attendance (#16): a reservation with a check-in cannot be marked as a
-no-show. Each recorded entry is audited as `booking.checked_in`.
+no-show. Each recorded entry is audited as `booking.checked_in`. Each request includes the synced `sequence`; a queued entry for an older revision is rejected as `stale`. Attendance is unique per reservation revision, so attendance before a move is not reused for the new slot. Manual entries obey the same opening window as QR entries. A refused session never falls back to cached data.
+
+The backoffice camera requires HTTPS (or localhost). The deployed `/admin/` policy permits a camera from the same origin and the scanner's Blob worker; the public website and citizen app keep camera access disabled.
 
 ## Connector for locks and lights
 
