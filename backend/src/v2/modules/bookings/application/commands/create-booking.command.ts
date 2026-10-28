@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Temporal } from "@js-temporal/polyfill";
+import { TariffResolver } from "../../../tariffs/application/tariff-resolver";
 import { Injectable } from "@nestjs/common";
 import { BookingRepository } from "../../domain/booking.repository";
 import { BookingUnitRepository } from "../../domain/booking-unit.repository";
@@ -36,6 +37,7 @@ export class CreateBooking {
     private readonly facilities: FacilitySchedule,
     private readonly municipalities: Municipalities,
     private readonly policy: BookingPolicy,
+    private readonly tariffs: TariffResolver,
     private readonly clock: Clock,
     private readonly ids: IdGenerator,
     private readonly notifications: NotificationRepository,
@@ -71,7 +73,13 @@ export class CreateBooking {
         : Result.err(failure("id_reused"));
     const settings = await this.municipalities.find(tenantId);
     const facility = await this.facilities.lock(tenantId, args.facilityId);
-    if (!settings || !facility) return Result.err(failure("not_found"));
+    const tariff = await this.tariffs.resolve(
+      tenantId,
+      userId,
+      args.facilityId,
+    );
+    if (!settings || !facility || !tariff)
+      return Result.err(failure("not_found"));
     const resources = await this.facilities.resources(
       tenantId,
       args.facilityId,
@@ -110,6 +118,8 @@ export class CreateBooking {
           status: "confirmed",
           createdAt: now,
           cancellationHours: settings.cancellationHours,
+          tariffCategory: tariff.category,
+          priceCents: tariff.priceCents,
         };
         const rejected =
           (await this.bookings.save(booking)).fold(
@@ -151,6 +161,7 @@ export class CreateBooking {
         await this.audit.record(args.principal, "booking.created", booking.id, {
           facilityId: booking.facilityId,
           resourceId: booking.resourceId,
+          tariff,
           start: booking.start.toString(),
           end: booking.end.toString(),
         });

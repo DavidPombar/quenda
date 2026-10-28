@@ -6,6 +6,7 @@ import type {
   ExportedAuditEvent,
   ExportedBlock,
   ExportedBooking,
+  ExportedCategory,
   ExportedIdentity,
   ExportedMessage,
   ExportedNotification,
@@ -45,6 +46,12 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<number>;
+  /** Category records go with the account: they can reveal special-category data (GDPR art. 9). */
+  abstract deleteCategories(tenantId: string, userId: string): Promise<number>;
+  abstract listCategories(
+    tenantId: string,
+    userId: string,
+  ): Promise<{ categories: ExportedCategory[]; prefersFamilyTariff: boolean }>;
   /** Removes queued and delivered messages and notice preferences. */
   abstract deleteMessaging(tenantId: string, userId: string): Promise<void>;
   abstract setLocale(

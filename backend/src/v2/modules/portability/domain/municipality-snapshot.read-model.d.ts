@@ -24,6 +24,7 @@ export interface MunicipalitySnapshot {
     mailSenderName: string;
     mailReplyTo: string;
     storeNif: boolean;
+    enabledCategories: string[];
     accessibilityUnit: string;
     accessibilityEmail: string;
     accessibilityPhone: string;
@@ -34,6 +35,18 @@ export interface MunicipalitySnapshot {
     dataLicense: string;
     dir3Code: string | null;
   };
+  facilityPrices: {
+    facilityId: string;
+    category: string;
+    priceCents: number;
+  }[];
+  userCategories: {
+    userId: string;
+    category: string;
+    status: string;
+    requestedAt: Temporal.Instant | null;
+    decidedAt: Temporal.Instant | null;
+  }[];
   facilities: {
     id: string;
     name: string;
@@ -71,6 +84,7 @@ export interface MunicipalitySnapshot {
     /** Encrypted as stored: readable only with the same QUENDA_DATA_KEY. */
     nifCiphertext: string | null;
     nifDigest: string | null;
+    prefersFamilyTariff: boolean;
   }[];
   /** Links to the identity provider (issuer and subject), so people keep their account. */
   identities: {
@@ -94,6 +108,8 @@ export interface MunicipalitySnapshot {
     cancelledBy: string | null;
     cancellationReason: string | null;
     sequence: number;
+    tariffCategory: string | null;
+    priceCents: number | null;
   }[];
   notifications: {
     id: string;

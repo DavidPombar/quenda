@@ -5,6 +5,7 @@ import { RateLimitModule } from "./v2/shared/infrastructure/api/rate-limit";
 import { IdentityModule } from "./v2/modules/identity/identity.module";
 import { MunicipalitiesModule } from "./v2/modules/municipalities/municipalities.module";
 import { FacilitiesModule } from "./v2/modules/facilities/facilities.module";
+import { TariffsModule } from "./v2/modules/tariffs/tariffs.module";
 import { BookingsModule } from "./v2/modules/bookings/bookings.module";
 import { InsightsModule } from "./v2/modules/insights/insights.module";
 import { AccountModule } from "./v2/modules/account/account.module";
@@ -21,6 +22,7 @@ import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
     IdentityModule,
     MunicipalitiesModule,
     FacilitiesModule,
+    TariffsModule,
     BookingsModule,
     InsightsModule,
     AccountModule,

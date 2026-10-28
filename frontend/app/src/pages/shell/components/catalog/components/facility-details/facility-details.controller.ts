@@ -5,6 +5,8 @@ import { Temporal } from "@js-temporal/polyfill";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
 import { useCreateBookingMutation } from "@/queries/bookings/create-booking.mutation";
+import { useGetTariffQuery } from "@/queries/categories/get-tariff.query";
+import { offeredPrices } from "@/services/tariff.service";
 import { today, timeLabel } from "@/services/date.service";
 import { orderResources, resourceLabel } from "@/services/resources.service";
 import type { AppContext } from "@/types/app-context";
@@ -31,6 +33,11 @@ export function useFacilityDetailsController() {
     date,
   });
   const create = useCreateBookingMutation();
+  const tariff = useGetTariffQuery({
+    facilityId: facility ? id : "",
+    userId: context.session?.userId,
+  });
+  const prices = facility ? offeredPrices(facility, context.municipality) : [];
   const resources = orderResources(facility?.resources ?? []);
   const activeResources = resources.filter((resource) => resource.active);
   // Several courts: the person picks one; a single court keeps today's UI.
@@ -178,5 +185,7 @@ export function useFacilityDetailsController() {
     close,
     reserve,
     create,
+    tariff: tariff.data ?? null,
+    prices,
   };
 }

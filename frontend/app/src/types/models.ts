@@ -1,5 +1,34 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type Locale = "gl" | "es";
+/** User categories a municipality can price differently (M2). */
+export type Category =
+  | "resident"
+  | "family"
+  | "local_club"
+  | "minor"
+  | "large_family"
+  | "disability"
+  | "senior";
+/** "general" is the facility's base tariff, paid without a verified category. */
+export type TariffCategory = Category | "general";
+export interface CategoryPrice {
+  category: Category;
+  priceCents: number;
+}
+export interface Tariff {
+  category: TariffCategory;
+  priceCents: number;
+}
+export interface UserCategory {
+  category: Category;
+  status: "requested" | "verified" | "rejected";
+  requestedAt: string | null;
+  decidedAt: string | null;
+}
+export interface MyCategories {
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
+}
 export interface Accessibility {
   unit: string;
   email: string;
@@ -27,6 +56,7 @@ export interface Municipality {
   reminderHours: number;
   primaryColor: string;
   logoUrl: string | null;
+  enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;
   noShowWindowDays: number;
@@ -51,6 +81,7 @@ export interface Facility {
   status: "active" | "maintenance" | "closed";
   slotMinutes: number;
   priceCents: number;
+  prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
   resources: Resource[];
@@ -87,6 +118,8 @@ export interface Booking {
   sport: Sport;
   start: string;
   end: string;
+  tariffCategory: TariffCategory | null;
+  priceCents: number | null;
   status: "confirmed" | "cancelled" | "no_show";
   /** A confirmed booking that has ended counts as attended. */
   outcome: "upcoming" | "attended" | "no_show" | "cancelled";
@@ -170,6 +203,8 @@ export interface AccountExport {
   };
   profile: { userId: string; displayName: string; role: "citizen" | "manager" };
   consents: Consent[];
+  categories: UserCategory[];
+  prefersFamilyTariff: boolean;
   bookings: {
     id: string;
     facilityId: string;
@@ -182,6 +217,8 @@ export interface AccountExport {
     status: Booking["status"];
     createdAt: string;
     cancelledAt: string | null;
+    tariffCategory: TariffCategory | null;
+    priceCents: number | null;
     cancelledBy: Booking["cancelledBy"];
     cancellationReason: string | null;
   }[];

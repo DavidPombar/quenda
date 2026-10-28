@@ -23,6 +23,8 @@ export type ErrorCode =
   | "invalid_holidays"
   | "unsupported_logo"
   | "logo_too_large"
+  | "category_not_enabled"
+  | "category_already_requested"
   | "booking_blocked"
   | "attendance_window"
   | "rate_limited";

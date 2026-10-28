@@ -9,6 +9,7 @@ export const ROUTES = {
   audit: "auditoria",
   accessibility: "accesibilidade",
   settings: "axustes",
+  categories: "categorias",
   bookings: "reservas",
 } as const;
 export function routeFor(slug: string, child: string) {

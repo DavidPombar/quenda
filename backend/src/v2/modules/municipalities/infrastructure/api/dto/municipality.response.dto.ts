@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  CATEGORIES,
+  type Category,
+} from "../../../../../shared/application/categories";
+import {
   AccessibilityMethod,
   AccessibilitySettings,
   DataLicense,
@@ -91,6 +95,12 @@ export class MunicipalityResponseDTO {
   })
   logoUrl!: string | null;
   @ApiProperty({
+    enum: CATEGORIES,
+    isArray: true,
+    description: "User categories with their own tariffs (M2)",
+  })
+  enabledCategories!: Category[];
+  @ApiProperty({
     description:
       "No-shows within the window that block new bookings; 0 disables the penalty",
   })
@@ -136,6 +146,7 @@ export class MunicipalityResponseDTO {
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`
         : null,
+      enabledCategories: value.enabledCategories,
       noShowLimit: value.noShowLimit,
       noShowWindowDays: value.noShowWindowDays,
       noShowBlockDays: value.noShowBlockDays,

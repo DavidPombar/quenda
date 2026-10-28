@@ -261,3 +261,50 @@ test("should ask for both coordinates and save them as numbers when a manager pl
     }),
   );
 });
+
+test("should save a price for each category the municipality offers", async () => {
+  stubShell();
+  stubJsonResponse({
+    path: "*/v2/public/municipalities",
+    response: [{ ...municipality, enabledCategories: ["resident", "minor"] }],
+  });
+  stubJsonResponse({
+    path: "*/v2/public/session",
+    response: {
+      session: {
+        userId: "manager",
+        tenantId: municipality.id,
+        displayName: "Uxía",
+        role: "manager",
+      },
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/manager/insights",
+    response: {
+      confirmed: 0,
+      cancelled: 0,
+      occupancy: 0,
+      facilities: 1,
+      byFacility: [],
+    },
+  });
+  const { spy } = stubJsonResponse({
+    path: `*/v2/manager/facilities/${facility.id}`,
+    method: "PATCH",
+    status: 204,
+    response: null,
+  });
+  await commands.navigate("/admin/vilaverde/xestion");
+  await render(<App />);
+  await page.getByRole("button", { name: `Editar ${facility.name}` }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog
+    .getByRole("spinbutton", { name: "Persoa empadroada" })
+    .fill("2.5");
+  await dialog.getByRole("button", { name: "Gardar cambios" }).click();
+  await expect.poll(() => spy.mock.calls.length).toBe(1);
+  expect(spy.mock.calls[0][0].body).toMatchObject({
+    prices: [{ category: "resident", priceCents: 250 }],
+  });
+});

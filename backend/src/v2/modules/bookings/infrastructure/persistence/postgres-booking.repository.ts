@@ -6,6 +6,7 @@ import { Booking } from "../../domain/booking.entity";
 import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
 import { failure } from "../../../../shared/application/errors";
+import { TariffCategory } from "../../../../shared/application/categories";
 interface Row {
   id: string;
   tenant_id: string;
@@ -17,6 +18,8 @@ interface Row {
   created_at: string;
   cancelled_at: string | null;
   cancellation_hours: number | null;
+  tariff_category: TariffCategory | null;
+  price_cents: number | null;
   cancelled_by: "citizen" | "municipality" | null;
   cancellation_reason: string | null;
   status: string;
@@ -35,6 +38,8 @@ function toDomain(row: Row): Booking {
     end: Temporal.Instant.from(row.ends_at),
     createdAt: Temporal.Instant.from(row.created_at),
     cancellationHours: row.cancellation_hours,
+    tariffCategory: row.tariff_category,
+    priceCents: row.price_cents,
   };
   if (row.status === "confirmed" && row.cancelled_at === null)
     return { ...base, status: "confirmed" };
@@ -135,7 +140,7 @@ export class PostgresBookingRepository extends BookingRepository {
     try {
       await this.db
         .query(
-          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason,resource_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12,resource_id=$13 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
+          "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,cancelled_at,cancellation_hours,cancelled_by,cancellation_reason,resource_id,tariff_category,price_cents) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) ON CONFLICT(id) DO UPDATE SET starts_at=$5,ends_at=$6,status=$7,cancelled_at=$9,cancellation_hours=$10,cancelled_by=$11,cancellation_reason=$12,resource_id=$13,tariff_category=$14,price_cents=$15 WHERE bookings.tenant_id=$2 AND bookings.user_id=$3 RETURNING id",
           [
             value.id,
             value.tenantId,
@@ -150,6 +155,8 @@ export class PostgresBookingRepository extends BookingRepository {
             value.status === "cancelled" ? value.cancelledBy : null,
             value.status === "cancelled" ? value.cancellationReason : null,
             value.resourceId,
+            value.tariffCategory,
+            value.priceCents,
           ],
         )
         .then((result) => {

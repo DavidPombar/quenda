@@ -20,11 +20,11 @@ type Row = {
 };
 // One SQL statement gives every collection the same MVCC snapshot.
 const sql = `SELECT
-json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone, 'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours, 'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text, 'legalVersion', m.legal_version, 'retentionMonths', m.retention_months, 'primaryColor', m.primary_color, 'holidaysCalendar', m.holidays_calendar, 'noShowLimit', m.no_show_limit, 'noShowWindowDays', m.no_show_window_days, 'noShowBlockDays', m.no_show_block_days, 'reminderHours', m.reminder_hours, 'mailSenderName', m.mail_sender_name, 'mailReplyTo', m.mail_reply_to, 'storeNif', m.store_nif, 'accessibilityUnit', m.accessibility_unit, 'accessibilityEmail', m.accessibility_email, 'accessibilityPhone', m.accessibility_phone, 'accessibilityReviewedOn', to_char(m.accessibility_reviewed_on, 'YYYY-MM-DD'), 'accessibilityMethod', m.accessibility_method, 'accessibilityExceptionsGl', m.accessibility_exceptions_gl, 'accessibilityExceptionsEs', m.accessibility_exceptions_es, 'dataLicense', m.data_license, 'dir3Code', m.dir3_code) AS municipality,
+json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone, 'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours, 'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text, 'legalVersion', m.legal_version, 'retentionMonths', m.retention_months, 'primaryColor', m.primary_color, 'holidaysCalendar', m.holidays_calendar, 'noShowLimit', m.no_show_limit, 'noShowWindowDays', m.no_show_window_days, 'noShowBlockDays', m.no_show_block_days, 'reminderHours', m.reminder_hours, 'mailSenderName', m.mail_sender_name, 'mailReplyTo', m.mail_reply_to, 'enabledCategories', m.enabled_categories, 'storeNif', m.store_nif, 'accessibilityUnit', m.accessibility_unit, 'accessibilityEmail', m.accessibility_email, 'accessibilityPhone', m.accessibility_phone, 'accessibilityReviewedOn', to_char(m.accessibility_reviewed_on, 'YYYY-MM-DD'), 'accessibilityMethod', m.accessibility_method, 'accessibilityExceptionsGl', m.accessibility_exceptions_gl, 'accessibilityExceptionsEs', m.accessibility_exceptions_es, 'dataLicense', m.data_license, 'dir3Code', m.dir3_code) AS municipality,
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'name', r.name, 'sport', r.sport, 'address', r.address, 'description', r.description, 'accessible', r.accessible, 'status', r.status, 'slotMinutes', r.slot_minutes, 'priceCents', r.price_cents, 'openingCalendar', r.opening_calendar, 'rules', r.rules, 'followsMunicipalHolidays', r.follows_municipal_holidays, 'latitude', r.latitude, 'longitude', r.longitude) ORDER BY r.id) FROM facilities r WHERE r.tenant_id=m.id), '[]') AS "facilities",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'facilityId', r.facility_id, 'name', r.name, 'position', r.position, 'parentId', r.parent_id, 'active', r.active, 'createdAt', r.created_at) ORDER BY r.parent_id IS NOT NULL, r.facility_id, r.position, r.id) FROM resources r WHERE r.tenant_id=m.id), '[]') AS "resources",
-coalesce((SELECT json_agg(json_build_object('id', r.id, 'displayName', r.display_name, 'role', r.role, 'deletedAt', r.deleted_at, 'email', r.email, 'locale', r.locale, 'assurance', r.assurance, 'nifCiphertext', r.nif_ciphertext, 'nifDigest', r.nif_digest) ORDER BY r.id) FROM users r WHERE r.tenant_id=m.id), '[]') AS "users",
-coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'facilityId', r.facility_id, 'resourceId', r.resource_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'createdAt', r.created_at, 'cancelledAt', r.cancelled_at, 'cancellationHours', r.cancellation_hours, 'cancelledBy', r.cancelled_by, 'cancellationReason', r.cancellation_reason, 'sequence', r.sequence) ORDER BY r.id, r.user_id) FROM bookings r WHERE r.tenant_id=m.id), '[]') AS "bookings",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'displayName', r.display_name, 'role', r.role, 'deletedAt', r.deleted_at, 'email', r.email, 'locale', r.locale, 'assurance', r.assurance, 'nifCiphertext', r.nif_ciphertext, 'nifDigest', r.nif_digest, 'prefersFamilyTariff', r.prefers_family_tariff) ORDER BY r.id) FROM users r WHERE r.tenant_id=m.id), '[]') AS "users",
+coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'facilityId', r.facility_id, 'resourceId', r.resource_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'createdAt', r.created_at, 'cancelledAt', r.cancelled_at, 'cancellationHours', r.cancellation_hours, 'cancelledBy', r.cancelled_by, 'cancellationReason', r.cancellation_reason, 'sequence', r.sequence, 'tariffCategory', r.tariff_category, 'priceCents', r.price_cents) ORDER BY r.id, r.user_id) FROM bookings r WHERE r.tenant_id=m.id), '[]') AS "bookings",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'issuer', r.issuer, 'subject', r.subject, 'createdAt', r.created_at) ORDER BY r.id) FROM identities r WHERE r.tenant_id=m.id), '[]') AS "identities",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'kind', r.kind, 'createdAt', r.created_at, 'details', r.details) ORDER BY r.id, r.user_id, r.kind) FROM notifications r WHERE r.tenant_id=m.id), '[]') AS "notifications",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'actorId', r.actor_id, 'action', r.action, 'resourceId', r.resource_id, 'occurredAt', r.occurred_at, 'actorRole', r.actor_role, 'details', r.details) ORDER BY r.id) FROM audit_events r WHERE r.tenant_id=m.id), '[]') AS "auditEvents",
@@ -34,6 +34,8 @@ coalesce((SELECT json_agg(json_build_object('contentType', r.content_type, 'data
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'start', r.starts_at, 'end', r.ends_at, 'liftedAt', r.lifted_at) ORDER BY r.id, r.user_id) FROM booking_blocks r WHERE r.tenant_id=m.id), '[]') AS "bookingBlocks",
 coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'kind', r.kind, 'channel', r.channel, 'enabled', r.enabled, 'updatedAt', r.updated_at) ORDER BY r.user_id, r.kind, r.channel) FROM notification_preferences r WHERE r.tenant_id=m.id), '[]') AS "notificationPreferences",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'kind', r.kind, 'channel', r.channel, 'dedupeKey', r.dedupe_key, 'createdAt', r.created_at, 'availableAt', r.available_at, 'attempts', r.attempts, 'lockedUntil', r.locked_until, 'sentAt', r.sent_at, 'lastError', r.last_error) ORDER BY r.id, r.user_id, r.kind, r.channel) FROM outbox r WHERE r.tenant_id=m.id), '[]') AS "messages"
+,coalesce((SELECT json_agg(json_build_object('facilityId', r.facility_id, 'category', r.category, 'priceCents', r.price_cents) ORDER BY r.facility_id, r.category) FROM facility_prices r WHERE r.tenant_id=m.id), '[]') AS "facilityPrices"
+,coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'category', r.category, 'status', r.status, 'requestedAt', r.requested_at, 'decidedAt', r.decided_at) ORDER BY r.user_id, r.category) FROM user_categories r WHERE r.tenant_id=m.id), '[]') AS "userCategories"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -46,6 +48,18 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
     return {
       municipality: row.municipality,
       facilities: row.facilities,
+      facilityPrices: row.facilityPrices,
+      userCategories: row.userCategories.map((value) => ({
+        ...value,
+        requestedAt:
+          value.requestedAt === null
+            ? null
+            : Temporal.Instant.from(value.requestedAt),
+        decidedAt:
+          value.decidedAt === null
+            ? null
+            : Temporal.Instant.from(value.decidedAt),
+      })),
       resources: row.resources.map((value) => ({
         ...value,
         createdAt: Temporal.Instant.from(value.createdAt),

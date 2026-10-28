@@ -111,10 +111,26 @@ describe("Municipality data portability", () => {
       accessible: true,
       status: "active",
       slotMinutes: 60,
-      priceCents: 0,
+      priceCents: 400,
       openingCalendar: openingCalendar(court),
       rules: "Sports shoes required",
     }).expect(201);
+    await db.query(
+      "UPDATE municipalities SET enabled_categories=ARRAY['resident','family'] WHERE id=$1",
+      [tenantId],
+    );
+    await db.query(
+      "INSERT INTO facility_prices VALUES ($1,$2,'resident',150)",
+      [tenantId, court],
+    );
+    await db.query(
+      "INSERT INTO user_categories SELECT tenant_id,id,'resident','verified',NULL,'2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$1 AND role='citizen'",
+      [tenantId],
+    );
+    await db.query(
+      "UPDATE users SET prefers_family_tariff=true WHERE tenant_id=$1 AND role='citizen'",
+      [tenantId],
+    );
     const kept = randomUUID();
     const cancelled = randomUUID();
     await post(citizen, "citizen/bookings", {
@@ -216,8 +232,30 @@ describe("Municipality data portability", () => {
       "locale",
       "nifCiphertext",
       "nifDigest",
+      "prefersFamilyTariff",
       "role",
     ]);
+    expect(pack).toMatchObject({
+      municipality: { enabledCategories: ["resident", "family"] },
+      facilityPrices: [
+        { facilityId: court, category: "resident", priceCents: 150 },
+      ],
+      userCategories: [
+        {
+          category: "resident",
+          status: "verified",
+          requestedAt: null,
+          decidedAt: "2026-10-20T10:00:00Z",
+        },
+      ],
+      bookings: expect.arrayContaining([
+        expect.objectContaining({
+          id: kept,
+          tariffCategory: "resident",
+          priceCents: 150,
+        }),
+      ]),
+    });
     expect(pack.facilities[0].openingCalendar).toBe(openingCalendar(court));
     expect(JSON.stringify(pack)).not.toMatch(/token|session/i);
 
@@ -229,6 +267,8 @@ describe("Municipality data portability", () => {
     for (const table of [
       "municipalities",
       "facilities",
+      "facility_prices",
+      "user_categories",
       "resources",
       "users",
       "identities",
@@ -292,6 +332,8 @@ describe("Municipality data portability", () => {
     for (const key of [
       "municipality",
       "facilities",
+      "facility_prices",
+      "user_categories",
       "resources",
       "users",
       "identities",

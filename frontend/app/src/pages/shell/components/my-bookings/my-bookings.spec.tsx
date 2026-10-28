@@ -45,6 +45,8 @@ const hallBooking: Booking = {
   outcome: "upcoming",
   cancelledBy: null,
   cancellationReason: null,
+  tariffCategory: null,
+  priceCents: null,
 };
 const padelBooking: Booking = {
   ...hallBooking,
@@ -196,6 +198,8 @@ const absence: Booking = {
   outcome: "no_show",
   cancelledBy: null,
   cancellationReason: null,
+  tariffCategory: null,
+  priceCents: null,
 };
 const closed: Booking = {
   ...absence,
@@ -342,6 +346,8 @@ const booking = {
   outcome: "upcoming",
   cancelledBy: null,
   cancellationReason: null,
+  tariffCategory: null,
+  priceCents: null,
 };
 const token = "a".repeat(64);
 function stubCalendarBookings(feed: {

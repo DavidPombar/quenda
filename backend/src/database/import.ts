@@ -13,6 +13,8 @@ export interface MunicipalityPackage {
   exportedAt: string;
   municipality: Row & { id: string; slug: string };
   facilities: Row[];
+  facilityPrices?: Row[];
+  userCategories?: Row[];
   /** Courts and spaces (optional: packages from before courts get one per facility). */
   resources?: Row[];
   users: Row[];
@@ -81,6 +83,7 @@ const tables = {
     mail_sender_name: "mailSenderName",
     mail_reply_to: "mailReplyTo",
     store_nif: "storeNif",
+    enabled_categories: "enabledCategories",
     accessibility_unit: "accessibilityUnit",
     accessibility_email: "accessibilityEmail",
     accessibility_phone: "accessibilityPhone",
@@ -108,6 +111,20 @@ const tables = {
     latitude: "latitude",
     longitude: "longitude",
   },
+  facility_prices: {
+    tenant_id: "tenantId",
+    facility_id: "facilityId",
+    category: "category",
+    price_cents: "priceCents",
+  },
+  user_categories: {
+    tenant_id: "tenantId",
+    user_id: "userId",
+    category: "category",
+    status: "status",
+    requested_at: "requestedAt",
+    decided_at: "decidedAt",
+  },
   resources: {
     tenant_id: "tenantId",
     id: "id",
@@ -129,6 +146,7 @@ const tables = {
     assurance: "assurance",
     nif_ciphertext: "nifCiphertext",
     nif_digest: "nifDigest",
+    prefers_family_tariff: "prefersFamilyTariff",
   },
   identities: {
     tenant_id: "tenantId",
@@ -153,6 +171,8 @@ const tables = {
     cancelled_by: "cancelledBy",
     cancellation_reason: "cancellationReason",
     sequence: "sequence",
+    tariff_category: "tariffCategory",
+    price_cents: "priceCents",
   },
   notifications: {
     tenant_id: "tenantId",
@@ -277,6 +297,8 @@ export async function importMunicipality(
     await insert("users", data.users);
     await insert("identities", data.identities ?? []);
     await insert("facilities", data.facilities);
+    await insert("facility_prices", data.facilityPrices ?? []);
+    await insert("user_categories", data.userCategories ?? []);
     // Parents come before their parts; packages without courts get the default one per
     // facility, with the facility's id, exactly as the courts migration does.
     await insert("resources", data.resources ?? []);

@@ -25,6 +25,7 @@ class ExportedMunicipalityDTO {
   @ApiProperty() mailSenderName!: string;
   @ApiProperty() mailReplyTo!: string;
   @ApiProperty() storeNif!: boolean;
+  @ApiProperty({ type: [String] }) enabledCategories!: string[];
   @ApiProperty() accessibilityUnit!: string;
   @ApiProperty() accessibilityEmail!: string;
   @ApiProperty() accessibilityPhone!: string;
@@ -82,6 +83,7 @@ class ExportedUserDTO {
   })
   nifCiphertext!: string | null;
   @ApiProperty({ type: String, nullable: true }) nifDigest!: string | null;
+  @ApiProperty() prefersFamilyTariff!: boolean;
 }
 class ExportedIdentityDTO {
   @ApiProperty() id!: string;
@@ -107,6 +109,8 @@ class ExportedBookingDTO {
   @ApiProperty({ type: String, nullable: true }) cancellationReason!:
     string | null;
   @ApiProperty() sequence!: number;
+  @ApiProperty({ type: String, nullable: true }) tariffCategory!: string | null;
+  @ApiProperty({ type: Number, nullable: true }) priceCents!: number | null;
 }
 class ExportedNotificationDTO {
   @ApiProperty() id!: string;
@@ -177,7 +181,25 @@ class ExportedMessageDTO {
     string | null;
   @ApiProperty({ type: String, nullable: true }) lastError!: string | null;
 }
+class ExportedFacilityPriceDTO {
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() category!: string;
+  @ApiProperty() priceCents!: number;
+}
+class ExportedUserCategoryDTO {
+  @ApiProperty() userId!: string;
+  @ApiProperty() category!: string;
+  @ApiProperty() status!: string;
+  @ApiProperty({ type: String, format: "date-time", nullable: true })
+  requestedAt!: string | null;
+  @ApiProperty({ type: String, format: "date-time", nullable: true })
+  decidedAt!: string | null;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({ type: [ExportedFacilityPriceDTO] })
+  facilityPrices!: ExportedFacilityPriceDTO[];
+  @ApiProperty({ type: [ExportedUserCategoryDTO] })
+  userCategories!: ExportedUserCategoryDTO[];
   @ApiProperty({ enum: [EXPORT_FORMAT] }) format!: typeof EXPORT_FORMAT;
   @ApiProperty({ enum: [EXPORT_VERSION] }) version!: typeof EXPORT_VERSION;
   @ApiProperty({ format: "date-time" }) exportedAt!: string;
@@ -215,6 +237,12 @@ export class MunicipalityExportResponseDTO {
       exportedAt: value.exportedAt.toString(),
       municipality: snapshot.municipality,
       facilities: snapshot.facilities,
+      facilityPrices: snapshot.facilityPrices,
+      userCategories: snapshot.userCategories.map((value) => ({
+        ...value,
+        requestedAt: value.requestedAt?.toString() ?? null,
+        decidedAt: value.decidedAt?.toString() ?? null,
+      })),
       resources: snapshot.resources.map((value) => ({
         ...value,
         createdAt: value.createdAt.toString(),

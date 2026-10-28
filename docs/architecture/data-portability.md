@@ -16,12 +16,13 @@ manager can only export their own. The file is named
 |-------|---------|
 | `format`, `version` | `quenda-municipality-export`, `2` |
 | `exportedAt` | ISO 8601 instant |
-| `municipality` | All persisted settings, including branding, holidays, retention, no-show rules, email configuration, identity and accessibility statement settings, and the open data licence and DIR3 code |
+| `municipality` | All persisted settings, including branding, holidays, retention, no-show rules, email configuration, enabled categories, identity and accessibility statement settings, and the open data licence and DIR3 code |
 | `facilities` | Every facility, including closed ones, with its RFC 5545 opening calendar verbatim and its optional coordinates |
 | `resources` | Courts and spaces of each facility, parents before their parts, including out-of-service ones. Optional: a package without them gets one resource per facility, with the facility's id |
-| `users` | Id, display name, role, deletion state, email, preferred language and identity assurance; the NIF only where residency is verified, still encrypted, so the destination needs the same `QUENDA_DATA_KEY` to read it |
+| `users` | Id, display name, role, deletion state, email, preferred language and identity assurance; the NIF only where residency is verified, still encrypted, plus the family-tariff preference, so the destination needs the same `QUENDA_DATA_KEY` to read it |
 | `identities` | Identity provider issuer and subject of each account, so people sign in to the same account after the move |
-| `bookings` | All statuses, including no-shows and anonymised history, the booked court (`resourceId`), cancellation details and calendar revision. The occupied units are derived on import from the court and its parts |
+| `facilityPrices`, `userCategories` | Category prices and verification/request records, including nullable decision times. Optional for older packages. |
+| `bookings` | All statuses, including no-shows and anonymised history, the booked court (`resourceId`), the applied tariff and price, cancellation details and calendar revision. The occupied units are derived on import from the court and its parts |
 | `notifications` | In-app notices and their details |
 | `auditEvents` | Audit trail, including nullable actors, actor role and details |
 | `consents`, `legalTexts` | Accepted privacy notice versions and their complete bilingual texts |

@@ -7,7 +7,8 @@ import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
 import { failure } from "../../../../shared/application/errors";
 const fields =
-  'id, tenant_id AS "tenantId", name, sport, address, description, accessible, status, slot_minutes AS "slotMinutes", price_cents AS "priceCents", opening_calendar AS "openingCalendar", rules, follows_municipal_holidays AS "followsMunicipalHolidays", latitude, longitude';
+  'id, tenant_id AS "tenantId", name, sport, address, description, accessible, status, slot_minutes AS "slotMinutes", price_cents AS "priceCents", opening_calendar AS "openingCalendar", rules, latitude, longitude, follows_municipal_holidays AS "followsMunicipalHolidays", ' +
+  `COALESCE((SELECT json_agg(json_build_object('category', p.category, 'priceCents', p.price_cents) ORDER BY array_position(ARRAY['resident','family','local_club','minor','large_family','disability','senior'], p.category)) FROM facility_prices p WHERE p.tenant_id=facilities.tenant_id AND p.facility_id=facilities.id), '[]') AS prices`;
 @Injectable()
 export class PostgresFacilityRepository extends FacilityRepository {
   constructor(private readonly db: Database) {
@@ -52,7 +53,17 @@ export class PostgresFacilityRepository extends FacilityRepository {
         value.longitude,
       ],
     );
-    return result.rowCount ? Result.ok() : Result.err(failure("id_reused"));
+    if (!result.rowCount) return Result.err(failure("id_reused"));
+    await this.db.query(
+      "DELETE FROM facility_prices WHERE tenant_id=$1 AND facility_id=$2",
+      [value.tenantId, value.id],
+    );
+    for (const price of value.prices)
+      await this.db.query(
+        "INSERT INTO facility_prices (tenant_id,facility_id,category,price_cents) VALUES ($1,$2,$3,$4)",
+        [value.tenantId, value.id, price.category, price.priceCents],
+      );
+    return Result.ok();
   }
   async upcomingBookings(tenantId: string, id: string, now: Temporal.Instant) {
     const { rows } = await this.db.query<{

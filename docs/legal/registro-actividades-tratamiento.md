@@ -75,8 +75,12 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 | Uso del servicio | Reservas (instalación, fecha y hora, estado), avisos, versión del aviso de privacidad aceptada y fecha |
 | Seguridad | Sesiones (identificador cifrado y caducidad); registro de auditoría de las acciones |
 
-No se tratan categorías especiales de datos (art. 9 RGPD), documentos de identidad, direcciones,
-teléfonos ni datos bancarios.
+| Categoría de usuario | Categorías que dan derecho a una tarifa propia (empadronamiento, familia, club local, menor, familia numerosa, discapacidad, jubilación) y si están verificadas; sin documentos acreditativos |
+
+Si el concello ofrece la categoría «persona con discapacidad», se trata un dato relativo a la salud
+(art. 9 RGPD) reducido a la mera condición verificada, sin grado ni documentos; la base es el art.
+9.2.g RGPD en relación con la ordenanza de precios públicos `{{REFERENCIA}}`. Eliminar este párrafo
+si no se ofrece. No se tratan documentos de identidad, direcciones, teléfonos ni datos bancarios.
 
 ## 8. Destinatarios
 

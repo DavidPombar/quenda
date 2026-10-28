@@ -5,6 +5,7 @@ import { ExportedProfileResponseDTO } from "./exported-profile.response.dto";
 import { ExportedIdentityResponseDTO } from "./exported-identity.response.dto";
 import { ConsentResponseDTO } from "./consent.response.dto";
 import { ExportMunicipalityResponseDTO } from "./export-municipality.response.dto";
+import { ExportedCategoryResponseDTO } from "./exported-category.response.dto";
 import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
 import { ExportedNotificationResponseDTO } from "./exported-notification.response.dto";
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
@@ -35,6 +36,15 @@ export class AccountExportResponseDTO {
     type: [ConsentResponseDTO],
   })
   consents!: ConsentResponseDTO[];
+  @ApiProperty({
+    description: "User categories requested or assigned (M2)",
+    type: [ExportedCategoryResponseDTO],
+  })
+  categories!: ExportedCategoryResponseDTO[];
+  @ApiProperty({
+    description: "Whether the family tariff is preferred over the lowest one",
+  })
+  prefersFamilyTariff!: boolean;
   @ApiProperty({
     description: "Every reservation on record, without paging",
     type: [ExportedBookingResponseDTO],
@@ -72,6 +82,8 @@ export class AccountExportResponseDTO {
       profile: ExportedProfileResponseDTO.from(value.profile),
       identities: value.identities.map(ExportedIdentityResponseDTO.from),
       consents: value.consents.map(ConsentResponseDTO.from),
+      categories: value.categories.map(ExportedCategoryResponseDTO.from),
+      prefersFamilyTariff: value.prefersFamilyTariff,
       bookings: value.bookings.map(ExportedBookingResponseDTO.from),
       notifications: value.notifications.map(
         ExportedNotificationResponseDTO.from,

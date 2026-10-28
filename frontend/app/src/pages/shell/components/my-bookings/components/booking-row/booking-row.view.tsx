@@ -3,6 +3,7 @@ import { Button } from "@chakra-ui/react";
 import {
   PiCalendarBlank,
   PiCheck,
+  PiTag,
   PiClock,
   PiSquareHalf,
   PiUserMinus,
@@ -10,8 +11,9 @@ import {
   PiX,
 } from "react-icons/pi";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
-import { bookingDayLabel, timeLabel } from "@/services/date.service";
+import { bookingDayLabel, money, timeLabel } from "@/services/date.service";
 import { distinctResource } from "@/services/resources.service";
+import { categoryLabel } from "@/services/tariff.service";
 import type { Booking, Locale, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 const OUTCOMES = {
@@ -67,6 +69,15 @@ export function BookingRow(p: {
           {timeLabel(p.booking.start, p.municipality.timezone)}–
           {timeLabel(p.booking.end, p.municipality.timezone)}
         </li>
+        {p.booking.priceCents !== null && p.booking.tariffCategory && (
+          <li>
+            <PiTag size={20} aria-hidden="true" />
+            {p.booking.priceCents
+              ? money(p.booking.priceCents, p.locale)
+              : p.t("free")}{" "}
+            · {p.t(categoryLabel(p.booking.tariffCategory))}
+          </li>
+        )}
         <li>
           <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
         </li>

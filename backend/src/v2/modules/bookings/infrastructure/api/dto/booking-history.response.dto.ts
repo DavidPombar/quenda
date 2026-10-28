@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  CATEGORIES,
+  type TariffCategory,
+} from "../../../../../shared/application/categories";
 import { BookingReadModel } from "../../../domain/booking.read-model";
 import type { Booking, BookingOutcome } from "../../../domain/booking.entity";
 export class BookingHistoryResponseDTO {
@@ -35,6 +39,18 @@ export class BookingHistoryResponseDTO {
   @ApiProperty({ description: "Court or space display name" })
   resourceName!: string;
   @ApiProperty({ description: "Sport" }) sport!: string;
+  @ApiProperty({
+    enum: [...CATEGORIES, "general"],
+    nullable: true,
+    description: "Tariff category applied when booked; null for older bookings",
+  })
+  tariffCategory!: TariffCategory | null;
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: "Indicative price in EUR cents applied when booked",
+  })
+  priceCents!: number | null;
   static from(
     value: BookingReadModel & { outcome: BookingOutcome },
   ): BookingHistoryResponseDTO {
@@ -46,6 +62,8 @@ export class BookingHistoryResponseDTO {
       start: booking.start.toString(),
       end: booking.end.toString(),
       status: booking.status,
+      tariffCategory: booking.tariffCategory,
+      priceCents: booking.priceCents,
       outcome: value.outcome,
       cancelledBy: booking.status === "cancelled" ? booking.cancelledBy : null,
       cancellationReason:

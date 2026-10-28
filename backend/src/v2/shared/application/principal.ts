@@ -6,6 +6,7 @@ export type Permission =
   | "insights:view"
   | "audit:view"
   | "municipality:manage"
+  | "categories:manage"
   | "bookings:manage"
   | "data:export";
 /** How strongly the account's identity was proven: demo account, e-mail code, eID (OIDC) or local credentials. */

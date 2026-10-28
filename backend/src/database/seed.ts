@@ -163,6 +163,49 @@ export async function seed(url = databaseUrl) {
         );
         await seedResources(db, tenant, id, label, i, j);
       }
+      // Category tariffs (M2): the demo citizen's residency request waits for the manager.
+      await db.query(
+        "UPDATE municipalities SET enabled_categories=$2 WHERE id=$1 AND enabled_categories='{}'",
+        [
+          tenant,
+          [
+            "resident",
+            "family",
+            "local_club",
+            "minor",
+            "large_family",
+            "senior",
+          ],
+        ],
+      );
+      for (const [j, prices] of [
+        [
+          1,
+          {
+            resident: 250,
+            family: 600,
+            local_club: 200,
+            minor: 150,
+            large_family: 200,
+            senior: 150,
+          },
+        ],
+        [3, { resident: 200, minor: 100, senior: 100 }],
+      ] as const)
+        for (const [category, price] of Object.entries(prices))
+          await db.query(
+            "INSERT INTO facility_prices VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+            [
+              tenant,
+              `20000000-0000-4000-8000-0000000000${i}${j}`,
+              category,
+              price,
+            ],
+          );
+      await db.query(
+        "INSERT INTO user_categories (tenant_id,user_id,category,status,requested_at) VALUES ($1,$2,'resident','requested','2026-10-20T09:00:00Z') ON CONFLICT DO NOTHING",
+        [tenant, `10000000-0000-4000-8000-0000000000${i}1`],
+      );
     }
   } finally {
     await db.end();

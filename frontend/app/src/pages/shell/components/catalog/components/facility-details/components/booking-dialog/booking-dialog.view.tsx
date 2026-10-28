@@ -9,13 +9,24 @@ import {
   PiX,
 } from "react-icons/pi";
 import { bookingDayLabel, timeLabel, money } from "@/services/date.service";
+import { categoryLabel } from "@/services/tariff.service";
 import { ROUTES, routeFor } from "@/constants/routes";
-import type { Facility, Slot, Municipality, Locale } from "@/types/models";
+import type {
+  Facility,
+  Slot,
+  Municipality,
+  Locale,
+  Tariff,
+} from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 export function BookingDialog(p: {
   open: boolean;
   slot: Slot | null;
   facility: Facility;
+  /** Price for the signed-in person; null shows the general price. */
+  tariff: Tariff | null;
+  /** Whether signing in could show a lower price. */
+  hasCategoryPrices: boolean;
   /** Court name, empty when the facility has a single court. */
   resourceName: string;
   municipality: Municipality;
@@ -27,6 +38,7 @@ export function BookingDialog(p: {
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const price = p.tariff?.priceCents ?? p.facility.priceCents;
   return (
     <Dialog.Root
       open={p.open}
@@ -79,12 +91,17 @@ export function BookingDialog(p: {
               )}
               <div className="total-line">
                 <span>{p.t("total")}</span>
-                <strong>
-                  {p.facility.priceCents
-                    ? money(p.facility.priceCents, p.locale)
-                    : p.t("free")}
-                </strong>
+                <strong>{price ? money(price, p.locale) : p.t("free")}</strong>
               </div>
+              {p.tariff ? (
+                <p className="muted small">
+                  {p.t("yourTariff")}: {p.t(categoryLabel(p.tariff.category))}
+                </p>
+              ) : (
+                p.hasCategoryPrices && (
+                  <p className="muted small">{p.t("tariffSignedOut")}</p>
+                )
+              )}
               <p className="muted small">{p.t("payAtVenue")}</p>
               {p.error && (
                 <p role="alert" className="error-text">

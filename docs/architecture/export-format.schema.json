@@ -151,6 +151,12 @@
         },
         "accessibilityExceptionsEs": {
           "type": "string"
+        },
+        "enabledCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
@@ -310,6 +316,9 @@
           "nifDigest": {
             "type": ["string", "null"],
             "description": "HMAC digest of the NIF for lookups. Optional."
+          },
+          "prefersFamilyTariff": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -404,6 +413,13 @@
           },
           "sequence": {
             "type": "integer"
+          },
+          "tariffCategory": {
+            "type": ["string", "null"]
+          },
+          "priceCents": {
+            "type": ["integer", "null"],
+            "minimum": 0
           }
         },
         "additionalProperties": false
@@ -672,6 +688,61 @@
             "type": ["string", "null"]
           }
         },
+        "additionalProperties": false
+      }
+    },
+    "facilityPrices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          },
+          "priceCents": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["facilityId", "category", "priceCents"],
+        "additionalProperties": false
+      }
+    },
+    "userCategories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          },
+          "status": {
+            "enum": ["requested", "verified", "rejected"]
+          },
+          "requestedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "decidedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "category",
+          "status",
+          "requestedAt",
+          "decidedAt"
+        ],
         "additionalProperties": false
       }
     }

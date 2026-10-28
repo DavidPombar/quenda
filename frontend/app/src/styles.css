@@ -466,7 +466,8 @@ main {
   white-space: nowrap;
 }
 .facility-status,
-.booking-status {
+.booking-status,
+.category-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -475,11 +476,13 @@ main {
   color: var(--court);
   white-space: nowrap;
 }
+.category-status.requested,
 .facility-status.maintenance {
   color: var(--maintenance);
 }
 .facility-status.closed,
-.booking-status.cancelled {
+.booking-status.cancelled,
+.category-status.rejected {
   color: var(--danger);
 }
 .facility-tags {
@@ -1613,6 +1616,11 @@ a.account:hover .account-name strong {
   margin-top: 12px;
   object-fit: contain;
   object-position: left center;
+}
+.category-request {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 /* No-shows and municipal cancellations (C3) */
 .booking-status.no_show {

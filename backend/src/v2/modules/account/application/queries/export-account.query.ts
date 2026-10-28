@@ -51,6 +51,7 @@ export class ExportAccount {
       },
       identities: await this.accounts.listIdentities(tenantId, userId),
       consents: await this.consents.listByUser(tenantId, userId),
+      ...(await this.accounts.listCategories(tenantId, userId)),
       bookings: await this.accounts.listBookingsAll(tenantId, userId),
       notifications: await this.accounts.listNotificationsAll(tenantId, userId),
       preferences: await this.accounts.findPreferences(tenantId, userId),

@@ -40,6 +40,7 @@ function editable(facility: Facility) {
     status: facility.status,
     slotMinutes: facility.slotMinutes,
     priceCents: facility.priceCents,
+    prices: facility.prices,
     openingCalendar: facility.openingCalendar,
     rules: facility.rules,
     followsMunicipalHolidays: facility.followsMunicipalHolidays,

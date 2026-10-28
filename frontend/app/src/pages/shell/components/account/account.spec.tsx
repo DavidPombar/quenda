@@ -125,6 +125,55 @@ describe("Account and privacy page", () => {
       .toMatchTextContent("Non tes permiso para isto.");
     await expect.element(page.getByRole("alertdialog")).toBeVisible();
   });
+  test("should let the person request a category and see it pending verification", async () => {
+    stubShell(true);
+    stubAccount(
+      {},
+      {
+        categories: [
+          {
+            category: "family",
+            status: "verified",
+            requestedAt: null,
+            decidedAt: "2026-10-18T09:30:00Z",
+          },
+        ],
+        prefersFamilyTariff: false,
+      },
+    );
+    const { spy } = stubJsonResponse({
+      path: "*/v2/citizen/categories",
+      method: "POST",
+      response: {
+        category: "resident",
+        status: "requested",
+        requestedAt: "2026-10-20T10:00:00Z",
+        decidedAt: null,
+      },
+      status: 201,
+    });
+    await commands.navigate("/app/vilaverde/conta");
+    await render(<App />);
+    const section = page.getByRole("region", { name: "Categorías e tarifas" });
+    await expect.element(section.getByText("Verificada")).toBeVisible();
+    await expect
+      .element(
+        section.getByRole("checkbox", {
+          name: "Usar a tarifa familiar nas miñas reservas",
+        }),
+      )
+      .toBeVisible();
+    await section
+      .getByRole("combobox", { name: "Categoría" })
+      .selectOptions("Persoa empadroada");
+    await section
+      .getByRole("button", { name: "Solicitar a categoría" })
+      .click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Solicitude enviada. O concello revisaraa.");
+    expect(spy.mock.calls.at(-1)![0].body).toEqual({ category: "resident" });
+  });
   test("should save the reminder preference when the person unticks email reminders", async () => {
     stubShell(true);
     stubAccount();
