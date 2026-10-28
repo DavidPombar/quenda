@@ -55,10 +55,6 @@ const gl = {
   signIn: "Entrar",
   signOut: "Saír",
   demo: "Versión de demostración con datos ficticios.",
-  demoTitle: "Coñece Quenda por dentro",
-  demoBody:
-    "Entra cunha conta de proba de cidadanía. Os datos desta demostración son ficticios.",
-  citizen: "Entrar como cidadanía",
   manager: "Entrar como xestor/a",
   municipality: "Concello",
   language: "Idioma",
@@ -250,6 +246,22 @@ const gl = {
   deleteDone: "A túa conta foi eliminada. Grazas por probar Quenda.",
   consentLabel: "Lin e acepto o aviso de privacidade",
   consentRequired: "Marca a casilla para poder entrar.",
+  signInTitle: "Entra en Quenda",
+  signInBody: "Identifícate para reservar e xestionar as túas quendas.",
+  signInWithEid: "Entrar con {provider}",
+  signInEidHint: "Irás á páxina de identificación e volverás aquí ao rematar.",
+  signInDemo: "Entrar como cidadanía",
+  signInDemoHint: "Conta de proba con datos ficticios.",
+  signInUnavailable:
+    "Agora mesmo non hai ningunha forma de entrar dispoñible. Volve tentalo máis tarde ou contacta co concello.",
+  authErrorConsent: "Para entrar tes que aceptar o aviso de privacidade.",
+  authErrorExpired:
+    "A identificación tardou demasiado e caducou. Volve tentalo.",
+  authErrorRejected: "Non puidemos verificar a túa identidade. Volve tentalo.",
+  authErrorUnavailable:
+    "O servizo de identificación non está dispoñible agora mesmo. Proba máis tarde.",
+  authErrorGeneric: "Non puidemos completar a entrada. Volve tentalo.",
+  dismiss: "Pechar aviso",
   noticeReminder: "Lembranza da reserva",
   noticesTitle: "Avisos por correo",
   noticesEmail: "Enderezo de correo",
@@ -338,10 +350,6 @@ const es: Record<TextKey, string> = {
   done: "Ver mis reservas",
   signOut: "Salir",
   demo: "Versión de demostración con datos ficticios.",
-  demoTitle: "Conoce Quenda por dentro",
-  demoBody:
-    "Entra con una cuenta de prueba de ciudadanía. Los datos de esta demostración son ficticios.",
-  citizen: "Entrar como ciudadanía",
   manager: "Entrar como gestor/a",
   municipality: "Municipio",
   skip: "Saltar al contenido",
@@ -512,6 +520,23 @@ const es: Record<TextKey, string> = {
   deleteDone: "Tu cuenta ha sido eliminada. Gracias por probar Quenda.",
   consentLabel: "He leído y acepto el aviso de privacidad",
   consentRequired: "Marca la casilla para poder entrar.",
+  signInTitle: "Entra en Quenda",
+  signInBody: "Identifícate para reservar y gestionar tus turnos.",
+  signInWithEid: "Entrar con {provider}",
+  signInEidHint:
+    "Irás a la página de identificación y volverás aquí al terminar.",
+  signInDemo: "Entrar como ciudadanía",
+  signInDemoHint: "Cuenta de prueba con datos ficticios.",
+  signInUnavailable:
+    "Ahora mismo no hay ninguna forma de entrar disponible. Vuelve a intentarlo más tarde o contacta con el municipio.",
+  authErrorConsent: "Para entrar debes aceptar el aviso de privacidad.",
+  authErrorExpired:
+    "La identificación tardó demasiado y caducó. Vuelve a intentarlo.",
+  authErrorRejected: "No pudimos verificar tu identidad. Vuelve a intentarlo.",
+  authErrorUnavailable:
+    "El servicio de identificación no está disponible ahora mismo. Prueba más tarde.",
+  authErrorGeneric: "No pudimos completar el acceso. Vuelve a intentarlo.",
+  dismiss: "Cerrar aviso",
   noticeReminder: "Recordatorio de la reserva",
   noticesTitle: "Avisos por correo",
   noticesEmail: "Dirección de correo",

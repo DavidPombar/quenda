@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
 import type {
+  AccountPersonalData,
   AccountProfile,
   ExportedAuditEvent,
   ExportedBlock,
   ExportedBooking,
+  ExportedIdentity,
   ExportedMessage,
   ExportedNotification,
   NotificationPreferences,
@@ -15,11 +17,18 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<AccountProfile | null>;
+  abstract findPersonalData(
+    tenantId: string,
+    userId: string,
+  ): Promise<AccountPersonalData | null>;
   abstract countActivity(
     tenantId: string,
     userId: string,
   ): Promise<{ bookings: number; notifications: number }>;
-  /** Anonymises the row in place; history keeps referencing it without personal data. */
+  /**
+   * Anonymises the row in place (display name, e-mail and NIF); history keeps referencing it
+   * without personal data.
+   */
   abstract markDeleted(
     tenantId: string,
     userId: string,
@@ -58,6 +67,12 @@ export abstract class AccountRepository {
     userId: string,
   ): Promise<ExportedMessage[]>;
   abstract revokeSessions(tenantId: string, userId: string): Promise<number>;
+  /** Unlinks every external identity so the person can no longer sign in to this account. */
+  abstract deleteIdentities(tenantId: string, userId: string): Promise<number>;
+  abstract listIdentities(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedIdentity[]>;
   abstract listBookingsAll(
     tenantId: string,
     userId: string,

@@ -183,6 +183,13 @@ describe("Retention policy (T4)", () => {
         old.subtract({ hours: 24 }).toString(),
       ],
     );
+    // Abandoned OIDC sign-ins: one expired, one still pending.
+    await harness.db.query(
+      `INSERT INTO login_attempts (state_hash,tenant_id,nonce,code_verifier,legal_version,return_to,expires_at) VALUES
+        ($1,$3,'n','v','2026-10','/app/x/instalacions',now() - interval '1 minute'),
+        ($2,$3,'n','v','2026-10','/app/x/instalacions',now() + interval '9 minutes')`,
+      [randomUUID(), randomUUID(), context.id],
+    );
     const recent = randomUUID();
     await post(context.citizen, "citizen/bookings", {
       id: recent,
@@ -205,9 +212,18 @@ describe("Retention policy (T4)", () => {
       bookingsDetached: 1,
       notificationsDeleted: 1,
       auditPseudonymised: 1,
+      loginAttemptsPurged: 1,
       consentsDeleted: 1,
       usersPurged: 1,
     });
+    expect(
+      (
+        await harness.db.query(
+          "SELECT count(*)::int AS count FROM login_attempts WHERE tenant_id=$1",
+          [context.id],
+        )
+      ).rows[0].count,
+    ).toBe(1);
 
     const bookings = await harness.db.query(
       "SELECT id, user_id FROM bookings WHERE tenant_id=$1",
@@ -260,7 +276,7 @@ describe("Retention policy (T4)", () => {
       actor_id: null,
       actor_role: "system",
       resource_id: context.id,
-      details: { bookingsDetached: 1, usersPurged: 1 },
+      details: { bookingsDetached: 1, loginAttemptsPurged: 1, usersPurged: 1 },
     });
     const log = await context.manager
       .get("/v2/manager/audit")

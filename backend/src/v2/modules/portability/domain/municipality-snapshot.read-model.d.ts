@@ -23,6 +23,7 @@ export interface MunicipalitySnapshot {
     reminderHours: number;
     mailSenderName: string;
     mailReplyTo: string;
+    storeNif: boolean;
     dataLicense: string;
     dir3Code: string | null;
   };
@@ -59,6 +60,18 @@ export interface MunicipalitySnapshot {
     deletedAt: Temporal.Instant | null;
     email: string | null;
     locale: string | null;
+    assurance: string;
+    /** Encrypted as stored: readable only with the same QUENDA_DATA_KEY. */
+    nifCiphertext: string | null;
+    nifDigest: string | null;
+  }[];
+  /** Links to the identity provider (issuer and subject), so people keep their account. */
+  identities: {
+    id: string;
+    userId: string;
+    issuer: string;
+    subject: string;
+    createdAt: Temporal.Instant;
   }[];
   bookings: {
     id: string;

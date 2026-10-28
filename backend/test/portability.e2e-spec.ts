@@ -208,11 +208,14 @@ describe("Municipality data portability", () => {
       version: 2,
     });
     expect(Object.keys(pack.users[0]).sort()).toEqual([
+      "assurance",
       "deletedAt",
       "displayName",
       "email",
       "id",
       "locale",
+      "nifCiphertext",
+      "nifDigest",
       "role",
     ]);
     expect(pack.facilities[0].openingCalendar).toBe(openingCalendar(court));
@@ -228,6 +231,7 @@ describe("Municipality data portability", () => {
       "facilities",
       "resources",
       "users",
+      "identities",
       "bookings",
       "booking_units",
       "notifications",
@@ -290,6 +294,7 @@ describe("Municipality data portability", () => {
       "facilities",
       "resources",
       "users",
+      "identities",
       "bookings",
       "notifications",
       "legalTexts",

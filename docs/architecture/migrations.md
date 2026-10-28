@@ -25,6 +25,11 @@ the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
   is replaced by the per-unit one. A change of court also bumps the calendar revision.
 - `0006` adds the open data settings: each municipality's `data_license`
   (CC BY 4.0 by default) and `dir3_code`, and optional facility coordinates.
+- `0007` adds public identity: the municipality's `store_nif` opt-in, each account's
+  `assurance`, the encrypted NIF and its digest, `identities` (OIDC issuer and subject)
+  and short-lived `login_attempts`. It is numbered after the courts (`0005`) and open
+  data (`0006`) migrations proposed in parallel, so the versions never collide;
+  the three are independent and can be applied in any order.
 
 Contributions based on the former `backend/src/database/schema.sql` must move
 their new schema changes into the next numbered migration instead of restoring

@@ -16,6 +16,8 @@ export interface MunicipalityPackage {
   /** Courts and spaces (optional: packages from before courts get one per facility). */
   resources?: Row[];
   users: Row[];
+  /** Identity provider links (optional in packages from before public identity). */
+  identities?: Row[];
   bookings: Row[];
   notifications: Row[];
   auditEvents: Row[];
@@ -78,6 +80,7 @@ const tables = {
     reminder_hours: "reminderHours",
     mail_sender_name: "mailSenderName",
     mail_reply_to: "mailReplyTo",
+    store_nif: "storeNif",
     data_license: "dataLicense",
     dir3_code: "dir3Code",
   },
@@ -116,6 +119,17 @@ const tables = {
     deleted_at: "deletedAt",
     email: "email",
     locale: "locale",
+    assurance: "assurance",
+    nif_ciphertext: "nifCiphertext",
+    nif_digest: "nifDigest",
+  },
+  identities: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    issuer: "issuer",
+    subject: "subject",
+    created_at: "createdAt",
   },
   bookings: {
     tenant_id: "tenantId",
@@ -254,6 +268,7 @@ export async function importMunicipality(
     }
     await insert("municipalities", [{ ...data.municipality, slug }]);
     await insert("users", data.users);
+    await insert("identities", data.identities ?? []);
     await insert("facilities", data.facilities);
     // Parents come before their parts; packages without courts get the default one per
     // facility, with the facility's id, exactly as the courts migration does.

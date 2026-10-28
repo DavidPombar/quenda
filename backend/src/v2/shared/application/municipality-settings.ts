@@ -19,6 +19,8 @@ export interface MunicipalitySettings {
   legalTexts: LegalTexts;
   legalVersion: string;
   retentionMonths: number;
+  /** Residency verification is enabled: the NIF from eID sign-in is kept, encrypted. */
+  storeNif: boolean;
   /** Lead time of the single booking reminder. */
   reminderHours: number;
   /** Display name for outgoing email; blank means the municipality name. */

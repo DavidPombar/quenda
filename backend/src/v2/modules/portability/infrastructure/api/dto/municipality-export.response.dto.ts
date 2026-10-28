@@ -24,6 +24,7 @@ class ExportedMunicipalityDTO {
   @ApiProperty() reminderHours!: number;
   @ApiProperty() mailSenderName!: string;
   @ApiProperty() mailReplyTo!: string;
+  @ApiProperty() storeNif!: boolean;
   @ApiProperty({ description: "SPDX licence of the open data" })
   dataLicense!: string;
   @ApiProperty({ type: String, nullable: true }) dir3Code!: string | null;
@@ -66,6 +67,21 @@ class ExportedUserDTO {
   deletedAt!: string | null;
   @ApiProperty({ type: String, nullable: true }) email!: string | null;
   @ApiProperty({ type: String, nullable: true }) locale!: string | null;
+  @ApiProperty({ enum: ["demo", "email", "eid", "local"] }) assurance!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Encrypted NIF; readable only with the same QUENDA_DATA_KEY",
+  })
+  nifCiphertext!: string | null;
+  @ApiProperty({ type: String, nullable: true }) nifDigest!: string | null;
+}
+class ExportedIdentityDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() userId!: string;
+  @ApiProperty() issuer!: string;
+  @ApiProperty() subject!: string;
+  @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
 }
 class ExportedBookingDTO {
   @ApiProperty() id!: string;
@@ -168,6 +184,8 @@ export class MunicipalityExportResponseDTO {
   })
   resources!: ExportedResourceDTO[];
   @ApiProperty({ type: [ExportedUserDTO] }) users!: ExportedUserDTO[];
+  @ApiProperty({ type: [ExportedIdentityDTO] })
+  identities!: ExportedIdentityDTO[];
   @ApiProperty({ type: [ExportedBookingDTO] }) bookings!: ExportedBookingDTO[];
   @ApiProperty({ type: [ExportedNotificationDTO] })
   notifications!: ExportedNotificationDTO[];
@@ -197,6 +215,10 @@ export class MunicipalityExportResponseDTO {
       users: snapshot.users.map((value) => ({
         ...value,
         deletedAt: value.deletedAt?.toString() ?? null,
+      })),
+      identities: snapshot.identities.map((value) => ({
+        ...value,
+        createdAt: value.createdAt.toString(),
       })),
       bookings: snapshot.bookings.map((value) => ({
         ...value,

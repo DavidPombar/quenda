@@ -2,6 +2,7 @@
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import type {
   Account,
+  AuthMethods,
   Availability,
   Facility,
   Municipality,
@@ -115,7 +116,21 @@ export function stubAvailability(
     response: availabilityFor(target, slotsFor),
   });
 }
-export function stubShell(authenticated = false) {
+export const authMethods: AuthMethods = {
+  demo: true,
+  oidc: null,
+  email: false,
+};
+export function stubAuthMethods(overrides: Partial<AuthMethods> = {}) {
+  const response = { ...authMethods, ...overrides };
+  stubJsonResponse({ path: "*/v2/public/auth/methods", response });
+  return response;
+}
+export function stubShell(
+  authenticated = false,
+  methods: Partial<AuthMethods> = {},
+) {
+  stubAuthMethods(methods);
   stubJsonResponse({
     path: "*/v2/public/municipalities",
     response: [municipality],

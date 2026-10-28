@@ -27,6 +27,8 @@ The **Entrar** button opens a synthetic citizen account in `/app/` and a synthet
 
 `npm run dev` explicitly enables demo login. The API otherwise rejects demo login unless `DEMO_MODE=true`. Environment settings are listed in `.env.example`; the API reads process environment variables. No password or third-party account is required; demo citizens carry a synthetic `alex@<concello>.example` address whose email lands in Mailpit.
 
+To try public identity locally, run `npm run identity:up` to start Keycloak with a **simulated Cl@ve** at http://127.0.0.1:8081, set the OIDC variables from `.env.example` and restart `npm run dev`: the sign-in dialog then offers **Entrar con Cl@ve**. The backend is a generic OpenID Connect client; Keycloak is a reference provider, not a requirement. See [public identity](docs/architecture/identity.md).
+
 ## Container demonstration
 
 ```sh

@@ -8,11 +8,14 @@ export type Permission =
   | "municipality:manage"
   | "bookings:manage"
   | "data:export";
+/** How strongly the account's identity was proven: demo account, e-mail code, eID (OIDC) or local credentials. */
+export type Assurance = "demo" | "email" | "eid" | "local";
 export interface Principal {
   userId: string;
   tenantId: string;
   displayName: string;
   role: "citizen" | "manager";
+  assurance: Assurance;
   grants: readonly Permission[];
 }
 export function can(principal: Principal, permission: Permission) {

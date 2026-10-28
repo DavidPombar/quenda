@@ -6,6 +6,11 @@ export function SessionDialog(props: {
   open: boolean;
   onClose: () => void;
   onSelect: () => void;
+  onEid: () => void;
+  eidLabel: string | null;
+  demo: boolean;
+  methodsStatus: "pending" | "error" | "success";
+  onRetryMethods: () => void;
   pending: boolean;
   error: string;
   t: (key: TextKey) => string;
@@ -28,11 +33,11 @@ export function SessionDialog(props: {
         <Dialog.Positioner>
           <Dialog.Content className="modal">
             <Dialog.Header>
-              <Dialog.Title>{props.t("demoTitle")}</Dialog.Title>
+              <Dialog.Title>{props.t("signInTitle")}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <Text mb="6">
-                {props.municipality}. {props.t("demoBody")}
+                {props.municipality}. {props.t("signInBody")}
               </Text>
               <div className="consent-block">
                 <Checkbox.Root
@@ -57,20 +62,70 @@ export function SessionDialog(props: {
                   {props.t("readPrivacy")}
                 </button>
               </div>
-              <div className="login-options">
-                <Button
-                  size="lg"
-                  colorPalette="court"
-                  onClick={props.onSelect}
-                  loading={props.pending}
-                  disabled={!props.consent}
-                >
-                  {props.t("citizen")}
-                </Button>
-                {!props.consent && (
-                  <p className="muted small">{props.t("consentRequired")}</p>
-                )}
-              </div>
+              {props.methodsStatus === "pending" && (
+                <p role="status" className="muted">
+                  {props.t("loading")}
+                </p>
+              )}
+              {props.methodsStatus === "error" && (
+                <div role="alert" className="error-text">
+                  <p>{props.t("loadError")}</p>
+                  <Button
+                    mt="2"
+                    size="sm"
+                    variant="outline"
+                    onClick={props.onRetryMethods}
+                  >
+                    {props.t("retry")}
+                  </Button>
+                </div>
+              )}
+              {props.methodsStatus === "success" &&
+                (props.eidLabel || props.demo ? (
+                  <div className="login-options">
+                    {props.eidLabel && (
+                      <>
+                        <Button
+                          size="lg"
+                          colorPalette="court"
+                          onClick={props.onEid}
+                          disabled={!props.consent || props.pending}
+                        >
+                          {props.eidLabel}
+                        </Button>
+                        <p className="muted small">
+                          {props.t("signInEidHint")}
+                        </p>
+                      </>
+                    )}
+                    {props.demo && (
+                      <>
+                        <Button
+                          size="lg"
+                          colorPalette="court"
+                          variant={props.eidLabel ? "outline" : "solid"}
+                          onClick={props.onSelect}
+                          loading={props.pending}
+                          disabled={!props.consent}
+                        >
+                          {props.t("signInDemo")}
+                        </Button>
+                        <p className="muted small">
+                          {props.t("signInDemoHint")}
+                        </p>
+                      </>
+                    )}
+                    {!props.consent && (
+                      <p className="muted small">
+                        {props.t("consentRequired")}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p role="status" className="muted">
+                    {props.t("signInUnavailable")}
+                  </p>
+                ))}
               {props.error && (
                 <p role="alert" className="error-text">
                   {props.error}

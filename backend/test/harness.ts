@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
+import { createServer } from "node:net";
 import { migrate } from "../src/database/migrate";
 import { Pool } from "pg";
 import request from "supertest";
@@ -19,9 +20,34 @@ const baseUrl =
   "postgres://quenda:quenda_local@127.0.0.1:55432/quenda";
 let admin: Pool | undefined;
 let databaseName: string | undefined;
+let savedEnv: Record<string, string | undefined> = {};
 export const harness = {} as Harness;
+/** Reserves a free loopback port so the app's own base URL is known before it boots. */
+function freePort() {
+  return new Promise<number>((resolve, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      server.close(() =>
+        typeof address === "object" && address
+          ? resolve(address.port)
+          : reject(new Error("No port")),
+      );
+    });
+  });
+}
+export interface SetupOptions {
+  /** Extra environment for the app, given its base URL (e.g. PUBLIC_URL); restored on teardown. */
+  env?: (baseUrl: string) => Record<string, string | undefined>;
+}
 // Each spec file boots the compiled app against its own disposable database.
-export async function setup() {
+// Takes no parameters so it can be passed to beforeAll directly.
+export function setup() {
+  return setupWith({});
+}
+/** Like setup(), with extra environment for the app (e.g. an OIDC provider). */
+export async function setupWith(options: SetupOptions) {
   databaseName = `quenda_test_${randomUUID().replaceAll("-", "")}`;
   const testUrl = new URL(baseUrl);
   testUrl.pathname = `/${databaseName}`;
@@ -33,14 +59,26 @@ export async function setup() {
   await admin.query(`CREATE DATABASE "${databaseName}"`);
   harness.db = new Pool({ connectionString: testUrl.toString() });
   await migrate(testUrl.toString(), () => undefined);
+  const port = options.env ? await freePort() : 0;
+  const extra = options.env?.(`http://127.0.0.1:${port}`) ?? {};
+  savedEnv = Object.fromEntries(
+    Object.keys(extra).map((key) => [key, process.env[key]]),
+  );
+  for (const [key, value] of Object.entries(extra))
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
   const { createApp } = require("../dist/bootstrap.js") as {
     createApp: () => Promise<INestApplication>;
   };
   harness.app = await createApp();
-  await harness.app.listen(0, "127.0.0.1");
+  await harness.app.listen(port, "127.0.0.1");
 }
 export async function teardown() {
   if (harness.app) await harness.app.close();
+  for (const [key, value] of Object.entries(savedEnv))
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  savedEnv = {};
   if (harness.db) await harness.db.end();
   if (admin) {
     await admin.query(`DROP DATABASE IF EXISTS "${databaseName}"`);

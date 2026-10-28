@@ -70,13 +70,13 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 
 | Categoría | Datos |
 |---|---|
-| Identificativos | Nombre visible facilitado por el sistema de identificación; identificador interno |
+| Identificativos | Nombre y apellidos facilitados por el sistema de identificación (Cl@ve u otro); identificador del proveedor de identidad; identificador interno; correo electrónico si el proveedor lo facilita |
+| NIF (solo si el concello activa la verificación de empadronamiento) | Número de identificación fiscal, cifrado; para aplicar tarifas de persona empadronada `{{Eliminar esta fila si no se activa.}}` |
 | Uso del servicio | Reservas (instalación, fecha y hora, estado), avisos, versión del aviso de privacidad aceptada y fecha |
 | Seguridad | Sesiones (identificador cifrado y caducidad); registro de auditoría de las acciones |
 
 No se tratan categorías especiales de datos (art. 9 RGPD), documentos de identidad, direcciones,
-teléfonos ni datos bancarios. `{{Añadir los datos que aporte el sistema de identificación en
-producción, por ejemplo el identificador de Cl@ve o Chave365.}}`
+teléfonos ni datos bancarios.
 
 ## 8. Destinatarios
 
