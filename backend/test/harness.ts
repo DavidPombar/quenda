@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
-import { readFile } from "node:fs/promises";
+import { migrate } from "../src/database/migrate";
 import { Pool } from "pg";
 import request from "supertest";
 import type { INestApplication } from "@nestjs/common";
@@ -31,12 +31,7 @@ export async function setup() {
   admin = new Pool({ connectionString: baseUrl });
   await admin.query(`CREATE DATABASE "${databaseName}"`);
   harness.db = new Pool({ connectionString: testUrl.toString() });
-  await harness.db.query(
-    await readFile(
-      new URL("../src/database/schema.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  await migrate(testUrl.toString(), () => undefined);
   const { createApp } = require("../dist/bootstrap.js") as {
     createApp: () => Promise<INestApplication>;
   };
