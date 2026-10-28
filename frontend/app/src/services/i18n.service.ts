@@ -179,6 +179,11 @@ const gl = {
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
   slotFree: "Libre",
+  resource: "Pista",
+  allResources: "Todas as pistas",
+  resourceOutOfService: "Fóra de servizo",
+  slotWithResource: "{time}, {resource}, {status}",
+  resourceGridCaption: "Quendas de todas as pistas",
   showPast: "Mostrar quendas pasadas",
   hidePast: "Ocultar quendas pasadas",
   noSlotsLeft: "Hoxe xa non quedan quendas libres. Proba con outro día.",
@@ -190,6 +195,22 @@ const gl = {
   facilityStatus: "Estado da instalación",
   timetable: "Quendas do día",
   account: "A miña conta",
+  openData: "Datos abertos",
+  openDataSubtitle:
+    "Descarga e reutiliza a información das instalacións deportivas en formatos abertos.",
+  openDataLicense: "Licenza",
+  openDataLicenseBody:
+    "Podes copiar, adaptar e redistribuír estes datos, tamén con fins comerciais, segundo a licenza:",
+  openDataFacilities: "Instalacións deportivas",
+  openDataFacilitiesBody:
+    "Nome, deporte, tipo de espazo segundo o Censo Nacional de Instalacións Deportivas (CNID), enderezo, coordenadas, accesibilidade, estado, prezo indicativo e número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe os conxuntos de datos para que os portais datos.gob.es e abertos.xunta.gal poidan recollelos automaticamente.",
+  openDataPrivacy:
+    "Non se publican datos persoais: nin persoas, nin reservas individuais.",
+  openDataApi: "Documentación da API (OpenAPI)",
   accountTitle: "Conta e privacidade",
   accountSubtitle:
     "Consulta os teus datos, descárgaos nun ficheiro ou elimina a túa conta.",
@@ -432,6 +453,11 @@ const es: Record<TextKey, string> = {
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",
   slotFree: "Libre",
+  resource: "Pista",
+  allResources: "Todas las pistas",
+  resourceOutOfService: "Fuera de servicio",
+  slotWithResource: "{time}, {resource}, {status}",
+  resourceGridCaption: "Turnos de todas las pistas",
   showPast: "Mostrar turnos pasados",
   hidePast: "Ocultar turnos pasados",
   noSlotsLeft: "Hoy ya no quedan turnos libres. Prueba con otro día.",
@@ -443,6 +469,22 @@ const es: Record<TextKey, string> = {
   facilityStatus: "Estado de la instalación",
   timetable: "Turnos del día",
   account: "Mi cuenta",
+  openData: "Datos abiertos",
+  openDataSubtitle:
+    "Descarga y reutiliza la información de las instalaciones deportivas en formatos abiertos.",
+  openDataLicense: "Licencia",
+  openDataLicenseBody:
+    "Puedes copiar, adaptar y redistribuir estos datos, también con fines comerciales, según la licencia:",
+  openDataFacilities: "Instalaciones deportivas",
+  openDataFacilitiesBody:
+    "Nombre, deporte, tipo de espacio según el Censo Nacional de Instalaciones Deportivas (CNID), dirección, coordenadas, accesibilidad, estado, precio indicativo y número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe los conjuntos de datos para que los portales datos.gob.es y abertos.xunta.gal puedan recogerlos automáticamente.",
+  openDataPrivacy:
+    "No se publican datos personales: ni personas, ni reservas individuales.",
+  openDataApi: "Documentación de la API (OpenAPI)",
   accountTitle: "Cuenta y privacidad",
   accountSubtitle:
     "Consulta tus datos, descárgalos en un archivo o elimina tu cuenta.",

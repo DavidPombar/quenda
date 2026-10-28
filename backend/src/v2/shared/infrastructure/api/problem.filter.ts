@@ -30,6 +30,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "A identificación electrónica non está dispoñible agora. Téntao máis tarde.",
     login_expired: "O inicio de sesión caducou. Volve tentalo.",
     login_rejected: "Non se puido completar o inicio de sesión.",
+    resource_required: "Escolle a pista ou o espazo que queres reservar.",
+    resource_unavailable:
+      "Esta pista está fóra de servizo. Escolle outra pista.",
     insufficient_contrast:
       "A cor non ten contraste suficiente co branco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:
@@ -63,6 +66,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "La identificación electrónica no está disponible ahora. Inténtalo más tarde.",
     login_expired: "El inicio de sesión ha caducado. Vuelve a intentarlo.",
     login_rejected: "No se pudo completar el inicio de sesión.",
+    resource_required: "Elige la pista o el espacio que quieres reservar.",
+    resource_unavailable:
+      "Esta pista está fuera de servicio. Elige otra pista.",
     insufficient_contrast:
       "El color no tiene contraste suficiente con el blanco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:

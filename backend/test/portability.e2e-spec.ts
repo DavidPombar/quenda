@@ -162,8 +162,17 @@ describe("Municipality data portability", () => {
       "INSERT INTO booking_blocks SELECT $1,tenant_id,id,$3,'2001-01-01T10:00:00Z','2001-01-08T10:00:00Z',NULL FROM users WHERE tenant_id=$2 AND role='citizen'",
       [randomUUID(), tenantId, cancelled],
     );
+    // A no-show keeps the unit it held, like one marked through the API.
     await db.query(
-      "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at,sequence) VALUES ($1,$2,NULL,$3,'2001-01-01T10:00:00Z','2001-01-01T11:00:00Z','no_show','2001-01-01T09:00:00Z',4)",
+      `WITH booking AS (
+        INSERT INTO bookings (id,tenant_id,user_id,facility_id,resource_id,starts_at,ends_at,status,created_at,sequence) VALUES ($1,$2,NULL,$3,$3,'2001-01-01T10:00:00Z','2001-01-01T11:00:00Z','no_show','2001-01-01T09:00:00Z',4) RETURNING id
+      )
+      INSERT INTO booking_units SELECT $2,id,$3,'2001-01-01T10:00:00Z','2001-01-01T11:00:00Z' FROM booking`,
+      [randomUUID(), tenantId, court],
+    );
+    // A second court, out of service, travels with the catalog.
+    await db.query(
+      "INSERT INTO resources (id,tenant_id,facility_id,name,position,active) VALUES ($1,$2,$3,'Pista 2',1,false)",
       [randomUUID(), tenantId, court],
     );
     await db.query(
@@ -220,9 +229,11 @@ describe("Municipality data portability", () => {
     for (const table of [
       "municipalities",
       "facilities",
+      "resources",
       "users",
       "identities",
       "bookings",
+      "booking_units",
       "notifications",
       "audit_events",
       "consents",
@@ -281,6 +292,7 @@ describe("Municipality data portability", () => {
     for (const key of [
       "municipality",
       "facilities",
+      "resources",
       "users",
       "identities",
       "bookings",
@@ -300,6 +312,11 @@ describe("Municipality data portability", () => {
   });
   it("should import V0 packages with current defaults and refuse unsupported versions", async () => {
     const id = randomUUID();
+    const [legacyCourt, legacyUser, legacyBooking] = [
+      randomUUID(),
+      randomUUID(),
+      randomUUID(),
+    ];
     const pack = {
       format: "quenda-municipality-export",
       version: 1,
@@ -316,9 +333,34 @@ describe("Municipality data portability", () => {
         contact: "legacy@example.invalid",
         legalText: "Legacy notice",
       },
-      facilities: [],
-      users: [],
-      bookings: [],
+      facilities: [
+        {
+          id: legacyCourt,
+          name: "Legacy court",
+          sport: "padel",
+          address: "Old street",
+          description: "Before courts",
+          accessible: true,
+          status: "active",
+          slotMinutes: 60,
+          priceCents: 0,
+          openingCalendar: openingCalendar(legacyCourt),
+          rules: "",
+        },
+      ],
+      users: [{ id: legacyUser, displayName: "Legacy", role: "citizen" }],
+      bookings: [
+        {
+          id: legacyBooking,
+          userId: legacyUser,
+          facilityId: legacyCourt,
+          start: "2026-11-02T10:00:00Z",
+          end: "2026-11-02T11:00:00Z",
+          status: "confirmed",
+          createdAt: "2026-10-20T09:00:00Z",
+          cancelledAt: null,
+        },
+      ],
       notifications: [],
       auditEvents: [],
     };
@@ -331,6 +373,17 @@ describe("Municipality data portability", () => {
         )
       ).rows,
     ).toEqual([{ retention_months: 24, reminder_hours: 24 }]);
+    // Packages from before courts get the default court and keep their slots occupied.
+    expect(
+      (
+        await targetDb.query(
+          "SELECT r.id, b.resource_id, u.unit_id FROM resources r JOIN bookings b ON b.resource_id=r.id JOIN booking_units u ON u.booking_id=b.id WHERE r.tenant_id=$1",
+          [id],
+        )
+      ).rows,
+    ).toEqual([
+      { id: legacyCourt, resource_id: legacyCourt, unit_id: legacyCourt },
+    ]);
     expect(
       (
         await targetDb.query(

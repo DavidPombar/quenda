@@ -39,6 +39,8 @@
     "@types/pg": "^8.15.5",
     "@types/supertest": "^7.2.1",
     "jose": "^6.2.13",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "supertest": "^7.1.4",
     "tsc-watch": "^7.2.0",
     "tsx": "^4.20.6",

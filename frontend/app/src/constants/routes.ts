@@ -9,6 +9,7 @@ export const ROUTES = {
   bookings: "reservas",
   account: "conta",
   unsubscribe: "baixa",
+  openData: "datos-abertos",
 } as const;
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;

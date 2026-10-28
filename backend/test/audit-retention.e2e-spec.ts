@@ -85,7 +85,7 @@ describe("Manager audit log (T4) through HTTP and PostgreSQL", () => {
     expect(created).toMatchObject({
       actorRole: "citizen",
       actorName: "citizen",
-      details: { facilityId: court.id, start: start(1) },
+      details: { facilityId: court.id, resourceId: court.id, start: start(1) },
     });
     expect(
       all.find((event) => event.action === "facility.created")?.details,
@@ -103,7 +103,7 @@ describe("Manager audit log (T4) through HTTP and PostgreSQL", () => {
     expect(cancelled.body).toHaveLength(1);
     expect(cancelled.body[0]).toMatchObject({
       resourceId: second,
-      details: { facilityId: court.id, start: start(3) },
+      details: { facilityId: court.id, resourceId: court.id, start: start(3) },
     });
     const limited = await context.manager
       .get("/v2/manager/audit")
@@ -139,7 +139,7 @@ describe("Retention policy (T4)", () => {
     const oldNotification = randomUUID();
     const oldAudit = randomUUID();
     await harness.db.query(
-      "INSERT INTO bookings (id,tenant_id,user_id,facility_id,starts_at,ends_at,status,created_at) VALUES ($1,$2,$3,$4,$5,$6,'confirmed',$5)",
+      "INSERT INTO bookings (id,tenant_id,user_id,facility_id,resource_id,starts_at,ends_at,status,created_at) VALUES ($1,$2,$3,$4,$4,$5,$6,'confirmed',$5)",
       [
         oldBooking,
         context.id,

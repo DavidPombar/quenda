@@ -55,6 +55,8 @@ export interface ExportedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -77,6 +79,8 @@ export interface ExportedNotification {
     | "unblocked"
     | "reminder";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
   details: Record<string, unknown> | null;
 }

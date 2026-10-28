@@ -24,6 +24,8 @@ export interface MunicipalitySnapshot {
     mailSenderName: string;
     mailReplyTo: string;
     storeNif: boolean;
+    dataLicense: string;
+    dir3Code: string | null;
   };
   facilities: {
     id: string;
@@ -38,6 +40,18 @@ export interface MunicipalitySnapshot {
     openingCalendar: string;
     rules: string;
     followsMunicipalHolidays: boolean;
+    latitude: number | null;
+    longitude: number | null;
+  }[];
+  /** Courts and spaces, parents before their parts. */
+  resources: {
+    id: string;
+    facilityId: string;
+    name: string;
+    position: number;
+    parentId: string | null;
+    active: boolean;
+    createdAt: Temporal.Instant;
   }[];
   users: {
     id: string;
@@ -63,6 +77,7 @@ export interface MunicipalitySnapshot {
     id: string;
     userId: string | null;
     facilityId: string;
+    resourceId: string;
     start: Temporal.Instant;
     end: Temporal.Instant;
     status: string;

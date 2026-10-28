@@ -10,7 +10,7 @@ export class InsightsResponseDTO {
   @ApiProperty({ description: "Bookings marked as no-show" }) noShows!: number;
   @ApiProperty({
     description:
-      "Confirmed minutes divided by currently scheduled opening minutes, rounded percent",
+      "Occupied unit-minutes divided by scheduled opening minutes times active units, rounded percent",
   })
   occupancy!: number;
   @ApiProperty({ description: "Number of facilities" }) facilities!: number;

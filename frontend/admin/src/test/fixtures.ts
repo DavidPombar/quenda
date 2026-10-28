@@ -35,6 +35,8 @@ export const facility: Facility = {
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
   followsMunicipalHolidays: true,
+  latitude: 42.61,
+  longitude: -8.12,
 };
 export function stubShell(authenticated = false) {
   stubJsonResponse({

@@ -119,6 +119,15 @@
         "storeNif": {
           "type": "boolean",
           "description": "Residency verification keeps the NIF. Optional: defaults to false."
+        },
+        "dataLicense": {
+          "type": "string",
+          "enum": ["CC-BY-4.0", "CC-BY-SA-4.0", "CC0-1.0", "ODbL-1.0"],
+          "description": "Licence of the open data. Optional: defaults to CC-BY-4.0."
+        },
+        "dir3Code": {
+          "type": ["string", "null"],
+          "description": "DIR3 code of the council, the open data publisher. Optional."
         }
       },
       "additionalProperties": false
@@ -177,6 +186,59 @@
           },
           "followsMunicipalHolidays": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": ["number", "null"],
+            "minimum": -90,
+            "maximum": 90,
+            "description": "WGS 84. Optional; set together with longitude."
+          },
+          "longitude": {
+            "type": ["number", "null"],
+            "minimum": -180,
+            "maximum": 180,
+            "description": "WGS 84. Optional; set together with latitude."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "resources": {
+      "description": "Courts and spaces, parents before their parts. Optional: packages without it get one resource per facility, with the facility's id.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "facilityId",
+          "name",
+          "position",
+          "parentId",
+          "active",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "parentId": {
+            "type": ["string", "null"]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -205,45 +267,25 @@
             "type": "string"
           },
           "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time"
           },
           "email": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "locale": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "assurance": {
-            "enum": [
-              "demo",
-              "email",
-              "eid",
-              "local"
-            ],
+            "enum": ["demo", "email", "eid", "local"],
             "description": "How the identity was proven. Optional: defaults to demo."
           },
           "nifCiphertext": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Encrypted NIF; readable only with the same QUENDA_DATA_KEY. Optional."
           },
           "nifDigest": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "HMAC digest of the NIF for lookups. Optional."
           }
         },
@@ -255,13 +297,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "userId",
-          "issuer",
-          "subject",
-          "createdAt"
-        ],
+        "required": ["id", "userId", "issuer", "subject", "createdAt"],
         "properties": {
           "id": {
             "type": "string"
@@ -306,13 +342,14 @@
             "type": "string"
           },
           "userId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "facilityId": {
             "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "Booked court or space. Optional: defaults to the facility's default resource."
           },
           "start": {
             "type": "string",
@@ -330,29 +367,17 @@
             "format": "date-time"
           },
           "cancelledAt": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time"
           },
           "cancellationHours": {
-            "type": [
-              "integer",
-              "null"
-            ]
+            "type": ["integer", "null"]
           },
           "cancelledBy": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "cancellationReason": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "sequence": {
             "type": "integer"
@@ -391,10 +416,7 @@
             "format": "date-time"
           },
           "details": {
-            "type": [
-              "object",
-              "null"
-            ]
+            "type": ["object", "null"]
           }
         },
         "additionalProperties": false
@@ -418,10 +440,7 @@
             "type": "string"
           },
           "actorId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "action": {
             "type": "string"
@@ -434,16 +453,10 @@
             "format": "date-time"
           },
           "actorRole": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "details": {
-            "type": [
-              "object",
-              "null"
-            ]
+            "type": ["object", "null"]
           }
         },
         "additionalProperties": false
@@ -453,12 +466,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "userId",
-          "legalVersion",
-          "acceptedAt"
-        ],
+        "required": ["id", "userId", "legalVersion", "acceptedAt"],
         "properties": {
           "id": {
             "type": "string"
@@ -481,12 +489,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "version",
-          "textGl",
-          "textEs",
-          "publishedAt"
-        ],
+        "required": ["version", "textGl", "textEs", "publishedAt"],
         "properties": {
           "version": {
             "type": "string"
@@ -509,12 +512,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "contentType",
-          "data",
-          "sha256",
-          "updatedAt"
-        ],
+        "required": ["contentType", "data", "sha256", "updatedAt"],
         "properties": {
           "contentType": {
             "type": "string"
@@ -538,14 +536,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "userId",
-          "bookingId",
-          "start",
-          "end",
-          "liftedAt"
-        ],
+        "required": ["id", "userId", "bookingId", "start", "end", "liftedAt"],
         "properties": {
           "id": {
             "type": "string"
@@ -565,10 +556,7 @@
             "format": "date-time"
           },
           "liftedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time"
           }
         },
@@ -579,13 +567,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "userId",
-          "kind",
-          "channel",
-          "enabled",
-          "updatedAt"
-        ],
+        "required": ["userId", "kind", "channel", "enabled", "updatedAt"],
         "properties": {
           "userId": {
             "type": "string"
@@ -656,24 +638,15 @@
             "type": "integer"
           },
           "lockedUntil": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time"
           },
           "sentAt": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time"
           },
           "lastError": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           }
         },
         "additionalProperties": false

@@ -161,6 +161,13 @@ export async function facility(context: Tenant, calendar?: string) {
   await post(context.manager, "manager/facilities", body).expect(201);
   return body;
 }
+export interface ResourceSlots {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  slots: { start: string; end: string; status: string }[];
+}
 export async function availability(
   context: Tenant,
   id: string,
@@ -174,4 +181,60 @@ export async function availability(
     .get(`/v2/public/availability/${id}`)
     .query({ slug: context.slug, date })
     .expect(200);
+}
+/** Status of the slot starting at `instant` for a resource (default: the facility's first). */
+export async function slotStatus(
+  context: Tenant,
+  facilityId: string,
+  instant: string,
+  resourceId = facilityId,
+) {
+  const resources = (await availability(context, facilityId, instant)).body
+    .resources as ResourceSlots[];
+  return resources
+    .find((resource) => resource.id === resourceId)
+    ?.slots.find((slot) => slot.start === instant)?.status;
+}
+// Extra courts are inserted directly until the manager API for resources exists.
+export async function addResources(
+  context: Tenant,
+  facilityId: string,
+  items: { name: string; parentId?: string; active?: boolean }[],
+) {
+  const ids: string[] = [];
+  for (const item of items) {
+    const id = randomUUID();
+    await harness.db.query(
+      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active)
+      SELECT $1,$2,$3,$4,coalesce(max(position),-1)+1,$5,$6 FROM resources WHERE tenant_id=$2 AND facility_id=$3`,
+      [
+        id,
+        context.id,
+        facilityId,
+        item.name,
+        item.parentId ?? null,
+        item.active ?? true,
+      ],
+    );
+    ids.push(id);
+  }
+  return ids;
+}
+/** An empty disposable database on the test server, for schema migration checks. */
+export async function emptyDatabase() {
+  const name = `quenda_test_${randomUUID().replaceAll("-", "")}`;
+  const url = new URL(baseUrl);
+  url.pathname = `/${name}`;
+  const server = new Pool({ connectionString: baseUrl });
+  await server.query(`CREATE DATABASE "${name}"`);
+  const db = new Pool({ connectionString: url.toString() });
+  return {
+    db,
+    url: url.toString(),
+    async drop() {
+      await db.end();
+      await server.query(`DROP DATABASE IF EXISTS "${name}"`);
+      await server.end();
+    },
+  };
 }

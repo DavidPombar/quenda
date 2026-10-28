@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  DataLicense,
+  dataLicenses,
   MunicipalityLocale,
   MunicipalitySettings,
 } from "../../../../../shared/application/municipality-settings";
@@ -64,6 +66,17 @@ export class MunicipalityResponseDTO {
     description: "Days without booking once the limit is reached",
   })
   noShowBlockDays!: number;
+  @ApiProperty({
+    description: "SPDX licence identifier of the municipality's open data",
+    enum: dataLicenses,
+  })
+  dataLicense!: DataLicense;
+  @ApiProperty({
+    description: "DIR3 code of the council, used as open data publisher",
+    type: String,
+    nullable: true,
+  })
+  dir3Code!: string | null;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -86,6 +99,8 @@ export class MunicipalityResponseDTO {
       noShowLimit: value.noShowLimit,
       noShowWindowDays: value.noShowWindowDays,
       noShowBlockDays: value.noShowBlockDays,
+      dataLicense: value.dataLicense,
+      dir3Code: value.dir3Code,
     };
   }
 }

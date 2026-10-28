@@ -19,6 +19,12 @@ the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
   upgrade without recreating their data (R1, R3, T4).
 - `0004` updates calendar revisions for every booking mutation, including
   municipal cancellations, and allows retention to remove obsolete feed owners.
+- `0005` adds courts and divisible spaces (`resources`, `booking_units`). Every
+  existing facility gets a default resource with its own id, existing reservations
+  point at it and keep their occupied slot, and the per-facility exclusion constraint
+  is replaced by the per-unit one. A change of court also bumps the calendar revision.
+- `0006` adds the open data settings: each municipality's `data_license`
+  (CC BY 4.0 by default) and `dir3_code`, and optional facility coordinates.
 - `0007` adds public identity: the municipality's `store_nif` opt-in, each account's
   `assurance`, the encrypted NIF and its digest, `identities` (OIDC issuer and subject)
   and short-lived `login_attempts`. It is numbered after the courts (`0005`) and open

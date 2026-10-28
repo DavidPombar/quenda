@@ -17,6 +17,8 @@ export type ErrorCode =
   | "oidc_unavailable"
   | "login_expired"
   | "login_rejected"
+  | "resource_required"
+  | "resource_unavailable"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"

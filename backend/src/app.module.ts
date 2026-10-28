@@ -13,6 +13,7 @@ import { RetentionModule } from "./v2/modules/retention/retention.module";
 import { NotificationsModule } from "./v2/modules/notifications/notifications.module";
 import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
 import { PortabilityModule } from "./v2/modules/portability/portability.module";
+import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
 @Module({
   imports: [
     SharedModule,
@@ -28,6 +29,7 @@ import { PortabilityModule } from "./v2/modules/portability/portability.module";
     NotificationsModule,
     CalendarsModule,
     PortabilityModule,
+    OpenDataModule,
   ],
 })
 export class AppModule {}

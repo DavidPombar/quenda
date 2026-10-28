@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
@@ -53,6 +53,12 @@ export function Shell() {
         >
           {t("privacy")}
         </button>
+        <Link
+          className="help-link"
+          to={routeFor(municipality.slug, ROUTES.openData)}
+        >
+          {t("openData")}
+        </Link>
       </div>
       <span className="help-note">{t("openSource")}</span>
     </>

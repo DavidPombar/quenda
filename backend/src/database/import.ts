@@ -13,6 +13,8 @@ export interface MunicipalityPackage {
   exportedAt: string;
   municipality: Row & { id: string; slug: string };
   facilities: Row[];
+  /** Courts and spaces (optional: packages from before courts get one per facility). */
+  resources?: Row[];
   users: Row[];
   /** Identity provider links (optional in packages from before public identity). */
   identities?: Row[];
@@ -79,6 +81,8 @@ const tables = {
     mail_sender_name: "mailSenderName",
     mail_reply_to: "mailReplyTo",
     store_nif: "storeNif",
+    data_license: "dataLicense",
+    dir3_code: "dir3Code",
   },
   facilities: {
     tenant_id: "tenantId",
@@ -94,6 +98,18 @@ const tables = {
     opening_calendar: "openingCalendar",
     rules: "rules",
     follows_municipal_holidays: "followsMunicipalHolidays",
+    latitude: "latitude",
+    longitude: "longitude",
+  },
+  resources: {
+    tenant_id: "tenantId",
+    id: "id",
+    facility_id: "facilityId",
+    name: "name",
+    position: "position",
+    parent_id: "parentId",
+    active: "active",
+    created_at: "createdAt",
   },
   users: {
     tenant_id: "tenantId",
@@ -120,6 +136,7 @@ const tables = {
     id: "id",
     user_id: "userId",
     facility_id: "facilityId",
+    resource_id: "resourceId",
     starts_at: "start",
     ends_at: "end",
     status: "status",
@@ -253,7 +270,34 @@ export async function importMunicipality(
     await insert("users", data.users);
     await insert("identities", data.identities ?? []);
     await insert("facilities", data.facilities);
-    await insert("bookings", data.bookings);
+    // Parents come before their parts; packages without courts get the default one per
+    // facility, with the facility's id, exactly as the courts migration does.
+    await insert("resources", data.resources ?? []);
+    await client.query(
+      `INSERT INTO resources (id, tenant_id, facility_id, name, position, parent_id, active)
+      SELECT f.id, f.tenant_id, f.id, f.name, 0, NULL, true FROM facilities f
+      WHERE f.tenant_id=$1 AND NOT EXISTS (
+        SELECT 1 FROM resources r WHERE r.tenant_id=f.tenant_id AND r.facility_id=f.id
+      )`,
+      [tenantId],
+    );
+    await insert(
+      "bookings",
+      data.bookings.map((row) => ({
+        ...row,
+        resourceId: row.resourceId ?? row.facilityId,
+      })),
+    );
+    // Occupied units are derived data: the booked resource, or every part of a whole court.
+    await client.query(
+      `INSERT INTO booking_units (tenant_id, booking_id, unit_id, starts_at, ends_at)
+      SELECT b.tenant_id, b.id, coalesce(part.id, r.id), b.starts_at, b.ends_at
+      FROM bookings b
+      JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id
+      LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
+      WHERE b.tenant_id=$1 AND b.status IN ('confirmed', 'no_show')`,
+      [tenantId],
+    );
     await insert("notifications", data.notifications);
     await insert("audit_events", data.auditEvents);
     await insert("consents", data.consents);
