@@ -6,7 +6,7 @@ import logoMark from "@/assets/illustrations/logo-mark.svg";
 import tennis from "@/assets/illustrations/facility-tennis.svg";
 import padel from "@/assets/illustrations/facility-padel.svg";
 import swimming from "@/assets/illustrations/facility-swimming.svg";
-import { APP_URL, ADMIN_URL } from "@/constants/routes";
+import { APP_URL, ADMIN_URL, ROUTES } from "@/constants/routes";
 import { SiteFooter } from "@/components/site-footer/site-footer.view";
 import { useHomeController } from "./home.controller";
 const STEP_ART = [tennis, padel, swimming];
@@ -24,6 +24,9 @@ export function Home() {
           quenda
         </a>
         <nav aria-label={t.navigation}>
+          <a className="section-link" href={ROUTES.search}>
+            {t.searchNav}
+          </a>
           <a className="section-link" href="#como-funciona">
             {t.how}
           </a>
@@ -56,6 +59,9 @@ export function Home() {
               <Button asChild colorPalette="court">
                 <a href={APP_URL}>{t.openApp}</a>
               </Button>
+              <a className="text-link" href={ROUTES.search}>
+                {t.searchCta}
+              </a>
               <a className="text-link" href="#como-funciona">
                 {t.discover}
               </a>

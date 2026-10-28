@@ -479,6 +479,58 @@ const gl = {
   insightsByFacility: "Ocupación por instalación",
   insightsFacility: "Instalación",
   seeInsights: "Ver indicadores",
+  operatorArea: "Área supramunicipal",
+  operatorRole: "Operación supramunicipal",
+  operatorMunicipalities: "Concellos",
+  operatorMunicipalitiesSubtitle:
+    "Concellos do despregamento, a súa configuración e o persoal de xestión.",
+  operatorSignInTitle: "Entrar na área supramunicipal",
+  operatorSignInBody:
+    "Para deputacións e mancomunidades: alta de concellos e xestores e indicadores agregados. Nunca se mostran datos persoais.",
+  operatorSignIn: "Entrar como operador/a",
+  operatorPrivacy:
+    "Só configuración e cifras agregadas: sen reservas individuais nin datos persoais.",
+  operatorNewMunicipality: "Novo concello",
+  operatorNewMunicipalityHint:
+    "Dá de alta un concello sen tocar a base de datos.",
+  operatorNewMunicipalityNote:
+    "As regras de reserva comezan cos valores habituais (14 días, 2 horas, 5 reservas). O persoal do concello axústaas despois nos seus axustes.",
+  operatorCreateMunicipality: "Dar de alta",
+  operatorMunicipalityCreated: "Concello dado de alta:",
+  operatorMunicipalityName: "Nome do concello",
+  operatorNameError: "Escribe polo menos 2 caracteres.",
+  operatorSlug: "Identificador no enderezo",
+  operatorSlugHint:
+    "Minúsculas, números e guións. Aparece en /app/identificador.",
+  operatorSlugError:
+    "Usa entre 3 e 64 minúsculas, números ou guións, sen guión ao principio nin ao final.",
+  operatorTimezone: "Fuso horario",
+  operatorFacilities: "Instalacións",
+  operatorActive: "activas",
+  operatorRules: "Regras de reserva",
+  operatorDaysAhead: "días de antelación",
+  operatorHoursToCancel: "h para cancelar",
+  operatorActiveLimit: "reservas activas",
+  operatorManagers: "Xestores",
+  operatorNoManagers: "Aínda sen xestores",
+  operatorAddManager: "Engadir xestor/a",
+  operatorManagerCreated: "Xestor/a engadido/a:",
+  operatorManagerName: "Nome",
+  operatorManagerEmail: "Correo de traballo",
+  operatorManagerEmailHint:
+    "Servirá para vincular a súa conta co sistema de identidade.",
+  operatorEmailError: "Escribe un enderezo de correo válido.",
+  operatorOpenManagement: "Abrir a xestión do concello",
+  operatorInsights: "Indicadores agregados",
+  operatorInsightsSubtitle:
+    "Ocupación e reservas de cada concello no período, sen datos persoais.",
+  operatorInsightsCaption: "Indicadores por concello no período seleccionado.",
+  operatorTotal: "Total do despregamento",
+  homeTitle: "Xestión de Quenda",
+  homeMunicipalities: "Xestión municipal",
+  homeOperatorBody:
+    "Para a deputación ou mancomunidade que opera Quenda para varios concellos.",
+  homeOperatorLink: "Entrar na área supramunicipal",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -939,6 +991,59 @@ const es: Record<TextKey, string> = {
   insightsByFacility: "Ocupación por instalación",
   insightsFacility: "Instalación",
   seeInsights: "Ver indicadores",
+  operatorArea: "Área supramunicipal",
+  operatorRole: "Operación supramunicipal",
+  operatorMunicipalities: "Ayuntamientos",
+  operatorMunicipalitiesSubtitle:
+    "Ayuntamientos del despliegue, su configuración y el personal de gestión.",
+  operatorSignInTitle: "Entrar en el área supramunicipal",
+  operatorSignInBody:
+    "Para diputaciones y mancomunidades: alta de ayuntamientos y gestores e indicadores agregados. Nunca se muestran datos personales.",
+  operatorSignIn: "Entrar como operador/a",
+  operatorPrivacy:
+    "Solo configuración y cifras agregadas: sin reservas individuales ni datos personales.",
+  operatorNewMunicipality: "Nuevo ayuntamiento",
+  operatorNewMunicipalityHint:
+    "Da de alta un ayuntamiento sin tocar la base de datos.",
+  operatorNewMunicipalityNote:
+    "Las reglas de reserva empiezan con los valores habituales (14 días, 2 horas, 5 reservas). El personal del ayuntamiento las ajusta después en sus ajustes.",
+  operatorCreateMunicipality: "Dar de alta",
+  operatorMunicipalityCreated: "Ayuntamiento dado de alta:",
+  operatorMunicipalityName: "Nombre del ayuntamiento",
+  operatorNameError: "Escribe al menos 2 caracteres.",
+  operatorSlug: "Identificador en la dirección",
+  operatorSlugHint:
+    "Minúsculas, números y guiones. Aparece en /app/identificador.",
+  operatorSlugError:
+    "Usa entre 3 y 64 minúsculas, números o guiones, sin guion al principio ni al final.",
+  operatorTimezone: "Huso horario",
+  operatorFacilities: "Instalaciones",
+  operatorActive: "activas",
+  operatorRules: "Reglas de reserva",
+  operatorDaysAhead: "días de antelación",
+  operatorHoursToCancel: "h para cancelar",
+  operatorActiveLimit: "reservas activas",
+  operatorManagers: "Gestores",
+  operatorNoManagers: "Todavía sin gestores",
+  operatorAddManager: "Añadir gestor/a",
+  operatorManagerCreated: "Gestor/a añadido/a:",
+  operatorManagerName: "Nombre",
+  operatorManagerEmail: "Correo de trabajo",
+  operatorManagerEmailHint:
+    "Servirá para vincular su cuenta con el sistema de identidad.",
+  operatorEmailError: "Escribe una dirección de correo válida.",
+  operatorOpenManagement: "Abrir la gestión del ayuntamiento",
+  operatorInsights: "Indicadores agregados",
+  operatorInsightsSubtitle:
+    "Ocupación y reservas de cada ayuntamiento en el periodo, sin datos personales.",
+  operatorInsightsCaption:
+    "Indicadores por ayuntamiento en el periodo seleccionado.",
+  operatorTotal: "Total del despliegue",
+  homeTitle: "Gestión de Quenda",
+  homeMunicipalities: "Gestión municipal",
+  homeOperatorBody:
+    "Para la diputación o mancomunidad que opera Quenda para varios ayuntamientos.",
+  homeOperatorLink: "Entrar en el área supramunicipal",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

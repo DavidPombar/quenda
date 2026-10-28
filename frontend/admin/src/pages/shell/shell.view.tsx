@@ -113,6 +113,9 @@ export function Shell() {
               <a href={CITIZEN_APP_URL}>{t("citizenApp")}</a>
             </li>
             <li>
+              <NavLink to={ROUTES.operator}>{t("operatorArea")}</NavLink>
+            </li>
+            <li>
               <button type="button" onClick={() => c.setPrivacyOpen(true)}>
                 {t("privacy")}
               </button>

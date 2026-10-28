@@ -4,14 +4,17 @@ import { FacilitiesModule } from "../facilities/facilities.module";
 import { InsightsRepository } from "./domain/insights.repository";
 import { PostgresInsightsRepository } from "./infrastructure/persistence/postgres-insights.repository";
 import { GetInsights } from "./application/queries/get-insights.query";
+import { MunicipalityInsights } from "./application/municipality-insights";
 import { GetInsightsController } from "./infrastructure/api/manager/get-insights.controller";
 import { ExportInsightsController } from "./infrastructure/api/manager/export-insights.controller";
 @Module({
   imports: [FacilitiesModule],
   providers: [
     GetInsights,
+    MunicipalityInsights,
     { provide: InsightsRepository, useClass: PostgresInsightsRepository },
   ],
   controllers: [GetInsightsController, ExportInsightsController],
+  exports: [MunicipalityInsights],
 })
 export class InsightsModule {}

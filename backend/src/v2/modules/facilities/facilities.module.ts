@@ -9,6 +9,8 @@ import { IcalOpeningCalendar } from "./infrastructure/calendar/ical-opening-cale
 import { HolidayCalendar } from "./domain/holiday-calendar";
 import { IcalHolidayCalendar } from "./infrastructure/calendar/ical-holiday-calendar";
 import { ListFacilities } from "./application/queries/list-facilities.query";
+import { ListCatalog } from "./application/queries/list-catalog.query";
+import { ListCatalogController } from "./infrastructure/api/public/list-catalog.controller";
 import { GetAvailability } from "./application/queries/get-availability.query";
 import { SaveFacility } from "./application/commands/save-facility.command";
 import { ListFacilitiesController } from "./infrastructure/api/public/list-facilities.controller";
@@ -20,6 +22,7 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
 @Module({
   providers: [
     ListFacilities,
+    ListCatalog,
     GetAvailability,
     SaveFacility,
     GetFacilityImpact,
@@ -30,6 +33,7 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
   ],
   controllers: [
     ListFacilitiesController,
+    ListCatalogController,
     GetAvailabilityController,
     CreateFacilityController,
     UpdateFacilityController,

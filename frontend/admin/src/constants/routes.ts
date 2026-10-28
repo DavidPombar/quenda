@@ -10,9 +10,15 @@ export const ROUTES = {
   insights: "indicadores",
   accessibility: "accesibilidade",
   settings: "axustes",
+  operator: "/operador",
+  deployment: "concellos",
+  deploymentInsights: "indicadores",
   categories: "categorias",
   bookings: "reservas",
 } as const;
+export function operatorRouteFor(child: string) {
+  return `${ROUTES.operator}/${child}`;
+}
 export function routeFor(slug: string, child: string) {
   return `/${slug}/${child}`;
 }

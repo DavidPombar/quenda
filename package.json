@@ -46,7 +46,8 @@
   "msw": {
     "workerDirectory": [
       "frontend/app/public",
-      "frontend/admin/public"
+      "frontend/admin/public",
+      "frontend/web/public"
     ]
   }
 }

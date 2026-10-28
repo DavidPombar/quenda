@@ -73,3 +73,5 @@ exists in the target is refused: the import neither merges nor clones.
 New data (organizations, season allocations, fees) is added to the
 package as it is implemented, so a migration never needs manual work. CSV exports
 are not part of this version.
+
+Deployment operator accounts, sessions and the cross-municipality operator audit trail are not municipal data. Back up these deployment-wide tables separately; the municipal audit trail retains the actions affecting the exported municipality (T3, R3).

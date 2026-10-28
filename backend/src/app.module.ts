@@ -11,6 +11,7 @@ import { InsightsModule } from "./v2/modules/insights/insights.module";
 import { AccountModule } from "./v2/modules/account/account.module";
 import { AuditModule } from "./v2/modules/audit/audit.module";
 import { RetentionModule } from "./v2/modules/retention/retention.module";
+import { OperatorsModule } from "./v2/modules/operators/operators.module";
 import { NotificationsModule } from "./v2/modules/notifications/notifications.module";
 import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
 import { PortabilityModule } from "./v2/modules/portability/portability.module";
@@ -28,6 +29,7 @@ import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
     AccountModule,
     AuditModule,
     RetentionModule,
+    OperatorsModule,
     NotificationsModule,
     CalendarsModule,
     PortabilityModule,

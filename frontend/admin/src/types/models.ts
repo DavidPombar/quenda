@@ -210,6 +210,54 @@ export interface AuditFilters {
   action?: string;
   limit?: number;
 }
+export interface OperatorSession {
+  operatorId: string;
+  displayName: string;
+}
+export interface StaffMember {
+  id: string;
+  municipalityId: string;
+  displayName: string;
+  email: string | null;
+}
+export interface DeploymentMunicipality {
+  settings: MunicipalitySettings;
+  facilities: number;
+  activeFacilities: number;
+  managers: StaffMember[];
+}
+export interface NewMunicipality {
+  id: string;
+  slug: string;
+  name: string;
+  timezone: string;
+  locale: Locale;
+  contact: string;
+  legalTexts: LegalTexts;
+}
+export interface NewManager {
+  id: string;
+  displayName: string;
+  email: string;
+}
+export interface InsightTotals {
+  total: number;
+  confirmed: number;
+  cancelled: number;
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number | null;
+  facilities: number;
+}
+export interface MunicipalityTotals extends InsightTotals, DateRange {
+  id: string;
+  slug: string;
+  name: string;
+}
+export interface DeploymentInsights extends InsightTotals {
+  municipalities: MunicipalityTotals[];
+}
 /** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
 export interface MunicipalityExport {
   format: "quenda-municipality-export";
