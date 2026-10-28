@@ -16,6 +16,7 @@ const columns: Record<keyof EditableSettings, string> = {
   contact: "contact",
   primaryColor: "primary_color",
   holidaysCalendar: "holidays_calendar",
+  enabledCategories: "enabled_categories",
   noShowLimit: "no_show_limit",
   noShowWindowDays: "no_show_window_days",
   noShowBlockDays: "no_show_block_days",

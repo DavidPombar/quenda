@@ -8,6 +8,7 @@ import { General } from "./components/general/general.view";
 import { LegalTexts } from "./components/legal-texts/legal-texts.view";
 import { Branding } from "./components/branding/branding.view";
 import { Holidays } from "./components/holidays/holidays.view";
+import { UserCategories } from "./components/user-categories/user-categories.view";
 import { NoShowPenalty } from "./components/no-show-penalty/no-show-penalty.view";
 export function Settings() {
   const c = useSettingsController();
@@ -40,7 +41,7 @@ export function Settings() {
       ) : c.settings.isPending ? (
         <Feedback message={c.t("loading")} />
       ) : (
-        // Each section saves on its own, so future sections (#13) slot in without a shared form.
+        // Each section saves on its own, so new sections slot in without a shared form.
         <div className="settings-sections">
           <BookingRules settings={c.settings.data} t={c.t} />
           <NoShowPenalty settings={c.settings.data} t={c.t} />
@@ -48,6 +49,7 @@ export function Settings() {
           <LegalTexts settings={c.settings.data} t={c.t} locale={c.locale} />
           <Branding settings={c.settings.data} t={c.t} />
           <Holidays settings={c.settings.data} t={c.t} locale={c.locale} />
+          <UserCategories settings={c.settings.data} t={c.t} />
         </div>
       )}
     </div>

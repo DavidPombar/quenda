@@ -11,6 +11,7 @@ import {
   Municipalities,
   MunicipalitySettings,
 } from "../../../../shared/application/municipality-settings";
+import { normaliseCategories } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
@@ -32,6 +33,7 @@ const editable = [
   "contact",
   "primaryColor",
   "holidaysCalendar",
+  "enabledCategories",
   "noShowLimit",
   "noShowWindowDays",
   "noShowBlockDays",
@@ -67,6 +69,9 @@ export class UpdateMunicipalitySettings {
     const patch = {
       ...args.patch,
       primaryColor: args.patch.primaryColor?.toLowerCase(),
+      enabledCategories:
+        args.patch.enabledCategories &&
+        normaliseCategories(args.patch.enabledCategories),
     };
     const next: MunicipalitySettings = { ...existing };
     for (const key of editable)
@@ -75,7 +80,9 @@ export class UpdateMunicipalitySettings {
       return Result.err(failure("insufficient_contrast"));
     if (!this.holidays.validate(next.holidaysCalendar))
       return Result.err(failure("invalid_holidays"));
-    const changed = editable.filter((key) => existing[key] !== next[key]);
+    const changed = editable.filter(
+      (key) => JSON.stringify(existing[key]) !== JSON.stringify(next[key]),
+    );
     const legalChanged =
       patch.legalTexts !== undefined &&
       (patch.legalTexts.gl !== existing.legalTexts.gl ||

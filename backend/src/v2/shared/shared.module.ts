@@ -3,6 +3,10 @@ import { Global, Module } from "@nestjs/common";
 import { Clock } from "./application/clock";
 import { IdGenerator } from "./application/id-generator";
 import { Audit } from "./application/audit";
+import { SecretGenerator } from "./application/secret-generator";
+import { DataProtector } from "./application/data-protector";
+import { NodeSecretGenerator } from "./infrastructure/node-secret-generator";
+import { AesDataProtector } from "./infrastructure/aes-data-protector";
 import { Municipalities } from "./application/municipality-settings";
 import { Outbox } from "./application/outbox";
 import { UnsubscribeTokens } from "./application/unsubscribe-tokens";
@@ -35,6 +39,11 @@ const bindings = [
   {
     provide: OperatorSessionRepository,
     useClass: PostgresOperatorSessionRepository,
+  },
+  { provide: SecretGenerator, useClass: NodeSecretGenerator },
+  {
+    provide: DataProtector,
+    useFactory: () => new AesDataProtector(process.env.QUENDA_DATA_KEY),
   },
 ];
 @Global()

@@ -108,6 +108,29 @@ export const copy = {
       futsal: "Fútbol sala",
       swimming: "Natación",
     },
+    footerAccessibility: "Declaración de accesibilidade",
+    a11yDocumentTitle: "Declaración de accesibilidade · Quenda",
+    a11yBack: "Volver ao inicio",
+    a11yTitle: "Declaración de accesibilidade",
+    a11yIntro:
+      "Quenda comprométese a facer accesible este sitio web informativo, de conformidade co Real Decreto 1112/2018, do 7 de setembro, sobre accesibilidade dos sitios web e aplicacións para dispositivos móbiles do sector público.",
+    a11yStatusTitle: "Situación de cumprimento",
+    a11yStatus:
+      "Este sitio web é parcialmente conforme co RD 1112/2018. Norma de referencia: WCAG 2.1 nivel AA e norma EN 301 549.",
+    a11yContentTitle: "Contido non accesible",
+    a11yContent:
+      "Aínda non se fixo a revisión manual con tecnoloxías de apoio (lectores de pantalla, ampliadores e control por voz), polo que poden existir barreiras que as probas automáticas non detectan.",
+    a11yPreparationTitle: "Preparación desta declaración",
+    a11yPreparation:
+      "Declaración preparada o 27 de outubro de 2026 mediante autoavaliación do equipo do proxecto, con análises automáticas axe (WCAG 2.1 AA) en cada cambio do código. Revísase polo menos unha vez ao ano.",
+    a11yContactTitle: "Observacións e datos de contacto",
+    a11yContact:
+      "Para comunicar unha barreira neste sitio web, abre unha incidencia no repositorio público do proxecto.",
+    a11yContactLink: "Abrir unha incidencia en GitHub",
+    a11yMunicipalTitle: "Declaración de cada concello",
+    a11yMunicipal:
+      "Cada concello que usa Quenda publica a súa propia declaración na aplicación, coa unidade responsable, o correo e o teléfono. Diríxelle a ela as solicitudes de información accesible, as queixas e as reclamacións sobre o servizo de reservas, que se responden nun prazo máximo de 20 días hábiles.",
+    a11yMunicipalLink: "Ir á aplicación do teu concello",
   },
   es: {
     documentTitle: "Quenda: reserva de instalaciones deportivas municipales",
@@ -217,5 +240,28 @@ export const copy = {
       futsal: "Fútbol sala",
       swimming: "Natación",
     },
+    footerAccessibility: "Declaración de accesibilidad",
+    a11yDocumentTitle: "Declaración de accesibilidad · Quenda",
+    a11yBack: "Volver al inicio",
+    a11yTitle: "Declaración de accesibilidad",
+    a11yIntro:
+      "Quenda se compromete a hacer accesible este sitio web informativo, de conformidad con el Real Decreto 1112/2018, de 7 de septiembre, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público.",
+    a11yStatusTitle: "Situación de cumplimiento",
+    a11yStatus:
+      "Este sitio web es parcialmente conforme con el RD 1112/2018. Norma de referencia: WCAG 2.1 nivel AA y norma EN 301 549.",
+    a11yContentTitle: "Contenido no accesible",
+    a11yContent:
+      "Aún no se ha hecho la revisión manual con tecnologías de apoyo (lectores de pantalla, ampliadores y control por voz), por lo que pueden existir barreras que las pruebas automáticas no detectan.",
+    a11yPreparationTitle: "Preparación de esta declaración",
+    a11yPreparation:
+      "Declaración preparada el 27 de octubre de 2026 mediante autoevaluación del equipo del proyecto, con análisis automáticos axe (WCAG 2.1 AA) en cada cambio del código. Se revisa al menos una vez al año.",
+    a11yContactTitle: "Observaciones y datos de contacto",
+    a11yContact:
+      "Para comunicar una barrera en este sitio web, abre una incidencia en el repositorio público del proyecto.",
+    a11yContactLink: "Abrir una incidencia en GitHub",
+    a11yMunicipalTitle: "Declaración de cada ayuntamiento",
+    a11yMunicipal:
+      "Cada ayuntamiento que usa Quenda publica su propia declaración en la aplicación, con la unidad responsable, el correo y el teléfono. Dirígele a ella las solicitudes de información accesible, las quejas y las reclamaciones sobre el servicio de reservas, que se responden en un plazo máximo de 20 días hábiles.",
+    a11yMunicipalLink: "Ir a la aplicación de tu ayuntamiento",
   },
 };

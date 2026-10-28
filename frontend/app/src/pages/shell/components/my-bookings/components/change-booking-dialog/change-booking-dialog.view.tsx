@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Button, Dialog, Portal, NativeSelect } from "@chakra-ui/react";
-import { PiX } from "react-icons/pi";
+import { PiSquareHalf, PiX } from "react-icons/pi";
 import { timeLabel, longDayLabel } from "@/services/date.service";
 import { Feedback } from "@/components/feedback/feedback.view";
 import type { Booking } from "@/types/models";
@@ -31,6 +31,33 @@ export function ChangeBookingDialog(p: {
             </Dialog.Header>
             <Dialog.Body>
               <h3>{p.booking.facilityName}</h3>
+              {c.resourceName && (
+                <ul className="meta-list">
+                  <li>
+                    <PiSquareHalf size={20} aria-hidden="true" />
+                    <span className="sr-only">{t("resource")}: </span>
+                    {c.resourceName}
+                  </li>
+                </ul>
+              )}
+              {c.multiple && (
+                <label className="field">
+                  <span>{t("resource")}</span>
+                  <NativeSelect.Root size="lg">
+                    <NativeSelect.Field
+                      value={c.resourceId}
+                      onChange={(event) => c.changeResource(event.target.value)}
+                    >
+                      {c.resourceOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                </label>
+              )}
               <label className="field">
                 <span>{t("date")}</span>
                 <NativeSelect.Root size="lg">
@@ -60,25 +87,23 @@ export function ChangeBookingDialog(p: {
                 />
               ) : (
                 <div className="slots-grid">
-                  {c.query.data
-                    ?.filter((slot) => slot.status === "available")
-                    .map((slot) => (
-                      <button
-                        type="button"
-                        key={slot.start}
-                        className={`time-slot ${c.selected === slot.start ? "selected" : ""}`}
-                        aria-pressed={c.selected === slot.start}
-                        onClick={() => c.setSelected(slot.start)}
-                      >
-                        <strong>
-                          {timeLabel(slot.start, municipality.timezone)}
-                        </strong>
-                        <span>{t("slotFree")}</span>
-                      </button>
-                    ))}
+                  {c.freeSlots.map((slot) => (
+                    <button
+                      type="button"
+                      key={slot.start}
+                      className={`time-slot ${c.selected === slot.start ? "selected" : ""}`}
+                      aria-pressed={c.selected === slot.start}
+                      onClick={() => c.setSelected(slot.start)}
+                    >
+                      <strong>
+                        {timeLabel(slot.start, municipality.timezone)}
+                      </strong>
+                      <span>{t("slotFree")}</span>
+                    </button>
+                  ))}
                 </div>
               )}
-              {c.query.data?.every((slot) => slot.status !== "available") && (
+              {c.query.isSuccess && !c.freeSlots.length && (
                 <p className="muted">{t("noSlots")}</p>
               )}
               {c.update.error && (

@@ -10,6 +10,9 @@ export async function createApp() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: process.env.NODE_ENV === "test" ? false : ["error", "warn", "log"],
   });
+  // Rate limits key on the client IP; trust X-Forwarded-For only from the
+  // reverse proxies in front of the API (nginx, a TLS proxy), never from clients.
+  app.set("trust proxy", process.env.TRUST_PROXY ?? "loopback, uniquelocal");
   app.use(helmet());
   // Only the municipal logo upload sends a binary body; the command enforces the 2 MB limit.
   app.useBodyParser("raw", {
@@ -38,6 +41,10 @@ export async function createApp() {
     .setDescription("Municipal sports reservations — V0")
     .setVersion("0.1.0")
     .addCookieAuth("quenda_session")
+    .addTag(
+      "public/open-data",
+      "Open data of each municipality: facility catalogue (schema.org JSON-LD, CSV, GeoJSON) and DCAT-AP-ES catalogue. Licensed per municipality (CC BY 4.0 by default); no personal data.",
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document, {

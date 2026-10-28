@@ -11,6 +11,7 @@ import {
 import { PiCaretRight, PiUploadSimple, PiX } from "react-icons/pi";
 import type { Facility, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
+import { categoryLabel } from "@/services/tariff.service";
 import { useFacilityEditorController } from "./facility-editor.controller";
 import { ClosureConfirmation } from "./components/closure-confirmation/closure-confirmation.view";
 const WEEKDAYS = [
@@ -121,6 +122,29 @@ export function FacilityEditor(p: {
                         <Field.ErrorText>{t(c.errors.address)}</Field.ErrorText>
                       )}
                     </Field.Root>
+                    {(["latitude", "longitude"] as const).map((key) => (
+                      <Field.Root
+                        key={key}
+                        className="field"
+                        invalid={!!c.errors[key]}
+                      >
+                        <Field.Label>{t(key)}</Field.Label>
+                        <Input
+                          name={key}
+                          inputMode="decimal"
+                          autoComplete="off"
+                          value={c.coordinates[key]}
+                          onChange={(event) =>
+                            c.setCoordinate(key, event.target.value)
+                          }
+                        />
+                        {c.errors[key] ? (
+                          <Field.ErrorText>{t(c.errors[key])}</Field.ErrorText>
+                        ) : (
+                          <Field.HelperText>{t(`${key}Hint`)}</Field.HelperText>
+                        )}
+                      </Field.Root>
+                    ))}
                     <Field.Root className="field">
                       <Field.Label>{t("sport")}</Field.Label>
                       <NativeSelect.Root>
@@ -234,7 +258,9 @@ export function FacilityEditor(p: {
                       </NativeSelect.Root>
                     </Field.Root>
                     <Field.Root className="field">
-                      <Field.Label>{t("price")}</Field.Label>
+                      <Field.Label>
+                        {c.offered.length ? t("generalPrice") : t("price")}
+                      </Field.Label>
                       <Input
                         type="number"
                         inputMode="decimal"
@@ -251,6 +277,43 @@ export function FacilityEditor(p: {
                       />
                       <Field.HelperText>{t("priceHint")}</Field.HelperText>
                     </Field.Root>
+                    {c.offered.length > 0 && (
+                      <fieldset className="field full category-prices">
+                        <legend>{t("categoryPrices")}</legend>
+                        <p className="field-hint">{t("categoryPricesHint")}</p>
+                        <div className="form-grid">
+                          {c.offered.map((category) => (
+                            <Field.Root
+                              key={category}
+                              className="field"
+                              invalid={!!c.errors[`price-${category}`]}
+                            >
+                              <Field.Label>
+                                {t(categoryLabel(category))}
+                              </Field.Label>
+                              <Input
+                                name={`price-${category}`}
+                                type="number"
+                                inputMode="decimal"
+                                min="0"
+                                max="1000"
+                                step="0.01"
+                                value={c.priceInputs[category] ?? ""}
+                                onChange={(event) =>
+                                  c.setCategoryPrice(
+                                    category,
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                              <Field.ErrorText>
+                                {t("categoryPriceError")}
+                              </Field.ErrorText>
+                            </Field.Root>
+                          ))}
+                        </div>
+                      </fieldset>
+                    )}
                     <Field.Root className="field full">
                       <Field.Label>{t("rules")}</Field.Label>
                       <Textarea

@@ -8,10 +8,12 @@ export const ROUTES = {
   management: "xestion",
   audit: "auditoria",
   insights: "indicadores",
+  accessibility: "accesibilidade",
   settings: "axustes",
   operator: "/operador",
   deployment: "concellos",
   deploymentInsights: "indicadores",
+  categories: "categorias",
   bookings: "reservas",
 } as const;
 export function operatorRouteFor(child: string) {

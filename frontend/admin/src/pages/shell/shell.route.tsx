@@ -5,7 +5,9 @@ import { Shell } from "./shell.view";
 import { managementRoute } from "./components/management/management.route";
 import { auditRoute } from "./components/audit/audit.route";
 import { insightsRoute } from "./components/insights/insights.route";
+import { accessibilityRoute } from "./components/accessibility/accessibility.route";
 import { settingsRoute } from "./components/settings/settings.route";
+import { categoriesRoute } from "./components/categories/categories.route";
 import { bookingsRoute } from "./components/bookings/bookings.route";
 export const shellRoute = {
   path: ROUTES.shell,
@@ -16,6 +18,8 @@ export const shellRoute = {
     bookingsRoute,
     auditRoute,
     insightsRoute,
+    categoriesRoute,
+    accessibilityRoute,
     settingsRoute,
   ],
 };

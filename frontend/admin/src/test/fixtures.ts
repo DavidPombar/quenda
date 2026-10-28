@@ -11,6 +11,17 @@ export const municipality: Municipality = {
   cancellationHours: 2,
   maxActiveBookings: 5,
   contact: "deportes@vilaverde.example",
+  accessibility: {
+    unit: "Servizo de Deportes do Concello de Vilaverde",
+    email: "accesibilidade@vilaverde.example",
+    phone: "+34 986 000 001",
+    reviewedOn: "2026-10-27",
+    method: "self",
+    exceptions: {
+      gl: "As descricións das instalacións aínda non se revisaron.",
+      es: "Las descripciones de las instalaciones aún no se han revisado.",
+    },
+  },
   legalTexts: {
     gl: "Demostración con datos ficticios.",
     es: "Demostración con datos ficticios en castellano.",
@@ -18,6 +29,7 @@ export const municipality: Municipality = {
   legalVersion: "2026-10",
   primaryColor: "#1f5b43",
   logoUrl: null,
+  enabledCategories: [],
   noShowLimit: 3,
   noShowWindowDays: 30,
   noShowBlockDays: 7,
@@ -32,9 +44,12 @@ export const facility: Facility = {
   status: "active",
   slotMinutes: 60,
   priceCents: 400,
+  prices: [],
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
   followsMunicipalHolidays: true,
+  latitude: 42.61,
+  longitude: -8.12,
 };
 export function stubShell(authenticated = false) {
   stubJsonResponse({

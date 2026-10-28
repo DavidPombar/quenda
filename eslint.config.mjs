@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
+      ".claude/worktrees/**",
       "**/node_modules/**",
       "**/dist/**",
       "**/public/mockServiceWorker.js",

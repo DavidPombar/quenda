@@ -105,13 +105,14 @@ export class MunicipalityInsights {
                 start: period.start,
                 end: period.end ?? end,
               }))
-          : facility.status === "active"
+          : facility.status === "active" && !facility.hasStatusHistory
             ? [{ start, end }]
             : [];
         return {
           id: facility.id,
           name: facility.name,
           sport: facility.sport,
+          unitIds: facility.unitIds,
           open: this.calendar.expandRange({
             calendar: facility.openingCalendar,
             timezone,

@@ -7,6 +7,8 @@ export interface InsightsFacility {
   status: string;
   openingCalendar: string;
   followsMunicipalHolidays: boolean;
+  unitIds: string[];
+  hasStatusHistory: boolean;
 }
 export interface StatusPeriod {
   facilityId: string;
@@ -16,6 +18,7 @@ export interface StatusPeriod {
   end: Temporal.Instant | null;
 }
 export interface BookingSpan {
+  unitIds: string[];
   facilityId: string;
   start: Temporal.Instant;
   end: Temporal.Instant;

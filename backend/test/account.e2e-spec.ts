@@ -4,13 +4,13 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import {
   LEGAL_VERSION,
-  availability,
   del,
   facility,
   harness,
   patch,
   post,
   setup,
+  slotStatus,
   start,
   teardown,
   tenant,
@@ -83,8 +83,8 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     }).expect(204);
     // History endpoints page at 200 rows; the export must not.
     await harness.db.query(
-      `INSERT INTO bookings (id, tenant_id, user_id, facility_id, starts_at, ends_at, status, created_at)
-       SELECT gen_random_uuid(), $1, $2, $3,
+      `INSERT INTO bookings (id, tenant_id, user_id, facility_id, resource_id, starts_at, ends_at, status, created_at)
+       SELECT gen_random_uuid(), $1, $2, $3, $3,
               now() - (n || ' days')::interval,
               now() - (n || ' days')::interval + interval '1 hour',
               'confirmed', now() - (n || ' days')::interval
@@ -112,7 +112,16 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
         (item: { status: string }) => item.status === "cancelled",
       ),
     ).toHaveLength(1);
+    expect(exported.body.bookings[0]).toMatchObject({
+      facilityName: court.name,
+      resourceId: court.id,
+      resourceName: court.name,
+    });
     expect(exported.body.notifications).toHaveLength(4);
+    expect(exported.body.notifications[0]).toMatchObject({
+      resourceId: court.id,
+      resourceName: court.name,
+    });
     expect(
       exported.body.auditEvents.map((item: { action: string }) => item.action),
     ).toEqual(expect.arrayContaining(["consent.accepted", "booking.created"]));
@@ -131,7 +140,18 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
       facilityId: court.id,
       start: begins,
     }).expect(201);
+    const feed = await post(
+      context.citizen,
+      "citizen/calendar-feed",
+      {},
+    ).expect(201);
+    await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(200);
     await del(context.citizen, "citizen/me").expect(204);
+    await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(404);
     await context.citizen.get("/v2/citizen/bookings").expect(401);
     const user = await harness.db.query(
       "SELECT display_name, deleted_at FROM users WHERE id=$1",
@@ -146,7 +166,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     expect(bookings.rows).toHaveLength(1);
     expect(bookings.rows[0].status).toBe("cancelled");
     expect(bookings.rows[0].cancelled_at).not.toBeNull();
-    for (const table of ["notifications", "sessions"]) {
+    for (const table of ["notifications", "sessions", "calendar_feeds"]) {
       const rows = await harness.db.query(
         `SELECT count(*)::int AS count FROM ${table} WHERE tenant_id=$1 AND user_id=$2`,
         [context.id, context.users.citizen],
@@ -160,12 +180,9 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     expect(audit.rows[0].details).toEqual({
       cancelledBookings: 1,
       revokedSessions: 1,
+      removedIdentities: 0,
     });
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("available");
+    expect(await slotStatus(context, court.id, begins)).toBe("available");
     const stats = await context.manager.get("/v2/manager/insights").expect(200);
     expect(stats.body).toMatchObject({ confirmed: 0, cancelled: 1 });
   });
@@ -196,5 +213,32 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     ).toBe("forbidden");
     await del(context.manager, "citizen/me").expect(403);
     await context.manager.get("/v2/manager/insights").expect(200);
+  });
+});
+describe("Sign-in methods without an identity provider", () => {
+  it("should offer only the demo when OIDC is not configured", async () => {
+    const methods = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/methods")
+      .expect(200);
+    expect(methods.body).toEqual({ demo: true, oidc: null, email: false });
+  });
+  it("should send the citizen back with oidc_unavailable when OIDC is not configured", async () => {
+    const context = await tenant();
+    const response = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/oidc/start")
+      .query({ slug: context.slug, legalVersion: LEGAL_VERSION })
+      .redirects(0)
+      .expect(303);
+    expect(response.headers.location).toBe(
+      `/app/${context.slug}/instalacions?authError=oidc_unavailable`,
+    );
+  });
+  it("should answer an unexpected callback with a redirect, never JSON", async () => {
+    const response = await request(harness.app.getHttpServer())
+      .get("/v2/public/auth/oidc/callback")
+      .query({ code: "x", state: "y", session_state: "z" })
+      .redirects(0)
+      .expect(303);
+    expect(response.headers.location).toBe("/app/?authError=login_rejected");
   });
 });

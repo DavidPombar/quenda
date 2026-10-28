@@ -149,6 +149,33 @@ a.text-link {
   text-decoration-thickness: 2px;
 }
 
+/* Accessibility statement */
+.statement {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-block: var(--space-12);
+}
+.statement > * {
+  max-width: 70ch;
+}
+.statement h1 {
+  font-size: var(--t-1);
+}
+.statement-intro {
+  color: var(--ink-2);
+}
+.statement section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line);
+}
+.statement h2 {
+  font-size: var(--t-3);
+}
+
 /* Header */
 .site-header {
   min-height: 80px;

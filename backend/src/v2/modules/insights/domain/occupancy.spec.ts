@@ -46,6 +46,44 @@ function report(
   });
 }
 describe("occupancy report", () => {
+  it.each([
+    { units: ["a"], expected: 50, minutes: 60 },
+    { units: ["a", "b"], expected: 100, minutes: 120 },
+  ])(
+    "should weight a reservation occupying $units by its leaf units",
+    ({ units, expected, minutes }) => {
+      const result = report(
+        facility({
+          unitIds: ["a", "b"],
+          open: [span("2026-10-05T10:00", "2026-10-05T11:00")],
+          bookings: [
+            {
+              ...span("2026-10-05T10:00", "2026-10-05T11:00"),
+              status: "confirmed",
+              unitIds: units,
+            },
+          ],
+        }),
+        "2026-10-05",
+        "2026-10-05",
+      );
+      expect(result).toMatchObject({
+        confirmed: 1,
+        openMinutes: 120,
+        bookedMinutes: minutes,
+        occupancy: expected,
+      });
+      expect(result.heatmap).toEqual([
+        {
+          weekday: 1,
+          hour: 10,
+          openMinutes: 120,
+          bookedMinutes: minutes,
+          occupancy: expected,
+        },
+      ]);
+    },
+  );
   it("should divide booked by open minutes and place them in local weekday × hour cells", () => {
     const result = report(
       facility({

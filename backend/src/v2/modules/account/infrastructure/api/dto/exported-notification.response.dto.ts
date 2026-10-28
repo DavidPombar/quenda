@@ -13,6 +13,9 @@ export class ExportedNotificationResponseDTO {
   })
   details!: Record<string, unknown> | null;
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
+  @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
+  @ApiProperty({ description: "Court or space display name" })
+  resourceName!: string;
   @ApiProperty({ description: "Event instant" }) createdAt!: string;
   static from(value: ExportedNotification): ExportedNotificationResponseDTO {
     return {
@@ -21,6 +24,8 @@ export class ExportedNotificationResponseDTO {
       kind: value.kind,
       details: value.details,
       facilityName: value.facilityName,
+      resourceId: value.resourceId,
+      resourceName: value.resourceName,
       createdAt: value.createdAt.toString(),
     };
   }

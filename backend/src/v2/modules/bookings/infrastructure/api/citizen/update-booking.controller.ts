@@ -36,6 +36,7 @@ export class UpdateBookingController {
       principal,
       id: path.id,
       start: body.start,
+      resourceId: body.resourceId,
       status: body.status,
     });
     return result.fold(() => undefined, this.handleError);
@@ -51,7 +52,9 @@ export class UpdateBookingController {
       | AppError<"cancellation_deadline">
       | AppError<"booking_cancelled">
       | AppError<"slot_taken">
-      | AppError<"id_reused">,
+      | AppError<"id_reused">
+      | AppError<"resource_required">
+      | AppError<"resource_unavailable">,
   ): never {
     switch (error.code) {
       case "forbidden":
@@ -72,6 +75,10 @@ export class UpdateBookingController {
         throw new ProblemException(409, error);
       case "id_reused":
         throw new ProblemException(409, error);
+      case "resource_required":
+        throw new ProblemException(422, error);
+      case "resource_unavailable":
+        throw new ProblemException(422, error);
       default:
         return assertNever(error);
     }

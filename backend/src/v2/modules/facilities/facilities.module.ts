@@ -2,6 +2,8 @@
 import { Module } from "@nestjs/common";
 import { FacilityRepository } from "./domain/facility.repository";
 import { OpeningCalendar } from "./domain/opening-calendar";
+import { ResourceRepository } from "./domain/resource.repository";
+import { PostgresResourceRepository } from "./infrastructure/persistence/postgres-resource.repository";
 import { PostgresFacilityRepository } from "./infrastructure/persistence/postgres-facility.repository";
 import { IcalOpeningCalendar } from "./infrastructure/calendar/ical-opening-calendar";
 import { HolidayCalendar } from "./domain/holiday-calendar";
@@ -25,6 +27,7 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
     SaveFacility,
     GetFacilityImpact,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
+    { provide: ResourceRepository, useClass: PostgresResourceRepository },
     { provide: OpeningCalendar, useClass: IcalOpeningCalendar },
     { provide: HolidayCalendar, useClass: IcalHolidayCalendar },
   ],
