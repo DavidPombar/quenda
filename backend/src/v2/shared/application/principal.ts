@@ -8,14 +8,17 @@ export type Permission =
   | "municipality:manage"
   | "categories:manage"
   | "bookings:manage"
-  | "data:export";
+  | "data:export"
+  | "access:control";
+/** Door staff only record entries and attendance. */
+export type Role = "citizen" | "manager" | "access";
 /** How strongly the account's identity was proven: demo account, e-mail code, eID (OIDC) or local credentials. */
 export type Assurance = "demo" | "email" | "eid" | "local";
 export interface Principal {
   userId: string;
   tenantId: string;
   displayName: string;
-  role: "citizen" | "manager";
+  role: Role;
   assurance: Assurance;
   grants: readonly Permission[];
 }

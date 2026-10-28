@@ -34,7 +34,25 @@ export interface MunicipalitySnapshot {
     accessibilityExceptionsEs: string;
     dataLicense: string;
     dir3Code: string | null;
+    accessWebhookUrl: string;
+    accessWebhookSecretSealed: string | null;
   };
+  accessKeys: {
+    kid: string;
+    publicJwk: Record<string, string>;
+    privateKeySealed: string;
+    createdAt: Temporal.Instant;
+    retiredAt: Temporal.Instant | null;
+  }[];
+  checkIns: {
+    id: string;
+    bookingId: string;
+    sequence: number;
+    actorId: string | null;
+    method: string;
+    checkedInAt: Temporal.Instant;
+    recordedAt: Temporal.Instant;
+  }[];
   facilityStatusPeriods: {
     facilityId: string;
     status: string;

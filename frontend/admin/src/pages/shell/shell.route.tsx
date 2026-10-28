@@ -9,6 +9,7 @@ import { accessibilityRoute } from "./components/accessibility/accessibility.rou
 import { settingsRoute } from "./components/settings/settings.route";
 import { categoriesRoute } from "./components/categories/categories.route";
 import { bookingsRoute } from "./components/bookings/bookings.route";
+import { accessControlRoute } from "./components/access-control/access-control.route";
 export const shellRoute = {
   path: ROUTES.shell,
   element: <Shell />,
@@ -16,6 +17,7 @@ export const shellRoute = {
     { index: true, element: <Navigate to={ROUTES.management} replace /> },
     managementRoute,
     bookingsRoute,
+    accessControlRoute,
     auditRoute,
     insightsRoute,
     categoriesRoute,

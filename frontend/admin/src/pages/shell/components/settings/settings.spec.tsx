@@ -37,6 +37,10 @@ function stubManager(overrides: Partial<MunicipalitySettings> = {}) {
     path: "*/v2/manager/municipality",
     response: { ...settings, ...overrides },
   });
+  stubJsonResponse({
+    path: "*/v2/manager/access-settings",
+    response: { webhookUrl: "", hasWebhookSecret: false, keys: [] },
+  });
 }
 
 function stubPatch(result: Partial<MunicipalitySettings> = {}, affected = 0) {
@@ -176,6 +180,50 @@ describe("municipal settings", () => {
       .element(page.getByRole("heading", { level: 1, name: "Axustes" }))
       .toBeVisible();
     expect(localStorage.getItem("quenda.locale")).toBe("gl");
+  });
+  test("should rotate the pass key and show the webhook secret only once", async () => {
+    stubManager();
+    const rotation = stubJsonResponse({
+      path: "*/v2/manager/access-keys/rotation",
+      method: "POST",
+      status: 201,
+      response: { kid: "new-key" },
+    });
+    const webhook = stubJsonResponse({
+      path: "*/v2/manager/access-webhook",
+      method: "PUT",
+      response: { url: "https://accesos.example/hook", secret: "s3cr3t" },
+    });
+    await commands.navigate("/admin/vilaverde/axustes");
+    await render(<App />);
+    const section = page.getByRole("region", { name: "Acceso con QR" });
+    await section.getByRole("button", { name: "Renovar a clave" }).click();
+    await section
+      .getByRole("group", { name: "Renovar a clave dos pases?" })
+      .getByRole("button", { name: "Renovar a clave" })
+      .click();
+    await expect.element(section.getByText("Clave renovada.")).toBeVisible();
+    expect(rotation.spy).toHaveBeenCalledTimes(1);
+    await section
+      .getByLabelText("Enderezo do sistema de accesos")
+      .fill("ftp://accesos.example");
+    await section.getByRole("button", { name: "Gardar o conector" }).click();
+    await expect
+      .element(
+        section.getByText("O enderezo debe comezar por http:// ou https://."),
+      )
+      .toBeVisible();
+    expect(webhook.spy).not.toHaveBeenCalled();
+    await section
+      .getByLabelText("Enderezo do sistema de accesos")
+      .fill("https://accesos.example/hook");
+    await section.getByRole("button", { name: "Gardar o conector" }).click();
+    await expect.element(section.getByText("s3cr3t")).toBeVisible();
+    expect(webhook.spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: { url: "https://accesos.example/hook", rotateSecret: false },
+      }),
+    );
   });
   test("should send the offered user categories in catalogue order", async () => {
     stubManager({ enabledCategories: ["senior"] });

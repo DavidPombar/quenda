@@ -122,11 +122,19 @@
         },
         "dataLicense": {
           "type": "string",
-          "enum": ["CC-BY-4.0", "CC-BY-SA-4.0", "CC0-1.0", "ODbL-1.0"],
+          "enum": [
+            "CC-BY-4.0",
+            "CC-BY-SA-4.0",
+            "CC0-1.0",
+            "ODbL-1.0"
+          ],
           "description": "Licence of the open data. Optional: defaults to CC-BY-4.0."
         },
         "dir3Code": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "DIR3 code of the council, the open data publisher. Optional."
         },
         "accessibilityUnit": {
@@ -144,7 +152,10 @@
         },
         "accessibilityMethod": {
           "type": "string",
-          "enum": ["self", "external"]
+          "enum": [
+            "self",
+            "external"
+          ]
         },
         "accessibilityExceptionsGl": {
           "type": "string"
@@ -157,6 +168,15 @@
           "items": {
             "type": "string"
           }
+        },
+        "accessWebhookUrl": {
+          "type": "string"
+        },
+        "accessWebhookSecretSealed": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -217,13 +237,19 @@
             "type": "boolean"
           },
           "latitude": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": -90,
             "maximum": 90,
             "description": "WGS 84. Optional; set together with longitude."
           },
           "longitude": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "minimum": -180,
             "maximum": 180,
             "description": "WGS 84. Optional; set together with latitude."
@@ -260,7 +286,10 @@
             "type": "integer"
           },
           "parentId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "active": {
             "type": "boolean"
@@ -296,25 +325,45 @@
             "type": "string"
           },
           "deletedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "email": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "locale": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "assurance": {
-            "enum": ["demo", "email", "eid", "local"],
+            "enum": [
+              "demo",
+              "email",
+              "eid",
+              "local"
+            ],
             "description": "How the identity was proven. Optional: defaults to demo."
           },
           "nifCiphertext": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Encrypted NIF; readable only with the same QUENDA_DATA_KEY. Optional."
           },
           "nifDigest": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "HMAC digest of the NIF for lookups. Optional."
           },
           "prefersFamilyTariff": {
@@ -329,7 +378,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "userId", "issuer", "subject", "createdAt"],
+        "required": [
+          "id",
+          "userId",
+          "issuer",
+          "subject",
+          "createdAt"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -374,7 +429,10 @@
             "type": "string"
           },
           "userId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "facilityId": {
             "type": "string"
@@ -399,26 +457,44 @@
             "format": "date-time"
           },
           "cancelledAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "cancellationHours": {
-            "type": ["integer", "null"]
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "cancelledBy": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "cancellationReason": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "sequence": {
             "type": "integer"
           },
           "tariffCategory": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "priceCents": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 0
           }
         },
@@ -455,7 +531,10 @@
             "format": "date-time"
           },
           "details": {
-            "type": ["object", "null"]
+            "type": [
+              "object",
+              "null"
+            ]
           }
         },
         "additionalProperties": false
@@ -479,7 +558,10 @@
             "type": "string"
           },
           "actorId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "action": {
             "type": "string"
@@ -492,10 +574,16 @@
             "format": "date-time"
           },
           "actorRole": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "details": {
-            "type": ["object", "null"]
+            "type": [
+              "object",
+              "null"
+            ]
           }
         },
         "additionalProperties": false
@@ -505,7 +593,12 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "userId", "legalVersion", "acceptedAt"],
+        "required": [
+          "id",
+          "userId",
+          "legalVersion",
+          "acceptedAt"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -528,7 +621,12 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["version", "textGl", "textEs", "publishedAt"],
+        "required": [
+          "version",
+          "textGl",
+          "textEs",
+          "publishedAt"
+        ],
         "properties": {
           "version": {
             "type": "string"
@@ -551,7 +649,12 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["contentType", "data", "sha256", "updatedAt"],
+        "required": [
+          "contentType",
+          "data",
+          "sha256",
+          "updatedAt"
+        ],
         "properties": {
           "contentType": {
             "type": "string"
@@ -575,7 +678,14 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "userId", "bookingId", "start", "end", "liftedAt"],
+        "required": [
+          "id",
+          "userId",
+          "bookingId",
+          "start",
+          "end",
+          "liftedAt"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -595,7 +705,10 @@
             "format": "date-time"
           },
           "liftedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -606,7 +719,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["userId", "kind", "channel", "enabled", "updatedAt"],
+        "required": [
+          "userId",
+          "kind",
+          "channel",
+          "enabled",
+          "updatedAt"
+        ],
         "properties": {
           "userId": {
             "type": "string"
@@ -615,7 +734,10 @@
             "type": "string"
           },
           "channel": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "email"
+            ]
           },
           "enabled": {
             "type": "boolean"
@@ -677,15 +799,24 @@
             "type": "integer"
           },
           "lockedUntil": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "sentAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "lastError": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "additionalProperties": false
@@ -708,7 +839,11 @@
             "minimum": 0
           }
         },
-        "required": ["facilityId", "category", "priceCents"],
+        "required": [
+          "facilityId",
+          "category",
+          "priceCents"
+        ],
         "additionalProperties": false
       }
     },
@@ -725,14 +860,24 @@
             "type": "string"
           },
           "status": {
-            "enum": ["requested", "verified", "rejected"]
+            "enum": [
+              "requested",
+              "verified",
+              "rejected"
+            ]
           },
           "requestedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "decidedAt": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -756,19 +901,107 @@
             "format": "uuid"
           },
           "status": {
-            "enum": ["active", "maintenance", "closed"]
+            "enum": [
+              "active",
+              "maintenance",
+              "closed"
+            ]
           },
           "start": {
             "type": "string",
             "format": "date-time"
           },
           "end": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
-        "required": ["facilityId", "status", "start", "end"],
+        "required": [
+          "facilityId",
+          "status",
+          "start",
+          "end"
+        ],
         "additionalProperties": false
+      }
+    },
+    "accessKeys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kid": {
+            "type": "string"
+          },
+          "publicJwk": {
+            "type": "object"
+          },
+          "privateKeySealed": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "retiredAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kid",
+          "publicJwk",
+          "privateKeySealed",
+          "createdAt",
+          "retiredAt"
+        ]
+      }
+    },
+    "checkIns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "bookingId": {
+            "type": "string"
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "actorId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "method": {
+            "type": "string"
+          },
+          "checkedInAt": {
+            "type": "string"
+          },
+          "recordedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "bookingId",
+          "sequence",
+          "actorId",
+          "method",
+          "checkedInAt",
+          "recordedAt"
+        ]
       }
     }
   },

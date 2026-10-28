@@ -25,11 +25,17 @@ export class ClaimDeliveries {
     });
     const ready: Delivery[] = [];
     for (const delivery of claimed) {
-      const skip = !delivery.email
-        ? "skipped:no_recipient"
-        : delivery.kind === "reminder" && delivery.bookingStatus !== "confirmed"
-          ? "skipped:cancelled"
-          : null;
+      const skip =
+        delivery.channel === "webhook"
+          ? delivery.webhook
+            ? null
+            : "skipped:no_webhook"
+          : !delivery.email || delivery.kind === "no_show"
+            ? "skipped:no_recipient"
+            : delivery.kind === "reminder" &&
+                delivery.bookingStatus !== "confirmed"
+              ? "skipped:cancelled"
+              : null;
       if (skip) await this.deliveries.markSent(delivery.id, now, skip);
       else ready.push(delivery);
     }

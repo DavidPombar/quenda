@@ -163,6 +163,16 @@ try {
     .getByRole("heading", { name: "A túa quenda está confirmada!" })
     .waitFor();
   await page.getByRole("link", { name: "Ver as miñas reservas" }).click();
+  await page.getByRole("button", { name: "Mostrar QR" }).first().click();
+  await page
+    .getByRole("img", { name: /Código QR do pase de acceso/ })
+    .waitFor();
+  await audit("access-pass");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Pechar" })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
   const calendarDownload = await page
     .getByRole("link", { name: "Engadir ao calendario" })
     .first()
@@ -369,7 +379,16 @@ try {
   await page
     .getByRole("banner")
     .getByRole("button", { name: "Entrar", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Entrar como control de accesos" })
+    .click();
+  await page.waitForURL(/\/admin\/vilaverde\/acceso$/);
+  await page
+    .getByRole("heading", { level: 1, name: "Control de accesos" })
     .waitFor();
+  await page.getByRole("heading", { name: "Reservas de hoxe" }).waitFor();
+  await audit("access-control");
   await page.getByRole("link", { name: "Coñece Quenda", exact: true }).click();
   await page
     .getByRole("heading", {
@@ -378,7 +397,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and nineteen accessibility scans, including the three accessibility statements passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-one accessibility scans, including the three accessibility statements passed.",
   );
 } finally {
   await browser.close();

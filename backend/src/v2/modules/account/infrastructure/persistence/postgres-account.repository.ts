@@ -28,6 +28,7 @@ interface BookingRow {
   cancelledAt: string | null;
   cancelledBy: ExportedBooking["cancelledBy"];
   cancellationReason: string | null;
+  checkedInAt: string | null;
   tariffCategory: ExportedBooking["tariffCategory"];
   priceCents: number | null;
 }
@@ -238,7 +239,7 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listBookingsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<BookingRow>(
-      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", b.resource_id AS "resourceId", r.name AS "resourceName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.cancelled_by AS "cancelledBy", b.cancellation_reason AS "cancellationReason", b.tariff_category AS "tariffCategory", b.price_cents AS "priceCents" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
+      'SELECT b.id, b.facility_id AS "facilityId", f.name AS "facilityName", b.resource_id AS "resourceId", r.name AS "resourceName", f.sport, b.starts_at AS "start", b.ends_at AS "end", b.status, b.created_at AS "createdAt", b.cancelled_at AS "cancelledAt", b.cancelled_by AS "cancelledBy", b.cancellation_reason AS "cancellationReason", b.tariff_category AS "tariffCategory", b.price_cents AS "priceCents", c.checked_in_at AS "checkedInAt" FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id LEFT JOIN check_ins c ON c.tenant_id=b.tenant_id AND c.booking_id=b.id AND c.booking_sequence=b.sequence WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedBooking => ({
@@ -250,6 +251,10 @@ export class PostgresAccountRepository extends AccountRepository {
         row.cancelledAt === null
           ? null
           : Temporal.Instant.from(row.cancelledAt),
+      checkedInAt:
+        row.checkedInAt === null
+          ? null
+          : Temporal.Instant.from(row.checkedInAt),
     }));
   }
   async listNotificationsAll(tenantId: string, userId: string) {

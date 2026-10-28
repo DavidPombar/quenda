@@ -4,6 +4,9 @@ import { MunicipalityExport } from "../../../domain/municipality-snapshot.read-m
 export const EXPORT_FORMAT = "quenda-municipality-export";
 export const EXPORT_VERSION = 2;
 class ExportedMunicipalityDTO {
+  @ApiProperty() accessWebhookUrl!: string;
+  @ApiProperty({ type: String, nullable: true }) accessWebhookSecretSealed!:
+    string | null;
   @ApiProperty() id!: string;
   @ApiProperty() slug!: string;
   @ApiProperty() name!: string;
@@ -202,7 +205,28 @@ class ExportedFacilityStatusPeriodDTO {
   @ApiProperty({ type: String, format: "date-time", nullable: true }) end!:
     string | null;
 }
+class ExportedAccessKeysDTO {
+  @ApiProperty() kid!: string;
+  @ApiProperty({ type: Object }) publicJwk!: Record<string, string>;
+  @ApiProperty() privateKeySealed!: string;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({ type: String, nullable: true }) retiredAt!: string | null;
+}
+class ExportedCheckInsDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() bookingId!: string;
+  @ApiProperty() sequence!: number;
+  @ApiProperty({ type: String, nullable: true }) actorId!: string | null;
+  @ApiProperty() method!: string;
+  @ApiProperty() checkedInAt!: string;
+  @ApiProperty() recordedAt!: string;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({ type: [ExportedAccessKeysDTO] })
+  accessKeys!: ExportedAccessKeysDTO[];
+  @ApiProperty({ type: [ExportedCheckInsDTO] })
+  checkIns!: ExportedCheckInsDTO[];
+
   @ApiProperty({ type: [ExportedFacilityStatusPeriodDTO] })
   facilityStatusPeriods!: ExportedFacilityStatusPeriodDTO[];
   @ApiProperty({ type: [ExportedFacilityPriceDTO] })
@@ -250,6 +274,16 @@ export class MunicipalityExportResponseDTO {
         ...value,
         start: value.start.toString(),
         end: value.end?.toString() ?? null,
+      })),
+      accessKeys: snapshot.accessKeys.map((value) => ({
+        ...value,
+        createdAt: value.createdAt.toString(),
+        retiredAt: value.retiredAt?.toString() ?? null,
+      })),
+      checkIns: snapshot.checkIns.map((value) => ({
+        ...value,
+        checkedInAt: value.checkedInAt.toString(),
+        recordedAt: value.recordedAt.toString(),
       })),
       facilityPrices: snapshot.facilityPrices,
       userCategories: snapshot.userCategories.map((value) => ({

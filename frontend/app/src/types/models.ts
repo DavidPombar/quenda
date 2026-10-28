@@ -238,6 +238,13 @@ export interface AccountExport {
     details: Record<string, unknown> | null;
   }[];
 }
+/** Signed QR pass for one reservation, verifiable at the door without a network. */
+export interface AccessPass {
+  token: string;
+  code: string;
+  validFrom: string;
+  validUntil: string;
+}
 export interface CatalogEntry {
   id: string;
   name: string;

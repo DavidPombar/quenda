@@ -366,6 +366,14 @@ const gl = {
     "Por acumular ausencias sen avisar, non podes facer reservas ata o {date}.",
   penaltyDisabled:
     "A ausencia queda no teu historial; o concello non aplica bloqueos.",
+  showPass: "Mostrar QR",
+  passTitle: "Pase de acceso",
+  passIntro:
+    "Amosa este código ao persoal da instalación. Unha vez aberto, funciona aínda que non teñas conexión.",
+  passValid: "Válido o {day} de {from} a {until}.",
+  passCode: "Código para dicir en voz alta",
+  passError: "Non puidemos xerar o pase. Volve tentalo.",
+  passImage: "Código QR do pase de acceso para {facility}",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -713,6 +721,14 @@ const es: Record<TextKey, string> = {
     "Por acumular ausencias sin avisar, no puedes hacer reservas hasta el {date}.",
   penaltyDisabled:
     "La ausencia queda en tu historial; el ayuntamiento no aplica bloqueos.",
+  showPass: "Mostrar QR",
+  passTitle: "Pase de acceso",
+  passIntro:
+    "Muestra este código al personal de la instalación. Una vez abierto, funciona aunque no tengas conexión.",
+  passValid: "Válido el {day} de {from} a {until}.",
+  passCode: "Código para decir en voz alta",
+  passError: "No pudimos generar el pase. Vuelve a intentarlo.",
+  passImage: "Código QR del pase de acceso para {facility}",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

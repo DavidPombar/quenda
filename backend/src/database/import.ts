@@ -13,6 +13,8 @@ export interface MunicipalityPackage {
   exportedAt: string;
   municipality: Row & { id: string; slug: string };
   facilities: Row[];
+  accessKeys?: Row[];
+  checkIns?: Row[];
   facilityPrices?: Row[];
   facilityStatusPeriods?: Row[];
   userCategories?: Row[];
@@ -94,6 +96,8 @@ const tables = {
     accessibility_exceptions_es: "accessibilityExceptionsEs",
     data_license: "dataLicense",
     dir3_code: "dir3Code",
+    access_webhook_url: "accessWebhookUrl",
+    access_webhook_secret_sealed: "accessWebhookSecretSealed",
   },
   facilities: {
     tenant_id: "tenantId",
@@ -239,6 +243,24 @@ const tables = {
     enabled: "enabled",
     updated_at: "updatedAt",
   },
+  access_keys: {
+    tenant_id: "tenantId",
+    kid: "kid",
+    public_jwk: "publicJwk",
+    private_key_sealed: "privateKeySealed",
+    created_at: "createdAt",
+    retired_at: "retiredAt",
+  },
+  check_ins: {
+    tenant_id: "tenantId",
+    id: "id",
+    booking_id: "bookingId",
+    booking_sequence: "sequence",
+    actor_id: "actorId",
+    method: "method",
+    checked_in_at: "checkedInAt",
+    recorded_at: "recordedAt",
+  },
   outbox: {
     tenant_id: "tenantId",
     id: "id",
@@ -326,6 +348,8 @@ export async function importMunicipality(
         resourceId: row.resourceId ?? row.facilityId,
       })),
     );
+    await insert("access_keys", data.accessKeys ?? []);
+    await insert("check_ins", data.checkIns ?? []);
     // Occupied units are derived data: the booked resource, or every part of a whole court.
     await client.query(
       `INSERT INTO booking_units (tenant_id, booking_id, unit_id, starts_at, ends_at)

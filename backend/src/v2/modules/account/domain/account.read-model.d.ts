@@ -69,6 +69,8 @@ export interface ExportedBooking {
   cancelledAt: Temporal.Instant | null;
   cancelledBy: "citizen" | "municipality" | null;
   cancellationReason: string | null;
+  /** When access staff let the person in, if they did. */
+  checkedInAt: Temporal.Instant | null;
   tariffCategory: TariffCategory | null;
   priceCents: number | null;
 }

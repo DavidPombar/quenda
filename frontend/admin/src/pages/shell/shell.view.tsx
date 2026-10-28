@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Outlet, NavLink } from "react-router-dom";
+import { Navigate, Outlet, NavLink } from "react-router-dom";
 import { NativeSelect, Button, Dialog, Portal } from "@chakra-ui/react";
 import {
   PiArrowSquareOut,
@@ -9,6 +9,7 @@ import {
   PiGearSix,
   PiIdentificationCard,
   PiListChecks,
+  PiQrCode,
   PiSignOut,
   PiX,
 } from "react-icons/pi";
@@ -62,35 +63,43 @@ export function Shell() {
           />
         )}
         <nav aria-label={t("municipalArea")} className="main-nav">
-          <NavLink to={routeFor(municipality.slug, ROUTES.management)}>
-            <PiBuildings size={20} aria-hidden="true" />
-            {t("dashboard")}
-          </NavLink>
+          {!c.isAccessStaff && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.management)}>
+              <PiBuildings size={20} aria-hidden="true" />
+              {t("dashboard")}
+            </NavLink>
+          )}
           {c.session && (
+            <NavLink to={c.accessPath}>
+              <PiQrCode size={20} aria-hidden="true" />
+              {t("accessControl")}
+            </NavLink>
+          )}
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.bookings)}>
               <PiCalendarCheck size={20} aria-hidden="true" />
               {t("dayBookings")}
             </NavLink>
           )}
-          {c.session && (
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.insights)}>
               <PiChartBar size={20} aria-hidden="true" />
               {t("insights")}
             </NavLink>
           )}
-          {c.session && (
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.audit)}>
               <PiListChecks size={20} aria-hidden="true" />
               {t("audit")}
             </NavLink>
           )}
-          {c.session && (
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.categories)}>
               <PiIdentificationCard size={20} aria-hidden="true" />
               {t("categories")}
             </NavLink>
           )}
-          {c.session && (
+          {c.isManager && (
             <NavLink to={routeFor(municipality.slug, ROUTES.settings)}>
               <PiGearSix size={20} aria-hidden="true" />
               {t("settings")}
@@ -181,7 +190,9 @@ export function Shell() {
                   <span className="account-text">
                     <span className="sr-only">{t("signedInAs")} </span>
                     <strong>{c.accountName}</strong>
-                    <span>{t("managerRole")}</span>
+                    <span>
+                      {t(c.isAccessStaff ? "accessControl" : "managerRole")}
+                    </span>
                   </span>
                 </div>
                 <Button
@@ -207,7 +218,12 @@ export function Shell() {
           </div>
         </header>
         <main id="main" tabIndex={-1}>
-          <Outlet context={c.context} />
+          {/* Access staff only work at the door. */}
+          {c.isAccessStaff && !c.onAccessPage ? (
+            <Navigate to={c.accessPath} replace />
+          ) : (
+            <Outlet context={c.context} />
+          )}
         </main>
         <footer className="footer">
           <span>{t("demo")}</span>
@@ -223,8 +239,8 @@ export function Shell() {
       <SessionDialog
         open={c.loginOpen}
         onClose={() => c.setLoginOpen(false)}
-        onSelect={() => {
-          void c.signIn();
+        onSelect={(role) => {
+          void c.signIn(role);
         }}
         pending={c.create.isPending}
         error={c.create.error?.message ?? ""}

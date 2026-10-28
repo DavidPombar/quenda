@@ -35,6 +35,11 @@ export abstract class RetentionRepository {
     tenantId: string,
     cutoff: Temporal.Instant,
   ): Promise<number>;
+  /** Removes door check-ins recorded before the cutoff. */
+  abstract deleteCheckIns(
+    tenantId: string,
+    cutoff: Temporal.Instant,
+  ): Promise<number>;
   abstract deleteConsentsOfPurgedUsers(
     tenantId: string,
     cutoff: Temporal.Instant,

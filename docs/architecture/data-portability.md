@@ -75,3 +75,5 @@ package as it is implemented, so a migration never needs manual work. CSV export
 are not part of this version.
 
 Deployment operator accounts, sessions and the cross-municipality operator audit trail are not municipal data. Back up these deployment-wide tables separately; the municipal audit trail retains the actions affecting the exported municipality (T3, R3).
+
+QR access transfers include `accessKeys`, `checkIns` and the municipality's access webhook configuration. Private keys and webhook secrets stay encrypted; configure the same `ACCESS_KEY_SECRET` on the receiving API and worker before activating the municipality. The deployment secret itself is never exported. Keep the municipality slug when preserving issued QR credentials, whose issuer is that slug. Older packages may omit these optional collections (T3, R3).

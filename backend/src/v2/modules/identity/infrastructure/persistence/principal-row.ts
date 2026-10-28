@@ -18,7 +18,10 @@ export function toPrincipal(user: PrincipalRow): Principal {
             "categories:manage",
             "bookings:manage",
             "data:export",
+            "access:control",
           ]
-        : ["bookings:own", "account:own"],
+        : user.role === "access"
+          ? ["access:control"]
+          : ["bookings:own", "account:own"],
   };
 }

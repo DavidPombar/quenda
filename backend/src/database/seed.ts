@@ -76,6 +76,7 @@ export async function seed(url = databaseUrl) {
       for (const [j, role, display] of [
         [1, "citizen", "Alex · conta de proba"],
         [2, "manager", "Uxía · xestión municipal"],
+        [3, "access", "Brais · control de accesos"],
       ] as const)
         await db.query(
           "INSERT INTO users VALUES ($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING",

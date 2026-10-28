@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { SessionRepository } from "../../domain/session.repository";
-import { Principal } from "../../../../shared/application/principal";
+import { Principal, Role } from "../../../../shared/application/principal";
 import { PrincipalRow, principalColumns, toPrincipal } from "./principal-row";
 import { Database } from "../../../../shared/infrastructure/database";
 function hash(token: string) {
@@ -14,7 +14,7 @@ export class PostgresSessionRepository extends SessionRepository {
   constructor(private readonly db: Database) {
     super();
   }
-  async findDemoUser(tenantId: string, role: "citizen" | "manager") {
+  async findDemoUser(tenantId: string, role: Role) {
     // Only demo accounts: real (eID, e-mail, local) accounts are never handed out without proof.
     const { rows } = await this.db.query<PrincipalRow>(
       `SELECT ${principalColumns} FROM users u WHERE u.tenant_id=$1 AND u.role=$2 AND u.assurance='demo' AND u.deleted_at IS NULL ORDER BY u.id LIMIT 1`,
@@ -25,7 +25,7 @@ export class PostgresSessionRepository extends SessionRepository {
   async createDemoUser(args: {
     id: string;
     tenantId: string;
-    role: "citizen" | "manager";
+    role: Role;
     displayName: string;
     email: string | null;
   }) {

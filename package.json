@@ -33,6 +33,7 @@
     "licenses": "node scripts/check-licenses.mjs",
     "illustrations": "node scripts/build-illustrations.mjs",
     "test:smoke": "node scripts/smoke-browser.mjs",
+    "access:simulator": "node scripts/access-simulator.mjs",
     "test:headers": "node scripts/check-headers.mjs"
   },
   "devDependencies": {

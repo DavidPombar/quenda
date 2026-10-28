@@ -20,6 +20,7 @@ const AUDIT_ACTIONS = [
   ["booking.cancelled_by_municipality", "auditBookingCancelledByMunicipality"],
   ["booking.no_show", "auditBookingNoShow"],
   ["booking.attendance_corrected", "auditAttendanceCorrected"],
+  ["booking.checked_in", "auditBookingCheckedIn"],
   ["user.blocked", "auditUserBlocked"],
   ["user.unblocked", "auditUserUnblocked"],
   ["facility.created", "auditFacilityCreated"],
@@ -31,6 +32,10 @@ const AUDIT_ACTIONS = [
   ["municipality.updated", "auditMunicipalityUpdated"],
   ["municipality.logo_updated", "auditLogoUpdated"],
   ["municipality.logo_deleted", "auditLogoDeleted"],
+  ["access_key.rotated", "auditAccessKeyRotated"],
+  ["access_webhook.updated", "auditAccessWebhookUpdated"],
+  ["notification_preferences.updated", "auditPreferencesUpdated"],
+  ["notification_preferences.unsubscribed", "auditPreferencesUnsubscribed"],
   ["category.requested", "auditCategoryRequested"],
   ["category.verified", "auditCategoryVerified"],
   ["category.rejected", "auditCategoryRejected"],
@@ -41,6 +46,7 @@ const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {
   citizen: "auditRoleCitizen",
   manager: "auditRoleManager",
+  access: "auditRoleAccess",
   system: "auditRoleSystem",
 } as const satisfies Record<string, TextKey>;
 export function useAuditController() {

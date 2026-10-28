@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { apiClient } from "@/client/api-client";
-import type { Booking, Notification, PenaltyStanding } from "@/types/models";
+import type {
+  AccessPass,
+  Booking,
+  Notification,
+  PenaltyStanding,
+} from "@/types/models";
 export const bookingsRepository = {
   list: () => apiClient.request<Booking[]>("citizen/bookings"),
   penalty: () => apiClient.request<PenaltyStanding>("citizen/penalty"),
   notifications: () =>
     apiClient.request<Notification[]>("citizen/notifications"),
+  accessPass: (id: string) =>
+    apiClient.request<AccessPass>(`citizen/bookings/${id}/access-pass`, {
+      method: "POST",
+    }),
   create: (body: {
     id: string;
     facilityId: string;

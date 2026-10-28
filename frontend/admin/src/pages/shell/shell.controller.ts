@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
@@ -12,6 +12,7 @@ import type { Locale } from "@/types/models";
 export function useShellController() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const municipalities = useListMunicipalitiesQuery();
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
@@ -29,11 +30,15 @@ export function useShellController() {
     localStorage.setItem("quenda.locale", next);
     setChosenLocale(next);
   }
+  // Staff sessions: managers, or access staff who only see the door.
   const session =
-    sessionQuery.data?.role === "manager" &&
+    (sessionQuery.data?.role === "manager" ||
+      sessionQuery.data?.role === "access") &&
     sessionQuery.data.tenantId === municipality?.id
       ? (sessionQuery.data ?? null)
       : null;
+  const isManager = session?.role === "manager";
+  const isAccessStaff = session?.role === "access";
   const t = (key: TextKey) => translate(locale, key);
   // Demo display names look like "Uxía · xestión municipal": show the person, not the role.
   const accountName = session?.displayName.split("·")[0].trim() ?? "";
@@ -58,10 +63,10 @@ export function useShellController() {
     if (sessionQuery.data) await remove.mutateAsync();
     await navigate(routeFor(next, ROUTES.management));
   }
-  async function signIn() {
+  async function signIn(role: "manager" | "access") {
     if (!municipality) return;
     try {
-      await create.mutateAsync({ slug: municipality.slug, role: "manager" });
+      await create.mutateAsync({ slug: municipality.slug, role });
       setLoginOpen(false);
     } catch {
       /* Mutation state presents the error. */
@@ -71,6 +76,10 @@ export function useShellController() {
     municipalities,
     municipality,
     session,
+    isManager,
+    isAccessStaff,
+    accessPath: municipality ? routeFor(municipality.slug, ROUTES.access) : "",
+    onAccessPage: location.pathname.endsWith(`/${ROUTES.access}`),
     accountName,
     accountInitials,
     locale,

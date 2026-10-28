@@ -5,6 +5,7 @@ import {
   PiCheck,
   PiTag,
   PiClock,
+  PiQrCode,
   PiSquareHalf,
   PiUserMinus,
   PiCalendarPlus,
@@ -31,6 +32,8 @@ export function BookingRow(p: {
   calendarHref: string;
   onCancel: () => void;
   onChange: () => void;
+  canShowPass: boolean;
+  onShowPass: () => void;
 }) {
   const resource = distinctResource(
     p.booking.facilityName,
@@ -84,6 +87,12 @@ export function BookingRow(p: {
       </ul>
       {p.booking.status === "confirmed" && (
         <div className="booking-actions">
+          {p.canShowPass && (
+            <Button size="lg" colorPalette="court" onClick={p.onShowPass}>
+              <PiQrCode size={20} aria-hidden="true" />
+              {p.t("showPass")}
+            </Button>
+          )}
           {p.canChange && (
             <>
               <Button size="lg" variant="outline" onClick={p.onChange}>

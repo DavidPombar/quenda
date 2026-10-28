@@ -2,6 +2,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
   Assurance,
+  Role,
   Principal,
 } from "../../../../../shared/application/principal";
 export class SessionResponseDTO {
@@ -9,8 +10,11 @@ export class SessionResponseDTO {
   @ApiProperty({ description: "Authenticated municipality UUID" })
   tenantId!: string;
   @ApiProperty({ description: "Display name" }) displayName!: string;
-  @ApiProperty({ description: "Demo account role" }) role!:
-    "citizen" | "manager";
+  @ApiProperty({
+    description: "Demo account role",
+    enum: ["citizen", "manager", "access"],
+  })
+  role!: Role;
   @ApiProperty({
     description:
       "How the identity was proven: demo account, e-mail code, eID (OIDC) or local credentials",

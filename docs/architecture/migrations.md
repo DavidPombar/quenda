@@ -46,3 +46,5 @@ restoring a backup taken before the upgrade, not by down migrations.
 - `0010` records facility status history for date-range occupancy (M3). Transfers preserve this history (T3, R3).
 
 - `0011` adds deployment operators, separate sessions and their audit trail (R3).
+
+- `0012` adds QR signing keys, attendance per booking revision and the access webhook channel (C3, C4, T3, T4).

@@ -102,7 +102,7 @@ export interface Session {
   userId: string;
   tenantId: string;
   displayName: string;
-  role: "citizen" | "manager";
+  role: "citizen" | "manager" | "access";
 }
 export type Sport = "padel" | "tennis" | "futsal" | "swimming";
 export interface Facility {
@@ -193,7 +193,7 @@ export interface Insights extends DateRange {
   /** Only weekday × hour cells with open time. */
   heatmap: HeatmapCell[];
 }
-export type AuditActorRole = "citizen" | "manager" | "system";
+export type AuditActorRole = "citizen" | "manager" | "access" | "system";
 export interface AuditEvent {
   id: string;
   action: string;
@@ -209,6 +209,48 @@ export interface AuditFilters {
   to?: string;
   action?: string;
   limit?: number;
+}
+/** One reservation as the door sees it on the day. */
+export interface AccessBooking {
+  sequence: number;
+  validFrom: string;
+  id: string;
+  code: string;
+  facilityId: string;
+  facilityName: string;
+  start: string;
+  end: string;
+  status: "confirmed" | "cancelled" | "no_show";
+  holder: string;
+  checkedInAt: string | null;
+}
+/** Snapshot kept on the device so passes can be checked without a network. */
+export interface AccessDay {
+  date: string;
+  syncedAt: string;
+  issuer: string;
+  keys: Record<string, string>[];
+  bookings: AccessBooking[];
+  revoked: string[];
+}
+export interface CheckIn {
+  sequence: number;
+  bookingId: string;
+  checkedInAt: string;
+  method: "qr" | "manual";
+}
+export type CheckInOutcome =
+  | "recorded"
+  | "duplicate"
+  | "cancelled"
+  | "no_show"
+  | "out_of_window"
+  | "not_found"
+  | "stale";
+export interface AccessSettings {
+  webhookUrl: string;
+  hasWebhookSecret: boolean;
+  keys: { kid: string; createdAt: string; retiredAt: string | null }[];
 }
 export interface OperatorSession {
   operatorId: string;

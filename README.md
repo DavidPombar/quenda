@@ -16,6 +16,7 @@ npm run dev
 - Citizen application: http://127.0.0.1:5173/app/
 - Municipal backoffice: http://127.0.0.1:5173/admin/
 - Email sent by the demo (Mailpit): http://127.0.0.1:8025
+- Door mode (QR access): http://127.0.0.1:5173/admin/ → **Entrar como control de accesos**; `npm run access:simulator` stands in for a lock controller
 - Swagger: http://127.0.0.1:3001/api/docs
 - OpenAPI: http://127.0.0.1:3001/api/openapi.json
 

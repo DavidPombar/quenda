@@ -10,6 +10,7 @@ import { Branding } from "./components/branding/branding.view";
 import { Holidays } from "./components/holidays/holidays.view";
 import { UserCategories } from "./components/user-categories/user-categories.view";
 import { NoShowPenalty } from "./components/no-show-penalty/no-show-penalty.view";
+import { AccessQr } from "./components/access-qr/access-qr.view";
 export function Settings() {
   const c = useSettingsController();
   return (
@@ -49,6 +50,12 @@ export function Settings() {
           <LegalTexts settings={c.settings.data} t={c.t} locale={c.locale} />
           <Branding settings={c.settings.data} t={c.t} />
           <Holidays settings={c.settings.data} t={c.t} locale={c.locale} />
+          <AccessQr
+            tenantId={c.municipality.id}
+            timezone={c.municipality.timezone}
+            locale={c.locale}
+            t={c.t}
+          />
           <UserCategories settings={c.settings.data} t={c.t} />
         </div>
       )}

@@ -13,6 +13,7 @@ import { AuditModule } from "./v2/modules/audit/audit.module";
 import { RetentionModule } from "./v2/modules/retention/retention.module";
 import { OperatorsModule } from "./v2/modules/operators/operators.module";
 import { NotificationsModule } from "./v2/modules/notifications/notifications.module";
+import { AccessModule } from "./v2/modules/access/access.module";
 import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
 import { PortabilityModule } from "./v2/modules/portability/portability.module";
 import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
@@ -31,6 +32,7 @@ import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
     RetentionModule,
     OperatorsModule,
     NotificationsModule,
+    AccessModule,
     CalendarsModule,
     PortabilityModule,
     OpenDataModule,

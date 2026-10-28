@@ -20,7 +20,7 @@ type Row = {
 };
 // One SQL statement gives every collection the same MVCC snapshot.
 const sql = `SELECT
-json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone, 'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours, 'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text, 'legalVersion', m.legal_version, 'retentionMonths', m.retention_months, 'primaryColor', m.primary_color, 'holidaysCalendar', m.holidays_calendar, 'noShowLimit', m.no_show_limit, 'noShowWindowDays', m.no_show_window_days, 'noShowBlockDays', m.no_show_block_days, 'reminderHours', m.reminder_hours, 'mailSenderName', m.mail_sender_name, 'mailReplyTo', m.mail_reply_to, 'enabledCategories', m.enabled_categories, 'storeNif', m.store_nif, 'accessibilityUnit', m.accessibility_unit, 'accessibilityEmail', m.accessibility_email, 'accessibilityPhone', m.accessibility_phone, 'accessibilityReviewedOn', to_char(m.accessibility_reviewed_on, 'YYYY-MM-DD'), 'accessibilityMethod', m.accessibility_method, 'accessibilityExceptionsGl', m.accessibility_exceptions_gl, 'accessibilityExceptionsEs', m.accessibility_exceptions_es, 'dataLicense', m.data_license, 'dir3Code', m.dir3_code) AS municipality,
+json_build_object('id', m.id, 'slug', m.slug, 'name', m.name, 'timezone', m.timezone, 'locale', m.locale, 'advanceDays', m.advance_days, 'cancellationHours', m.cancellation_hours, 'maxActiveBookings', m.max_active_bookings, 'contact', m.contact, 'legalText', m.legal_text, 'legalVersion', m.legal_version, 'retentionMonths', m.retention_months, 'primaryColor', m.primary_color, 'holidaysCalendar', m.holidays_calendar, 'noShowLimit', m.no_show_limit, 'noShowWindowDays', m.no_show_window_days, 'noShowBlockDays', m.no_show_block_days, 'reminderHours', m.reminder_hours, 'mailSenderName', m.mail_sender_name, 'mailReplyTo', m.mail_reply_to, 'enabledCategories', m.enabled_categories, 'storeNif', m.store_nif, 'accessibilityUnit', m.accessibility_unit, 'accessibilityEmail', m.accessibility_email, 'accessibilityPhone', m.accessibility_phone, 'accessibilityReviewedOn', to_char(m.accessibility_reviewed_on, 'YYYY-MM-DD'), 'accessibilityMethod', m.accessibility_method, 'accessibilityExceptionsGl', m.accessibility_exceptions_gl, 'accessibilityExceptionsEs', m.accessibility_exceptions_es, 'dataLicense', m.data_license, 'dir3Code', m.dir3_code, 'accessWebhookUrl', m.access_webhook_url, 'accessWebhookSecretSealed', m.access_webhook_secret_sealed) AS municipality,
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'name', r.name, 'sport', r.sport, 'address', r.address, 'description', r.description, 'accessible', r.accessible, 'status', r.status, 'slotMinutes', r.slot_minutes, 'priceCents', r.price_cents, 'openingCalendar', r.opening_calendar, 'rules', r.rules, 'followsMunicipalHolidays', r.follows_municipal_holidays, 'latitude', r.latitude, 'longitude', r.longitude) ORDER BY r.id) FROM facilities r WHERE r.tenant_id=m.id), '[]') AS "facilities",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'facilityId', r.facility_id, 'name', r.name, 'position', r.position, 'parentId', r.parent_id, 'active', r.active, 'createdAt', r.created_at) ORDER BY r.parent_id IS NOT NULL, r.facility_id, r.position, r.id) FROM resources r WHERE r.tenant_id=m.id), '[]') AS "resources",
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'displayName', r.display_name, 'role', r.role, 'deletedAt', r.deleted_at, 'email', r.email, 'locale', r.locale, 'assurance', r.assurance, 'nifCiphertext', r.nif_ciphertext, 'nifDigest', r.nif_digest, 'prefersFamilyTariff', r.prefers_family_tariff) ORDER BY r.id) FROM users r WHERE r.tenant_id=m.id), '[]') AS "users",
@@ -37,6 +37,8 @@ coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bo
 ,coalesce((SELECT json_agg(json_build_object('facilityId', r.facility_id, 'category', r.category, 'priceCents', r.price_cents) ORDER BY r.facility_id, r.category) FROM facility_prices r WHERE r.tenant_id=m.id), '[]') AS "facilityPrices"
 ,coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'category', r.category, 'status', r.status, 'requestedAt', r.requested_at, 'decidedAt', r.decided_at) ORDER BY r.user_id, r.category) FROM user_categories r WHERE r.tenant_id=m.id), '[]') AS "userCategories"
 ,coalesce((SELECT json_agg(json_build_object('facilityId', r.facility_id, 'status', r.status, 'start', r.starts_at, 'end', r.ends_at) ORDER BY r.facility_id, r.starts_at) FROM facility_status_periods r WHERE r.tenant_id=m.id), '[]') AS "facilityStatusPeriods"
+,coalesce((SELECT json_agg(json_build_object('kid', r.kid, 'publicJwk', r.public_jwk, 'privateKeySealed', r.private_key_sealed, 'createdAt', r.created_at, 'retiredAt', r.retired_at) ORDER BY r.kid) FROM access_keys r WHERE r.tenant_id=m.id), '[]') AS "accessKeys"
+,coalesce((SELECT json_agg(json_build_object('id', r.id, 'bookingId', r.booking_id, 'sequence', r.booking_sequence, 'actorId', r.actor_id, 'method', r.method, 'checkedInAt', r.checked_in_at, 'recordedAt', r.recorded_at) ORDER BY r.id) FROM check_ins r WHERE r.tenant_id=m.id), '[]') AS "checkIns"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -48,6 +50,20 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
     if (!row) return null;
     return {
       municipality: row.municipality,
+      accessKeys: row.accessKeys.map((value) => ({
+        ...value,
+        createdAt: Temporal.Instant.from(value.createdAt),
+        retiredAt:
+          value.retiredAt === null
+            ? null
+            : Temporal.Instant.from(value.retiredAt),
+      })),
+      checkIns: row.checkIns.map((value) => ({
+        ...value,
+        checkedInAt: Temporal.Instant.from(value.checkedInAt),
+        recordedAt: Temporal.Instant.from(value.recordedAt),
+      })),
+
       facilities: row.facilities,
       facilityStatusPeriods: row.facilityStatusPeriods.map((value) => ({
         ...value,

@@ -1,0 +1,87 @@
+# QR access and the access-control connector (#23, optional «accesos mediante código QR»)
+
+Quenda lets people enter a facility with a QR code shown on their phone, checked by staff with any
+mobile device, even without a network. It also tells a council's own access-control system (locks,
+lights) when a reservation should open the door. No hardware is supplied and none is required.
+
+## The pass
+
+`POST /v2/citizen/bookings/:id/access-pass` returns a compact JWS (JWT) signed with **ES256**:
+
+| Claim | Meaning |
+|---|---|
+| `iss` | Municipality slug; the door rejects passes from another council |
+| `sub` | Reservation id |
+| `fac` | Facility id |
+| `seq` | Reservation revision; a reschedule or resource change invalidates the old pass |
+| `nbf` | First opening of the facility on the reservation's local day (its RFC 5545 calendar), or midnight when there is none; never later than the start |
+| `exp` | End of the reservation |
+| `iat` | Issue time |
+
+The pass carries no name or other personal data. The citizen app draws the QR code itself (`qrcode`,
+MIT) and also shows an eight-character code to read out at the desk. Once opened, the pass stays in
+the app's cache and can be shown without a connection.
+
+## Keys
+
+Each municipality has its own P-256 key pair, created the first time a pass is issued. The private
+key is sealed with AES-256-GCM under `ACCESS_KEY_SECRET` before it is stored in `access_keys`; the
+API refuses to start without that variable outside `DEMO_MODE`. The key id is the RFC 7638
+thumbprint. Managers rotate the key from **Axustes → Acceso con QR**
+(`POST /v2/manager/access-keys/rotation`, audited as `access_key.rotated`). New passes use the new
+key, and the retired key stays published for 48 hours so passes already issued keep working.
+Public keys are a standard JWKS at `GET /v2/public/municipalities/:slug/jwks`.
+
+## Door mode and offline operation
+
+Access staff have their own role, `access`, with a single grant, `access:control`. They can sync the
+day, record entries and mark no-shows, and nothing else: they cannot cancel on behalf of the council,
+edit facilities, read settings, indicators or the audit log. Managers also have `access:control`.
+
+`GET /v2/access/day` returns everything a device needs for one local day: the issuer, the published
+keys, the day's reservations (time, facility, status, check-in and the holder's first name only) and
+`revoked`, the reservations that must be rejected even with a valid signature (cancelled or
+no-show). The backoffice page **Control de accesos** stores this snapshot on the device, refreshes it
+every five minutes and on demand, and says how old it is when there is no network.
+
+A scanned pass is checked locally with `jose` (MIT): ES256 signature with the published key,
+issuer, window (one minute of clock tolerance), current revision, facility and window in the synced reservation, revocation list and previous entries. A cancelled
+reservation **stops validating at the next sync**, as required. Staff without a camera, or helping
+someone who cannot show a code, use the searchable list with **Rexistrar entrada** and **Non
+presentado** buttons.
+
+Entries are sent with `POST /v2/access/check-ins` in batches; entries made offline wait in a local
+queue and go out on the next sync. Batches are limited to 200 and serialized so a successful earlier batch cannot erase newer pending entries. Each item gets its own outcome (`recorded`, `duplicate`,
+`cancelled`, `no_show`, `out_of_window`, `not_found`, `stale`) and the device shows the rejected ones.
+`check_ins` is the evidence of attendance (#16): a reservation with a check-in cannot be marked as a
+no-show. Each recorded entry is audited as `booking.checked_in`. Each request includes the synced `sequence`; a queued entry for an older revision is rejected as `stale`. Attendance is unique per reservation revision, so attendance before a move is not reused for the new slot. Manual entries obey the same opening window as QR entries. A refused session never falls back to cached data.
+
+The backoffice camera requires HTTPS (or localhost). The deployed `/admin/` policy permits a camera from the same origin and the scanner's Blob worker; the public website and citizen app keep camera access disabled.
+
+## Connector for locks and lights
+
+When a manager sets an endpoint under **Axustes → Acceso con QR** (`PUT /v2/manager/access-webhook`),
+every booking change also queues a `webhook` message in the transactional outbox (#12), in the same
+transaction as the change. The notice worker delivers it with retries and backoff:
+
+```http
+POST <endpoint>
+Content-Type: application/json
+X-Quenda-Delivery: <message id, identical on retries>
+X-Quenda-Signature: sha256=<hex HMAC-SHA256 of the body with the council's secret>
+
+{"event":"credential.granted","reason":"confirmed","municipality":"vilaverde",
+ "bookingId":"…","facilityId":"…","validFrom":"…","validUntil":"…"}
+```
+
+`credential.granted` follows a confirmation or a change; `credential.revoked` follows a
+cancellation (by the person or the council, including facility closures) or a no-show. A grant
+delivered after the reservation was cancelled is sent as a revocation. The secret is generated by
+Quenda, shown once and stored sealed. The body has no personal data. Receivers should ignore a
+repeated `X-Quenda-Delivery`.
+
+`npm run access:simulator` starts a stand-in door controller on http://127.0.0.1:4100 that verifies
+the signature and prints the credential it would grant or revoke (lights follow the same window).
+Set `ACCESS_WEBHOOK_SECRET` to the secret shown in Axustes. Real hardware should be integrated through
+a small adapter that speaks **OSDP** to the controller; Wiegand is not recommended because it is
+unauthenticated, and biometrics are deliberately out of scope (data protection).

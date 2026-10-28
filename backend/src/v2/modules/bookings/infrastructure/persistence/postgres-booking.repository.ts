@@ -73,6 +73,18 @@ export class PostgresBookingRepository extends BookingRepository {
     );
     return rows[0] ? toDomain(rows[0]) : null;
   }
+  async hasCheckIn(tenantId: string, id: string) {
+    // Serialize an absence with a concurrent door entry; re-read attendance after the lock.
+    await this.db.query(
+      "SELECT id FROM bookings WHERE tenant_id=$1 AND id=$2 FOR UPDATE",
+      [tenantId, id],
+    );
+    const { rowCount } = await this.db.query(
+      "SELECT 1 FROM check_ins c JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id AND b.sequence=c.booking_sequence WHERE c.tenant_id=$1 AND c.booking_id=$2",
+      [tenantId, id],
+    );
+    return (rowCount ?? 0) > 0;
+  }
   async findInTenant(tenantId: string, id: string) {
     const { rows } = await this.db.query<Row>(
       "SELECT * FROM bookings WHERE tenant_id=$1 AND id=$2 AND user_id IS NOT NULL",

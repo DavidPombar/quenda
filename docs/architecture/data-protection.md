@@ -53,6 +53,8 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 | `notification_preferences` | Whether the person wants email reminders                                                                                                                                                                                       | Respect the opt-out                                                                                                         | Deleted on account deletion                                                                           |
 | `audit_events`             | `actor_id`, `actor_role`, `details`                                                                                                                                                                                            | Accountability for changes (art. 5.2 GDPR)                                                                                  | `actor_id` set to NULL after `retention_months`; action and details remain                            |
 | `user_categories` | Category (e.g. resident, large family, disability), status and request/decision times; `users.prefers_family_tariff` | Apply the tariff the council sets for each category (M2) | Deleted on account deletion; the council's manager can revoke it at any time |
+| `check_ins` | Link to a reservation, the time of entry and the staff member who recorded it | Evidence of attendance at the door | Deleted after `retention_months` |
+| `access_keys` | None (signing keys; the private half is sealed) | Sign access passes | Kept; retired keys stop being published after 48 hours |
 
 Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
 about minors. It keeps the identifier the identity provider returns and the name it supplies; the
@@ -61,6 +63,13 @@ reservations; and the tax identifier (NIF) only when the municipality enables re
 verification, encrypted with AES-256-GCM under `QUENDA_DATA_KEY` and never in plain text. Demo
 accounts carry fictitious names and synthetic addresses at the reserved `.example` domain, which the
 local Mailpit catches. See [public identity](identity.md).
+
+### QR access passes
+
+A pass contains only the reservation, facility, municipality and validity window, never a name. Door
+devices store the current day's list with each holder's first name, needed to greet and identify
+people, and nothing else; it is replaced on every sync. Staff with the `access` role see no other
+personal data. The access-control webhook sends no personal data at all.
 
 ### Email notices
 

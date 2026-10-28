@@ -147,6 +147,16 @@ describe("Municipality data portability", () => {
       status: "cancelled",
     }).expect(204);
 
+    await post(citizen, `citizen/bookings/${kept}/access-pass`, {}).expect(200);
+    await manager
+      .put("/v2/manager/access-webhook")
+      .set("X-Quenda-Request", "1")
+      .send({ url: "https://access.example.invalid/hook" })
+      .expect(200);
+    await db.query(
+      "INSERT INTO check_ins (id,tenant_id,booking_id,booking_sequence,actor_id,method,checked_in_at,recorded_at) SELECT $1,$2,$3,0,id,'manual','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='manager'",
+      [randomUUID(), tenantId, kept],
+    );
     // Data introduced on main must survive transfer as well as the original V0 catalog.
     await db.query(
       "UPDATE municipalities SET retention_months=18,primary_color='#123456',no_show_limit=2,reminder_hours=12,mail_sender_name='Sports desk',mail_reply_to='sports@example.invalid',accessibility_unit='Accessibility office',accessibility_email='accessibility@example.invalid',accessibility_phone='+34986000001',accessibility_reviewed_on='2026-10-01',accessibility_method='external',accessibility_exceptions_gl='Revisión pendente',accessibility_exceptions_es='Revisión pendiente' WHERE id=$1",
@@ -267,6 +277,8 @@ describe("Municipality data portability", () => {
     for (const table of [
       "municipalities",
       "facilities",
+      "access_keys",
+      "check_ins",
       "facility_prices",
       "facility_status_periods",
       "user_categories",
@@ -333,9 +345,11 @@ describe("Municipality data portability", () => {
     for (const key of [
       "municipality",
       "facilities",
-      "facility_prices",
-      "facility_status_periods",
-      "user_categories",
+      "accessKeys",
+      "checkIns",
+      "facilityPrices",
+      "facilityStatusPeriods",
+      "userCategories",
       "resources",
       "users",
       "identities",

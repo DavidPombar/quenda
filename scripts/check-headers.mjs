@@ -22,10 +22,23 @@ for (const path of ["/", "/app/", "/app/reservas", "/admin/", "/admin/x"]) {
     "frame-ancestors 'none'",
   ])
     assert.ok(csp.includes(directive), `${path} CSP lacks ${directive}`);
+  assert.ok(
+    csp.includes(
+      path.startsWith("/admin/")
+        ? "worker-src 'self' blob:"
+        : "worker-src 'self';",
+    ),
+    `${path} scanner worker policy`,
+  );
   assert.doesNotMatch(csp, /script-src[^;]*unsafe-inline/, `${path} CSP`);
   assert.equal(response.headers.get("x-frame-options"), "DENY", path);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
-  assert.ok(response.headers.get("permissions-policy"), `${path} policy`);
+  assert.ok(
+    response.headers
+      .get("permissions-policy")
+      ?.includes(path.startsWith("/admin/") ? "camera=(self)" : "camera=()"),
+    `${path} camera policy`,
+  );
   assert.doesNotMatch(response.headers.get("server") ?? "", /\d/, "version");
 }
 const api = await head("/v2/public/municipalities");
