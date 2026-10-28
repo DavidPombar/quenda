@@ -2,6 +2,9 @@
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { FacilityRepository } from "../../domain/facility.repository";
+import { ResourceRepository } from "../../domain/resource.repository";
+import { Resource } from "../../domain/resource.entity";
+import { units } from "../../domain/resource-units";
 import { OpeningCalendar } from "../../domain/opening-calendar";
 import { HolidayCalendar } from "../../domain/holiday-calendar";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
@@ -13,12 +16,21 @@ export interface AvailabilitySlot {
   end: Temporal.Instant;
   status: "available" | "booked" | "past";
 }
+export interface ResourceAvailability {
+  resource: Resource;
+  /** Empty when the resource is out of service, the facility is not active or the date is out of range. */
+  slots: AvailabilitySlot[];
+}
+export interface Availability {
+  resources: ResourceAvailability[];
+}
 export type GetAvailabilityError =
   AppError<"not_found"> | AppError<"validation">;
 @Injectable()
 export class GetAvailability {
   constructor(
     private readonly facilities: FacilityRepository,
+    private readonly resources: ResourceRepository,
     private readonly municipalities: Municipalities,
     private readonly calendar: OpeningCalendar,
     private readonly holidays: HolidayCalendar,
@@ -28,7 +40,7 @@ export class GetAvailability {
     slug: string;
     id: string;
     date: string;
-  }): Promise<Result<AvailabilitySlot[], GetAvailabilityError>> {
+  }): Promise<Result<Availability, GetAvailabilityError>> {
     const municipality = await this.municipalities.findBySlug(args.slug);
     if (!municipality) return Result.err(failure("not_found"));
     const facility = await this.facilities.find(municipality.id, args.id);
@@ -39,6 +51,14 @@ export class GetAvailability {
     } catch {
       return Result.err(failure("validation"));
     }
+    const resources = await this.resources.listByFacility(
+      municipality.id,
+      facility.id,
+    );
+    const empty = () =>
+      Result.ok({
+        resources: resources.map((resource) => ({ resource, slots: [] })),
+      });
     const now = this.clock.now();
     const today = now.toZonedDateTimeISO(municipality.timezone).toPlainDate();
     if (
@@ -51,7 +71,7 @@ export class GetAvailability {
       (facility.followsMunicipalHolidays &&
         this.holidays.isHoliday(municipality.holidaysCalendar, date))
     )
-      return Result.ok([]);
+      return empty();
     const start = date.toZonedDateTime(municipality.timezone).toInstant();
     const end = date
       .add({ days: 1 })
@@ -63,7 +83,7 @@ export class GetAvailability {
       start,
       end,
     );
-    const slots: AvailabilitySlot[] = [];
+    const grid: { start: Temporal.Instant; end: Temporal.Instant }[] = [];
     for (const interval of this.calendar.expand({
       calendar: facility.openingCalendar,
       timezone: municipality.timezone,
@@ -82,20 +102,35 @@ export class GetAvailability {
           Temporal.Instant.compare(from, end) >= 0
         )
           continue;
-        const to = from.add({ minutes: facility.slotMinutes });
-        const status =
-          Temporal.Instant.compare(from, now) <= 0
-            ? "past"
-            : busy.some(
-                  (value) =>
-                    Temporal.Instant.compare(value.start, to) < 0 &&
-                    Temporal.Instant.compare(value.end, from) > 0,
-                )
-              ? "booked"
-              : "available";
-        slots.push({ start: from, end: to, status });
+        grid.push({
+          start: from,
+          end: from.add({ minutes: facility.slotMinutes }),
+        });
       }
     }
-    return Result.ok(slots);
+    return Result.ok({
+      resources: resources.map((resource): ResourceAvailability => {
+        if (!resource.active) return { resource, slots: [] };
+        const occupied = new Set(units(resource, resources));
+        return {
+          resource,
+          slots: grid.map(({ start: from, end: to }) => ({
+            start: from,
+            end: to,
+            status:
+              Temporal.Instant.compare(from, now) <= 0
+                ? "past"
+                : busy.some(
+                      (value) =>
+                        occupied.has(value.unitId) &&
+                        Temporal.Instant.compare(value.start, to) < 0 &&
+                        Temporal.Instant.compare(value.end, from) > 0,
+                    )
+                  ? "booked"
+                  : "available",
+          })),
+        };
+      }),
+    });
   }
 }

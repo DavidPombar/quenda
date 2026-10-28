@@ -1,0 +1,680 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DavidPombar/quenda/blob/main/docs/architecture/export-format.schema.json",
+  "title": "Quenda municipality export v2",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "exportedAt",
+    "municipality",
+    "facilities",
+    "users",
+    "bookings",
+    "notifications",
+    "auditEvents",
+    "consents",
+    "legalTexts",
+    "logos",
+    "bookingBlocks",
+    "notificationPreferences",
+    "messages"
+  ],
+  "properties": {
+    "format": {
+      "const": "quenda-municipality-export"
+    },
+    "version": {
+      "const": 2
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "municipality": {
+      "type": "object",
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "timezone",
+        "locale",
+        "advanceDays",
+        "cancellationHours",
+        "maxActiveBookings",
+        "contact",
+        "legalText",
+        "legalVersion",
+        "retentionMonths",
+        "primaryColor",
+        "holidaysCalendar",
+        "noShowLimit",
+        "noShowWindowDays",
+        "noShowBlockDays",
+        "reminderHours",
+        "mailSenderName",
+        "mailReplyTo"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "advanceDays": {
+          "type": "integer"
+        },
+        "cancellationHours": {
+          "type": "integer"
+        },
+        "maxActiveBookings": {
+          "type": "integer"
+        },
+        "contact": {
+          "type": "string"
+        },
+        "legalText": {
+          "type": "string"
+        },
+        "legalVersion": {
+          "type": "string"
+        },
+        "retentionMonths": {
+          "type": "integer"
+        },
+        "primaryColor": {
+          "type": "string"
+        },
+        "holidaysCalendar": {
+          "type": "string"
+        },
+        "noShowLimit": {
+          "type": "integer"
+        },
+        "noShowWindowDays": {
+          "type": "integer"
+        },
+        "noShowBlockDays": {
+          "type": "integer"
+        },
+        "reminderHours": {
+          "type": "integer"
+        },
+        "mailSenderName": {
+          "type": "string"
+        },
+        "mailReplyTo": {
+          "type": "string"
+        },
+        "storeNif": {
+          "type": "boolean",
+          "description": "Residency verification keeps the NIF. Optional: defaults to false."
+        },
+        "dataLicense": {
+          "type": "string",
+          "enum": ["CC-BY-4.0", "CC-BY-SA-4.0", "CC0-1.0", "ODbL-1.0"],
+          "description": "Licence of the open data. Optional: defaults to CC-BY-4.0."
+        },
+        "dir3Code": {
+          "type": ["string", "null"],
+          "description": "DIR3 code of the council, the open data publisher. Optional."
+        },
+        "accessibilityUnit": {
+          "type": "string"
+        },
+        "accessibilityEmail": {
+          "type": "string"
+        },
+        "accessibilityPhone": {
+          "type": "string"
+        },
+        "accessibilityReviewedOn": {
+          "type": "string",
+          "format": "date"
+        },
+        "accessibilityMethod": {
+          "type": "string",
+          "enum": ["self", "external"]
+        },
+        "accessibilityExceptionsGl": {
+          "type": "string"
+        },
+        "accessibilityExceptionsEs": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "facilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "sport",
+          "address",
+          "description",
+          "accessible",
+          "status",
+          "slotMinutes",
+          "priceCents",
+          "openingCalendar",
+          "rules",
+          "followsMunicipalHolidays"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sport": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "accessible": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "slotMinutes": {
+            "type": "integer"
+          },
+          "priceCents": {
+            "type": "integer"
+          },
+          "openingCalendar": {
+            "type": "string"
+          },
+          "rules": {
+            "type": "string"
+          },
+          "followsMunicipalHolidays": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": ["number", "null"],
+            "minimum": -90,
+            "maximum": 90,
+            "description": "WGS 84. Optional; set together with longitude."
+          },
+          "longitude": {
+            "type": ["number", "null"],
+            "minimum": -180,
+            "maximum": 180,
+            "description": "WGS 84. Optional; set together with latitude."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "resources": {
+      "description": "Courts and spaces, parents before their parts. Optional: packages without it get one resource per facility, with the facility's id.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "facilityId",
+          "name",
+          "position",
+          "parentId",
+          "active",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "parentId": {
+            "type": ["string", "null"]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "displayName",
+          "role",
+          "deletedAt",
+          "email",
+          "locale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "locale": {
+            "type": ["string", "null"]
+          },
+          "assurance": {
+            "enum": ["demo", "email", "eid", "local"],
+            "description": "How the identity was proven. Optional: defaults to demo."
+          },
+          "nifCiphertext": {
+            "type": ["string", "null"],
+            "description": "Encrypted NIF; readable only with the same QUENDA_DATA_KEY. Optional."
+          },
+          "nifDigest": {
+            "type": ["string", "null"],
+            "description": "HMAC digest of the NIF for lookups. Optional."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "identities": {
+      "description": "Identity provider links, so people keep their account. Optional.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "issuer", "subject", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "bookings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "facilityId",
+          "start",
+          "end",
+          "status",
+          "createdAt",
+          "cancelledAt",
+          "cancellationHours",
+          "cancelledBy",
+          "cancellationReason",
+          "sequence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": ["string", "null"]
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "Booked court or space. Optional: defaults to the facility's default resource."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelledAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "cancellationHours": {
+            "type": ["integer", "null"]
+          },
+          "cancelledBy": {
+            "type": ["string", "null"]
+          },
+          "cancellationReason": {
+            "type": ["string", "null"]
+          },
+          "sequence": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "bookingId",
+          "kind",
+          "createdAt",
+          "details"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "bookingId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "details": {
+            "type": ["object", "null"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "auditEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "actorId",
+          "action",
+          "resourceId",
+          "occurredAt",
+          "actorRole",
+          "details"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": ["string", "null"]
+          },
+          "action": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorRole": {
+            "type": ["string", "null"]
+          },
+          "details": {
+            "type": ["object", "null"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "consents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "legalVersion", "acceptedAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "legalVersion": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "legalTexts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["version", "textGl", "textEs", "publishedAt"],
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "textGl": {
+            "type": "string"
+          },
+          "textEs": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "logos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["contentType", "data", "sha256", "updatedAt"],
+        "properties": {
+          "contentType": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "bookingBlocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "bookingId", "start", "end", "liftedAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "bookingId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "liftedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "notificationPreferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["userId", "kind", "channel", "enabled", "updatedAt"],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "bookingId",
+          "kind",
+          "channel",
+          "dedupeKey",
+          "createdAt",
+          "availableAt",
+          "attempts",
+          "lockedUntil",
+          "sentAt",
+          "lastError"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "bookingId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "dedupeKey": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availableAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "lockedUntil": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

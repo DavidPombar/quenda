@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
+import type { Assurance } from "../../../shared/application/principal";
 import type { MessageKind } from "../../../shared/application/outbox";
 export interface AccountProfile {
   userId: string;
@@ -20,6 +21,23 @@ export interface ExportedMessage {
   createdAt: Temporal.Instant;
   sentAt: Temporal.Instant | null;
 }
+/** Personal data kept on the account row; the NIF arrives here still encrypted. */
+export interface AccountPersonalData {
+  email: string | null;
+  assurance: Assurance;
+  nifCiphertext: string | null;
+}
+export interface ExportedProfile extends AccountProfile {
+  email: string | null;
+  assurance: Assurance;
+  /** Decrypted NIF, or null when none is stored or it cannot be decrypted with the current key. */
+  nif: string | null;
+}
+export interface ExportedIdentity {
+  issuer: string;
+  subject: string;
+  createdAt: Temporal.Instant;
+}
 export interface ConsentRecord {
   legalVersion: string;
   acceptedAt: Temporal.Instant;
@@ -37,6 +55,8 @@ export interface ExportedBooking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
@@ -59,6 +79,8 @@ export interface ExportedNotification {
     | "unblocked"
     | "reminder";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: Temporal.Instant;
   details: Record<string, unknown> | null;
 }
@@ -83,7 +105,8 @@ export interface AccountExport {
     legalVersion: string;
     retentionMonths: number;
   };
-  profile: AccountProfile;
+  profile: ExportedProfile;
+  identities: ExportedIdentity[];
   consents: ConsentRecord[];
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];

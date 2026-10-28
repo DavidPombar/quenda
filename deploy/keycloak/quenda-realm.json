@@ -1,0 +1,195 @@
+{
+  "realm": "quenda",
+  "displayName": "Quenda (Keycloak de referencia, local)",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["gl", "es", "en"],
+  "defaultLocale": "gl",
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}}, {\"name\": \"email\", \"displayName\": \"${email}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}}, {\"name\": \"nif\", \"displayName\": \"NIF\", \"multivalued\": false, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"validations\": {\"length\": {\"max\": 16}}}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}]}"
+          ]
+        }
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "quenda",
+      "name": "Quenda",
+      "description": "Cliente OIDC de Quenda. SOLO DESARROLLO LOCAL: el secreto está publicado en el repositorio.",
+      "protocol": "openid-connect",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "quenda-local-dev-secret-NO-PRODUCCION",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "redirectUris": [
+        "http://127.0.0.1:5173/v2/public/auth/oidc/callback",
+        "http://127.0.0.1:8080/v2/public/auth/oidc/callback"
+      ],
+      "webOrigins": ["http://127.0.0.1:5173", "http://127.0.0.1:8080"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://127.0.0.1:5173/*##http://127.0.0.1:8080/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "given_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "claim.name": "given_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "family_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "claim.name": "family_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "nif",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "nif",
+            "claim.name": "nif",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "clave",
+      "displayName": "Cl@ve (simulado)",
+      "providerId": "saml",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "entityId": "http://127.0.0.1:8081/realms/quenda",
+        "idpEntityId": "http://127.0.0.1:8081/realms/clave-sim",
+        "singleSignOnServiceUrl": "http://127.0.0.1:8081/realms/clave-sim/protocol/saml",
+        "singleLogoutServiceUrl": "http://127.0.0.1:8081/realms/clave-sim/protocol/saml",
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+        "principalType": "SUBJECT",
+        "allowCreate": "true",
+        "postBindingAuthnRequest": "true",
+        "postBindingResponse": "true",
+        "postBindingLogout": "true",
+        "wantAuthnRequestsSigned": "false",
+        "wantAssertionsSigned": "false",
+        "wantAssertionsEncrypted": "false",
+        "validateSignature": "true",
+        "signingCertificate": "MIIDSTCCAjGgAwIBAgIUIfr5uGiEltobIgqs61pvjPpnh98wDQYJKoZIhvcNAQELBQAwNDEyMDAGA1UEAwwpY2xhdmUtc2ltIChTSU1VTEFDSU9OIGxvY2FsLCBubyBlcyBDbEB2ZSkwHhcNMjYxMDI3MTgyNDM0WhcNMzYxMDI0MTgyNDM0WjA0MTIwMAYDVQQDDCljbGF2ZS1zaW0gKFNJTVVMQUNJT04gbG9jYWwsIG5vIGVzIENsQHZlKTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAI4DpHfebVSyvLDyOwvmIFi91V4KJUK2HDjwoPa/trEpIxWUP2hGAODqBOl2zQUoq8PnPA98jB16Qj+n+6dHvGUJTU9psnaOiuwN/EeJAvndjKLdUSfQNidy2uacZvo5U/EMMoAcK4HgbvEjVjOGzjIDoLX43I3NYob5SJBtG92UP0uNyuqAB+lK8xw6TtNrXRsiJv4J1nYVjm3oEn9QS+fx6ugagmnyokiLTBhVKzOBi1Vf5VGJuFowzjoQWAwpOD39NgrjKuJweal0zPqFnB99dxGwInHLnKpMNcB6mubW21qDv7shaoeeOmFdEJrbgMMbIFTSzDOXcrefn1Y4sRUCAwEAAaNTMFEwHQYDVR0OBBYEFJtALRhRJef2c3QRU6o1/FaUm0TDMB8GA1UdIwQYMBaAFJtALRhRJef2c3QRU6o1/FaUm0TDMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABAOsLnUQOTWJC8Zf1+AxytLLYJXWbjLlYCFPoX4dj0rIFe4ECQsTAlExFhxphp8jJApeKk9WFbSsUrApFaGjfNt5YoNQfcR6MzdxW/q+5lEg7UXi7lvDOb5tYmvL37cvQXfYMzCwAn3majHeRIQ54wCkxtK28npzQJcRzZu/szLaKtGV3YMeGOnlRIWySdiQYeEHNCDbbLrhKOeANti+JCiav0FkNuI7avx+sJ81RUUHR/RKK50hUApXIjHvA8MC+yABbhUepsAetUGXcSMEIXy2ufKmI3x1xvMmCCV3t4xCEJqqsT0VHze48WWXj78NX23uD7TXU1r394ntWQCcuM=",
+        "signatureAlgorithm": "RSA_SHA256",
+        "xmlSigKeyInfoKeyNameTransformer": "KEY_ID",
+        "syncMode": "FORCE",
+        "guiOrder": "1"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "name": "nombre",
+      "identityProviderAlias": "clave",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "attribute.name": "nombre",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "user.attribute": "firstName"
+      }
+    },
+    {
+      "name": "apellidos",
+      "identityProviderAlias": "clave",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "attribute.name": "apellidos",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "user.attribute": "lastName"
+      }
+    },
+    {
+      "name": "email",
+      "identityProviderAlias": "clave",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "attribute.name": "email",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "user.attribute": "email"
+      }
+    },
+    {
+      "name": "nif",
+      "identityProviderAlias": "clave",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "attribute.name": "nif",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "user.attribute": "nif"
+      }
+    }
+  ]
+}

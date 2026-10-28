@@ -14,12 +14,18 @@ export type ErrorCode =
   | "calendar_in_use"
   | "demo_disabled"
   | "consent_required"
+  | "oidc_unavailable"
+  | "login_expired"
+  | "login_rejected"
+  | "resource_required"
+  | "resource_unavailable"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"
   | "logo_too_large"
   | "booking_blocked"
-  | "attendance_window";
+  | "attendance_window"
+  | "rate_limited";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

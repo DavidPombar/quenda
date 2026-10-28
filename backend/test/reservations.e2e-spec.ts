@@ -7,6 +7,7 @@ import { openingCalendar } from "../src/database/seed";
 import {
   availability,
   facility,
+  slotStatus,
   harness,
   patch,
   post,
@@ -44,14 +45,22 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     expect(
       (await anonymous.get("/v2/public/session").expect(200)).body.session,
     ).toBe(null);
-    expect(
-      (
-        await anonymous
-          .get("/v2/public/facilities")
-          .query({ slug: context.slug })
-          .expect(200)
-      ).body[0].id,
-    ).toBe(court.id);
+    const catalog = await anonymous
+      .get("/v2/public/facilities")
+      .query({ slug: context.slug })
+      .expect(200);
+    expect(catalog.body[0]).toMatchObject({
+      id: court.id,
+      resources: [
+        {
+          id: court.id,
+          name: court.name,
+          parentId: null,
+          active: true,
+          position: 0,
+        },
+      ],
+    });
     await anonymous.get("/v2/citizen/bookings").expect(401);
     await anonymous.get("/v2/manager/insights").expect(401);
     await anonymous
@@ -87,11 +96,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       }),
     ]);
     expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("booked");
+    expect(await slotStatus(context, court.id, begins)).toBe("booked");
     const noticeCount = await harness.db.query(
       "SELECT count(*)::int AS count FROM notifications WHERE tenant_id=$1",
       [context.id],
@@ -119,11 +124,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await patch(context.citizen, `citizen/bookings/${id}`, {
       start: later,
     }).expect(204);
-    expect(
-      (await availability(context, court.id, begins)).body.find(
-        (slot: { start: string }) => slot.start === begins,
-      ).status,
-    ).toBe("available");
+    expect(await slotStatus(context, court.id, begins)).toBe("available");
     await patch(context.citizen, `citizen/bookings/${id}`, {
       status: "cancelled",
     }).expect(204);
@@ -139,6 +140,8 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       status: "cancelled",
       start: later,
       facilityName: court.name,
+      resourceId: court.id,
+      resourceName: court.name,
     });
     const notices = await context.citizen
       .get("/v2/citizen/notifications")
@@ -146,11 +149,11 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     expect(
       notices.body.map((item: { kind: string }) => item.kind).sort(),
     ).toEqual(["cancelled", "confirmed", "rescheduled"]);
-    expect(
-      (await availability(context, court.id, later)).body.find(
-        (slot: { start: string }) => slot.start === later,
-      ).status,
-    ).toBe("available");
+    expect(notices.body[0]).toMatchObject({
+      resourceId: court.id,
+      resourceName: court.name,
+    });
+    expect(await slotStatus(context, court.id, later)).toBe("available");
   });
   it("should conceal other municipalities and people when an authenticated user supplies their resource IDs", async () => {
     const a = await tenant();
@@ -263,7 +266,17 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
     await patch(context.manager, `manager/facilities/${court.id}`, {
       status: "maintenance",
     }).expect(204);
-    expect((await availability(context, court.id, start())).body).toEqual([]);
+    expect(
+      (await availability(context, court.id, start())).body.resources,
+    ).toEqual([
+      {
+        id: court.id,
+        name: court.name,
+        parentId: null,
+        active: true,
+        slots: [],
+      },
+    ]);
   });
   it("should honour a closure exception when a calendar removes a recurring opening", async () => {
     const context = await tenant();
@@ -277,7 +290,9 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       `EXDATE;TZID=Europe/Madrid:${stamp}T090000\r\nEND:VEVENT`,
     );
     const court = await facility(context, calendar);
-    expect((await availability(context, court.id, start())).body).toEqual([]);
+    expect(
+      (await availability(context, court.id, start())).body.resources[0].slots,
+    ).toEqual([]);
     expect(
       (
         await post(context.citizen, "citizen/bookings", {
@@ -287,6 +302,88 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
         }).expect(422)
       ).body.code,
     ).toBe("outside_opening");
+  });
+  it("should keep a personal calendar feed in sync when a reservation is moved, cancelled and the link revoked", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const id = randomUUID();
+    const later = start(3, 11);
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(),
+    }).expect(201);
+    const anonymous = request(harness.app.getHttpServer());
+    const download = await context.citizen
+      .get(`/v2/citizen/bookings/${id}/calendar.ics`)
+      .expect(200)
+      .expect("Content-Type", /text\/calendar/);
+    expect(download.text).toContain(`UID:${id}@quenda`);
+    expect(download.text).toContain("SEQUENCE:0");
+    await anonymous.get(`/v2/citizen/bookings/${id}/calendar.ics`).expect(401);
+    await context.manager
+      .get(`/v2/citizen/bookings/${id}/calendar.ics`)
+      .expect(404);
+    expect(
+      (await context.citizen.get("/v2/citizen/calendar-feed").expect(200)).body,
+    ).toEqual({ active: false, createdAt: null });
+    const link = await post(context.citizen, "citizen/calendar-feed", {});
+    expect(link.status).toBe(201);
+    const feedPath = link.body.path as string;
+    expect(feedPath).toMatch(
+      /^\/v2\/public\/calendar-feeds\/[0-9a-f]{64}\.ics$/,
+    );
+    await patch(context.citizen, `citizen/bookings/${id}`, {
+      start: later,
+    }).expect(204);
+    const moved = await anonymous.get(feedPath).expect(200);
+    const dtstart = later.replaceAll(/[-:]/g, "").replace(/\.\d+/, "");
+    expect(moved.text).toContain(`UID:${id}@quenda`);
+    expect(moved.text).toContain("SEQUENCE:1");
+    expect(moved.text).toContain(`DTSTART:${dtstart}`);
+    expect(moved.text).toContain(`SUMMARY:${court.name}`);
+    expect(moved.text).not.toContain("citizen");
+    await patch(context.citizen, `citizen/bookings/${id}`, {
+      status: "cancelled",
+    }).expect(204);
+    const cancelled = await anonymous.get(feedPath).expect(200);
+    expect(cancelled.text).toContain("SEQUENCE:2");
+    expect(cancelled.text).toContain("STATUS:CANCELLED");
+    const rotated = await post(context.citizen, "citizen/calendar-feed", {});
+    await anonymous.get(feedPath).expect(404);
+    await anonymous.get(rotated.body.path as string).expect(200);
+    await context.citizen
+      .delete("/v2/citizen/calendar-feed")
+      .set("X-Quenda-Request", "1")
+      .expect(204);
+    await anonymous.get(rotated.body.path as string).expect(404);
+    await anonymous
+      .get("/v2/public/calendar-feeds/not-a-token.ics")
+      .expect(400);
+  });
+  it("should update calendar revisions when the municipality cancels a reservation", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    const id = randomUUID();
+    await post(context.citizen, "citizen/bookings", {
+      id,
+      facilityId: court.id,
+      start: start(),
+    }).expect(201);
+    const feed = await post(
+      context.citizen,
+      "citizen/calendar-feed",
+      {},
+    ).expect(201);
+    await patch(context.manager, `manager/bookings/${id}`, {
+      status: "cancelled",
+      reason: "Maintenance",
+    }).expect(204);
+    const calendar = await request(harness.app.getHttpServer())
+      .get(feed.body.path as string)
+      .expect(200);
+    expect(calendar.text).toContain("SEQUENCE:1");
+    expect(calendar.text).toContain("STATUS:CANCELLED");
   });
   it("should revoke the session when the user signs out", async () => {
     const context = await tenant();

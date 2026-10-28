@@ -25,6 +25,11 @@ export abstract class RetentionRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<number>;
+  /** Removes OIDC sign-in attempts that were never completed. */
+  abstract purgeLoginAttempts(
+    tenantId: string,
+    now: Temporal.Instant,
+  ): Promise<number>;
   /** Removes outbox messages, sent or abandoned, created before the cutoff. */
   abstract deleteMessages(
     tenantId: string,

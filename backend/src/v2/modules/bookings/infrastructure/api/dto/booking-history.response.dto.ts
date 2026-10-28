@@ -5,6 +5,7 @@ import type { Booking, BookingOutcome } from "../../../domain/booking.entity";
 export class BookingHistoryResponseDTO {
   @ApiProperty({ description: "Booking UUID" }) id!: string;
   @ApiProperty({ description: "Facility UUID" }) facilityId!: string;
+  @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
   @ApiProperty({ description: "Start instant" }) start!: string;
   @ApiProperty({ description: "End instant" }) end!: string;
   @ApiProperty({
@@ -31,6 +32,8 @@ export class BookingHistoryResponseDTO {
   })
   cancellationReason!: string | null;
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
+  @ApiProperty({ description: "Court or space display name" })
+  resourceName!: string;
   @ApiProperty({ description: "Sport" }) sport!: string;
   static from(
     value: BookingReadModel & { outcome: BookingOutcome },
@@ -39,6 +42,7 @@ export class BookingHistoryResponseDTO {
     return {
       id: booking.id,
       facilityId: booking.facilityId,
+      resourceId: booking.resourceId,
       start: booking.start.toString(),
       end: booking.end.toString(),
       status: booking.status,
@@ -47,6 +51,7 @@ export class BookingHistoryResponseDTO {
       cancellationReason:
         booking.status === "cancelled" ? booking.cancellationReason : null,
       facilityName: value.facilityName,
+      resourceName: value.resourceName,
       sport: value.sport,
     };
   }

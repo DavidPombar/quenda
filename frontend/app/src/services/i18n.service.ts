@@ -55,10 +55,6 @@ const gl = {
   signIn: "Entrar",
   signOut: "Saír",
   demo: "Versión de demostración con datos ficticios.",
-  demoTitle: "Coñece Quenda por dentro",
-  demoBody:
-    "Entra cunha conta de proba de cidadanía. Os datos desta demostración son ficticios.",
-  citizen: "Entrar como cidadanía",
   manager: "Entrar como xestor/a",
   municipality: "Concello",
   language: "Idioma",
@@ -85,6 +81,21 @@ const gl = {
   showAllNotices: "Ver todos os avisos",
   showFewerNotices: "Ver só os últimos",
   showMoreBookings: "Ver máis reservas",
+  addToCalendar: "Engadir ao calendario",
+  calendarFeedTitle: "Calendario persoal",
+  calendarFeedBody:
+    "Subscríbete ás túas reservas desde o calendario do móbil ou do ordenador. Os cambios e as cancelacións actualízanse sós.",
+  calendarFeedCreate: "Crear ligazón de subscrición",
+  calendarFeedOnce:
+    "Garda agora esta ligazón: por seguridade só a amosamos unha vez. Quen a teña pode ver as túas reservas.",
+  calendarFeedUrl: "Ligazón de subscrición",
+  calendarFeedCopy: "Copiar ligazón",
+  calendarFeedCopied: "Ligazón copiada.",
+  calendarFeedOpen: "Abrir na app de calendario",
+  calendarFeedActive: "Tes unha ligazón activa desde o",
+  calendarFeedRotate: "Xerar unha ligazón nova",
+  calendarFeedRotateNote: "A ligazón anterior deixará de funcionar.",
+  calendarFeedRevoke: "Revogar ligazón",
   noticeConfirmed: "Reserva confirmada",
   noticeCancelled: "Reserva cancelada",
   noticeRescheduled: "Horario actualizado",
@@ -168,6 +179,11 @@ const gl = {
     "Comproba a dispoñibilidade na ficha da instalación despois de gardar.",
   chooseDate: "Selecciona unha data dentro do prazo permitido.",
   slotFree: "Libre",
+  resource: "Pista",
+  allResources: "Todas as pistas",
+  resourceOutOfService: "Fóra de servizo",
+  slotWithResource: "{time}, {resource}, {status}",
+  resourceGridCaption: "Quendas de todas as pistas",
   showPast: "Mostrar quendas pasadas",
   hidePast: "Ocultar quendas pasadas",
   noSlotsLeft: "Hoxe xa non quedan quendas libres. Proba con outro día.",
@@ -179,6 +195,22 @@ const gl = {
   facilityStatus: "Estado da instalación",
   timetable: "Quendas do día",
   account: "A miña conta",
+  openData: "Datos abertos",
+  openDataSubtitle:
+    "Descarga e reutiliza a información das instalacións deportivas en formatos abertos.",
+  openDataLicense: "Licenza",
+  openDataLicenseBody:
+    "Podes copiar, adaptar e redistribuír estes datos, tamén con fins comerciais, segundo a licenza:",
+  openDataFacilities: "Instalacións deportivas",
+  openDataFacilitiesBody:
+    "Nome, deporte, tipo de espazo segundo o Censo Nacional de Instalacións Deportivas (CNID), enderezo, coordenadas, accesibilidade, estado, prezo indicativo e número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe os conxuntos de datos para que os portais datos.gob.es e abertos.xunta.gal poidan recollelos automaticamente.",
+  openDataPrivacy:
+    "Non se publican datos persoais: nin persoas, nin reservas individuais.",
+  openDataApi: "Documentación da API (OpenAPI)",
   accountTitle: "Conta e privacidade",
   accountSubtitle:
     "Consulta os teus datos, descárgaos nun ficheiro ou elimina a túa conta.",
@@ -247,6 +279,22 @@ const gl = {
   a11yEnforcementTitle: "Procedemento de aplicación",
   a11yEnforcement:
     "Se a túa solicitude de información accesible ou a túa queixa é desestimada, non estás de acordo coa decisión ou a resposta non cumpre o artigo 12.5 do RD 1112/2018, podes presentar unha reclamación ante a unidade responsable, conforme ao artigo 13.",
+  signInTitle: "Entra en Quenda",
+  signInBody: "Identifícate para reservar e xestionar as túas quendas.",
+  signInWithEid: "Entrar con {provider}",
+  signInEidHint: "Irás á páxina de identificación e volverás aquí ao rematar.",
+  signInDemo: "Entrar como cidadanía",
+  signInDemoHint: "Conta de proba con datos ficticios.",
+  signInUnavailable:
+    "Agora mesmo non hai ningunha forma de entrar dispoñible. Volve tentalo máis tarde ou contacta co concello.",
+  authErrorConsent: "Para entrar tes que aceptar o aviso de privacidade.",
+  authErrorExpired:
+    "A identificación tardou demasiado e caducou. Volve tentalo.",
+  authErrorRejected: "Non puidemos verificar a túa identidade. Volve tentalo.",
+  authErrorUnavailable:
+    "O servizo de identificación non está dispoñible agora mesmo. Proba máis tarde.",
+  authErrorGeneric: "Non puidemos completar a entrada. Volve tentalo.",
+  dismiss: "Pechar aviso",
   noticeReminder: "Lembranza da reserva",
   noticesTitle: "Avisos por correo",
   noticesEmail: "Enderezo de correo",
@@ -335,10 +383,6 @@ const es: Record<TextKey, string> = {
   done: "Ver mis reservas",
   signOut: "Salir",
   demo: "Versión de demostración con datos ficticios.",
-  demoTitle: "Conoce Quenda por dentro",
-  demoBody:
-    "Entra con una cuenta de prueba de ciudadanía. Los datos de esta demostración son ficticios.",
-  citizen: "Entrar como ciudadanía",
   manager: "Entrar como gestor/a",
   municipality: "Municipio",
   skip: "Saltar al contenido",
@@ -359,6 +403,21 @@ const es: Record<TextKey, string> = {
   showAllNotices: "Ver todos los avisos",
   showFewerNotices: "Ver solo los últimos",
   showMoreBookings: "Ver más reservas",
+  addToCalendar: "Añadir al calendario",
+  calendarFeedTitle: "Calendario personal",
+  calendarFeedBody:
+    "Suscríbete a tus reservas desde el calendario del móvil o del ordenador. Los cambios y las cancelaciones se actualizan solos.",
+  calendarFeedCreate: "Crear enlace de suscripción",
+  calendarFeedOnce:
+    "Guarda ahora este enlace: por seguridad solo lo mostramos una vez. Quien lo tenga puede ver tus reservas.",
+  calendarFeedUrl: "Enlace de suscripción",
+  calendarFeedCopy: "Copiar enlace",
+  calendarFeedCopied: "Enlace copiado.",
+  calendarFeedOpen: "Abrir en la app de calendario",
+  calendarFeedActive: "Tienes un enlace activo desde el",
+  calendarFeedRotate: "Generar un enlace nuevo",
+  calendarFeedRotateNote: "El enlace anterior dejará de funcionar.",
+  calendarFeedRevoke: "Revocar enlace",
   noticeRescheduled: "Horario actualizado",
   deadline: "Puedes cambiar o cancelar hasta",
   hoursBefore: "horas antes.",
@@ -427,6 +486,11 @@ const es: Record<TextKey, string> = {
     "Comprueba la disponibilidad en la ficha de la instalación después de guardar.",
   chooseDate: "Selecciona una fecha dentro del plazo permitido.",
   slotFree: "Libre",
+  resource: "Pista",
+  allResources: "Todas las pistas",
+  resourceOutOfService: "Fuera de servicio",
+  slotWithResource: "{time}, {resource}, {status}",
+  resourceGridCaption: "Turnos de todas las pistas",
   showPast: "Mostrar turnos pasados",
   hidePast: "Ocultar turnos pasados",
   noSlotsLeft: "Hoy ya no quedan turnos libres. Prueba con otro día.",
@@ -438,6 +502,22 @@ const es: Record<TextKey, string> = {
   facilityStatus: "Estado de la instalación",
   timetable: "Turnos del día",
   account: "Mi cuenta",
+  openData: "Datos abiertos",
+  openDataSubtitle:
+    "Descarga y reutiliza la información de las instalaciones deportivas en formatos abiertos.",
+  openDataLicense: "Licencia",
+  openDataLicenseBody:
+    "Puedes copiar, adaptar y redistribuir estos datos, también con fines comerciales, según la licencia:",
+  openDataFacilities: "Instalaciones deportivas",
+  openDataFacilitiesBody:
+    "Nombre, deporte, tipo de espacio según el Censo Nacional de Instalaciones Deportivas (CNID), dirección, coordenadas, accesibilidad, estado, precio indicativo y número de pistas.",
+  openDataSchema: "Esquema",
+  openDataCatalog: "Catálogo DCAT",
+  openDataCatalogBody:
+    "Describe los conjuntos de datos para que los portales datos.gob.es y abertos.xunta.gal puedan recogerlos automáticamente.",
+  openDataPrivacy:
+    "No se publican datos personales: ni personas, ni reservas individuales.",
+  openDataApi: "Documentación de la API (OpenAPI)",
   accountTitle: "Cuenta y privacidad",
   accountSubtitle:
     "Consulta tus datos, descárgalos en un archivo o elimina tu cuenta.",
@@ -506,6 +586,23 @@ const es: Record<TextKey, string> = {
   a11yEnforcementTitle: "Procedimiento de aplicación",
   a11yEnforcement:
     "Si tu solicitud de información accesible o tu queja es desestimada, no estás de acuerdo con la decisión o la respuesta no cumple el artículo 12.5 del RD 1112/2018, puedes presentar una reclamación ante la unidad responsable, conforme al artículo 13.",
+  signInTitle: "Entra en Quenda",
+  signInBody: "Identifícate para reservar y gestionar tus turnos.",
+  signInWithEid: "Entrar con {provider}",
+  signInEidHint:
+    "Irás a la página de identificación y volverás aquí al terminar.",
+  signInDemo: "Entrar como ciudadanía",
+  signInDemoHint: "Cuenta de prueba con datos ficticios.",
+  signInUnavailable:
+    "Ahora mismo no hay ninguna forma de entrar disponible. Vuelve a intentarlo más tarde o contacta con el municipio.",
+  authErrorConsent: "Para entrar debes aceptar el aviso de privacidad.",
+  authErrorExpired:
+    "La identificación tardó demasiado y caducó. Vuelve a intentarlo.",
+  authErrorRejected: "No pudimos verificar tu identidad. Vuelve a intentarlo.",
+  authErrorUnavailable:
+    "El servicio de identificación no está disponible ahora mismo. Prueba más tarde.",
+  authErrorGeneric: "No pudimos completar el acceso. Vuelve a intentarlo.",
+  dismiss: "Cerrar aviso",
   noticeReminder: "Recordatorio de la reserva",
   noticesTitle: "Avisos por correo",
   noticesEmail: "Dirección de correo",

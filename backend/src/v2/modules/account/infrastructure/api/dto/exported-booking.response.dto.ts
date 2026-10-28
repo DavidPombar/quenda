@@ -5,6 +5,9 @@ export class ExportedBookingResponseDTO {
   @ApiProperty({ description: "Booking UUID" }) id!: string;
   @ApiProperty({ description: "Facility UUID" }) facilityId!: string;
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
+  @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
+  @ApiProperty({ description: "Court or space display name" })
+  resourceName!: string;
   @ApiProperty({ description: "Sport" }) sport!: string;
   @ApiProperty({ description: "Start instant" }) start!: string;
   @ApiProperty({ description: "End instant" }) end!: string;
@@ -33,6 +36,8 @@ export class ExportedBookingResponseDTO {
       id: value.id,
       facilityId: value.facilityId,
       facilityName: value.facilityName,
+      resourceId: value.resourceId,
+      resourceName: value.resourceName,
       sport: value.sport,
       start: value.start.toString(),
       end: value.end.toString(),

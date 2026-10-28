@@ -31,6 +31,8 @@ export interface Municipality {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** SPDX identifier of the licence of the municipality's open data. */
+  dataLicense: "CC-BY-4.0" | "CC-BY-SA-4.0" | "CC0-1.0" | "ODbL-1.0";
 }
 export interface Session {
   userId: string;
@@ -51,16 +53,37 @@ export interface Facility {
   priceCents: number;
   openingCalendar: string;
   rules: string;
+  resources: Resource[];
+}
+/** A bookable court or space; parts point to their composite through parentId. */
+export interface Resource {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  position: number;
 }
 export interface Slot {
   start: string;
   end: string;
   status: "available" | "booked" | "past";
 }
+export interface ResourceAvailability {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  slots: Slot[];
+}
+export interface Availability {
+  resources: ResourceAvailability[];
+}
 export interface Booking {
   id: string;
   facilityId: string;
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   sport: Sport;
   start: string;
   end: string;
@@ -93,11 +116,21 @@ export interface Notification {
     | "unblocked"
     | "reminder";
   facilityName: string;
+  resourceId: string;
+  resourceName: string;
   createdAt: string;
   details: {
     reason?: string;
     standing?: Omit<PenaltyStanding, "enabled">;
   } | null;
+}
+export interface CalendarFeed {
+  active: boolean;
+  createdAt: string | null;
+}
+export interface CalendarFeedLink {
+  path: string;
+  createdAt: string;
 }
 export interface Insights {
   total: number;
@@ -141,6 +174,8 @@ export interface AccountExport {
     id: string;
     facilityId: string;
     facilityName: string;
+    resourceId: string;
+    resourceName: string;
     sport: Sport;
     start: string;
     end: string;
@@ -165,4 +200,9 @@ export interface AccountExport {
     occurredAt: string;
     details: Record<string, unknown> | null;
   }[];
+}
+export interface AuthMethods {
+  demo: boolean;
+  oidc: { label: string } | null;
+  email: boolean;
 }

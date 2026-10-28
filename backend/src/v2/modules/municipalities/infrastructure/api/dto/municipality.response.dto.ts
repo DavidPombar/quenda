@@ -3,6 +3,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   AccessibilityMethod,
   AccessibilitySettings,
+  DataLicense,
+  dataLicenses,
   MunicipalityLocale,
   MunicipalitySettings,
 } from "../../../../../shared/application/municipality-settings";
@@ -104,6 +106,17 @@ export class MunicipalityResponseDTO {
     description: "Accessibility statement data (RD 1112/2018)",
   })
   accessibility!: AccessibilityResponseDTO;
+  @ApiProperty({
+    description: "SPDX licence identifier of the municipality's open data",
+    enum: dataLicenses,
+  })
+  dataLicense!: DataLicense;
+  @ApiProperty({
+    description: "DIR3 code of the council, used as open data publisher",
+    type: String,
+    nullable: true,
+  })
+  dir3Code!: string | null;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -127,6 +140,8 @@ export class MunicipalityResponseDTO {
       noShowWindowDays: value.noShowWindowDays,
       noShowBlockDays: value.noShowBlockDays,
       accessibility: AccessibilityResponseDTO.from(value.accessibility),
+      dataLicense: value.dataLicense,
+      dir3Code: value.dir3Code,
     };
   }
 }

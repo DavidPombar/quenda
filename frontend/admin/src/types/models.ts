@@ -77,6 +77,9 @@ export interface Facility {
   openingCalendar: string;
   rules: string;
   followsMunicipalHolidays: boolean;
+  /** WGS 84 position, published as open data; both set or both null. */
+  latitude: number | null;
+  longitude: number | null;
 }
 export interface Slot {
   start: string;
@@ -136,4 +139,11 @@ export interface AuditFilters {
   to?: string;
   action?: string;
   limit?: number;
+}
+/** Only the fields the backoffice reads; the full format is documented in docs/architecture. */
+export interface MunicipalityExport {
+  format: "quenda-municipality-export";
+  version: number;
+  exportedAt: string;
+  municipality: { slug: string };
 }
