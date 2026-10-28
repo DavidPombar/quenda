@@ -149,6 +149,10 @@ export class PostgresAccountRepository extends AccountRepository {
     }));
   }
   async revokeSessions(tenantId: string, userId: string) {
+    await this.db.query(
+      "DELETE FROM calendar_feeds WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
     const { rowCount } = await this.db.query(
       "DELETE FROM sessions WHERE tenant_id=$1 AND user_id=$2",
       [tenantId, userId],

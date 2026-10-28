@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
 import { useGetInsightsQuery } from "@/queries/insights/get-insights.query";
+import { useExportMunicipalityMutation } from "@/queries/portability/export-municipality.mutation";
+import { saveJsonFile } from "@/services/download.service";
 import type { AppContext } from "@/types/app-context";
 import { periodLabel, money } from "@/services/date.service";
 import type { Facility } from "@/types/models";
@@ -15,6 +17,16 @@ export function useManagementController() {
   );
   const [editing, setEditing] = useState<Facility | "new" | null>(null);
   const [saved, setSaved] = useState(false);
+  const exporting = useExportMunicipalityMutation();
+  function exportData() {
+    exporting.mutate(undefined, {
+      onSuccess: (data) =>
+        saveJsonFile(
+          `quenda-${data.municipality.slug}-${data.exportedAt.slice(0, 10)}.json`,
+          data,
+        ),
+    });
+  }
   function close(saved = false) {
     setEditing(null);
     setSaved(saved);
@@ -44,5 +56,7 @@ export function useManagementController() {
     setEditing,
     saved,
     close,
+    exporting,
+    exportData,
   };
 }

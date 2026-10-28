@@ -10,6 +10,28 @@ ICAL.js parses and expands the recurrence set. The adapter maps wall-clock field
 
 Only complete slots fit inside an opening. Overnight openings can contribute to the following local date. Reservation starts must align to the opening's slot grid and fit wholly inside it. The server checks this again inside the reservation transaction. Past instants, dates beyond the municipality's horizon, unavailable facility states, conflicting reservations and person-level quota violations are rejected.
 
-A manager cannot change the calendar, slot duration or facility state while confirmed future reservations exist (409 `calendar_in_use`). Other metadata remains editable. This prevents silent invalidation; conflict resolution and bulk cancellation with notices can be a subsequent feature.
+A manager cannot change the calendar or slot duration while confirmed future reservations exist (409 `calendar_in_use`). Closing a facility or putting it into maintenance requires an explicit reason; affected reservations are cancelled with notices and audit events. Other metadata remains editable.
 
 References: [RFC 5545](https://www.rfc-editor.org/rfc/rfc5545), [ICAL.js event API](https://kewisch.github.io/ical.js/api/ICAL.Event.html), [Temporal polyfill](https://github.com/js-temporal/temporal-polyfill).
+
+## Personal calendars (optional "calendarios persoais", T3)
+
+Bookings are also published as RFC 5545, in the opposite direction: from Quenda to the
+person's calendar app.
+
+- `GET /v2/citizen/bookings/:id/calendar.ics` downloads one reservation with the session cookie.
+- `POST /v2/citizen/calendar-feed` issues a subscription link and returns its secret path once;
+  issuing again replaces the previous link. `DELETE` revokes it and `GET` reports only whether a
+  link exists. Only a SHA-256 hash of the 256-bit token is stored (`calendar_feeds`).
+- `GET /v2/public/calendar-feeds/:token.ics` needs no cookie, because calendar clients cannot send
+  one. It lists the person's bookings that ended less than 30 days ago or are still to come.
+- Each booking is one `VEVENT` with `UID:<booking-id>@quenda`. `bookings.sequence` increments on
+  every reschedule, status change or cancellation through a database trigger and is published as `SEQUENCE`; cancellations stay in the feed
+  with `STATUS:CANCELLED`, so subscribed clients update the event instead of duplicating it.
+- Times are UTC instants, so no `VTIMEZONE` is needed. The feed carries the facility name and
+  address and the municipality name, without the person's name or contact information.
+- No-shows are published as cancelled events. Municipal cancellations and account
+  deletion use the same revision mechanism as citizen changes (C3, M3, T3).
+- Deleting an account revokes its subscription in the same transaction (T4).
+  Treat the secret link as a credential: its holder can read that person's booking
+  activity. It is excluded from municipal exports and must be recreated after a move.

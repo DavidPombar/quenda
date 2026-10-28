@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DavidPombar/quenda/docs/architecture/export-format.schema.json",
+  "title": "Quenda municipality export, version 1",
+  "description": "Complete, open data package of one municipality.",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "exportedAt",
+    "municipality",
+    "facilities",
+    "users",
+    "bookings",
+    "notifications",
+    "auditEvents"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 instant in UTC"
+    }
+  },
+  "properties": {
+    "format": { "const": "quenda-municipality-export" },
+    "version": { "const": 1 },
+    "exportedAt": { "$ref": "#/$defs/instant" },
+    "municipality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "timezone",
+        "locale",
+        "advanceDays",
+        "cancellationHours",
+        "maxActiveBookings",
+        "contact",
+        "legalText"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "slug": { "type": "string" },
+        "name": { "type": "string" },
+        "timezone": { "type": "string", "description": "IANA time zone" },
+        "locale": { "enum": ["gl", "es"] },
+        "advanceDays": { "type": "integer", "minimum": 1, "maximum": 90 },
+        "cancellationHours": { "type": "integer", "minimum": 0 },
+        "maxActiveBookings": { "type": "integer", "minimum": 1 },
+        "contact": { "type": "string" },
+        "legalText": { "type": "string" }
+      }
+    },
+    "facilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "sport",
+          "address",
+          "description",
+          "accessible",
+          "status",
+          "slotMinutes",
+          "priceCents",
+          "openingCalendar",
+          "rules"
+        ],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "name": { "type": "string" },
+          "sport": { "type": "string" },
+          "address": { "type": "string" },
+          "description": { "type": "string" },
+          "accessible": { "type": "boolean" },
+          "status": { "enum": ["active", "maintenance", "closed"] },
+          "slotMinutes": { "enum": [30, 60, 90, 120] },
+          "priceCents": { "type": "integer", "minimum": 0 },
+          "openingCalendar": {
+            "type": "string",
+            "description": "RFC 5545 VCALENDAR text, verbatim"
+          },
+          "rules": { "type": "string" }
+        }
+      }
+    },
+    "users": {
+      "type": "array",
+      "description": "Minimum account data. Sessions and credentials are never exported.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "displayName", "role"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "displayName": { "type": "string" },
+          "role": { "enum": ["citizen", "manager"] }
+        }
+      }
+    },
+    "bookings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "userId",
+          "facilityId",
+          "start",
+          "end",
+          "status",
+          "createdAt",
+          "cancelledAt"
+        ],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "userId": { "$ref": "#/$defs/uuid" },
+          "facilityId": { "$ref": "#/$defs/uuid" },
+          "start": { "$ref": "#/$defs/instant" },
+          "end": { "$ref": "#/$defs/instant" },
+          "status": { "enum": ["confirmed", "cancelled"] },
+          "createdAt": { "$ref": "#/$defs/instant" },
+          "cancelledAt": {
+            "oneOf": [{ "$ref": "#/$defs/instant" }, { "type": "null" }]
+          }
+        }
+      }
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "userId", "bookingId", "kind", "createdAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "userId": { "$ref": "#/$defs/uuid" },
+          "bookingId": { "$ref": "#/$defs/uuid" },
+          "kind": { "enum": ["confirmed", "rescheduled", "cancelled"] },
+          "createdAt": { "$ref": "#/$defs/instant" }
+        }
+      }
+    },
+    "auditEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "actorId", "action", "resourceId", "occurredAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "actorId": { "$ref": "#/$defs/uuid" },
+          "action": { "type": "string" },
+          "resourceId": { "$ref": "#/$defs/uuid" },
+          "occurredAt": { "$ref": "#/$defs/instant" }
+        }
+      }
+    }
+  }
+}
