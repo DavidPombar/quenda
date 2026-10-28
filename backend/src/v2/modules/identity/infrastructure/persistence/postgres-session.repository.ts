@@ -20,6 +20,7 @@ function principal(user: Omit<Principal, "grants">): Principal {
             "audit:view",
             "municipality:manage",
             "bookings:manage",
+            "data:export",
           ]
         : ["bookings:own", "account:own"],
   };
@@ -75,5 +76,12 @@ export class PostgresSessionRepository extends SessionRepository {
     await this.db.query("DELETE FROM sessions WHERE token_hash=$1", [
       hash(token),
     ]);
+  }
+  async removeExpired(now: Temporal.Instant) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM sessions WHERE expires_at<=$1",
+      [now.toString()],
+    );
+    return rowCount ?? 0;
   }
 }

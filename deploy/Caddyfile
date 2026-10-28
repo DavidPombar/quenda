@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Example TLS front proxy for a production instance (Caddy, Apache-2.0).
+# Caddy obtains and renews certificates automatically (ACME, e.g. Let's Encrypt)
+# and forwards to the `web` container, which serves the SPAs and proxies the API.
+#
+#   QUENDA_DOMAIN=reservas.concello.example caddy run --config deploy/Caddyfile
+#
+# Ports 80 and 443 must reach this host. Publish the `web` container only on
+# loopback (127.0.0.1:8080, as compose.demo.yml does): Caddy replaces any
+# client-supplied X-Forwarded-For, which the API uses for per-client rate limits.
+{$QUENDA_DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:8080
+}

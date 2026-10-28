@@ -1,0 +1,108 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# publiccode.yml — https://yml.publiccode.tools
+publiccodeYmlVersion: "0"
+
+name: Quenda
+url: "https://github.com/DavidPombar/quenda"
+# TODO(#19): set landingURL once the public demo exists (#29).
+# TODO(#19): add softwareVersion and releaseDate with the first tagged release.
+# TODO(#19): add logo (SVG) when the visual identity is approved.
+
+platforms:
+  - web
+
+categories:
+  - appointment-scheduling
+  - facility-management
+
+developmentStatus: development
+softwareType: "standalone/web"
+
+# TODO(#19): list the administrations that use Quenda when a pilot is signed.
+# usedBy:
+#   - Concello de ...
+
+intendedAudience:
+  countries:
+    - ES
+  scope:
+    - sport
+    - local-authorities
+
+description:
+  gl:
+    localisedName: Quenda
+    shortDescription: >-
+      Plataforma libre e multimunicipio para consultar e reservar instalacións
+      deportivas municipais e xestionalas desde o concello.
+    longDescription: >-
+      Quenda permite á cidadanía consultar as instalacións deportivas dun
+      concello, ver a dispoñibilidade real e reservar, modificar ou cancelar
+      en liña, con historial e avisos. O persoal municipal dá de alta e mantén
+      as instalacións, os seus horarios de apertura en formato iCalendar
+      (RFC 5545) e as normas de uso, e consulta indicadores básicos de
+      ocupación e cancelacións. Unha soa instalación serve a varios concellos
+      con datos illados por municipio, pensada para concellos pequenos e
+      deputacións. Usa estándares abertos (OpenAPI, iCalendar, PostgreSQL),
+      despregase con contedores sen depender de ningún provedor e está en
+      galego e castelán.
+    features:
+      - Catálogo público de instalacións con dispoñibilidade real (C1)
+      - Reserva en liña con control de solapamentos e cupos (C2)
+      - Modificación e cancelación segundo as normas do concello (C3)
+      - Historial de reservas e avisos (C4)
+      - Alta e mantemento de instalacións e estados (M1)
+      - Horarios iCalendar e normas de uso (M2)
+      - Indicadores básicos de ocupación e cancelacións (M3)
+      - Despregamento reproducible con contedores e migracións (R1)
+      - Configuración por municipio sen tocar código (R2)
+      - Multimunicipio con illamento de datos (R3)
+  es:
+    localisedName: Quenda
+    shortDescription: >-
+      Plataforma libre y multimunicipio para consultar y reservar instalaciones
+      deportivas municipales y gestionarlas desde el ayuntamiento.
+    longDescription: >-
+      Quenda permite a la ciudadanía consultar las instalaciones deportivas de
+      un ayuntamiento, ver la disponibilidad real y reservar, modificar o
+      cancelar en línea, con historial y avisos. El personal municipal da de
+      alta y mantiene las instalaciones, sus horarios de apertura en formato
+      iCalendar (RFC 5545) y las normas de uso, y consulta indicadores básicos
+      de ocupación y cancelaciones. Una sola instalación sirve a varios
+      municipios con datos aislados por municipio, pensada para ayuntamientos
+      pequeños y diputaciones. Usa estándares abiertos (OpenAPI, iCalendar,
+      PostgreSQL), se despliega con contenedores sin depender de ningún
+      proveedor y está en gallego y castellano.
+    features:
+      - Catálogo público de instalaciones con disponibilidad real (C1)
+      - Reserva en línea con control de solapes y cupos (C2)
+      - Modificación y cancelación según las normas del ayuntamiento (C3)
+      - Historial de reservas y avisos (C4)
+      - Alta y mantenimiento de instalaciones y estados (M1)
+      - Horarios iCalendar y normas de uso (M2)
+      - Indicadores básicos de ocupación y cancelaciones (M3)
+      - Despliegue reproducible con contenedores y migraciones (R1)
+      - Configuración por municipio sin tocar código (R2)
+      - Multimunicipio con aislamiento de datos (R3)
+
+legal:
+  license: AGPL-3.0-or-later
+  # TODO(#19): confirm the legal entity that owns the copyright (bases, punto 8).
+  # mainCopyrightOwner: ...
+
+maintenance:
+  # TODO(#19): switch to "internal" or "contract" and add contacts/contractors
+  # once the maintaining entity and support model are decided.
+  type: none
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - gl
+    - es
+
+dependsOn:
+  open:
+    - name: PostgreSQL
+      versionMin: "17"
+      optional: false
