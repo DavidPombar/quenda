@@ -7,6 +7,7 @@ export const ROUTES = {
   shell: "/:slug",
   management: "xestion",
   audit: "auditoria",
+  insights: "indicadores",
   accessibility: "accesibilidade",
   settings: "axustes",
   categories: "categorias",

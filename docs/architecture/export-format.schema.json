@@ -745,6 +745,31 @@
         ],
         "additionalProperties": false
       }
+    },
+    "facilityStatusPeriods": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "enum": ["active", "maintenance", "closed"]
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        },
+        "required": ["facilityId", "status", "start", "end"],
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false

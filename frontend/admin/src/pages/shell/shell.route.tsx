@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { Shell } from "./shell.view";
 import { managementRoute } from "./components/management/management.route";
 import { auditRoute } from "./components/audit/audit.route";
+import { insightsRoute } from "./components/insights/insights.route";
 import { accessibilityRoute } from "./components/accessibility/accessibility.route";
 import { settingsRoute } from "./components/settings/settings.route";
 import { categoriesRoute } from "./components/categories/categories.route";
@@ -16,6 +17,7 @@ export const shellRoute = {
     managementRoute,
     bookingsRoute,
     auditRoute,
+    insightsRoute,
     categoriesRoute,
     accessibilityRoute,
     settingsRoute,

@@ -129,6 +129,13 @@ export class SaveFacility {
         () => Result.ok({ ...facility, resources: [] }),
         (error) => Result.err(error),
       );
+    if (!existing || existing.status !== facility.status)
+      await this.facilities.recordStatus(
+        facility.tenantId,
+        facility.id,
+        facility.status,
+        now,
+      );
     // A new facility is bookable at once through its default resource (same id and name).
     if (!existing)
       await this.resources.add({

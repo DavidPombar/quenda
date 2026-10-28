@@ -35,6 +35,12 @@ export interface MunicipalitySnapshot {
     dataLicense: string;
     dir3Code: string | null;
   };
+  facilityStatusPeriods: {
+    facilityId: string;
+    status: string;
+    start: Temporal.Instant;
+    end: Temporal.Instant | null;
+  }[];
   facilityPrices: {
     facilityId: string;
     category: string;

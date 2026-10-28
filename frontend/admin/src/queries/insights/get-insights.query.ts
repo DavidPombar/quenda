@@ -4,7 +4,7 @@ import { insightsRepository } from "@/repositories/insights.repository";
 export function useGetInsightsQuery(userId: string | undefined) {
   return useQuery({
     queryKey: ["insights", userId],
-    queryFn: insightsRepository.get,
+    queryFn: () => insightsRepository.get(),
     enabled: !!userId,
   });
 }

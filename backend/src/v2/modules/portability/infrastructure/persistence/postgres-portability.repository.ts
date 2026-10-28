@@ -36,6 +36,7 @@ coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'kind', r.kind,
 coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bookingId', r.booking_id, 'kind', r.kind, 'channel', r.channel, 'dedupeKey', r.dedupe_key, 'createdAt', r.created_at, 'availableAt', r.available_at, 'attempts', r.attempts, 'lockedUntil', r.locked_until, 'sentAt', r.sent_at, 'lastError', r.last_error) ORDER BY r.id, r.user_id, r.kind, r.channel) FROM outbox r WHERE r.tenant_id=m.id), '[]') AS "messages"
 ,coalesce((SELECT json_agg(json_build_object('facilityId', r.facility_id, 'category', r.category, 'priceCents', r.price_cents) ORDER BY r.facility_id, r.category) FROM facility_prices r WHERE r.tenant_id=m.id), '[]') AS "facilityPrices"
 ,coalesce((SELECT json_agg(json_build_object('userId', r.user_id, 'category', r.category, 'status', r.status, 'requestedAt', r.requested_at, 'decidedAt', r.decided_at) ORDER BY r.user_id, r.category) FROM user_categories r WHERE r.tenant_id=m.id), '[]') AS "userCategories"
+,coalesce((SELECT json_agg(json_build_object('facilityId', r.facility_id, 'status', r.status, 'start', r.starts_at, 'end', r.ends_at) ORDER BY r.facility_id, r.starts_at) FROM facility_status_periods r WHERE r.tenant_id=m.id), '[]') AS "facilityStatusPeriods"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -48,6 +49,11 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
     return {
       municipality: row.municipality,
       facilities: row.facilities,
+      facilityStatusPeriods: row.facilityStatusPeriods.map((value) => ({
+        ...value,
+        start: Temporal.Instant.from(value.start),
+        end: value.end === null ? null : Temporal.Instant.from(value.end),
+      })),
       facilityPrices: row.facilityPrices,
       userCategories: row.userCategories.map((value) => ({
         ...value,

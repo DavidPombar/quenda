@@ -150,6 +150,11 @@ export async function seed(url = databaseUrl) {
             "Trae calzado deportivo. Respecta a quenda e deixa o espazo como che gustaría atopalo.",
           ],
         );
+        // Demo facilities keep their seeded status since the calendar horizon.
+        await db.query(
+          "INSERT INTO facility_status_periods (tenant_id,facility_id,status,starts_at) VALUES ($1,$2,$3,'2000-01-01T00:00:00Z') ON CONFLICT DO NOTHING",
+          [tenant, id, status],
+        );
         // Fictitious positions in Galicia for the open data GeoJSON; a manager's values are kept.
         const [latitude, longitude] = i === 1 ? [42.61, -8.12] : [42.49, -8.86];
         await db.query(

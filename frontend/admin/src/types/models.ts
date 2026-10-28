@@ -154,16 +154,44 @@ export interface FacilityImpact {
   bookings: number;
   people: number;
 }
-export interface Insights {
-  total: number;
+export interface FacilityUsage {
+  id: string;
+  name: string;
+  sport: Sport;
+  bookings: number;
   confirmed: number;
   cancelled: number;
   noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  /** Booked over open time, rounded percent; null when never open. */
+  occupancy: number | null;
+}
+export interface HeatmapCell {
+  /** ISO weekday, 1 = Monday. */
+  weekday: number;
+  hour: number;
+  bookedMinutes: number;
+  openMinutes: number;
   occupancy: number;
-  facilities: number;
+}
+export interface DateRange {
   from: string;
   to: string;
-  byFacility: { id: string; name: string; bookings: number; noShows: number }[];
+}
+export interface Insights extends DateRange {
+  total: number;
+  confirmed: number;
+  cancelled: number;
+  /** Booked but not used; not counted as booked time. */
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
+  occupancy: number | null;
+  facilities: number;
+  byFacility: FacilityUsage[];
+  /** Only weekday × hour cells with open time. */
+  heatmap: HeatmapCell[];
 }
 export type AuditActorRole = "citizen" | "manager" | "system";
 export interface AuditEvent {

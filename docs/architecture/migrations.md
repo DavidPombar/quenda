@@ -42,3 +42,5 @@ restoring a backup taken before the upgrade, not by down migrations.
 - `0008` adds municipal accessibility statement settings (T5). Existing migration checksums stay unchanged; exports preserve all statement fields (R1, R3).
 
 - `0009` adds category tariffs and preserves the price applied to each reservation (M2, R2). Municipal transfers include category decisions, facility prices and preferences (T3, R3).
+
+- `0010` records facility status history for date-range occupancy (M3). Transfers preserve this history (T3, R3).

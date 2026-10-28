@@ -1340,6 +1340,140 @@ main {
   color: var(--ink-2);
   font-size: var(--t-small);
 }
+
+/* Indicators */
+.text-link {
+  color: var(--court);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.insights-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 24px;
+  margin-bottom: 24px;
+}
+.insights-filters > .field {
+  min-width: 220px;
+}
+.insights-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+.insights-range legend {
+  margin-bottom: 4px;
+  font-weight: 650;
+}
+.insights-range .field {
+  width: 170px;
+}
+.insights-range .error-text {
+  width: 100%;
+}
+.insights-results {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.insights-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.insight-totals {
+  margin: 0;
+}
+.heat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 16px;
+  font-size: var(--t-small);
+}
+.heat-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.heat-legend .heat {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+.heatmap-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 24px;
+}
+.heatmap {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+}
+.heatmap caption {
+  margin-bottom: 8px;
+  font-weight: 650;
+  text-align: left;
+}
+.heatmap th {
+  padding: 4px 6px;
+  color: var(--ink-2);
+  font-weight: 650;
+  text-align: center;
+}
+.heatmap td {
+  min-width: 52px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  text-align: center;
+}
+/* Levels darken with occupancy; text stays readable on every step (ink on 0–2, white on 3–4). */
+.heat-0 {
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+}
+.heat-1 {
+  background: var(--court-tint);
+  color: var(--ink);
+}
+.heat-2 {
+  background: color-mix(in srgb, var(--court) 40%, #ffffff);
+  color: var(--ink);
+}
+.heat-3 {
+  background: var(--court);
+  color: #ffffff;
+}
+.heat-4 {
+  background: var(--court-dark);
+  color: #ffffff;
+}
+.heat-closed {
+  background: var(--ground);
+  color: var(--ink-2);
+}
+.occupancy-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+.occupancy-value {
+  min-width: 3.5em;
+  font-variant-numeric: tabular-nums;
+}
+.occupancy-cell .usage-bar {
+  flex: 1;
+}
+
 .category-options {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));

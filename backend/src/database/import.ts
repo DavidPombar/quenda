@@ -14,6 +14,7 @@ export interface MunicipalityPackage {
   municipality: Row & { id: string; slug: string };
   facilities: Row[];
   facilityPrices?: Row[];
+  facilityStatusPeriods?: Row[];
   userCategories?: Row[];
   /** Courts and spaces (optional: packages from before courts get one per facility). */
   resources?: Row[];
@@ -110,6 +111,13 @@ const tables = {
     follows_municipal_holidays: "followsMunicipalHolidays",
     latitude: "latitude",
     longitude: "longitude",
+  },
+  facility_status_periods: {
+    tenant_id: "tenantId",
+    facility_id: "facilityId",
+    status: "status",
+    starts_at: "start",
+    ends_at: "end",
   },
   facility_prices: {
     tenant_id: "tenantId",
@@ -297,6 +305,7 @@ export async function importMunicipality(
     await insert("users", data.users);
     await insert("identities", data.identities ?? []);
     await insert("facilities", data.facilities);
+    await insert("facility_status_periods", data.facilityStatusPeriods ?? []);
     await insert("facility_prices", data.facilityPrices ?? []);
     await insert("user_categories", data.userCategories ?? []);
     // Parents come before their parts; packages without courts get the default one per

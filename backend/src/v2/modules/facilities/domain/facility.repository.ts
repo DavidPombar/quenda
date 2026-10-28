@@ -19,6 +19,13 @@ export abstract class FacilityRepository {
   abstract save(
     facility: Facility,
   ): Promise<Result<void, AppError<"id_reused">>>;
+  /** Closes the open status period and opens one with `status` from `at`. */
+  abstract recordStatus(
+    tenantId: string,
+    id: string,
+    status: Facility["status"],
+    at: Temporal.Instant,
+  ): Promise<void>;
   /** Confirmed bookings of people that have not ended yet. */
   abstract upcomingBookings(
     tenantId: string,

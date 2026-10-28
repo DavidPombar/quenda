@@ -195,7 +195,16 @@ class ExportedUserCategoryDTO {
   @ApiProperty({ type: String, format: "date-time", nullable: true })
   decidedAt!: string | null;
 }
+class ExportedFacilityStatusPeriodDTO {
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() status!: string;
+  @ApiProperty({ type: String, format: "date-time" }) start!: string;
+  @ApiProperty({ type: String, format: "date-time", nullable: true }) end!:
+    string | null;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({ type: [ExportedFacilityStatusPeriodDTO] })
+  facilityStatusPeriods!: ExportedFacilityStatusPeriodDTO[];
   @ApiProperty({ type: [ExportedFacilityPriceDTO] })
   facilityPrices!: ExportedFacilityPriceDTO[];
   @ApiProperty({ type: [ExportedUserCategoryDTO] })
@@ -237,6 +246,11 @@ export class MunicipalityExportResponseDTO {
       exportedAt: value.exportedAt.toString(),
       municipality: snapshot.municipality,
       facilities: snapshot.facilities,
+      facilityStatusPeriods: snapshot.facilityStatusPeriods.map((value) => ({
+        ...value,
+        start: value.start.toString(),
+        end: value.end?.toString() ?? null,
+      })),
       facilityPrices: snapshot.facilityPrices,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,

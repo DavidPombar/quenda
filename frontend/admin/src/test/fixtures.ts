@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
-import type { Facility, Municipality } from "@/types/models";
+import type { Facility, Insights, Municipality } from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "vilaverde",
@@ -81,4 +81,52 @@ export function stubShell(authenticated = false) {
       },
     ],
   });
+}
+export function insightsFor(
+  from: string,
+  to: string,
+  occupancy: number,
+): Insights {
+  return {
+    from,
+    to,
+    total: 15,
+    confirmed: 10,
+    cancelled: 2,
+    noShows: 3,
+    bookedMinutes: 600,
+    openMinutes: 6000,
+    occupancy,
+    facilities: 1,
+    byFacility: [
+      {
+        id: facility.id,
+        name: facility.name,
+        sport: facility.sport,
+        bookings: 10,
+        confirmed: 10,
+        cancelled: 2,
+        noShows: 3,
+        bookedMinutes: 600,
+        openMinutes: 6000,
+        occupancy,
+      },
+    ],
+    heatmap: [
+      {
+        weekday: 1,
+        hour: 18,
+        bookedMinutes: 240,
+        openMinutes: 300,
+        occupancy: 80,
+      },
+      {
+        weekday: 2,
+        hour: 18,
+        bookedMinutes: 0,
+        openMinutes: 300,
+        occupancy: 0,
+      },
+    ],
+  };
 }
