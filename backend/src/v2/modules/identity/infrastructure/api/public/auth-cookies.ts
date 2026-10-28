@@ -4,7 +4,11 @@ import type { Request, Response } from "express";
 import { publicUrl } from "../../oidc/oidc-config";
 import { citizenHome } from "../../../domain/sign-in-target";
 import { ErrorCode } from "../../../../../shared/application/errors";
-const secure = () => process.env.NODE_ENV === "production";
+// Secure by default in production; only the loopback HTTP demo opts out (COOKIE_SECURE=false).
+const secure = () =>
+  process.env.COOKIE_SECURE
+    ? process.env.COOKIE_SECURE !== "false"
+    : process.env.NODE_ENV === "production";
 /** The 8-hour API session; SameSite=Strict, so it never travels on cross-site navigations. */
 export function setSessionCookie(response: Response, token: string) {
   response.cookie("quenda_session", token, {

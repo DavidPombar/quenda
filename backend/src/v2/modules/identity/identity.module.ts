@@ -6,6 +6,7 @@ import { DeleteSession } from "./application/commands/delete-session.command";
 import { StartOidcLogin } from "./application/commands/start-oidc-login.command";
 import { ConsumeLoginAttempt } from "./application/commands/consume-login-attempt.command";
 import { CompleteOidcLogin } from "./application/commands/complete-oidc-login.command";
+import { PurgeExpiredSessions } from "./application/commands/purge-expired-sessions.command";
 import { GetSession } from "./application/queries/get-session.query";
 import { GetAuthMethods } from "./application/queries/get-auth-methods.query";
 import { ExchangeOidcCode } from "./application/queries/exchange-oidc-code.query";
@@ -21,6 +22,7 @@ import { GetSessionController } from "./infrastructure/api/public/get-session.co
 import { GetAuthMethodsController } from "./infrastructure/api/public/get-auth-methods.controller";
 import { StartOidcLoginController } from "./infrastructure/api/public/start-oidc-login.controller";
 import { CompleteOidcLoginController } from "./infrastructure/api/public/complete-oidc-login.controller";
+import { SessionPurgeScheduler } from "./infrastructure/schedule/session-purge.scheduler";
 @Module({
   imports: [AccountModule],
   providers: [
@@ -41,6 +43,8 @@ import { CompleteOidcLoginController } from "./infrastructure/api/public/complet
       provide: ExternalIdentityRepository,
       useClass: PostgresExternalIdentityRepository,
     },
+    PurgeExpiredSessions,
+    SessionPurgeScheduler,
   ],
   controllers: [
     CreateSessionController,

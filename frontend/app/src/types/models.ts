@@ -90,6 +90,14 @@ export interface Notification {
     standing?: Omit<PenaltyStanding, "enabled">;
   } | null;
 }
+export interface CalendarFeed {
+  active: boolean;
+  createdAt: string | null;
+}
+export interface CalendarFeedLink {
+  path: string;
+  createdAt: string;
+}
 export interface Insights {
   total: number;
   confirmed: number;

@@ -16,6 +16,7 @@ export function toPrincipal(user: PrincipalRow): Principal {
             "audit:view",
             "municipality:manage",
             "bookings:manage",
+            "data:export",
           ]
         : ["bookings:own", "account:own"],
   };

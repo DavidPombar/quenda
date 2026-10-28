@@ -5,6 +5,7 @@ import type { Response } from "express";
 import { V2Controller } from "../../../../../shared/infrastructure/api/v2-controller.decorator";
 import { Commands } from "../../../../../shared/infrastructure/commands.locator";
 import { ProblemException } from "../../../../../shared/infrastructure/api/problem";
+import { SensitiveEndpoint } from "../../../../../shared/infrastructure/api/rate-limit";
 import { assertNever } from "../../../../../shared/application/errors";
 import {
   CreateSession,
@@ -20,6 +21,7 @@ export class CreateSessionController {
     this.operation = commands.get(CreateSession);
   }
   @Post()
+  @SensitiveEndpoint()
   @ApiOperation({
     summary: "Open a demo session; explicitly disabled unless DEMO_MODE=true",
   })

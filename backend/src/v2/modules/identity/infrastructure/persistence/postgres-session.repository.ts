@@ -63,4 +63,11 @@ export class PostgresSessionRepository extends SessionRepository {
       hash(token),
     ]);
   }
+  async removeExpired(now: Temporal.Instant) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM sessions WHERE expires_at<=$1",
+      [now.toString()],
+    );
+    return rowCount ?? 0;
+  }
 }
