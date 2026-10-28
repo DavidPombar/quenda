@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Temporal } from "@js-temporal/polyfill";
+import { migrate } from "../src/database/migrate";
 import {
   type ResourceSlots,
   type Tenant,
@@ -406,7 +407,7 @@ describe("Courts and divisible spaces (M1, C1, C2) through HTTP and PostgreSQL",
 });
 describe("Resources migration from V0 databases", () => {
   it("should keep reservations, occupied slots and the overlap guarantee when the resources upgrade runs", async () => {
-    const { db, drop } = await emptyDatabase();
+    const { db, url, drop } = await emptyDatabase();
     try {
       await db.query(
         await readFile(
@@ -460,13 +461,9 @@ describe("Resources migration from V0 databases", () => {
           ends.toString(),
         ],
       );
-      const schema = await readFile(
-        new URL("../src/database/schema.sql", import.meta.url),
-        "utf8",
-      );
-      // Applied twice: migrate runs the whole file on every deployment.
-      await db.query(schema);
-      await db.query(schema);
+      // The runner adopts the V0 database; a second run finds nothing pending.
+      await migrate(url, () => undefined);
+      await migrate(url, () => undefined);
       expect(
         (
           await db.query(

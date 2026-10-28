@@ -60,6 +60,10 @@ const padelBooking: Booking = {
 function stubBookings(bookings: Booking[]) {
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: bookings });
   stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
+  stubJsonResponse({
     path: "*/v2/citizen/penalty",
     response: {
       enabled: true,
@@ -237,6 +241,10 @@ const notices: Notification[] = [
 test("should explain no-shows, municipal cancellations and an active booking block in the person's history", async () => {
   stubShell(true);
   stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
+  stubJsonResponse({
     path: "*/v2/citizen/bookings",
     response: [absence, closed],
   });
@@ -272,6 +280,10 @@ test("should explain no-shows, municipal cancellations and an active booking blo
 });
 test("should tell the person how many more absences the municipality allows before a block", async () => {
   stubShell(true);
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
   stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
   stubJsonResponse({
@@ -288,6 +300,10 @@ test("should tell the person how many more absences the municipality allows befo
 });
 test("should list a booking reminder among the notices", async () => {
   stubShell(true);
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
   stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
   stubJsonResponse({
     path: "*/v2/citizen/notifications",
@@ -312,5 +328,94 @@ test("should list a booking reminder among the notices", async () => {
   await render(<App />);
   await expect
     .element(page.getByText("Lembranza da reserva", { exact: true }))
+    .toBeVisible();
+});
+
+const booking = {
+  id: "30000000-0000-4000-8000-000000000001",
+  facilityId: facility.id,
+  facilityName: facility.name,
+  sport: facility.sport,
+  start: "2099-10-20T08:00:00Z",
+  end: "2099-10-20T09:00:00Z",
+  status: "confirmed",
+  outcome: "upcoming",
+  cancelledBy: null,
+  cancellationReason: null,
+};
+const token = "a".repeat(64);
+function stubCalendarBookings(feed: {
+  active: boolean;
+  createdAt: string | null;
+}) {
+  stubShell(true);
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
+  stubJsonResponse({ path: "*/v2/citizen/bookings", response: [booking] });
+  stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
+  stubJsonResponse({ path: "*/v2/citizen/calendar-feed", response: feed });
+  stubJsonResponse({
+    path: "*/v2/citizen/penalty",
+    response: { ...standing, count: 0, blockedUntil: null },
+  });
+}
+test("should offer each confirmed reservation as an iCalendar download", async () => {
+  stubCalendarBookings({ active: false, createdAt: null });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await expect
+    .element(page.getByRole("link", { name: "Engadir ao calendario" }))
+    .toHaveAttribute("href", `/v2/citizen/bookings/${booking.id}/calendar.ics`);
+});
+test("should show the subscription link once when a person creates it", async () => {
+  stubCalendarBookings({ active: false, createdAt: null });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    method: "POST",
+    status: 201,
+    response: {
+      path: `/v2/public/calendar-feeds/${token}.ics`,
+      createdAt: "2026-10-20T08:00:00Z",
+    },
+  });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await page
+    .getByRole("button", { name: "Crear ligazón de subscrición" })
+    .click();
+  await expect
+    .element(page.getByRole("textbox", { name: "Ligazón de subscrición" }))
+    .toHaveValue(
+      `${window.location.origin}/v2/public/calendar-feeds/${token}.ics`,
+    );
+  await expect
+    .element(page.getByRole("link", { name: "Abrir na app de calendario" }))
+    .toHaveAttribute(
+      "href",
+      `webcal://${window.location.host}/v2/public/calendar-feeds/${token}.ics`,
+    );
+});
+test("should let a person revoke an active subscription link", async () => {
+  stubCalendarBookings({ active: true, createdAt: "2026-10-18T08:00:00Z" });
+  await commands.navigate("/app/vilaverde/reservas");
+  await render(<App />);
+  await expect
+    .element(page.getByText(/Tes unha ligazón activa desde o/))
+    .toBeVisible();
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    method: "DELETE",
+    status: 204,
+    response: null,
+  });
+  stubJsonResponse({
+    path: "*/v2/citizen/calendar-feed",
+    response: { active: false, createdAt: null },
+  });
+  await page.getByRole("button", { name: "Revogar ligazón" }).click();
+  await expect
+    .element(page.getByRole("button", { name: "Crear ligazón de subscrición" }))
     .toBeVisible();
 });

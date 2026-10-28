@@ -39,6 +39,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Non podes facer reservas temporalmente por acumular ausencias sen avisar.",
     attendance_window:
       "Só se pode marcar como non presentada unha reserva xa comezada e no mesmo día.",
+    rate_limited: "Demasiadas solicitudes. Agarda un minuto e téntao de novo.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -70,6 +71,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "No puedes hacer reservas temporalmente por acumular ausencias sin avisar.",
     attendance_window:
       "Solo se puede marcar como no presentada una reserva ya empezada y en el mismo día.",
+    rate_limited:
+      "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
   },
 };
 @Catch(HttpException)
@@ -87,10 +90,18 @@ export class ProblemFilter implements ExceptionFilter {
             ? "forbidden"
             : status === 404
               ? "not_found"
-              : "validation";
+              : status === 429
+                ? "rate_limited"
+                : "validation";
     const locale = request.headers["accept-language"]?.startsWith("es")
       ? "es"
       : "gl";
+    // Named throttlers emit `Retry-After-<name>`; expose the standard header too.
+    const retryAfter = response
+      .getHeaderNames()
+      .find((name) => name.startsWith("retry-after"));
+    if (status === 429 && retryAfter)
+      response.setHeader("Retry-After", String(response.getHeader(retryAfter)));
     response.status(status).type("application/problem+json").send({
       type: "about:blank",
       title: code,

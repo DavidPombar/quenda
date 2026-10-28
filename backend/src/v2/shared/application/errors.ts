@@ -21,7 +21,8 @@ export type ErrorCode =
   | "unsupported_logo"
   | "logo_too_large"
   | "booking_blocked"
-  | "attendance_window";
+  | "attendance_window"
+  | "rate_limited";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

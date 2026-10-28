@@ -1222,6 +1222,28 @@ main {
   font-size: var(--t-tiny);
   color: var(--ink-2);
 }
+.calendar-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.calendar-feed > p,
+.calendar-feed .muted {
+  font-size: var(--t-small);
+}
+.calendar-feed-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.calendar-feed-warning {
+  font-size: var(--t-small);
+  font-weight: 650;
+}
 
 /* Responsive: breakpoints match the Chakra theme (480, 768, 1024, 1280). */
 @media (max-width: 1279px) {

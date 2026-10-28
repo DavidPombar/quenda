@@ -98,6 +98,56 @@ test("should save the selected sport, status and duration when a manager creates
     .element(page.getByText("En mantemento", { exact: true }))
     .toBeVisible();
 });
+
+test("should download the municipality's open data package when a manager exports it", async () => {
+  stubShell();
+  stubJsonResponse({
+    path: "*/v2/public/session",
+    response: {
+      session: {
+        userId: "manager",
+        tenantId: municipality.id,
+        displayName: "Uxía",
+        role: "manager",
+      },
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/manager/insights",
+    response: {
+      confirmed: 0,
+      cancelled: 0,
+      occupancy: 0,
+      facilities: 1,
+      byFacility: [],
+    },
+  });
+  stubJsonResponse({ path: "*/v2/public/facilities", response: [facility] });
+  let exports = 0;
+  stubJsonResponse({
+    path: "*/v2/manager/export",
+    response: () => {
+      exports++;
+      return {
+        format: "quenda-municipality-export",
+        version: 2,
+        exportedAt: "2026-10-20T08:00:00Z",
+        municipality: { slug: municipality.slug },
+      };
+    },
+  });
+  await commands.navigate("/admin/vilaverde/xestion");
+  await render(<App />);
+  await page.getByRole("button", { name: "Exportar datos" }).click();
+  await expect
+    .element(
+      page
+        .getByRole("status")
+        .filter({ hasText: "datos completos do concello" }),
+    )
+    .toBeVisible();
+  expect(exports).toBe(1);
+});
 test("should send only editable fields when a manager saves an existing facility", async () => {
   stubShell();
   stubJsonResponse({

@@ -114,6 +114,24 @@ try {
     .getByRole("heading", { name: "A túa quenda está confirmada!" })
     .waitFor();
   await page.getByRole("link", { name: "Ver as miñas reservas" }).click();
+  const calendarDownload = await page
+    .getByRole("link", { name: "Engadir ao calendario" })
+    .first()
+    .getAttribute("href");
+  const calendarResponse = await page.request.get(
+    new URL(calendarDownload, base).toString(),
+  );
+  assert.equal(calendarResponse.status(), 200);
+  assert.match(await calendarResponse.text(), /BEGIN:VCALENDAR/);
+  await page
+    .getByRole("button", { name: "Crear ligazón de subscrición" })
+    .click();
+  const feedLink = page.getByRole("textbox", {
+    name: "Ligazón de subscrición",
+  });
+  await feedLink.waitFor();
+  const feedUrl = await feedLink.inputValue();
+  assert.equal((await page.request.get(feedUrl)).status(), 200);
   await page.getByRole("button", { name: "Cambiar quenda" }).first().click();
   await page
     .getByRole("dialog")
@@ -131,6 +149,20 @@ try {
   await page.getByRole("button", { name: "Historial", exact: true }).click();
   await page.getByText("Cancelada", { exact: true }).first().waitFor();
   await audit("history");
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+    "Calendar feed mobile overflow",
+  );
+  await audit("history-mobile");
+  await page.screenshot({
+    path: ".dev-logs/calendar-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: ".dev-logs/bookings.png", fullPage: true });
   assert.equal(
     await page
@@ -176,6 +208,11 @@ try {
   await audit("delete-account");
   await page.getByRole("button", { name: "Si, eliminar a conta" }).click();
   await page.getByRole("alertdialog").waitFor({ state: "hidden" });
+  assert.equal(
+    (await page.request.get(feedUrl)).status(),
+    404,
+    "Deleted accounts revoke calendar subscriptions",
+  );
   await page
     .getByRole("banner")
     .getByRole("button", { name: "Entrar", exact: true })
@@ -201,6 +238,23 @@ try {
   await page.getByRole("button", { name: "Nova instalación" }).waitFor();
   await page.reload();
   await page.getByRole("button", { name: "Nova instalación" }).waitFor();
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Exportar datos", exact: true })
+    .click();
+  const download = await downloadPromise;
+  const exported = JSON.parse(await fs.readFile(await download.path(), "utf8"));
+  assert.equal(exported.format, "quenda-municipality-export");
+  assert.equal(exported.version, 2);
+  for (const collection of [
+    "consents",
+    "legalTexts",
+    "logos",
+    "bookingBlocks",
+    "notificationPreferences",
+    "messages",
+  ])
+    assert.ok(Array.isArray(exported[collection]), collection);
   await audit("management");
   await page.screenshot({ path: ".dev-logs/management.png", fullPage: true });
   await page.getByRole("link", { name: "Auditoría", exact: true }).click();
@@ -239,7 +293,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Twelve accessibility scans passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and thirteen accessibility scans passed.",
   );
 } finally {
   await browser.close();

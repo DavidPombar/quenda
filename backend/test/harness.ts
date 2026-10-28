@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
-import { readFile } from "node:fs/promises";
+import { migrate } from "../src/database/migrate";
 import { Pool } from "pg";
 import request from "supertest";
 import type { INestApplication } from "@nestjs/common";
@@ -26,17 +26,13 @@ export async function setup() {
   const testUrl = new URL(baseUrl);
   testUrl.pathname = `/${databaseName}`;
   process.env.NODE_ENV = "test";
+  process.env.SESSION_RATE_LIMIT_PER_MINUTE = "1000";
   process.env.DEMO_MODE = "true";
   process.env.DATABASE_URL = testUrl.toString();
   admin = new Pool({ connectionString: baseUrl });
   await admin.query(`CREATE DATABASE "${databaseName}"`);
   harness.db = new Pool({ connectionString: testUrl.toString() });
-  await harness.db.query(
-    await readFile(
-      new URL("../src/database/schema.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  await migrate(testUrl.toString(), () => undefined);
   const { createApp } = require("../dist/bootstrap.js") as {
     createApp: () => Promise<INestApplication>;
   };
@@ -196,6 +192,7 @@ export async function emptyDatabase() {
   const db = new Pool({ connectionString: url.toString() });
   return {
     db,
+    url: url.toString(),
     async drop() {
       await db.end();
       await server.query(`DROP DATABASE IF EXISTS "${name}"`);

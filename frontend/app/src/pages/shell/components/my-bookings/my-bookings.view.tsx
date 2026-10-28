@@ -18,6 +18,7 @@ import { ROUTES, routeFor } from "@/constants/routes";
 import { dateLabel, bookingDayLabel, timeLabel } from "@/services/date.service";
 import { distinctResource } from "@/services/resources.service";
 import { BookingRow } from "./components/booking-row/booking-row.view";
+import { CalendarFeed } from "./components/calendar-feed/calendar-feed.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
 const NOTICE_ICONS = {
@@ -90,6 +91,7 @@ export function MyBookings() {
                     locale={c.locale}
                     t={c.t}
                     canChange={c.canChange(booking)}
+                    calendarHref={c.calendarHref(booking.id)}
                     onCancel={() => {
                       c.update.reset();
                       c.setCancelling(booking);
@@ -187,6 +189,12 @@ export function MyBookings() {
             ) : (
               <p className="muted">{c.t("noNotices")}</p>
             )}
+            <CalendarFeed
+              userId={c.session.userId}
+              timezone={c.municipality.timezone}
+              locale={c.locale}
+              t={c.t}
+            />
           </aside>
         </div>
       )}
