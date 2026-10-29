@@ -37,6 +37,8 @@ const editable = [
   "noShowLimit",
   "noShowWindowDays",
   "noShowBlockDays",
+  "dataLicense",
+  "dir3Code",
 ] as const satisfies readonly (keyof EditableSettings)[];
 /**
  * New rules apply to new reservations and changes only: existing bookings keep the cancellation
@@ -69,6 +71,11 @@ export class UpdateMunicipalitySettings {
     const patch = {
       ...args.patch,
       primaryColor: args.patch.primaryColor?.toLowerCase(),
+      // DIR3 codes are upper case; an empty value removes the publisher identifier.
+      dir3Code:
+        args.patch.dir3Code === undefined
+          ? undefined
+          : args.patch.dir3Code?.trim().toUpperCase() || null,
       enabledCategories:
         args.patch.enabledCategories &&
         normaliseCategories(args.patch.enabledCategories),

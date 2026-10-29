@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, expect, it } from "vitest";
 import { Temporal } from "@js-temporal/polyfill";
-import { occupancyReport, type FacilityActivity, type Span } from "./occupancy";
+import {
+  occupancyReport,
+  weeklyOccupancy,
+  type FacilityActivity,
+  type Span,
+} from "./occupancy";
 const TZ = "Europe/Madrid";
 const local = (value: string) =>
   Temporal.PlainDateTime.from(value).toZonedDateTime(TZ).toInstant();
@@ -199,5 +204,100 @@ describe("occupancy report", () => {
     const result = report(facility({ active: [] }));
     expect(result.byFacility[0].occupancy).toBe(null);
     expect(result.heatmap).toEqual([]);
+  });
+});
+describe("weekly occupancy", () => {
+  it("should split open time by ISO week, weekday and local hour, counting no-shows apart", () => {
+    const cells = weeklyOccupancy({
+      timezone: TZ,
+      from: day("2026-10-11"),
+      to: day("2026-10-12"),
+      facilities: [
+        facility({
+          bookings: [
+            {
+              ...span("2026-10-11T10:00", "2026-10-11T11:00"),
+              status: "confirmed",
+            },
+            {
+              ...span("2026-10-12T11:00", "2026-10-12T12:00"),
+              status: "no_show",
+            },
+            {
+              ...span("2026-10-12T10:00", "2026-10-12T11:00"),
+              status: "cancelled",
+            },
+          ],
+        }),
+      ],
+    });
+    expect(cells).toEqual([
+      {
+        facilityId: "court",
+        isoYear: 2026,
+        isoWeek: 41,
+        weekday: 7,
+        hour: 10,
+        bookedMinutes: 60,
+        openMinutes: 60,
+        occupancy: 100,
+        noShowMinutes: 0,
+      },
+      {
+        facilityId: "court",
+        isoYear: 2026,
+        isoWeek: 41,
+        weekday: 7,
+        hour: 11,
+        bookedMinutes: 0,
+        openMinutes: 60,
+        occupancy: 0,
+        noShowMinutes: 0,
+      },
+      {
+        facilityId: "court",
+        isoYear: 2026,
+        isoWeek: 42,
+        weekday: 1,
+        hour: 10,
+        bookedMinutes: 0,
+        openMinutes: 60,
+        occupancy: 0,
+        noShowMinutes: 0,
+      },
+      {
+        facilityId: "court",
+        isoYear: 2026,
+        isoWeek: 42,
+        weekday: 1,
+        hour: 11,
+        bookedMinutes: 0,
+        openMinutes: 60,
+        occupancy: 0,
+        noShowMinutes: 60,
+      },
+    ]);
+  });
+  it("should use the ISO week-numbering year across the new year", () => {
+    const cells = weeklyOccupancy({
+      timezone: TZ,
+      from: day("2027-01-01"),
+      to: day("2027-01-01"),
+      facilities: [
+        facility({ open: [span("2027-01-01T10:00", "2027-01-01T11:00")] }),
+      ],
+    });
+    expect(cells).toMatchObject([{ isoYear: 2026, isoWeek: 53, weekday: 5 }]);
+  });
+  it("should leave out hours when the facility is closed or on a holiday", () => {
+    const cells = weeklyOccupancy({
+      timezone: TZ,
+      from: day("2026-10-12"),
+      to: day("2026-10-13"),
+      facilities: [
+        facility({ closed: [span("2026-10-12T00:00", "2026-10-13T00:00")] }),
+      ],
+    });
+    expect(cells.map((cell) => cell.weekday)).toEqual([2, 2]);
   });
 });

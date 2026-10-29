@@ -47,7 +47,7 @@ export class GetOpenFacilitiesGeoJsonController {
         sendOpenData(
           response,
           "application/geo+json; charset=utf-8",
-          "${data.municipality.slug}-facilities.geojson",
+          `${data.municipality.slug}-facilities.geojson`,
           JSON.stringify(facilitiesGeoJson(publication(request, data))),
         ),
       this.handleError,

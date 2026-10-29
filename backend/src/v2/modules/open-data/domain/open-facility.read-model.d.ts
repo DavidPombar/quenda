@@ -22,11 +22,14 @@ export interface OpenFacility extends Pick<
   /** Active courts or spaces; the parts of a divisible court are not counted separately. */
   courts: number;
 }
-export interface OpenFacilities {
+/** What every open data file of a municipality shares: publisher, licence and date. */
+export interface OpenPublication {
   municipality: Pick<MunicipalitySettings, "slug" | "name" | "dir3Code"> & {
     dataLicense: DataLicense;
   };
-  facilities: OpenFacility[];
   /** Local date (YYYY-MM-DD) the publication was generated, in the municipality time zone. */
   generatedOn: string;
+}
+export interface OpenFacilities extends OpenPublication {
+  facilities: OpenFacility[];
 }

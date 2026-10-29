@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { facilityFiles, Publication } from "./publication";
+import { facilityFiles, occupancyFiles, Publication } from "./publication";
+import type { OpenPublication } from "../../domain/open-facility.read-model";
 /**
  * DCAT-AP-ES (NTI-RISP) description of one municipality's open data, built once and serialised
  * as JSON-LD and RDF/XML so both always describe the same datasets and distributions.
@@ -35,7 +36,7 @@ export interface Catalog {
 }
 const sportsTheme = "http://datos.gob.es/kos/sector-publico/sector/deporte";
 const themeTaxonomy = "http://datos.gob.es/kos/sector-publico/sector/";
-export function catalog(publication: Publication): Catalog {
+export function catalog(publication: Publication<OpenPublication>): Catalog {
   const { municipality, generatedOn } = publication.data;
   const name = municipality.name;
   return {
@@ -93,6 +94,38 @@ export function catalog(publication: Publication): Catalog {
             title: { gl: "GeoJSON", es: "GeoJSON" },
             mediaType: facilityFiles.geojson.mediaType,
             conformsTo: publication.schema("facilities.geojson.schema.json"),
+          },
+        ],
+      },
+      {
+        uri: `${publication.page()}#ocupacion`,
+        identifier: `${municipality.slug}-ocupacion-instalacions-deportivas`,
+        title: {
+          gl: `Ocupación das instalacións deportivas: ${name}`,
+          es: `Ocupación de las instalaciones deportivas: ${name}`,
+        },
+        description: {
+          gl: "Minutos abertos, reservados e de non presentados por instalación, semana ISO, día da semana e hora local das últimas 12 semanas completas. Datos agregados, sen reservas nin persoas identificables.",
+          es: "Minutos abiertos, reservados y de no presentados por instalación, semana ISO, día de la semana y hora local de las últimas 12 semanas completas. Datos agregados, sin reservas ni personas identificables.",
+        },
+        keywords: [
+          { gl: "deporte", es: "deporte" },
+          { gl: "ocupación", es: "ocupación" },
+          { gl: "uso de instalacións", es: "uso de instalaciones" },
+        ],
+        landingPage: publication.page(),
+        distributions: [
+          {
+            uri: publication.file(occupancyFiles.json.file),
+            title: { gl: "JSON", es: "JSON" },
+            mediaType: occupancyFiles.json.mediaType,
+            conformsTo: publication.schema("occupancy.schema.json"),
+          },
+          {
+            uri: publication.file(occupancyFiles.csv.file),
+            title: { gl: "CSV", es: "CSV" },
+            mediaType: occupancyFiles.csv.mediaType,
+            conformsTo: publication.schema("occupancy.tableschema.json"),
           },
         ],
       },

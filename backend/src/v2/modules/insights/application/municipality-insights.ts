@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
-import { InsightsRepository } from "../domain/insights.repository";
-import { OccupancyReport, Span, occupancyReport } from "../domain/occupancy";
+import {
+  InsightsFacility,
+  InsightsRepository,
+} from "../domain/insights.repository";
+import {
+  FacilityActivity,
+  OccupancyReport,
+  Span,
+  WeeklyCell,
+  occupancyReport,
+  weeklyOccupancy,
+} from "../domain/occupancy";
 import { OpeningCalendar } from "../../facilities/domain/opening-calendar";
 import { HolidayCalendar } from "../../facilities/domain/holiday-calendar";
 import { Clock } from "../../../shared/application/clock";
@@ -68,8 +78,45 @@ export class MunicipalityInsights {
   }
   async report(
     settings: MunicipalitySettings,
-    { from, to }: DateRange,
+    range: DateRange,
   ): Promise<Insights> {
+    const { facilities, activities } = await this.activities(settings, range);
+    const report = occupancyReport({
+      timezone: settings.timezone,
+      ...range,
+      facilities: activities,
+    });
+    return {
+      ...report,
+      slug: settings.slug,
+      from: range.from.toString(),
+      to: range.to.toString(),
+      total: report.confirmed + report.cancelled + report.noShows,
+      facilities: facilities.length,
+    };
+  }
+  /** Occupancy by facility × ISO week × weekday × hour, published as open data (#21). */
+  async weekly(
+    settings: MunicipalitySettings,
+    range: DateRange,
+  ): Promise<{ facilities: InsightsFacility[]; cells: WeeklyCell[] }> {
+    const { facilities, activities } = await this.activities(settings, range);
+    return {
+      facilities,
+      cells: weeklyOccupancy({
+        timezone: settings.timezone,
+        ...range,
+        facilities: activities,
+      }),
+    };
+  }
+  private async activities(
+    settings: MunicipalitySettings,
+    { from, to }: DateRange,
+  ): Promise<{
+    facilities: InsightsFacility[];
+    activities: FacilityActivity[];
+  }> {
     const timezone = settings.timezone;
     const start = from.toZonedDateTime(timezone).toInstant();
     const end = to.add({ days: 1 }).toZonedDateTime(timezone).toInstant();
@@ -89,11 +136,9 @@ export class MunicipalityInsights {
           start: date.toZonedDateTime(timezone).toInstant(),
           end: date.add({ days: 1 }).toZonedDateTime(timezone).toInstant(),
         });
-    const report = occupancyReport({
-      timezone,
-      from,
-      to,
-      facilities: facilities.map((facility) => {
+    return {
+      facilities,
+      activities: facilities.map((facility) => {
         const own = periods.filter(
           (period) => period.facilityId === facility.id,
         );
@@ -126,14 +171,6 @@ export class MunicipalityInsights {
           ),
         };
       }),
-    });
-    return {
-      ...report,
-      slug: settings.slug,
-      from: from.toString(),
-      to: to.toString(),
-      total: report.confirmed + report.cancelled + report.noShows,
-      facilities: facilities.length,
     };
   }
 }

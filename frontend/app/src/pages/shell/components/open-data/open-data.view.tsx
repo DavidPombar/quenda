@@ -63,6 +63,11 @@ export function OpenData() {
           <p>{t("openDataFacilitiesBody")}</p>
           <Downloads items={c.facilities} schemaLabel={t("openDataSchema")} />
         </section>
+        <section className="account-section" aria-labelledby="open-occupancy">
+          <h2 id="open-occupancy">{t("openDataOccupancy")}</h2>
+          <p>{t("openDataOccupancyBody")}</p>
+          <Downloads items={c.occupancy} schemaLabel={t("openDataSchema")} />
+        </section>
         <section className="account-section" aria-labelledby="open-catalog">
           <h2 id="open-catalog">{t("openDataCatalog")}</h2>
           <p>{t("openDataCatalogBody")}</p>

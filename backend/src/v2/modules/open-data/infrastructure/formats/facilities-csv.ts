@@ -4,13 +4,13 @@ import { facilityColumns, facilityRecord, Publication } from "./publication";
 export function facilitiesCsv(publication: Publication) {
   const rows = publication.data.facilities.map((facility) => {
     const record = facilityRecord(facility, publication);
-    return facilityColumns.map((column) => cell(record[column]));
+    return facilityColumns.map((column) => csvCell(record[column]));
   });
   return (
     [facilityColumns, ...rows].map((row) => row.join(",")).join("\r\n") + "\r\n"
   );
 }
-function cell(value: string | number | boolean | null) {
+export function csvCell(value: string | number | boolean | null) {
   if (value === null) return "";
   const text = String(value);
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
