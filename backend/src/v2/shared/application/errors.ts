@@ -19,6 +19,8 @@ export type ErrorCode =
   | "login_rejected"
   | "resource_required"
   | "resource_unavailable"
+  | "resource_in_use"
+  | "resource_has_history"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"
