@@ -1871,3 +1871,55 @@ main {
   margin-bottom: 4px;
   font-weight: 600;
 }
+
+/* Courts and spaces of a facility (M1) */
+.resource-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+.resource-row fieldset {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(12rem, 1fr) auto auto;
+  align-items: end;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.resource-row.part fieldset {
+  margin-left: 24px;
+  border-left: 4px solid var(--line);
+}
+.resource-row .checkbox-field {
+  min-height: 44px;
+}
+.resource-actions {
+  display: flex;
+  gap: 4px;
+}
+.facility-occupancy .resource-usage th {
+  padding-left: 24px;
+  font-weight: 400;
+}
+.facility-occupancy .resource-usage.part th {
+  padding-left: 40px;
+}
+@media (max-width: 760px) {
+  .resource-row fieldset {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .resource-row.part fieldset {
+    margin-left: 12px;
+  }
+}
+.resource-parts {
+  align-self: center;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--t-small);
+}

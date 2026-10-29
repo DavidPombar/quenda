@@ -110,6 +110,7 @@ export function insightsFor(
         bookedMinutes: 600,
         openMinutes: 6000,
         occupancy,
+        byResource: [],
       },
     ],
     heatmap: [

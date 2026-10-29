@@ -43,12 +43,12 @@ Open http://127.0.0.1:8080 for the website, http://127.0.0.1:8080/app/ for citiz
 
 The container images are the same for both; the difference is configuration and what sits in front of them (T4, R1).
 
-| | Demo (`compose.demo.yml`) | Production |
-|---|---|---|
-| Demo accounts | `DEMO_MODE=true` | `DEMO_MODE=false` (image default); real sign-in is still future work |
-| Transport | Plain HTTP on `127.0.0.1:8080` | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS |
+|                | Demo (`compose.demo.yml`)                                  | Production                                                                                |
+| -------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); real sign-in is still future work                      |
+| Transport      | Plain HTTP on `127.0.0.1:8080`                             | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS   |
 | Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false` |
-| Seed data | Synthetic municipalities and accounts | No seed; municipalities are configured explicitly |
+| Seed data      | Synthetic municipalities and accounts                      | No seed; municipalities are configured explicitly                                         |
 
 The `web` container (nginx) sends a Content Security Policy, `X-Frame-Options`, `Permissions-Policy` and `nosniff` for the three SPAs; the API sends its own headers. Only the TLS proxy may reach the `web` container, because the API trusts `X-Forwarded-For` from private-network proxies (`TRUST_PROXY`, default `loopback, uniquelocal`) to identify clients.
 
@@ -62,7 +62,7 @@ The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) 
 - **C2:** online reservation with server-side validation, client UUID retries, atomic overlap protection and per-person quotas.
 - **C3:** rescheduling and idempotent citizen cancellation within the municipality's notice period; municipal cancellations with a reason and notices.
 - **C4:** personal upcoming/history views, persistent in-app notices, and transactional email delivery and reminders.
-- **M1–M2:** facilities with several courts or lanes, including a full court split into parts that block each other, and courts taken out of service individually; citizens pick a court or view every court in one grid. Manager-only facility editing, active/maintenance/closed states, slot duration, indicative prices, rules, `.ics` import, weekly calendars and municipal settings, branding, holidays and legal texts.
+- **M1–M2:** facilities with several courts or lanes, including a full court split into parts that block each other, and courts taken out of service individually; citizens pick a court or view every court in one grid. Managers add, rename, reorder, split and take courts out of service under **Pistas** in the backoffice, and the indicators break each facility down by court. Manager-only facility editing, active/maintenance/closed states, slot duration, indicative prices, rules, `.ics` import, weekly calendars and municipal settings, branding, holidays and legal texts.
 - **M3:** seven-day reservation, cancellation and scheduled-occupancy indicators, plus attendance, no-show tracking and configurable booking penalties.
 - **Personal calendars (optional, point 1.3):** each confirmed reservation downloads as `.ics`, and a revocable `webcal://` subscription keeps the person's calendar app in sync with changes and cancellations.
 - **T3, open data:** each municipality publishes its facility catalogue as schema.org JSON-LD, CSV and GeoJSON with published schemas, plus a DCAT-AP-ES catalogue (RDF/XML and JSON-LD) for datos.gob.es and abertos.xunta.gal. The licence is configurable per municipality (CC BY 4.0 by default), and the files are linked from **Datos abertos** in the citizen app. See [open data](docs/architecture/open-data.md).

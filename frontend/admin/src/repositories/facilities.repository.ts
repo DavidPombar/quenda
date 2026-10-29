@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { apiClient } from "@/client/api-client";
-import type { Facility, FacilityImpact } from "@/types/models";
+import type {
+  Facility,
+  FacilityImpact,
+  Resource,
+  ResourceDraft,
+} from "@/types/models";
 export const facilitiesRepository = {
   list: (slug: string) =>
     apiClient.request<Facility[]>(
       `public/facilities?slug=${encodeURIComponent(slug)}`,
+    ),
+  saveResources: (args: { facilityId: string; resources: ResourceDraft[] }) =>
+    apiClient.request<Resource[]>(
+      `manager/facilities/${args.facilityId}/resources`,
+      { method: "PUT", body: JSON.stringify({ resources: args.resources }) },
     ),
   impact: (id: string) =>
     apiClient.request<FacilityImpact>(`manager/facilities/${id}/impact`),
