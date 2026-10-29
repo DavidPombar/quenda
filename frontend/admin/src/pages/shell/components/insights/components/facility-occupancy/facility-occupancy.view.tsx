@@ -5,7 +5,8 @@ import {
   pointsDelta,
 } from "@/services/insights.service";
 import type { TextKey } from "@/services/i18n.service";
-import type { Insights, Locale } from "@/types/models";
+import { Fragment } from "react";
+import type { Insights, Locale, ResourceUsage } from "@/types/models";
 export function FacilityOccupancy(p: {
   current: Insights;
   previous: Insights | null;
@@ -16,6 +17,12 @@ export function FacilityOccupancy(p: {
   const before = (id: string) =>
     previous?.byFacility.find((facility) => facility.id === id)?.occupancy ??
     null;
+  const courtBefore = (facilityId: string, id: string) =>
+    previous?.byFacility
+      .find((facility) => facility.id === facilityId)
+      ?.byResource.find((court) => court.id === id)?.occupancy ?? null;
+  // Facilities with several courts get one row per court under the facility's own.
+  const courts = (list: ResourceUsage[]) => (list.length > 1 ? list : []);
   return (
     <div
       className="table-scroll"
@@ -42,37 +49,70 @@ export function FacilityOccupancy(p: {
         </thead>
         <tbody>
           {current.byFacility.map((facility) => (
-            <tr key={facility.id}>
-              <th scope="row">{facility.name}</th>
-              <td>
-                <span className="occupancy-cell">
-                  <span className="occupancy-value">
-                    {percentLabel(facility.occupancy)}
-                  </span>
-                  <span
-                    className={`usage-bar ${facility.sport}`}
-                    aria-hidden="true"
-                  >
-                    <span
-                      style={{
-                        width: `${Math.min(100, facility.occupancy ?? 0)}%`,
-                      }}
-                    />
-                  </span>
-                </span>
-              </td>
-              {previous && <td>{percentLabel(before(facility.id))}</td>}
-              {previous && (
+            <Fragment key={facility.id}>
+              <tr>
+                <th scope="row">{facility.name}</th>
                 <td>
-                  {pointsDelta(facility.occupancy, before(facility.id)) ?? "—"}
+                  <span className="occupancy-cell">
+                    <span className="occupancy-value">
+                      {percentLabel(facility.occupancy)}
+                    </span>
+                    <span
+                      className={`usage-bar ${facility.sport}`}
+                      aria-hidden="true"
+                    >
+                      <span
+                        style={{
+                          width: `${Math.min(100, facility.occupancy ?? 0)}%`,
+                        }}
+                      />
+                    </span>
+                  </span>
                 </td>
-              )}
-              <td>{hoursLabel(facility.bookedMinutes, p.locale)}</td>
-              <td>{hoursLabel(facility.openMinutes, p.locale)}</td>
-              <td>{facility.confirmed}</td>
-              <td>{facility.cancelled}</td>
-              <td>{facility.noShows}</td>
-            </tr>
+                {previous && <td>{percentLabel(before(facility.id))}</td>}
+                {previous && (
+                  <td>
+                    {pointsDelta(facility.occupancy, before(facility.id)) ??
+                      "—"}
+                  </td>
+                )}
+                <td>{hoursLabel(facility.bookedMinutes, p.locale)}</td>
+                <td>{hoursLabel(facility.openMinutes, p.locale)}</td>
+                <td>{facility.confirmed}</td>
+                <td>{facility.cancelled}</td>
+                <td>{facility.noShows}</td>
+              </tr>
+              {courts(facility.byResource).map((court) => (
+                <tr
+                  key={court.id}
+                  className={
+                    court.parentId ? "resource-usage part" : "resource-usage"
+                  }
+                >
+                  <th scope="row">
+                    <span className="sr-only">{facility.name}, </span>
+                    {court.name}
+                  </th>
+                  <td>{percentLabel(court.occupancy)}</td>
+                  {previous && (
+                    <td>{percentLabel(courtBefore(facility.id, court.id))}</td>
+                  )}
+                  {previous && (
+                    <td>
+                      {pointsDelta(
+                        court.occupancy,
+                        courtBefore(facility.id, court.id),
+                      ) ?? "—"}
+                    </td>
+                  )}
+                  <td>{hoursLabel(court.bookedMinutes, p.locale)}</td>
+                  <td>{hoursLabel(court.openMinutes, p.locale)}</td>
+                  <td>{court.confirmed}</td>
+                  <td>{court.cancelled}</td>
+                  <td>{court.noShows}</td>
+                </tr>
+              ))}
+            </Fragment>
           ))}
         </tbody>
       </table>

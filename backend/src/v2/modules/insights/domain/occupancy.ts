@@ -10,6 +10,13 @@ export interface FacilityActivity {
   sport: string;
   /** Active leaf resources: whole-court reservations occupy every child unit. */
   unitIds?: readonly string[];
+  /** Courts and spaces in service, with their active units; reported one by one. */
+  resources?: readonly {
+    id: string;
+    name: string;
+    parentId: string | null;
+    unitIds: readonly string[];
+  }[];
   /** Opening intervals from the facility calendar. */
   open: Span[];
   /** When the facility was in service (status `active`). */
@@ -20,6 +27,8 @@ export interface FacilityActivity {
   bookings: (Span & {
     status: "confirmed" | "cancelled" | "no_show";
     unitIds?: readonly string[];
+    /** The court booked; counts go to it, booked time to every unit it occupies. */
+    resourceId?: string;
   })[];
 }
 export interface Figures {
@@ -28,13 +37,22 @@ export interface Figures {
   /** Booked over open time, rounded percent; null when the facility was never open. */
   occupancy: number | null;
 }
-export interface FacilityReport extends Figures {
-  id: string;
-  name: string;
-  sport: string;
+interface Counts {
   confirmed: number;
   cancelled: number;
   noShows: number;
+}
+export interface ResourceReport extends Figures, Counts {
+  id: string;
+  name: string;
+  parentId: string | null;
+}
+export interface FacilityReport extends Figures, Counts {
+  id: string;
+  name: string;
+  sport: string;
+  /** Each court in service: a whole court aggregates its parts' time. */
+  byResource: ResourceReport[];
 }
 export interface HeatmapCell extends Figures {
   /** ISO weekday, 1 = Monday. */
@@ -162,8 +180,11 @@ function facilityTime(facility: FacilityActivity, range: Span) {
     facility.closed,
   );
   const unitIds = facility.unitIds ?? [facility.id];
-  const held = (status: "confirmed" | "no_show") =>
-    unitIds.flatMap((unitId) =>
+  const held = (
+    status: "confirmed" | "no_show",
+    units: readonly string[] = unitIds,
+  ) =>
+    units.flatMap((unitId) =>
       intersect(
         facility.bookings.filter(
           (booking) =>
@@ -178,6 +199,8 @@ function facilityTime(facility: FacilityActivity, range: Span) {
     units: unitIds.length,
     booked: held("confirmed"),
     noShows: held("no_show"),
+    /** Confirmed time on some of the units, for the per-court report. */
+    bookedIn: (units: readonly string[]) => held("confirmed", units),
   };
 }
 /**
@@ -279,7 +302,7 @@ export function occupancyReport(args: {
     return value;
   };
   const byFacility = args.facilities.map((facility): FacilityReport => {
-    const { open, units, booked } = facilityTime(facility, range);
+    const { open, units, booked, bookedIn } = facilityTime(facility, range);
     for (const span of open)
       byLocalHour(span, args.timezone, (local, value) => {
         cell(local.dayOfWeek, local.hour).open += value * units;
@@ -293,17 +316,35 @@ export function occupancyReport(args: {
         compare(booking.start, range.start) >= 0 &&
         compare(booking.start, range.end) < 0,
     );
+    const counts = (bookings: typeof starting): Counts => ({
+      confirmed: bookings.filter((booking) => booking.status === "confirmed")
+        .length,
+      cancelled: bookings.filter((booking) => booking.status === "cancelled")
+        .length,
+      noShows: bookings.filter((booking) => booking.status === "no_show")
+        .length,
+    });
+    const byResource = (facility.resources ?? [])
+      .filter((resource) => resource.unitIds.length)
+      .map((resource): ResourceReport => ({
+        id: resource.id,
+        name: resource.name,
+        parentId: resource.parentId,
+        ...counts(
+          starting.filter((booking) => booking.resourceId === resource.id),
+        ),
+        ...figures(
+          minutes(bookedIn(resource.unitIds)),
+          minutes(open) * resource.unitIds.length,
+        ),
+      }));
     return {
       id: facility.id,
       name: facility.name,
       sport: facility.sport,
-      confirmed: starting.filter((booking) => booking.status === "confirmed")
-        .length,
-      cancelled: starting.filter((booking) => booking.status === "cancelled")
-        .length,
-      noShows: starting.filter((booking) => booking.status === "no_show")
-        .length,
+      ...counts(starting),
       ...figures(minutes(booked), minutes(open) * units),
+      byResource,
     };
   });
   const heatmap = [...cells.entries()]

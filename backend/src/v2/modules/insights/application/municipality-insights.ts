@@ -158,6 +158,7 @@ export class MunicipalityInsights {
           name: facility.name,
           sport: facility.sport,
           unitIds: facility.unitIds,
+          resources: facility.resources,
           open: this.calendar.expandRange({
             calendar: facility.openingCalendar,
             timezone,

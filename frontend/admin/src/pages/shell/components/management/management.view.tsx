@@ -9,6 +9,7 @@ import {
   PiLock,
   PiPencilSimple,
   PiPlus,
+  PiSquareHalf,
   PiWheelchair,
   PiWrench,
 } from "react-icons/pi";
@@ -16,6 +17,7 @@ import { Feedback } from "@/components/feedback/feedback.view";
 import { CourtArt } from "@/components/court-art/court-art.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { FacilityEditor } from "./components/facility-editor/facility-editor.view";
+import { ResourcesDialog } from "./components/resources-dialog/resources-dialog.view";
 import { useManagementController } from "./management.controller";
 const STATUS_ICON = { active: PiCheck, maintenance: PiWrench, closed: PiLock };
 export function Management() {
@@ -70,7 +72,7 @@ export function Management() {
           {c.saved && (
             <p role="status" className="success-message">
               <PiCheck size={18} aria-hidden="true" />
-              {c.t("facilitySaved")}
+              {c.t(c.saved === "courts" ? "resourcesSaved" : "facilitySaved")}
             </p>
           )}
           <section className="dashboard-section" aria-labelledby="activity">
@@ -179,6 +181,13 @@ export function Management() {
                               {c.price(facility.priceCents)}
                               {facility.priceCents > 0 && ` ${c.t("perSlot")}`}
                             </li>
+                            {(facility.resources?.length ?? 0) > 1 && (
+                              <li>
+                                <PiSquareHalf size={17} aria-hidden="true" />
+                                {facility.resources?.length}{" "}
+                                {c.t("courtsCount")}
+                              </li>
+                            )}
                             {facility.accessible && (
                               <li>
                                 <PiWheelchair size={17} aria-hidden="true" />
@@ -198,6 +207,14 @@ export function Management() {
                         >
                           <PiPencilSimple size={17} aria-hidden="true" />
                           {c.t("edit")}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => c.setCourtsOf(facility)}
+                          aria-label={`${c.t("resources")}: ${facility.name}`}
+                        >
+                          <PiSquareHalf size={17} aria-hidden="true" />
+                          {c.t("resourcesAction")}
                         </Button>
                       </li>
                     );
@@ -260,6 +277,13 @@ export function Management() {
               municipality={c.municipality}
               t={c.t}
               onClose={c.close}
+            />
+          )}
+          {c.courtsOf && (
+            <ResourcesDialog
+              facility={c.courtsOf}
+              t={c.t}
+              onClose={c.closeCourts}
             />
           )}
         </>

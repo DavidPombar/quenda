@@ -135,7 +135,18 @@ export interface Facility {
   /** WGS 84 position, published as open data; both set or both null. */
   latitude: number | null;
   longitude: number | null;
+  /** Courts and spaces, ordered by position; parts point at their whole court. */
+  resources?: Resource[];
 }
+/** A bookable court or space of a facility. */
+export interface Resource {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  position: number;
+}
+export type ResourceDraft = Omit<Resource, "position">;
 export interface Slot {
   start: string;
   end: string;
@@ -178,6 +189,19 @@ export interface FacilityUsage {
   bookedMinutes: number;
   openMinutes: number;
   /** Booked over open time, rounded percent; null when never open. */
+  occupancy: number | null;
+  /** Courts in service; a whole court aggregates the time of its parts. */
+  byResource: ResourceUsage[];
+}
+export interface ResourceUsage {
+  id: string;
+  name: string;
+  parentId: string | null;
+  confirmed: number;
+  cancelled: number;
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
   occupancy: number | null;
 }
 export interface HeatmapCell {
