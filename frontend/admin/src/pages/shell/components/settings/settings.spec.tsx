@@ -249,4 +249,32 @@ describe("municipal settings", () => {
       enabledCategories: ["resident", "disability", "senior"],
     });
   });
+
+  test("should save the open data licence and an upper-case DIR3 code, rejecting a malformed one", async () => {
+    stubManager();
+    const { spy } = stubPatch();
+    await open();
+    const section = page.getByRole("region", { name: "Datos abertos" });
+    await section
+      .getByRole("combobox", { name: "Licenza dos datos" })
+      .selectOptions("CC0-1.0");
+    const dir3 = section.getByRole("textbox", {
+      name: "Código DIR3 do concello",
+    });
+    await dir3.fill("L0136");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByText("O código DIR3 ten nove letras ou números."))
+      .toBeVisible();
+    expect(spy).not.toHaveBeenCalled();
+    await dir3.fill("l01360000");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Cambios gardados.");
+    expect(spy.mock.calls.at(-1)![0].body).toEqual({
+      dataLicense: "CC0-1.0",
+      dir3Code: "L01360000",
+    });
+  });
 });

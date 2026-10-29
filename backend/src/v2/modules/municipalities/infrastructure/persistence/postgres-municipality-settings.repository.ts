@@ -20,6 +20,8 @@ const columns: Record<keyof EditableSettings, string> = {
   noShowLimit: "no_show_limit",
   noShowWindowDays: "no_show_window_days",
   noShowBlockDays: "no_show_block_days",
+  dataLicense: "data_license",
+  dir3Code: "dir3_code",
 };
 @Injectable()
 export class PostgresMunicipalitySettingsRepository extends MunicipalitySettingsRepository {

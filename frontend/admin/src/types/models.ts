@@ -68,7 +68,18 @@ export interface Municipality {
   noShowWindowDays: number;
   noShowBlockDays: number;
   accessibility: Accessibility;
+  /** Licence of the published open data. */
+  dataLicense: DataLicense;
+  /** DIR3 code, publisher of the DCAT catalogue; null when not set. */
+  dir3Code: string | null;
 }
+export const DATA_LICENSES = [
+  "CC-BY-4.0",
+  "CC-BY-SA-4.0",
+  "CC0-1.0",
+  "ODbL-1.0",
+] as const;
+export type DataLicense = (typeof DATA_LICENSES)[number];
 export interface LegalTexts {
   gl: string;
   es: string;
@@ -92,6 +103,8 @@ export type SettingsPatch = Partial<
     | "noShowLimit"
     | "noShowWindowDays"
     | "noShowBlockDays"
+    | "dataLicense"
+    | "dir3Code"
   >
 >;
 export interface SettingsUpdate {

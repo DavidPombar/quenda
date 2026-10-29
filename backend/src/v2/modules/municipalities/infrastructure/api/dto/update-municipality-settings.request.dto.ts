@@ -2,6 +2,10 @@
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { CATEGORIES } from "../../../../../shared/application/categories";
+import {
+  dataLicenses,
+  type DataLicense,
+} from "../../../../../shared/application/municipality-settings";
 import type { Category } from "../../../../../shared/application/categories";
 import {
   ArrayMaxSize,
@@ -119,4 +123,20 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @Min(1)
   @Max(365)
   noShowBlockDays?: number;
+  @ApiPropertyOptional({
+    enum: dataLicenses,
+    description: "Licence of the published open data (T3, #21)",
+  })
+  @ValidateIf(defined)
+  @IsIn(dataLicenses)
+  dataLicense?: DataLicense;
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description:
+      "DIR3 code of the municipality, publisher of the DCAT catalogue; null or empty removes it",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => !!value)
+  @Matches(/^[A-Za-z0-9]{9}$/)
+  dir3Code?: string | null;
 }
