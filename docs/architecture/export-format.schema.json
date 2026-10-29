@@ -368,6 +368,13 @@
           },
           "prefersFamilyTariff": {
             "type": "boolean"
+          },
+          "organizationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Club the person represents (#17)"
           }
         },
         "additionalProperties": false
@@ -1001,6 +1008,236 @@
           "method",
           "checkedInAt",
           "recordedAt"
+        ]
+      }
+    },
+    "organizations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sport": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "taxId",
+          "sport",
+          "contactEmail",
+          "createdAt",
+          "archivedAt"
+        ]
+      }
+    },
+    "seasonCampaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "endsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "criteriaGl": {
+            "type": "string"
+          },
+          "criteriaEs": {
+            "type": "string"
+          },
+          "facilityIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "startsOn",
+          "endsOn",
+          "criteriaGl",
+          "criteriaEs",
+          "facilityIds",
+          "createdAt"
+        ]
+      }
+    },
+    "seasonAllocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "weekdays": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            }
+          },
+          "startsLocal": {
+            "type": "string"
+          },
+          "endsLocal": {
+            "type": "string"
+          },
+          "rrule": {
+            "type": "string",
+            "description": "Informative RFC 5545 rule; seasonOccurrences are authoritative"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "cancelledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cancellationReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "organizationId",
+          "facilityId",
+          "resourceId",
+          "weekdays",
+          "startsLocal",
+          "endsLocal",
+          "rrule",
+          "reason",
+          "createdBy",
+          "createdAt",
+          "cancelledAt",
+          "cancellationReason"
+        ]
+      }
+    },
+    "seasonOccurrences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "allocationId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "conflict",
+              "cancelled"
+            ]
+          },
+          "conflictBookingId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cancellationReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "allocationId",
+          "start",
+          "end",
+          "status",
+          "conflictBookingId",
+          "cancellationReason"
         ]
       }
     }

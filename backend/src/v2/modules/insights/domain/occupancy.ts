@@ -16,9 +16,12 @@ export interface FacilityActivity {
   active: Span[];
   /** Municipal holidays the facility follows, as whole local days. */
   closed: Span[];
-  /** A no-show held the slot but was not used, so it counts apart and not as booked time. */
+  /**
+   * A no-show held the slot but was not used, so it counts apart and not as booked time. A club's
+   * season slot (#17) is occupied time but not a booking, so it adds minutes and no count.
+   */
   bookings: (Span & {
-    status: "confirmed" | "cancelled" | "no_show";
+    status: "confirmed" | "cancelled" | "no_show" | "season";
     unitIds?: readonly string[];
   })[];
 }
@@ -161,7 +164,7 @@ export function occupancyReport(args: {
       intersect(
         facility.bookings.filter(
           (booking) =>
-            booking.status === "confirmed" &&
+            (booking.status === "confirmed" || booking.status === "season") &&
             (booking.unitIds ?? [facility.id]).includes(unitId),
         ),
         open,

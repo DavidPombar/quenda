@@ -59,3 +59,7 @@ Versioned migrations preserve the former unversioned `main` schema; see [migrati
 ## QR access (optional, #23)
 
 Passes are ES256 JWTs signed with a per-municipality key and verified offline by door devices with the published JWKS; a third role, `access`, can only sync the day, record entries and mark no-shows. Details, the offline protocol and the webhook format are in [QR access and the access-control connector](access-control.md).
+
+## Season allocation to clubs (#17)
+
+Managers register clubs and their representatives, open campaigns with published criteria and assign weekly slots; each dated occurrence occupies its court units in `booking_units`, so the database keeps club slots and one-off bookings apart, and dates already booked are kept as conflicts. See [season allocation to clubs](seasons.md).

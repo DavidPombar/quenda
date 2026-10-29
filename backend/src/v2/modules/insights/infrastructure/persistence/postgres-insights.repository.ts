@@ -53,7 +53,7 @@ export class PostgresInsightsRepository extends InsightsRepository {
       status: BookingSpan["status"];
       unitIds: string[];
     }>(
-      'SELECT b.facility_id AS "facilityId", b.starts_at AS start, b.ends_at AS end, b.status, ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=b.tenant_id AND r.id=b.resource_id ORDER BY coalesce(part.id,r.id)) AS "unitIds" FROM bookings b WHERE b.tenant_id=$1 AND b.starts_at<$3 AND b.ends_at>$2',
+      "SELECT b.facility_id AS \"facilityId\", b.starts_at AS start, b.ends_at AS end, b.status, ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=b.tenant_id AND r.id=b.resource_id ORDER BY coalesce(part.id,r.id)) AS \"unitIds\" FROM bookings b WHERE b.tenant_id=$1 AND b.starts_at<$3 AND b.ends_at>$2 UNION ALL SELECT a.facility_id, s.starts_at, s.ends_at, 'season', ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=a.tenant_id AND r.id=a.resource_id ORDER BY coalesce(part.id,r.id)) FROM season_occurrences s JOIN season_allocations a ON a.tenant_id=s.tenant_id AND a.id=s.allocation_id WHERE s.tenant_id=$1 AND s.status='active' AND s.starts_at<$3 AND s.ends_at>$2",
       [tenantId, start.toString(), end.toString()],
     );
     return rows.map((row) => ({

@@ -11,6 +11,7 @@ import {
   PiListChecks,
   PiQrCode,
   PiSignOut,
+  PiUsersThree,
   PiX,
 } from "react-icons/pi";
 import {
@@ -79,6 +80,12 @@ export function Shell() {
             <NavLink to={routeFor(municipality.slug, ROUTES.bookings)}>
               <PiCalendarCheck size={20} aria-hidden="true" />
               {t("dayBookings")}
+            </NavLink>
+          )}
+          {c.isManager && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.seasons)}>
+              <PiUsersThree size={20} aria-hidden="true" />
+              {t("seasons")}
             </NavLink>
           )}
           {c.isManager && (

@@ -48,3 +48,5 @@ restoring a backup taken before the upgrade, not by down migrations.
 - `0011` adds deployment operators, separate sessions and their audit trail (R3).
 
 - `0012` adds QR signing keys, attendance per booking revision and the access webhook channel (C3, C4, T3, T4).
+
+- `0013` adds season allocation to clubs (#17): `organizations`, the representative link on `users`, `season_campaigns` with their facilities, `season_allocations` (recurring weekly slots) and their dated `season_occurrences`. `booking_units` rows now belong to either a booking or an occurrence, so the existing `booking_units_no_overlap` constraint keeps club slots and one-off bookings apart. Transfers include the new collections (T3, R3).

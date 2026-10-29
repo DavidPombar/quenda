@@ -374,6 +374,14 @@ const gl = {
   passCode: "Código para dicir en voz alta",
   passError: "Non puidemos xerar o pase. Volve tentalo.",
   passImage: "Código QR do pase de acceso para {facility}",
+  season: "Uso de club",
+  myClub: "O meu club",
+  myClubBody:
+    "Representas este club. Estas son as súas próximas franxas de temporada; non contan no teu límite de reservas.",
+  myClubEmpty: "O club non ten franxas próximas.",
+  seasonCampaigns: "Temporada de clubs",
+  seasonPeriod: "Do {from} ao {to}",
+  seasonCriteria: "Criterios de prioridade publicados",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -729,6 +737,14 @@ const es: Record<TextKey, string> = {
   passCode: "Código para decir en voz alta",
   passError: "No pudimos generar el pase. Vuelve a intentarlo.",
   passImage: "Código QR del pase de acceso para {facility}",
+  season: "Uso de club",
+  myClub: "Mi club",
+  myClubBody:
+    "Representas a este club. Estas son sus próximas franjas de temporada; no cuentan en tu límite de reservas.",
+  myClubEmpty: "El club no tiene franjas próximas.",
+  seasonCampaigns: "Temporada de clubes",
+  seasonPeriod: "Del {from} al {to}",
+  seasonCriteria: "Criterios de prioridad publicados",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

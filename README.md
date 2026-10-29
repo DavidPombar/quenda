@@ -17,6 +17,7 @@ npm run dev
 - Municipal backoffice: http://127.0.0.1:5173/admin/
 - Email sent by the demo (Mailpit): http://127.0.0.1:8025
 - Door mode (QR access): http://127.0.0.1:5173/admin/ → **Entrar como control de accesos**; `npm run access:simulator` stands in for a lock controller
+- Season allocation to clubs: http://127.0.0.1:5173/admin/vilaverde/temporadas as the manager; the demo club «Club Pádel Vilaverde» holds Tuesdays and Thursdays 19:00–21:00 on Pista 1, shown as «Uso de club» in the citizen app
 - Swagger: http://127.0.0.1:3001/api/docs
 - OpenAPI: http://127.0.0.1:3001/api/openapi.json
 

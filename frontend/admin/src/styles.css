@@ -1805,3 +1805,69 @@ main {
 .statement .facts dd {
   margin: 4px 0 0;
 }
+
+/* Season allocation to clubs (#17) */
+.season-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.season-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.season-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+}
+.season-card-heading h3 {
+  font-size: var(--t-body);
+}
+.season-card h4 {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+}
+.tag-list,
+.conflict-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.conflict-list {
+  padding-left: 20px;
+  list-style: disc;
+}
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.inline-form .field {
+  flex: 1 1 220px;
+}
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.checkbox-group legend {
+  width: 100%;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
