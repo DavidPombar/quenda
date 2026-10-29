@@ -373,6 +373,16 @@ try {
   await audit("facility-editor");
   await page.getByRole("button", { name: "Pechar", exact: true }).click();
   await page
+    .getByRole("button", { name: "Pistas e espazos: Pavillón municipal" })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("textbox", { name: "Nome da pista" })
+    .first()
+    .waitFor();
+  await audit("courts-dialog");
+  await page.getByRole("button", { name: "Pechar", exact: true }).click();
+  await page
     .getByRole("combobox", { name: "Concello", exact: true })
     .selectOption("vilaverde");
   await page.waitForURL(/\/admin\/vilaverde\/xestion$/);
@@ -397,7 +407,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-one accessibility scans, including the three accessibility statements passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-two accessibility scans, including the three accessibility statements passed.",
   );
 } finally {
   await browser.close();

@@ -84,6 +84,60 @@ describe("occupancy report", () => {
       ]);
     },
   );
+  it("should report each court, with a whole court aggregating its parts", () => {
+    const hour = span("2026-10-05T10:00", "2026-10-05T11:00");
+    const result = report(
+      facility({
+        unitIds: ["a", "b"],
+        resources: [
+          {
+            id: "whole",
+            name: "Pista completa",
+            parentId: null,
+            unitIds: ["a", "b"],
+          },
+          { id: "a", name: "Tercio A", parentId: "whole", unitIds: ["a"] },
+          { id: "b", name: "Tercio B", parentId: "whole", unitIds: ["b"] },
+        ],
+        open: [hour],
+        bookings: [
+          { ...hour, status: "confirmed", unitIds: ["a"], resourceId: "a" },
+          {
+            ...hour,
+            status: "cancelled",
+            unitIds: ["a", "b"],
+            resourceId: "whole",
+          },
+        ],
+      }),
+      "2026-10-05",
+      "2026-10-05",
+    );
+    expect(result.byFacility[0].byResource).toEqual([
+      expect.objectContaining({
+        id: "whole",
+        confirmed: 0,
+        cancelled: 1,
+        bookedMinutes: 60,
+        openMinutes: 120,
+        occupancy: 50,
+      }),
+      expect.objectContaining({
+        id: "a",
+        confirmed: 1,
+        cancelled: 0,
+        bookedMinutes: 60,
+        openMinutes: 60,
+        occupancy: 100,
+      }),
+      expect.objectContaining({
+        id: "b",
+        confirmed: 0,
+        bookedMinutes: 0,
+        occupancy: 0,
+      }),
+    ]);
+  });
   it("should divide booked by open minutes and place them in local weekday × hour cells", () => {
     const result = report(
       facility({
