@@ -9,7 +9,12 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { PiCaretRight, PiUploadSimple, PiX } from "react-icons/pi";
-import type { Facility, Municipality } from "@/types/models";
+import type {
+  Facility,
+  Municipality,
+  ManagedSport,
+  Locale,
+} from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 import { categoryLabel } from "@/services/tariff.service";
 import { useFacilityEditorController } from "./facility-editor.controller";
@@ -26,6 +31,8 @@ const WEEKDAYS = [
 export function FacilityEditor(p: {
   facility?: Facility;
   municipality: Municipality;
+  sports: ManagedSport[];
+  locale: Locale;
   t: (key: TextKey) => string;
   onClose: (saved?: boolean) => void;
 }) {
@@ -157,11 +164,9 @@ export function FacilityEditor(p: {
                             )
                           }
                         >
-                          {(
-                            ["padel", "tennis", "futsal", "swimming"] as const
-                          ).map((sport) => (
-                            <option key={sport} value={sport}>
-                              {t(sport)}
+                          {c.sportOptions.map((sport) => (
+                            <option key={sport.code} value={sport.code}>
+                              {sport.name[p.locale]}
                             </option>
                           ))}
                         </NativeSelect.Field>

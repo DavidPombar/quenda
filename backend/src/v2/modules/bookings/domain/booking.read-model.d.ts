@@ -5,6 +5,9 @@ export interface BookingReadModel {
   facilityName: string;
   resourceName: string;
   sport: string;
+  /** The sport's name in the municipality's catalogue. */
+  sportName: { gl: string; es: string };
+  sportArt: string;
 }
 export interface ManagedBookingReadModel extends BookingReadModel {
   displayName: string;

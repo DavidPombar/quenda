@@ -19,6 +19,8 @@ export type ErrorCode =
   | "login_rejected"
   | "resource_required"
   | "resource_unavailable"
+  | "sport_unknown"
+  | "sport_in_use"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"

@@ -30,19 +30,23 @@ export function Catalog() {
           </div>
         </div>
         <div className="filter-row" role="group" aria-label={c.t("sport")}>
-          {(["all", "padel", "tennis", "futsal", "swimming"] as const).map(
-            (sport) => (
-              <button
-                type="button"
-                key={sport}
-                className={`filter-pill ${c.sport === sport ? "selected" : ""}`}
-                aria-pressed={c.sport === sport}
-                onClick={() => c.setFilter("sport", sport)}
-              >
-                {c.t(sport === "all" ? "allSports" : sport)}
-              </button>
-            ),
-          )}
+          {[
+            { code: "all", label: c.t("allSports") },
+            ...c.sports.map((sport) => ({
+              code: sport.code,
+              label: sport.name[c.locale],
+            })),
+          ].map(({ code, label }) => (
+            <button
+              type="button"
+              key={code}
+              className={`filter-pill ${c.sport === code ? "selected" : ""}`}
+              aria-pressed={c.sport === code}
+              onClick={() => c.setFilter("sport", code)}
+            >
+              {label}
+            </button>
+          ))}
           <span className="result-count" aria-live="polite">
             {c.facilities.length}{" "}
             {c.t(c.facilities.length === 1 ? "result" : "spaces")}

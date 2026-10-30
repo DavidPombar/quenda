@@ -181,6 +181,61 @@
       },
       "additionalProperties": false
     },
+    "sports": {
+      "description": "Sports catalogue, hidden sports included. Optional: packages without it keep the initial CNID list.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "nameGl",
+          "nameEs",
+          "cnidClass",
+          "cnidType",
+          "schemaType",
+          "art",
+          "visible",
+          "position"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,40}$"
+          },
+          "nameGl": {
+            "type": "string"
+          },
+          "nameEs": {
+            "type": "string"
+          },
+          "cnidClass": {
+            "type": "string"
+          },
+          "cnidType": {
+            "type": "string"
+          },
+          "schemaType": {
+            "type": "string"
+          },
+          "art": {
+            "enum": [
+              "padel",
+              "tennis",
+              "futsal",
+              "swimming",
+              "generic"
+            ]
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "facilities": {
       "type": "array",
       "items": {
@@ -207,7 +262,9 @@
             "type": "string"
           },
           "sport": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,40}$",
+            "description": "Code of a sport in the package's catalogue."
           },
           "address": {
             "type": "string"

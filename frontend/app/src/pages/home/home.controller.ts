@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useListCatalogQuery } from "@/queries/catalog/list-catalog.query";
+import { useListSportsQuery } from "@/queries/sports/list-sports.query";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { filtersFrom, paramsFrom } from "@/services/catalog.service";
 import { translate, type TextKey } from "@/services/i18n.service";
@@ -23,6 +24,7 @@ export function useHomeController() {
   const filters = filtersFrom(params);
   const municipalities = useListMunicipalitiesQuery();
   const catalog = useListCatalogQuery(filters);
+  const sports = useListSportsQuery(filters.municipalities);
   function update(patch: Partial<CatalogFilters>) {
     setParams(paramsFrom({ ...filters, ...patch }), { replace: true });
   }
@@ -44,6 +46,7 @@ export function useHomeController() {
     hasFilters: params.toString() !== "",
     municipalities,
     catalog,
+    sports: sports.data ?? [],
     countLabel: `${count} ${t(count === 1 ? "result" : "spaces")}`,
     detailUrl: (slug: string, id: string) =>
       routeFor(slug, ROUTES.detail.replace(":id", id)),

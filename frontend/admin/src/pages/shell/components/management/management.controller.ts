@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
+import { useListSportsQuery } from "@/queries/sports/list-sports.query";
+import { sportLabel } from "@/services/sport.service";
 import { useGetInsightsQuery } from "@/queries/insights/get-insights.query";
 import { useExportMunicipalityMutation } from "@/queries/portability/export-municipality.mutation";
 import { saveJsonFile } from "@/services/download.service";
@@ -12,6 +14,9 @@ export function useManagementController() {
   const context = useOutletContext<AppContext>();
   const facilities = useListFacilitiesQuery(context.municipality.slug);
   const isManager = context.session?.role === "manager";
+  const sports = useListSportsQuery(
+    isManager ? context.session?.userId : undefined,
+  );
   const insights = useGetInsightsQuery(
     isManager ? context.session?.userId : undefined,
   );
@@ -35,8 +40,11 @@ export function useManagementController() {
     insights.data?.from && insights.data.to
       ? `${context.t("activity")} ${periodLabel(insights.data.from, insights.data.to, context.locale)}`
       : context.t("activityLoading");
+  // The colour of a facility's bars follows its sport's illustration.
   const sportOf = (facilityId: string) =>
-    facilities.data?.find((item) => item.id === facilityId)?.sport;
+    facilities.data?.find((item) => item.id === facilityId)?.sportArt;
+  const sportName = (facility: Facility) =>
+    sportLabel(facility.sportName, facility.sport, context.locale);
   const maxBookings = Math.max(
     1,
     ...(insights.data?.byFacility.map((item) => item.bookings) ?? []),
@@ -47,6 +55,8 @@ export function useManagementController() {
     ...context,
     activityTitle,
     sportOf,
+    sportName,
+    sports: sports.data ?? [],
     maxBookings,
     price,
     facilities,

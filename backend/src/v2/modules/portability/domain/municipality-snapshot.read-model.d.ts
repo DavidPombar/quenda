@@ -71,6 +71,18 @@ export interface MunicipalitySnapshot {
     requestedAt: Temporal.Instant | null;
     decidedAt: Temporal.Instant | null;
   }[];
+  /** The municipality's sports catalogue, hidden sports included. */
+  sports: {
+    code: string;
+    nameGl: string;
+    nameEs: string;
+    cnidClass: string;
+    cnidType: string;
+    schemaType: string;
+    art: string;
+    visible: boolean;
+    position: number;
+  }[];
   facilities: {
     id: string;
     name: string;

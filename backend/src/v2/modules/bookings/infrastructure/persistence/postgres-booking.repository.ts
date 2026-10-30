@@ -26,6 +26,8 @@ interface Row {
   facility_name: string;
   resource_name: string;
   sport: string;
+  sport_name: { gl: string; es: string };
+  sport_art: string;
 }
 function toDomain(row: Row): Booking {
   const base = {
@@ -99,7 +101,7 @@ export class PostgresBookingRepository extends BookingRepository {
     facilityId?: string;
   }) {
     const { rows } = await this.db.query<Row & { display_name: string }>(
-      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport,u.display_name FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id JOIN users u ON u.tenant_id=b.tenant_id AND u.id=b.user_id WHERE b.tenant_id=$1 AND b.starts_at>=$2 AND b.starts_at<$3 AND ($4::uuid IS NULL OR b.facility_id=$4) ORDER BY b.starts_at, f.name LIMIT 500",
+      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport,json_build_object('gl',s.name_gl,'es',s.name_es) AS sport_name,s.art AS sport_art,u.display_name FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN sports s ON s.tenant_id=f.tenant_id AND s.code=f.sport JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id JOIN users u ON u.tenant_id=b.tenant_id AND u.id=b.user_id WHERE b.tenant_id=$1 AND b.starts_at>=$2 AND b.starts_at<$3 AND ($4::uuid IS NULL OR b.facility_id=$4) ORDER BY b.starts_at, f.name LIMIT 500",
       [
         args.tenantId,
         args.from.toString(),
@@ -112,6 +114,8 @@ export class PostgresBookingRepository extends BookingRepository {
       facilityName: row.facility_name,
       resourceName: row.resource_name,
       sport: row.sport,
+      sportName: row.sport_name,
+      sportArt: row.sport_art,
       displayName: row.display_name,
     }));
   }
@@ -128,7 +132,7 @@ export class PostgresBookingRepository extends BookingRepository {
   }
   async list(tenantId: string, userId: string) {
     const { rows } = await this.db.query<Row>(
-      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
+      "SELECT b.*,f.name AS facility_name,r.name AS resource_name,f.sport,json_build_object('gl',s.name_gl,'es',s.name_es) AS sport_name,s.art AS sport_art FROM bookings b JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id JOIN sports s ON s.tenant_id=f.tenant_id AND s.code=f.sport JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id WHERE b.tenant_id=$1 AND b.user_id=$2 ORDER BY b.starts_at DESC LIMIT 200",
       [tenantId, userId],
     );
     return rows.map((row) => ({
@@ -136,6 +140,8 @@ export class PostgresBookingRepository extends BookingRepository {
       facilityName: row.facility_name,
       resourceName: row.resource_name,
       sport: row.sport,
+      sportName: row.sport_name,
+      sportArt: row.sport_art,
     }));
   }
   async countActive(tenantId: string, userId: string, now: Temporal.Instant) {

@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Facility } from "./facility.entity";
+import type { SportLabel } from "./facility.read-model";
 import type { Temporal } from "@js-temporal/polyfill";
 import type { Result } from "../../../shared/application/result";
 import type { AppError } from "../../../shared/application/errors";
 export interface CatalogFilters {
   q?: string;
-  sport?: Facility["sport"];
+  sport?: string;
   accessible?: boolean;
   /** Municipality slugs; empty means every municipality of the deployment. */
   municipalities: string[];
 }
-export interface CatalogEntry extends Omit<
-  Facility,
-  "tenantId" | "openingCalendar" | "rules" | "followsMunicipalHolidays"
-> {
+export interface CatalogEntry
+  extends
+    Omit<
+      Facility,
+      "tenantId" | "openingCalendar" | "rules" | "followsMunicipalHolidays"
+    >,
+    SportLabel {
   municipality: { slug: string; name: string };
 }
 export const CATALOG_LIMIT = 200;

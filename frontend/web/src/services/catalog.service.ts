@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { CatalogFilters, Sport } from "@/types/models";
-const SPORTS: readonly Sport[] = ["padel", "tennis", "futsal", "swimming"];
+import type { CatalogFilters } from "@/types/models";
+const SPORT_CODE = /^[a-z0-9-]{2,40}$/;
 export const CITIZEN_APP_BASE = "/app";
 /** URL search params ↔ filters, so a search can be shared or bookmarked. */
 export function filtersFrom(params: URLSearchParams): CatalogFilters {
   const sport = params.get("sport") ?? "";
   return {
     q: params.get("q") ?? "",
-    sport: SPORTS.includes(sport as Sport) ? (sport as Sport) : "",
+    sport: SPORT_CODE.test(sport) ? sport : "",
     accessible: params.get("accessible") === "1",
     municipalities: (params.get("municipality") ?? "")
       .split(",")

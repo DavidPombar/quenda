@@ -48,3 +48,5 @@ restoring a backup taken before the upgrade, not by down migrations.
 - `0011` adds deployment operators, separate sessions and their audit trail (R3).
 
 - `0012` adds QR signing keys, attendance per booking revision and the access webhook channel (C3, C4, T3, T4).
+
+- `0013` adds the per-municipality sports catalogue (`sports`), seeded from a CNID-aligned list for existing municipalities and, through a trigger, for new ones, and replaces the fixed sport check on facilities with a foreign key to it (C1, M1).

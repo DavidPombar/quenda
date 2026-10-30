@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListCatalogQuery } from "@/queries/catalog/list-catalog.query";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
+import { useListSportsQuery } from "@/queries/sports/list-sports.query";
 import {
   bookingUrl,
   filtersFrom,
@@ -36,6 +37,7 @@ export function useSearchController() {
         : [...filters.municipalities, slug],
     });
   }
+  const sports = useListSportsQuery(filters.municipalities);
   const t = copy[locale];
   const count = catalog.data?.length ?? 0;
   return {
@@ -43,6 +45,7 @@ export function useSearchController() {
     locale,
     selectLocale,
     filters,
+    sports: sports.data ?? [],
     update,
     toggleMunicipality,
     clear: () => setParams(new URLSearchParams(), { replace: true }),

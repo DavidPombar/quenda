@@ -6,6 +6,7 @@ import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { stubShell, municipality } from "@/test/fixtures";
 import type {
+  SportDraft,
   MunicipalitySettings,
   SettingsPatch,
   SettingsUpdate,
@@ -248,5 +249,96 @@ describe("municipal settings", () => {
     expect(spy.mock.calls.at(-1)![0].body).toEqual({
       enabledCategories: ["resident", "disability", "senior"],
     });
+  });
+});
+async function openSports() {
+  await commands.navigate("/admin/vilaverde/axustes");
+  await render(<App />);
+  const section = page.getByRole("region", { name: "Deportes" });
+  await expect
+    .element(section.getByRole("textbox", { name: "Nome en galego" }).first())
+    .toHaveValue("Pádel");
+  return section;
+}
+describe("Sports catalogue in the settings", () => {
+  test("should add a sport with a code from its Galician name and save the whole catalogue", async () => {
+    stubManager();
+    const { spy } = stubJsonResponse({
+      path: "*/v2/manager/sports",
+      method: "PUT",
+      response: ({ body }: { body: unknown }) =>
+        (body as { sports: SportDraft[] }).sports.map((sport, position) => ({
+          ...sport,
+          name: { gl: sport.nameGl, es: sport.nameEs },
+          position,
+        })),
+    });
+    const section = await openSports();
+    await section.getByRole("button", { name: "Engadir deporte" }).click();
+    await section
+      .getByRole("textbox", { name: "Nome en galego" })
+      .last()
+      .fill("Xadrez rápido");
+    await section
+      .getByRole("textbox", { name: "Nome en castelán" })
+      .last()
+      .fill("Ajedrez rápido");
+    await section.getByRole("checkbox", { name: "Visible" }).nth(1).click();
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toMatchTextContent("Cambios gardados.");
+    const { sports } = (
+      spy.mock.calls[0][0] as { body: { sports: SportDraft[] } }
+    ).body;
+    expect(sports.at(-1)).toMatchObject({
+      code: "xadrez-rapido",
+      nameGl: "Xadrez rápido",
+      nameEs: "Ajedrez rápido",
+      visible: true,
+    });
+    expect(sports.find((sport) => sport.code === "tennis")?.visible).toBe(
+      false,
+    );
+    expect(sports.find((sport) => sport.code === "squash")?.visible).toBe(
+      false,
+    );
+  });
+  test("should explain why a sport in use cannot be removed", async () => {
+    stubManager();
+    stubJsonResponse({
+      path: "*/v2/manager/sports",
+      method: "PUT",
+      status: 409,
+      response: {
+        code: "sport_in_use",
+        detail:
+          "Hai instalacións con este deporte, así que non se pode quitar. Podes ocultalo.",
+      },
+    });
+    const section = await openSports();
+    await section.getByRole("button", { name: "Quitar: Pádel" }).click();
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("alert"))
+      .toMatchTextContent("Podes ocultalo.");
+  });
+  test("should ask for distinct names before sending anything", async () => {
+    stubManager();
+    const { spy } = stubJsonResponse({
+      path: "*/v2/manager/sports",
+      method: "PUT",
+      response: [],
+    });
+    const section = await openSports();
+    await section
+      .getByRole("textbox", { name: "Nome en galego" })
+      .nth(1)
+      .fill("pádel");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("alert"))
+      .toMatchTextContent("Cada deporte precisa un nome distinto");
+    expect(spy).not.toHaveBeenCalled();
   });
 });

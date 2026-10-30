@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
+import { SportNameDTO } from "../../../../facilities/infrastructure/api/dto/sport.response.dto";
 import {
   CATEGORIES,
   type TariffCategory,
@@ -38,7 +39,10 @@ export class BookingHistoryResponseDTO {
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
   @ApiProperty({ description: "Court or space display name" })
   resourceName!: string;
-  @ApiProperty({ description: "Sport" }) sport!: string;
+  @ApiProperty({ description: "Sport code" }) sport!: string;
+  @ApiProperty({ type: SportNameDTO, description: "Sport name" })
+  sportName!: SportNameDTO;
+  @ApiProperty({ description: "Sport illustration" }) sportArt!: string;
   @ApiProperty({
     enum: [...CATEGORIES, "general"],
     nullable: true,
@@ -71,6 +75,8 @@ export class BookingHistoryResponseDTO {
       facilityName: value.facilityName,
       resourceName: value.resourceName,
       sport: value.sport,
+      sportName: value.sportName,
+      sportArt: value.sportArt,
     };
   }
 }

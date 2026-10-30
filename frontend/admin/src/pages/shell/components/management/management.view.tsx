@@ -159,7 +159,7 @@ export function Management() {
                       <li key={facility.id}>
                         <div className="facility-mini">
                           <CourtArt
-                            sport={facility.sport}
+                            art={facility.sportArt ?? "generic"}
                             status={facility.status}
                           />
                         </div>
@@ -167,8 +167,10 @@ export function Management() {
                           <h3>{facility.name}</h3>
                           <ul className="facility-meta">
                             <li>
-                              <span className={`sport-tag ${facility.sport}`}>
-                                {c.t(facility.sport)}
+                              <span
+                                className={`sport-tag ${facility.sportArt ?? "generic"}`}
+                              >
+                                {c.sportName(facility)}
                               </span>
                             </li>
                             <li>
@@ -258,6 +260,8 @@ export function Management() {
             <FacilityEditor
               facility={c.editing === "new" ? undefined : c.editing}
               municipality={c.municipality}
+              sports={c.sports}
+              locale={c.locale}
               t={c.t}
               onClose={c.close}
             />

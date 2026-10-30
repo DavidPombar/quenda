@@ -3,6 +3,14 @@ import { Module } from "@nestjs/common";
 import { FacilityRepository } from "./domain/facility.repository";
 import { OpeningCalendar } from "./domain/opening-calendar";
 import { ResourceRepository } from "./domain/resource.repository";
+import { SportRepository } from "./domain/sport.repository";
+import { PostgresSportRepository } from "./infrastructure/persistence/postgres-sport.repository";
+import { ListSports } from "./application/queries/list-sports.query";
+import { ListManagedSports } from "./application/queries/list-managed-sports.query";
+import { SaveSports } from "./application/commands/save-sports.command";
+import { ListSportsController } from "./infrastructure/api/public/list-sports.controller";
+import { ListManagedSportsController } from "./infrastructure/api/manager/list-managed-sports.controller";
+import { SaveSportsController } from "./infrastructure/api/manager/save-sports.controller";
 import { PostgresResourceRepository } from "./infrastructure/persistence/postgres-resource.repository";
 import { PostgresFacilityRepository } from "./infrastructure/persistence/postgres-facility.repository";
 import { IcalOpeningCalendar } from "./infrastructure/calendar/ical-opening-calendar";
@@ -25,6 +33,10 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
     ListCatalog,
     GetAvailability,
     SaveFacility,
+    ListSports,
+    ListManagedSports,
+    SaveSports,
+    { provide: SportRepository, useClass: PostgresSportRepository },
     GetFacilityImpact,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
     { provide: ResourceRepository, useClass: PostgresResourceRepository },
@@ -37,8 +49,11 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
     GetAvailabilityController,
     CreateFacilityController,
     UpdateFacilityController,
+    ListSportsController,
+    ListManagedSportsController,
+    SaveSportsController,
     GetFacilityImpactController,
   ],
-  exports: [OpeningCalendar, HolidayCalendar],
+  exports: [OpeningCalendar, HolidayCalendar, SportRepository],
 })
 export class FacilitiesModule {}

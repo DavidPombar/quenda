@@ -11,10 +11,6 @@ const gl = {
   heroBody:
     "Atopa o teu espazo, escolle a túa quenda e goza do deporte preto da casa.",
   allSports: "Todos os deportes",
-  padel: "Pádel",
-  tennis: "Tenis",
-  futsal: "Fútbol sala",
-  swimming: "Natación",
   search: "Buscar instalación",
   searchPlaceholder: "Nome ou localización…",
   available: "Aberta",
@@ -390,8 +386,6 @@ const es: Record<TextKey, string> = {
   heroBody:
     "Encuentra tu espacio, elige tu turno y disfruta del deporte cerca de casa.",
   allSports: "Todos los deportes",
-  futsal: "Fútbol sala",
-  swimming: "Natación",
   search: "Buscar instalación",
   searchPlaceholder: "Nombre o ubicación…",
   available: "Abierta",

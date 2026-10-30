@@ -28,8 +28,10 @@ export class PostgresFacilityRepository extends FacilityRepository {
     >(
       `SELECT f.id, f.name, f.sport, f.address, f.description, f.accessible, f.status,
         f.slot_minutes AS "slotMinutes", f.price_cents AS "priceCents",
+        json_build_object('gl', s.name_gl, 'es', s.name_es) AS "sportName", s.art AS "sportArt",
         m.slug AS "municipalitySlug", m.name AS "municipalityName"
       FROM facilities f JOIN municipalities m ON m.id=f.tenant_id
+        JOIN sports s ON s.tenant_id=f.tenant_id AND s.code=f.sport
       WHERE f.status='active'
         AND ($1::text IS NULL OR f.name ILIKE $1 OR f.address ILIKE $1)
         AND ($2::text IS NULL OR f.sport=$2)

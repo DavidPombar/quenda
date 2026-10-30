@@ -22,12 +22,22 @@ const pool: OpenFacility = {
   latitude: 42.61,
   longitude: -8.12,
   courts: 1,
+  classification: {
+    cnidClass: "Vasos de piscina",
+    cnidType: "Vaso de piscina cuberta",
+    schemaType: "PublicSwimmingPool",
+  },
 };
 const court: OpenFacility = {
   ...pool,
   id: "20000000-0000-4000-8000-000000000012",
   name: "Pavillón",
   sport: "futsal",
+  classification: {
+    cnidClass: "Pabellones",
+    cnidType: "Pabellón polideportivo",
+    schemaType: "SportsActivityLocation",
+  },
   status: "active",
   priceCents: 0,
   latitude: null,

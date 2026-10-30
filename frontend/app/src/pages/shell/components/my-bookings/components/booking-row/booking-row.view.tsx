@@ -42,7 +42,7 @@ export function BookingRow(p: {
   const [StatusIcon, label] = OUTCOMES[p.booking.outcome];
   const byMunicipality = p.booking.cancelledBy === "municipality";
   return (
-    <article className={`booking-row sport-${p.booking.sport}`}>
+    <article className={`booking-row sport-${p.booking.sportArt}`}>
       <div className="booking-title">
         <h2>{p.booking.facilityName}</h2>
         <span className={`booking-status ${p.booking.outcome}`}>
@@ -82,7 +82,10 @@ export function BookingRow(p: {
           </li>
         )}
         <li>
-          <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
+          <SportTag
+            art={p.booking.sportArt}
+            label={p.booking.sportName[p.locale]}
+          />
         </li>
       </ul>
       {p.booking.status === "confirmed" && (

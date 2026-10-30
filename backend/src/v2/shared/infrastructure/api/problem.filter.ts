@@ -33,6 +33,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     resource_required: "Escolle a pista ou o espazo que queres reservar.",
     resource_unavailable:
       "Esta pista está fóra de servizo. Escolle outra pista.",
+    sport_unknown: "Escolle un deporte do catálogo do concello.",
+    sport_in_use:
+      "Hai instalacións con este deporte, así que non se pode quitar. Podes ocultalo.",
     insufficient_contrast:
       "A cor non ten contraste suficiente co branco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:
@@ -73,6 +76,9 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     resource_required: "Elige la pista o el espacio que quieres reservar.",
     resource_unavailable:
       "Esta pista está fuera de servicio. Elige otra pista.",
+    sport_unknown: "Elige un deporte del catálogo del municipio.",
+    sport_in_use:
+      "Hay instalaciones con este deporte, así que no se puede quitar. Puedes ocultarlo.",
     insufficient_contrast:
       "El color no tiene contraste suficiente con el blanco (mínimo 4,5:1, WCAG AA).",
     invalid_holidays:

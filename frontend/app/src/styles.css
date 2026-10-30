@@ -59,6 +59,10 @@
 }
 
 /* Each sport sets --sport / --sport-tint for its descendants. */
+.sport-generic {
+  --sport: var(--sport-other);
+  --sport-tint: var(--sport-other-tint);
+}
 .sport-tennis {
   --sport: var(--sport-tennis);
   --sport-tint: var(--sport-tennis-tint);

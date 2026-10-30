@@ -3,7 +3,8 @@
  * Published schemas of the open data files. They are served at
  * /v2/public/open-data/schemas/{name} and the HTTP tests validate every file against them.
  */
-const sports = ["padel", "tennis", "futsal", "swimming"];
+// Sports come from each municipality's catalogue: a code of lowercase letters, digits and dashes.
+const sportCode = "^[a-z0-9-]{2,40}$";
 const statuses = ["active", "maintenance", "closed"];
 const nullableNumber = (minimum: number, maximum: number) => ({
   type: ["number", "null"],
@@ -33,7 +34,7 @@ const record = {
   properties: {
     id: { type: "string", format: "uuid" },
     name: { type: "string", minLength: 1 },
-    sport: { enum: sports },
+    sport: { type: "string", pattern: sportCode },
     cnid_class: { type: "string", minLength: 1 },
     cnid_type: { type: "string", minLength: 1 },
     schema_type: { type: "string", pattern: "^[A-Z][A-Za-z]+$" },
@@ -87,14 +88,7 @@ const facilitiesJson = {
               "additionalProperty",
             ],
             properties: {
-              "@type": {
-                enum: [
-                  "SportsActivityLocation",
-                  "TennisComplex",
-                  "PublicSwimmingPool",
-                  "StadiumOrArena",
-                ],
-              },
+              "@type": { type: "string", pattern: "^[A-Z][A-Za-z]+$" },
               identifier: { type: "string", format: "uuid" },
               name: { type: "string", minLength: 1 },
               url: { type: "string", format: "uri" },
@@ -186,7 +180,10 @@ const facilitiesTable = {
   fields: [
     field("id", "string", "Facility UUID", { required: true, unique: true }),
     field("name", "string", "Facility name", { required: true }),
-    field("sport", "string", "Sport", { required: true, enum: sports }),
+    field("sport", "string", "Sport code in the municipality's catalogue", {
+      required: true,
+      pattern: sportCode,
+    }),
     field("cnid_class", "string", "CNID group of conventional sports spaces", {
       required: true,
     }),

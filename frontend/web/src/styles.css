@@ -21,6 +21,8 @@
   --sport-futsal-tint: #f5ebdc;
   --sport-swimming: #0f6f86;
   --sport-swimming-tint: #dff0f4;
+  --sport-generic: #4a5a51;
+  --sport-generic-tint: #eceeeb;
 
   /* Type */
   --font: "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
@@ -314,6 +316,10 @@ h1 {
 .sport-tag > span {
   font-variant-numeric: tabular-nums;
   font-weight: 800;
+}
+.sport-generic {
+  --sport: var(--sport-generic);
+  --sport-tint: var(--sport-generic-tint);
 }
 .sport-tennis {
   --sport: var(--sport-tennis);

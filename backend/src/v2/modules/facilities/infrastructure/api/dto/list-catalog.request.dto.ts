@@ -14,10 +14,10 @@ export class ListCatalogRequestDTO {
   @IsString()
   @MaxLength(80)
   q?: string;
-  @ApiPropertyOptional({ enum: ["padel", "tennis", "futsal", "swimming"] })
+  @ApiPropertyOptional({ description: "Sport code" })
   @ValidateIf(defined)
-  @IsIn(["padel", "tennis", "futsal", "swimming"])
-  sport?: "padel" | "tennis" | "futsal" | "swimming";
+  @Matches(/^[a-z0-9-]{2,40}$/)
+  sport?: string;
   @ApiPropertyOptional({
     enum: ["true", "false"],
     description: "Only step-free (true) or only not (false)",

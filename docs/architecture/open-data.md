@@ -58,9 +58,11 @@ latitude and longitude must be set together.
 
 The CSD's Censo Nacional de Instalaciones Deportivas (CNID, 2005) has no published data schema or
 codes; its interpretation manual groups conventional sports spaces (pistas, pabellones, vasos de
-piscina, campos…) and names space types. Quenda maps each sport to a CNID group and type name, and
-to the most specific schema.org type
-(`backend/src/v2/modules/open-data/domain/sport-taxonomy.ts`):
+piscina, campos…) and names space types. Each municipality keeps its own sports catalogue (table
+`sports`, migration `0013`), which starts from a list aligned with the CNID and schema.org and can
+be edited under **Axustes → Deportes**. Every sport carries its CNID group and type name and the
+most specific schema.org type; the open data files take them from there. The initial list
+includes, among others:
 
 | Sport      | CNID group       | CNID type                | schema.org               |
 | ---------- | ---------------- | ------------------------ | ------------------------ |
@@ -68,10 +70,10 @@ to the most specific schema.org type
 | `tennis`   | Pistas           | Pista de tenis           | `TennisComplex`          |
 | `futsal`   | Pabellones       | Pabellón polideportivo   | `SportsActivityLocation` |
 | `swimming` | Vasos de piscina | Vaso de piscina cubierta | `PublicSwimmingPool`     |
+| `football` | Campos           | Campo de fútbol          | `StadiumOrArena`         |
+| `fitness`  | Salas            | Sala de musculación      | `ExerciseGym`            |
 
 The names should be checked against the census manual before a council registers the catalogue.
-Issue #26 replaces the fixed sport list with a configurable catalogue per municipality that starts
-from this table.
 
 ## Licence and publisher
 

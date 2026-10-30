@@ -11,10 +11,6 @@ const gl = {
   heroBody:
     "Atopa o teu espazo, escolle a túa quenda e goza do deporte preto da casa.",
   allSports: "Todos os deportes",
-  padel: "Pádel",
-  tennis: "Tenis",
-  futsal: "Fútbol sala",
-  swimming: "Natación",
   search: "Buscar instalación",
   searchPlaceholder: "Nome ou localización…",
   available: "Dispoñible",
@@ -352,6 +348,26 @@ const gl = {
   statusRequested: "Pendente de verificar",
   statusVerified: "Verificada",
   statusRejected: "Rexeitada",
+  sportsSection: "Deportes",
+  sportsHint:
+    "Os deportes que ofrece o concello. Parten da clasificación do Censo Nacional de Instalacións Deportivas (CNID). Os ocultos non se ofrecen para novas instalacións nin como filtro, pero as instalacións que xa os teñen consérvanos. Un deporte con instalacións non se pode quitar.",
+  sportNew: "Novo deporte",
+  sportNameGl: "Nome en galego",
+  sportNameEs: "Nome en castelán",
+  sportVisible: "Visible",
+  sportClassification: "Código e clasificación",
+  sportCode: "Código",
+  sportCodeHint:
+    "Letras minúsculas, cifras e guións. Non se pode cambiar despois de gardar.",
+  sportCnidClass: "Grupo do CNID",
+  sportCnidType: "Tipo de espazo do CNID",
+  sportSchemaType: "Tipo de schema.org",
+  addSport: "Engadir deporte",
+  sportMoveUp: "Subir",
+  sportMoveDown: "Baixar",
+  removeSport: "Quitar",
+  sportsInvalid:
+    "Cada deporte precisa un nome distinto en galego e en castelán e un código válido, e polo menos un ten que estar visible.",
   categoriesSection: "Categorías de usuario",
   categoriesHint:
     "Marca as categorías con tarifa propia. Quen non teña unha verificada paga a tarifa xeral da instalación.",
@@ -611,8 +627,6 @@ const es: Record<TextKey, string> = {
   heroBody:
     "Encuentra tu espacio, elige tu turno y disfruta del deporte cerca de casa.",
   allSports: "Todos los deportes",
-  futsal: "Fútbol sala",
-  swimming: "Natación",
   search: "Buscar instalación",
   searchPlaceholder: "Nombre o ubicación…",
   available: "Disponible",
@@ -928,6 +942,26 @@ const es: Record<TextKey, string> = {
   statusRequested: "Pendiente de verificar",
   statusVerified: "Verificada",
   statusRejected: "Rechazada",
+  sportsSection: "Deportes",
+  sportsHint:
+    "Los deportes que ofrece el municipio. Parten de la clasificación del Censo Nacional de Instalaciones Deportivas (CNID). Los ocultos no se ofrecen para nuevas instalaciones ni como filtro, pero las instalaciones que ya los tienen los conservan. Un deporte con instalaciones no se puede quitar.",
+  sportNew: "Nuevo deporte",
+  sportNameGl: "Nombre en gallego",
+  sportNameEs: "Nombre en castellano",
+  sportVisible: "Visible",
+  sportClassification: "Código y clasificación",
+  sportCode: "Código",
+  sportCodeHint:
+    "Letras minúsculas, cifras y guiones. No se puede cambiar después de guardar.",
+  sportCnidClass: "Grupo del CNID",
+  sportCnidType: "Tipo de espacio del CNID",
+  sportSchemaType: "Tipo de schema.org",
+  addSport: "Añadir deporte",
+  sportMoveUp: "Subir",
+  sportMoveDown: "Bajar",
+  removeSport: "Quitar",
+  sportsInvalid:
+    "Cada deporte necesita un nombre distinto en gallego y en castellano y un código válido, y al menos uno tiene que estar visible.",
   categoriesSection: "Categorías de usuario",
   categoriesHint:
     "Marca las categorías con tarifa propia. Quien no tenga una verificada paga la tarifa general de la instalación.",

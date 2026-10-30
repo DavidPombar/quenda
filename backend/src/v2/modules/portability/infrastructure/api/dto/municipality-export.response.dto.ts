@@ -40,6 +40,17 @@ class ExportedMunicipalityDTO {
   dataLicense!: string;
   @ApiProperty({ type: String, nullable: true }) dir3Code!: string | null;
 }
+class ExportedSportDTO {
+  @ApiProperty() code!: string;
+  @ApiProperty() nameGl!: string;
+  @ApiProperty() nameEs!: string;
+  @ApiProperty() cnidClass!: string;
+  @ApiProperty() cnidType!: string;
+  @ApiProperty() schemaType!: string;
+  @ApiProperty() art!: string;
+  @ApiProperty() visible!: boolean;
+  @ApiProperty() position!: number;
+}
 class ExportedFacilityDTO {
   @ApiProperty() id!: string;
   @ApiProperty() name!: string;
@@ -238,6 +249,11 @@ export class MunicipalityExportResponseDTO {
   @ApiProperty({ format: "date-time" }) exportedAt!: string;
   @ApiProperty({ type: ExportedMunicipalityDTO })
   municipality!: ExportedMunicipalityDTO;
+  @ApiProperty({
+    type: [ExportedSportDTO],
+    description: "Sports catalogue, hidden sports included",
+  })
+  sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityDTO] })
   facilities!: ExportedFacilityDTO[];
   @ApiProperty({
@@ -269,6 +285,7 @@ export class MunicipalityExportResponseDTO {
       version: EXPORT_VERSION,
       exportedAt: value.exportedAt.toString(),
       municipality: snapshot.municipality,
+      sports: snapshot.sports,
       facilities: snapshot.facilities,
       facilityStatusPeriods: snapshot.facilityStatusPeriods.map((value) => ({
         ...value,

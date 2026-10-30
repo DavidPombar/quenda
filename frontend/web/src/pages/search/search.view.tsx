@@ -9,7 +9,6 @@ import {
 import logoMark from "@/assets/illustrations/logo-mark.svg";
 import { ROUTES } from "@/constants/routes";
 import { useSearchController } from "./search.controller";
-const SPORTS = ["padel", "tennis", "futsal", "swimming"] as const;
 /** Facilities across every municipality of the deployment (#18). */
 export function Search() {
   const c = useSearchController();
@@ -70,20 +69,12 @@ export function Search() {
               <NativeSelect.Root>
                 <NativeSelect.Field
                   value={c.filters.sport}
-                  onChange={(event) =>
-                    c.update({
-                      sport: (SPORTS as readonly string[]).includes(
-                        event.target.value,
-                      )
-                        ? (event.target.value as (typeof SPORTS)[number])
-                        : "",
-                    })
-                  }
+                  onChange={(event) => c.update({ sport: event.target.value })}
                 >
                   <option value="">{t.searchAllSports}</option>
-                  {SPORTS.map((sport) => (
-                    <option key={sport} value={sport}>
-                      {t.sports[sport]}
+                  {c.sports.map((sport) => (
+                    <option key={sport.code} value={sport.code}>
+                      {sport.name[c.locale]}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -154,8 +145,8 @@ export function Search() {
                       className="search-card"
                       aria-labelledby={`facility-${facility.id}`}
                     >
-                      <p className={`sport-tag sport-${facility.sport}`}>
-                        {t.sports[facility.sport]}
+                      <p className={`sport-tag sport-${facility.sportArt}`}>
+                        {facility.sportName[c.locale]}
                       </p>
                       <h2 id={`facility-${facility.id}`}>{facility.name}</h2>
                       <p className="search-meta">

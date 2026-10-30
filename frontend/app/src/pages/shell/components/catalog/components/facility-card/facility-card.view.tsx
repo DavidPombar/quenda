@@ -20,13 +20,16 @@ export function FacilityCard({
   t: (key: TextKey) => string;
 }) {
   return (
-    <article className={`facility-card sport-${facility.sport}`}>
+    <article className={`facility-card sport-${facility.sportArt}`}>
       <div className="facility-cover">
-        <CourtArt sport={facility.sport} status={facility.status} />
+        <CourtArt art={facility.sportArt} status={facility.status} />
       </div>
       <div className="facility-content">
         <div className="facility-tags">
-          <SportTag sport={facility.sport} label={t(facility.sport)} />
+          <SportTag
+            art={facility.sportArt}
+            label={facility.sportName[locale]}
+          />
           <FacilityStatus
             status={facility.status}
             label={t(

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { sportTaxonomy } from "../../domain/sport-taxonomy";
 import { Publication } from "./publication";
 /** schema.org JSON-LD: an ItemList of sports locations of one municipality. */
 export function facilitiesJsonLd(publication: Publication) {
@@ -13,7 +12,7 @@ export function facilitiesJsonLd(publication: Publication) {
     publisher: { "@type": "GovernmentOrganization", name: municipality.name },
     numberOfItems: facilities.length,
     itemListElement: facilities.map((facility, index) => {
-      const classification = sportTaxonomy[facility.sport];
+      const { classification } = facility;
       return {
         "@type": "ListItem",
         position: index + 1,

@@ -104,11 +104,42 @@ export interface Session {
   displayName: string;
   role: "citizen" | "manager" | "access";
 }
-export type Sport = "padel" | "tennis" | "futsal" | "swimming";
+/** Code of a sport in the municipality's catalogue. */
+export type Sport = string;
+/** Illustration and colour of a sport; sports without their own use the generic ones. */
+export type SportArt = "padel" | "tennis" | "futsal" | "swimming" | "generic";
+export interface SportName {
+  gl: string;
+  es: string;
+}
+/** A sport of the municipality's catalogue, as the manager edits it. */
+export interface ManagedSport {
+  code: string;
+  name: SportName;
+  cnidClass: string;
+  cnidType: string;
+  schemaType: string;
+  art: SportArt;
+  visible: boolean;
+  position: number;
+}
+export interface SportDraft {
+  code: string;
+  nameGl: string;
+  nameEs: string;
+  cnidClass: string;
+  cnidType: string;
+  schemaType: string;
+  art: SportArt;
+  visible: boolean;
+}
 export interface Facility {
   id: string;
   name: string;
   sport: Sport;
+  /** Read-only, from the API: the sport's name and illustration. */
+  sportName?: SportName;
+  sportArt?: SportArt;
   address: string;
   description: string;
   accessible: boolean;

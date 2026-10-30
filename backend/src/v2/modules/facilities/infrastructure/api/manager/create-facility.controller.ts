@@ -49,6 +49,7 @@ export class CreateFacilityController {
       | AppError<"forbidden">
       | AppError<"not_found">
       | AppError<"validation">
+      | AppError<"sport_unknown">
       | AppError<"calendar_in_use">
       | AppError<"id_reused">,
   ): never {
@@ -59,6 +60,8 @@ export class CreateFacilityController {
         throw new ProblemException(404, error);
       case "validation":
         throw new ProblemException(400, error);
+      case "sport_unknown":
+        throw new ProblemException(422, error);
       case "calendar_in_use":
         throw new ProblemException(409, error);
       case "id_reused":

@@ -7,7 +7,7 @@ import {
   type ResponseContext,
 } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
-import { municipality } from "@/test/fixtures";
+import { municipality, sports } from "@/test/fixtures";
 import type { CatalogEntry } from "@/types/models";
 const neighbour = {
   ...municipality,
@@ -19,6 +19,8 @@ const pool: CatalogEntry = {
   id: "pool",
   name: "Piscina de Riotorto",
   sport: "swimming",
+  sportName: { gl: "Natación", es: "Natación" },
+  sportArt: "swimming",
   address: "Rúa do Río, 1",
   description: "Piscina cuberta.",
   accessible: true,
@@ -31,6 +33,8 @@ const court: CatalogEntry = {
   id: "court",
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
+  sportName: { gl: "Pádel", es: "Pádel" },
+  sportArt: "padel",
   municipality: { slug: "vilaverde", name: "Concello de Vilaverde" },
 };
 function stubCatalog() {
@@ -38,6 +42,7 @@ function stubCatalog() {
     path: "*/v2/public/municipalities",
     response: [municipality, neighbour],
   });
+  stubJsonResponse({ path: "*/v2/public/sports", response: sports });
   return stubJsonResponse({
     path: "*/v2/public/catalog",
     response: ({ url }: ResponseContext) => {

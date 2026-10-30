@@ -8,7 +8,6 @@ import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
 import { WEBSITE_URL } from "@/constants/routes";
 import { useHomeController } from "./home.controller";
-const SPORTS = ["padel", "tennis", "futsal", "swimming"] as const;
 export function Home() {
   const c = useHomeController();
   const { t } = c;
@@ -60,15 +59,21 @@ export function Home() {
             />
           </div>
           <div className="filter-row" role="group" aria-label={t("sport")}>
-            {(["", ...SPORTS] as const).map((sport) => (
+            {[
+              { code: "", label: t("allSports") },
+              ...c.sports.map((sport) => ({
+                code: sport.code,
+                label: sport.name[c.locale],
+              })),
+            ].map(({ code, label }) => (
               <button
                 type="button"
-                key={sport || "all"}
-                className={`filter-pill ${c.filters.sport === sport ? "selected" : ""}`}
-                aria-pressed={c.filters.sport === sport}
-                onClick={() => c.update({ sport })}
+                key={code || "all"}
+                className={`filter-pill ${c.filters.sport === code ? "selected" : ""}`}
+                aria-pressed={c.filters.sport === code}
+                onClick={() => c.update({ sport: code })}
               >
-                {t(sport || "allSports")}
+                {label}
               </button>
             ))}
           </div>
@@ -129,7 +134,10 @@ export function Home() {
                   className="home-card"
                   aria-labelledby={`facility-${facility.id}`}
                 >
-                  <SportTag sport={facility.sport} label={t(facility.sport)} />
+                  <SportTag
+                    art={facility.sportArt}
+                    label={facility.sportName[c.locale]}
+                  />
                   <h2 id={`facility-${facility.id}`}>{facility.name}</h2>
                   <p className="home-meta">
                     <PiMapPin size={16} aria-hidden="true" />

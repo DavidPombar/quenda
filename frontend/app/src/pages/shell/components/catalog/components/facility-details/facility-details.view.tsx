@@ -41,7 +41,7 @@ export function FacilityDetails() {
       <header className="detail-heading">
         <h1>{f.name}</h1>
         <div className="facility-tags">
-          <SportTag sport={f.sport} label={c.t(f.sport)} />
+          <SportTag art={f.sportArt} label={f.sportName[c.locale]} />
           <FacilityStatus
             status={f.status}
             label={c.t(f.status === "active" ? "available" : f.status)}
@@ -51,7 +51,7 @@ export function FacilityDetails() {
       <div className="detail-layout">
         <div className="detail-info">
           <div className="detail-art">
-            <CourtArt sport={f.sport} status={f.status} />
+            <CourtArt art={f.sportArt} status={f.status} />
           </div>
           <section className="info-panel">
             <h2>{c.t("about")}</h2>
@@ -107,7 +107,7 @@ export function FacilityDetails() {
           </section>
         </div>
         <section
-          className={`availability-panel sport-${f.sport}`}
+          className={`availability-panel sport-${f.sportArt}`}
           aria-labelledby="slots-title"
         >
           <div className="section-heading">

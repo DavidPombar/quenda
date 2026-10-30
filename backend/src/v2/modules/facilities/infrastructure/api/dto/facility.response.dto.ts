@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
+import { SPORT_ARTS, SportNameDTO } from "./sport.response.dto";
 import { CategoryPriceResponseDTO } from "./category-price.response.dto";
 import { FacilityDetails } from "../../../domain/facility.read-model";
 import { ResourceResponseDTO } from "./resource.response.dto";
 export class FacilityResponseDTO {
   @ApiProperty({ description: "Facility UUID" }) id!: string;
   @ApiProperty({ description: "Facility name" }) name!: string;
-  @ApiProperty({ description: "Sport" }) sport!:
-    "padel" | "tennis" | "futsal" | "swimming";
+  @ApiProperty({ description: "Sport code in the municipality's catalogue" })
+  sport!: string;
+  @ApiProperty({ type: SportNameDTO, description: "Sport name" })
+  sportName!: SportNameDTO;
+  @ApiProperty({ enum: SPORT_ARTS, description: "Sport illustration" })
+  sportArt!: string;
   @ApiProperty({ description: "Postal address" }) address!: string;
   @ApiProperty({ description: "Description" }) description!: string;
   @ApiProperty({ description: "Step-free access" }) accessible!: boolean;
@@ -57,6 +62,8 @@ export class FacilityResponseDTO {
       id: value.id,
       name: value.name,
       sport: value.sport,
+      sportName: SportNameDTO.from(value.sportName),
+      sportArt: value.sportArt,
       address: value.address,
       description: value.description,
       accessible: value.accessible,

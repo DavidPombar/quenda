@@ -8,6 +8,7 @@ import type {
   Municipality,
   Slot,
   MyCategories,
+  SportOption,
 } from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -49,6 +50,8 @@ export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
+  sportName: { gl: "Pádel", es: "Pádel" },
+  sportArt: "padel",
   address: "Rúa da Carballeira, 12",
   description: "Un espazo para xogar.",
   accessible: true,
@@ -75,6 +78,8 @@ export const pavilion: Facility = {
   id: "20000000-0000-4000-8000-000000000012",
   name: "Pavillón municipal",
   sport: "futsal",
+  sportName: { gl: "Fútbol sala", es: "Fútbol sala" },
+  sportArt: "futsal",
   resources: [
     {
       id: "20000000-0000-4000-8000-000000000012",
@@ -140,6 +145,21 @@ export function stubAuthMethods(overrides: Partial<AuthMethods> = {}) {
   stubJsonResponse({ path: "*/v2/public/auth/methods", response });
   return response;
 }
+/** Sports offered in the demo catalogue, as the filters receive them. */
+export const sports: SportOption[] = [
+  { code: "padel", name: { gl: "Pádel", es: "Pádel" }, art: "padel" },
+  { code: "tennis", name: { gl: "Tenis", es: "Tenis" }, art: "tennis" },
+  {
+    code: "futsal",
+    name: { gl: "Fútbol sala", es: "Fútbol sala" },
+    art: "futsal",
+  },
+  {
+    code: "swimming",
+    name: { gl: "Natación", es: "Natación" },
+    art: "swimming",
+  },
+];
 export function stubShell(
   authenticated = false,
   methods: Partial<AuthMethods> = {},
@@ -154,6 +174,7 @@ export function stubShell(
     path: "*/v2/public/municipalities",
     response: [municipality],
   });
+  stubJsonResponse({ path: "*/v2/public/sports", response: sports });
   stubJsonResponse({
     path: "*/v2/public/session",
     response: {

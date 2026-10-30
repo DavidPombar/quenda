@@ -4,6 +4,8 @@ import { Facility } from "../../domain/facility.entity";
 import { FacilityDetails } from "../../domain/facility.read-model";
 import { FacilityRepository } from "../../domain/facility.repository";
 import { ResourceRepository } from "../../domain/resource.repository";
+import { SportRepository } from "../../domain/sport.repository";
+import { sportLabel } from "../../domain/sport-label";
 import { OpeningCalendar } from "../../domain/opening-calendar";
 import { CATEGORIES } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
@@ -21,6 +23,7 @@ export type SaveFacilityError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"validation">
+  | AppError<"sport_unknown">
   | AppError<"calendar_in_use">
   | AppError<"id_reused">;
 @Injectable()
@@ -34,6 +37,7 @@ export class SaveFacility {
     private readonly audit: Audit,
     private readonly ids: IdGenerator,
     private readonly outbox: Outbox,
+    private readonly sports: SportRepository,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -63,7 +67,8 @@ export class SaveFacility {
       id: args.id,
       tenantId: args.principal.tenantId,
       name: "",
-      sport: "padel",
+      // The create request always names a sport; this default only fills the shape.
+      sport: "",
       address: "",
       description: "",
       accessible: false,
@@ -82,6 +87,10 @@ export class SaveFacility {
     );
     const details = async (value: Facility): Promise<FacilityDetails> => ({
       ...value,
+      ...sportLabel(
+        await this.sports.find(value.tenantId, value.sport),
+        value.sport,
+      ),
       resources: await this.resources.listByFacility(value.tenantId, value.id),
     });
     if (existing && Object.keys(patch).length === 0)
@@ -110,6 +119,13 @@ export class SaveFacility {
       !this.calendar.validate(facility.openingCalendar, municipality.timezone)
     )
       return Result.err(failure("validation"));
+    // A hidden sport is kept by the facilities that have it but cannot be chosen anew.
+    const sport = await this.sports.find(municipality.id, facility.sport);
+    if (
+      !sport ||
+      (!sport.visible && (!existing || existing.sport !== facility.sport))
+    )
+      return Result.err(failure("sport_unknown"));
     const now = this.clock.now();
     const scheduleChanged =
       !!existing &&
@@ -129,7 +145,12 @@ export class SaveFacility {
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
       return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
-        () => Result.ok({ ...facility, resources: [] }),
+        () =>
+          Result.ok({
+            ...facility,
+            ...sportLabel(sport, sport.code),
+            resources: [],
+          }),
         (error) => Result.err(error),
       );
     if (!existing || existing.status !== facility.status)

@@ -357,6 +357,13 @@ try {
     .getByRole("heading", { level: 1, name: "Declaración de accesibilidade" })
     .waitFor();
   await audit("accessibility-admin");
+  await page.getByRole("link", { name: "Axustes", exact: true }).click();
+  await page
+    .getByRole("region", { name: "Deportes" })
+    .getByRole("textbox", { name: "Nome en galego" })
+    .first()
+    .waitFor();
+  await audit("sports-settings");
   await page.getByRole("link", { name: "Panel", exact: true }).click();
   await page.getByRole("button", { name: "Nova instalación" }).waitFor();
   await page.getByRole("button", { name: "Nova instalación" }).click();
@@ -397,7 +404,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-one accessibility scans, including the three accessibility statements passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-two accessibility scans, including the three accessibility statements passed.",
   );
 } finally {
   await browser.close();

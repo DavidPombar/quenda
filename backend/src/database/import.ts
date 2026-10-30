@@ -12,6 +12,8 @@ export interface MunicipalityPackage {
   version: number;
   exportedAt: string;
   municipality: Row & { id: string; slug: string };
+  /** Sports catalogue (optional: packages from before #26 keep the initial CNID list). */
+  sports?: Row[];
   facilities: Row[];
   accessKeys?: Row[];
   checkIns?: Row[];
@@ -98,6 +100,18 @@ const tables = {
     dir3_code: "dir3Code",
     access_webhook_url: "accessWebhookUrl",
     access_webhook_secret_sealed: "accessWebhookSecretSealed",
+  },
+  sports: {
+    tenant_id: "tenantId",
+    code: "code",
+    name_gl: "nameGl",
+    name_es: "nameEs",
+    cnid_class: "cnidClass",
+    cnid_type: "cnidType",
+    schema_type: "schemaType",
+    art: "art",
+    visible: "visible",
+    position: "position",
   },
   facilities: {
     tenant_id: "tenantId",
@@ -326,6 +340,12 @@ export async function importMunicipality(
     await insert("municipalities", [{ ...data.municipality, slug }]);
     await insert("users", data.users);
     await insert("identities", data.identities ?? []);
+    // A new municipality starts with the initial list (database trigger); a package with its own
+    // catalogue replaces it before the facilities that reference it.
+    if (data.sports?.length) {
+      await client.query("DELETE FROM sports WHERE tenant_id=$1", [tenantId]);
+      await insert("sports", data.sports);
+    }
     await insert("facilities", data.facilities);
     await insert("facility_status_periods", data.facilityStatusPeriods ?? []);
     await insert("facility_prices", data.facilityPrices ?? []);

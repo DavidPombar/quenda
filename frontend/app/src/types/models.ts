@@ -70,11 +70,26 @@ export interface Session {
   displayName: string;
   role: "citizen" | "manager";
 }
-export type Sport = "padel" | "tennis" | "futsal" | "swimming";
+/** Code of a sport in a municipality's catalogue. */
+export type Sport = string;
+/** Illustration and colour of a sport; sports without their own use the generic ones. */
+export type SportArt = "padel" | "tennis" | "futsal" | "swimming" | "generic";
+export interface SportName {
+  gl: string;
+  es: string;
+}
+/** A sport to filter the catalogue by. */
+export interface SportOption {
+  code: string;
+  name: SportName;
+  art: SportArt;
+}
 export interface Facility {
   id: string;
   name: string;
   sport: Sport;
+  sportName: SportName;
+  sportArt: SportArt;
   address: string;
   description: string;
   accessible: boolean;
@@ -116,6 +131,8 @@ export interface Booking {
   resourceId: string;
   resourceName: string;
   sport: Sport;
+  sportName: SportName;
+  sportArt: SportArt;
   start: string;
   end: string;
   tariffCategory: TariffCategory | null;
@@ -249,6 +266,8 @@ export interface CatalogEntry {
   id: string;
   name: string;
   sport: Sport;
+  sportName: SportName;
+  sportArt: SportArt;
   address: string;
   description: string;
   accessible: boolean;

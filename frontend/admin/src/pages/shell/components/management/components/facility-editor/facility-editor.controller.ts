@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useSaveFacilityMutation } from "@/queries/facilities/save-facility.mutation";
 import { useGetFacilityImpactQuery } from "@/queries/facilities/get-facility-impact.query";
+import type { ManagedSport } from "@/types/models";
 import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
 import { centsFromInput } from "@/services/tariff.service";
@@ -11,6 +12,8 @@ import type { TextKey } from "@/services/i18n.service";
 export function useFacilityEditorController(args: {
   facility?: Facility;
   municipality: Municipality;
+  /** The municipality's catalogue; hidden sports stay only on facilities that have them. */
+  sports: ManagedSport[];
   t: (key: TextKey) => string;
   onClose: (saved?: boolean) => void;
 }) {
@@ -20,7 +23,8 @@ export function useFacilityEditorController(args: {
     return {
       id,
       name: "",
-      sport: "padel",
+      // Filled with the first visible sport once the catalogue loads.
+      sport: "",
       address: "",
       description: "",
       accessible: true,
@@ -77,6 +81,16 @@ export function useFacilityEditorController(args: {
     longitude: args.facility?.longitude?.toString() ?? "",
   }));
   const mutation = useSaveFacilityMutation();
+  const sportOptions = args.sports.filter(
+    (sport) => sport.visible || sport.code === args.facility?.sport,
+  );
+  const firstSport = sportOptions[0]?.code;
+  useEffect(() => {
+    if (firstSport)
+      setDraft((current) =>
+        current.sport ? current : { ...current, sport: firstSport },
+      );
+  }, [firstSport]);
   // Closing an active facility cancels its upcoming bookings, so it asks first (C3).
   const shuttingDown =
     !!args.facility &&
@@ -211,6 +225,7 @@ export function useFacilityEditorController(args: {
   }
   return {
     draft,
+    sportOptions,
     setField,
     coordinates,
     setCoordinate,

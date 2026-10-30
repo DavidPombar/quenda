@@ -17,6 +17,7 @@ manager can only export their own. The file is named
 | `format`, `version` | `quenda-municipality-export`, `2` |
 | `exportedAt` | ISO 8601 instant |
 | `municipality` | All persisted settings, including branding, holidays, retention, no-show rules, email configuration, enabled categories, identity and accessibility statement settings, and the open data licence and DIR3 code |
+| `sports` | The sports catalogue, hidden sports included, with gl/es names and the CNID and schema.org classification. Optional: a package without it keeps the initial CNID list |
 | `facilities` | Every facility, including closed ones, with its RFC 5545 opening calendar verbatim and its optional coordinates |
 | `resources` | Courts and spaces of each facility, parents before their parts, including out-of-service ones. Optional: a package without them gets one resource per facility, with the facility's id |
 | `users` | Id, display name, role, deletion state, email, preferred language and identity assurance; the NIF only where residency is verified, still encrypted, plus the family-tariff preference, so the destination needs the same `QUENDA_DATA_KEY` to read it |

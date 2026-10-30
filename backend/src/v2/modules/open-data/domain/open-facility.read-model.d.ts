@@ -21,6 +21,8 @@ export interface OpenFacility extends Pick<
 > {
   /** Active courts or spaces; the parts of a divisible court are not counted separately. */
   courts: number;
+  /** From the municipality's sports catalogue: CNID group and type, and schema.org type. */
+  classification: { cnidClass: string; cnidType: string; schemaType: string };
 }
 export interface OpenFacilities {
   municipality: Pick<MunicipalitySettings, "slug" | "name" | "dir3Code"> & {

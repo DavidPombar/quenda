@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
-import type { Facility, Insights, Municipality } from "@/types/models";
+import type {
+  Facility,
+  Insights,
+  ManagedSport,
+  Municipality,
+} from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "vilaverde",
@@ -51,7 +56,33 @@ export const facility: Facility = {
   latitude: 42.61,
   longitude: -8.12,
 };
+const sport = (
+  code: string,
+  gl: string,
+  es: string,
+  art: ManagedSport["art"],
+  position: number,
+  visible = true,
+): ManagedSport => ({
+  code,
+  name: { gl, es },
+  cnidClass: "Pistas",
+  cnidType: "Pista polideportiva",
+  schemaType: "SportsActivityLocation",
+  art,
+  visible,
+  position,
+});
+/** The manager's sports catalogue; squash is hidden. */
+export const sports: ManagedSport[] = [
+  sport("padel", "Pádel", "Pádel", "padel", 0),
+  sport("tennis", "Tenis", "Tenis", "tennis", 1),
+  sport("futsal", "Fútbol sala", "Fútbol sala", "futsal", 2),
+  sport("swimming", "Natación", "Natación", "swimming", 3),
+  sport("squash", "Squash", "Squash", "generic", 4, false),
+];
 export function stubShell(authenticated = false) {
+  stubJsonResponse({ path: "*/v2/manager/sports", response: sports });
   stubJsonResponse({
     path: "*/v2/public/municipalities",
     response: [municipality],
