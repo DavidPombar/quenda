@@ -1,0 +1,139 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Production instance (#27): PostgreSQL, API, notice worker, the three frontends behind
+# nginx, Caddy with automatic TLS and a scheduled restic backup. Guide: docs/operacion/.
+#
+#   cp deploy/prod.env.example deploy/.env           # domain, database and backups
+#   cp deploy/quenda.env.example deploy/quenda.env   # application secrets and features
+#   docker compose -f deploy/compose.prod.yml up -d --build --wait
+#
+# Behind a platform that already terminates TLS (Coolify, k3s ingress), leave out the
+# `caddy` profile and route the domain to the `web` service on port 80.
+name: quenda
+# Application settings live in quenda.env (from quenda.env.example); leave unused settings
+# commented out there, since an empty value is not the same as an unset one.
+x-api: &api
+  image: quenda-api:local
+  restart: unless-stopped
+  env_file: quenda.env
+  environment:
+    DATABASE_URL: postgres://quenda:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/quenda
+    DEMO_MODE: "false"
+    PUBLIC_URL: https://${QUENDA_DOMAIN:?set QUENDA_DOMAIN}
+    APP_BASE_URL: https://${QUENDA_DOMAIN}
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quenda
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: quenda
+    # No published port: only the other services reach the database.
+    volumes: ["quenda-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quenda -d quenda"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  api:
+    <<: *api
+    build:
+      context: ..
+      target: api
+    depends_on:
+      db:
+        condition: service_healthy
+    # Pending migrations run before the API starts; there is no seed in production.
+    command:
+      [
+        "sh",
+        "-c",
+        "node backend/dist/database/migrate.js && node backend/dist/main.js",
+      ]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/v2/public/municipalities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+  worker:
+    <<: *api
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["node", "backend/dist/worker.js"]
+  # Applies each council's retention policy once a day (T4, docs/architecture/data-protection.md).
+  retention:
+    <<: *api
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      [
+        "sh",
+        "-c",
+        "while true; do node backend/dist/database/retention.js; sleep 86400; done",
+      ]
+  web:
+    image: quenda-web:local
+    build:
+      context: ..
+      target: web
+    restart: unless-stopped
+    environment:
+      # Must be the origin of MAP_TILE_URL in quenda.env.
+      MAP_TILE_ORIGIN: ${MAP_TILE_ORIGIN:-https://tile.openstreetmap.org}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  # TLS for a council's own server: certificates from Let's Encrypt, renewed automatically.
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: ["caddy"]
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      QUENDA_DOMAIN: ${QUENDA_DOMAIN}
+      QUENDA_UPSTREAM: web:80
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+  # Nightly pg_dump into an encrypted restic repository (docs/operacion/copias-de-seguridad.md).
+  backup:
+    build: ./backup
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: quenda
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: quenda
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-/backups}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?set RESTIC_PASSWORD}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-30 3 * * *}
+      BACKUP_KEEP: ${BACKUP_KEEP:---keep-daily 7 --keep-weekly 5 --keep-monthly 12}
+      TZ: ${DEPLOYMENT_TIMEZONE:-Europe/Madrid}
+    volumes: ["${BACKUP_DIR:-./backups}:/backups"]
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  quenda-data:
+  caddy-data:
+  caddy-config:

@@ -13,3 +13,5 @@ playwright-report/
 __screenshots__/
 .vitest/
 .claude/worktrees/
+deploy/backups/
+deploy/quenda.env

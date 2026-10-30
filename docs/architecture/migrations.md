@@ -1,8 +1,8 @@
 # Database migrations (R1)
 
 The schema lives in numbered SQL files under `backend/src/database/migrations/`
-(`NNNN_snake_case.sql`). `npm run db:migrate`, the `api` container start command and
-the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
+(`NNNN_snake_case.sql`). `npm run db:migrate`, the `api` start command in `compose.demo.yml` and
+`deploy/compose.prod.yml`, and the HTTP tests all call the same runner, `backend/src/database/migrate.ts`.
 
 - Applied versions are recorded in `schema_migrations` with a SHA-256 checksum.
 - Each pending file runs in its own transaction, in filename order. A failure rolls
