@@ -7,7 +7,7 @@ export class ApiError extends Error {
     super(code);
   }
 }
-/** The public website only reads public endpoints, so no session or CSRF header is needed. */
+/** The public website only reads public endpoints, so no session is needed. */
 async function request<T>(path: string): Promise<T> {
   const response = await fetch(`/v2/${path}`, {
     credentials: "omit",
@@ -16,4 +16,15 @@ async function request<T>(path: string): Promise<T> {
   if (!response.ok) throw new ApiError("request_failed", response.status);
   return response.json() as Promise<T>;
 }
-export const apiClient = { request };
+/** Fire-and-forget POST to a public endpoint (analytics); the custom header passes the CSRF check. */
+async function send(path: string, body: unknown): Promise<void> {
+  const response = await fetch(`/v2/${path}`, {
+    method: "POST",
+    credentials: "omit",
+    keepalive: true,
+    headers: { "Content-Type": "application/json", "X-Quenda-Request": "1" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new ApiError("request_failed", response.status);
+}
+export const apiClient = { request, send };

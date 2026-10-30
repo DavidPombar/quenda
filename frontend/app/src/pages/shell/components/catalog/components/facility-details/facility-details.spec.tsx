@@ -6,6 +6,7 @@ import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import {
   facility,
+  municipality,
   pavilion,
   stubAvailability,
   stubFacilities,
@@ -480,5 +481,43 @@ describe("Alternatives with less occupancy", () => {
       .toMatch(
         new RegExp(`/instalacions/${other}\\?data=\\d{4}-\\d{2}-\\d{2}$`),
       );
+  });
+});
+test("should count the booking funnel when the council has analytics on", async () => {
+  stubShell(true);
+  stubJsonResponse({
+    path: "*/v2/public/municipalities",
+    response: [{ ...municipality, analytics: true }],
+  });
+  stubAvailability(facility, () => [slot]);
+  stubCreate();
+  const { spy } = stubJsonResponse({
+    path: "*/v2/public/analytics/pageview",
+    method: "POST",
+    status: 204,
+  });
+  await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+  await render(<App />);
+  await page.getByRole("button", { name: "10:00 Libre" }).click();
+  await page.getByRole("button", { name: "Confirmar reserva" }).click();
+  await expect
+    .element(
+      page.getByRole("heading", { name: "A túa quenda está confirmada!" }),
+    )
+    .toBeVisible();
+  await expect
+    .poll(() =>
+      spy.mock.calls
+        .map((call) => (call[0].body as { event?: string }).event)
+        .filter(Boolean),
+    )
+    .toEqual(["slot-open", "booking-confirmed"]);
+  const event = spy.mock.calls.find(
+    (call) => (call[0].body as { event?: string }).event,
+  )![0].body;
+  expect(event).toMatchObject({
+    app: "app",
+    slug: "vilaverde",
+    path: `/app/vilaverde/instalacions/${facility.id}`,
   });
 });

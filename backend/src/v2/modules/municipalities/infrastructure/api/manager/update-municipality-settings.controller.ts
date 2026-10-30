@@ -16,12 +16,16 @@ import {
 } from "../../../application/commands/update-municipality-settings.command";
 import { UpdateMunicipalitySettingsRequestDTO } from "../dto/update-municipality-settings.request.dto";
 import { UpdateMunicipalitySettingsResponseDTO } from "../dto/update-municipality-settings.response.dto";
+import { AnalyticsConfig } from "../../../../../shared/application/analytics-config";
 import { MunicipalitySettingsResponseDTO } from "../dto/municipality-settings.response.dto";
 @V2Controller("manager/municipality")
 @UseGuards(PrincipalGuard)
 export class UpdateMunicipalitySettingsController {
   private readonly operation;
-  constructor(locator: Commands) {
+  constructor(
+    locator: Commands,
+    private readonly analytics: AnalyticsConfig,
+  ) {
     this.operation = locator.get(UpdateMunicipalitySettings);
   }
   @Patch()
@@ -43,7 +47,10 @@ export class UpdateMunicipalitySettingsController {
     });
     return result.fold(
       (value) => ({
-        settings: MunicipalitySettingsResponseDTO.fromSettings(value.settings),
+        settings: MunicipalitySettingsResponseDTO.fromSettings(
+          value.settings,
+          this.analytics.collects("app"),
+        ),
         affectedBookings: value.affectedBookings,
       }),
       this.handleError,
@@ -60,7 +67,6 @@ export class UpdateMunicipalitySettingsController {
         throw new ProblemException(404, error);
       case "insufficient_contrast":
       case "invalid_holidays":
-      case "invalid_analytics":
         throw new ProblemException(422, error);
       default:
         return assertNever(error);

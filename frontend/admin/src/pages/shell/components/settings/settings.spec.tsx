@@ -14,8 +14,8 @@ import type {
 const settings: MunicipalitySettings = {
   ...municipality,
   holidaysCalendar: "",
-  analyticsUrl: "",
-  analyticsWebsiteId: null,
+  analyticsEnabled: false,
+  analyticsAvailable: true,
 };
 
 function stubManager(overrides: Partial<MunicipalitySettings> = {}) {
@@ -368,7 +368,7 @@ describe("municipal settings", () => {
       .toHaveTextContent("Deporte eliminado.");
   });
 
-  test("should switch web analytics on with an https Umami and its site id, rejecting a half configuration", async () => {
+  test("should switch web analytics on for the council", async () => {
     stubManager();
     const { spy } = stubPatch();
     await open();
@@ -376,23 +376,22 @@ describe("municipal settings", () => {
     await expect
       .element(section.getByText("A analítica web está desactivada."))
       .toBeVisible();
-    const url = section.getByRole("textbox", { name: "Enderezo do Umami" });
-    await url.fill("https://analitica.vilaverde.gal");
-    await section.getByRole("button", { name: "Gardar cambios" }).click();
-    await expect
-      .element(section.getByText(/Indica un enderezo https e o identificador/))
-      .toBeVisible();
-    expect(spy).not.toHaveBeenCalled();
     await section
-      .getByRole("textbox", { name: "Identificador do sitio en Umami" })
-      .fill("6c7a5e3e-1b2d-4f9a-8c3e-2a1b0c9d8e7f");
+      .getByRole("checkbox", { name: "Contar as visitas á app neste concello" })
+      .click({ force: true });
     await section.getByRole("button", { name: "Gardar cambios" }).click();
     await expect
       .element(section.getByRole("status"))
       .toHaveTextContent("Cambios gardados.");
-    expect(spy.mock.calls.at(-1)![0].body).toEqual({
-      analyticsUrl: "https://analitica.vilaverde.gal",
-      analyticsWebsiteId: "6c7a5e3e-1b2d-4f9a-8c3e-2a1b0c9d8e7f",
-    });
+    expect(spy.mock.calls.at(-1)![0].body).toEqual({ analyticsEnabled: true });
+  });
+  test("should explain that analytics cannot be switched on without the deployment's Umami", async () => {
+    stubManager({ analyticsAvailable: false } as Partial<MunicipalitySettings>);
+    await open();
+    const section = page.getByRole("region", { name: "Analítica web" });
+    await expect
+      .element(section.getByText(/O despregamento non ten Umami/))
+      .toBeVisible();
+    await expect.element(section.getByRole("checkbox")).not.toBeInTheDocument();
   });
 });

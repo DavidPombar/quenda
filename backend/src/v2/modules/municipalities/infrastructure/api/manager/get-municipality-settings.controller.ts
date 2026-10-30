@@ -14,12 +14,16 @@ import {
   GetMunicipalitySettings,
   GetMunicipalitySettingsError,
 } from "../../../application/queries/get-municipality-settings.query";
+import { AnalyticsConfig } from "../../../../../shared/application/analytics-config";
 import { MunicipalitySettingsResponseDTO } from "../dto/municipality-settings.response.dto";
 @V2Controller("manager/municipality")
 @UseGuards(PrincipalGuard)
 export class GetMunicipalitySettingsController {
   private readonly operation;
-  constructor(locator: Queries) {
+  constructor(
+    locator: Queries,
+    private readonly analytics: AnalyticsConfig,
+  ) {
     this.operation = locator.get(GetMunicipalitySettings);
   }
   @Get()
@@ -29,7 +33,11 @@ export class GetMunicipalitySettingsController {
     @CurrentPrincipal() principal: Principal,
   ): Promise<MunicipalitySettingsResponseDTO> {
     return (await this.operation.execute({ principal })).fold(
-      MunicipalitySettingsResponseDTO.fromSettings,
+      (value) =>
+        MunicipalitySettingsResponseDTO.fromSettings(
+          value,
+          this.analytics.collects("app"),
+        ),
       this.handleError,
     );
   }

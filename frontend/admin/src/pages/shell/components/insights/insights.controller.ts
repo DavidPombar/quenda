@@ -111,5 +111,6 @@ export function useInsightsController() {
     applyPreset,
     presets: PRESETS,
     exportUrl,
+    tenantId,
   };
 }

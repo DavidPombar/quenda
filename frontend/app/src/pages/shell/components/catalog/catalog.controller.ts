@@ -22,6 +22,7 @@ export function useCatalogController() {
   const query = useListFacilitiesQuery(context.municipality.slug, filters);
   const sports = useListSportsQuery([context.municipality.slug]);
   function update(changes: Partial<FacilityFilters>) {
+    context.track("search");
     // Any new filter starts again from the first page.
     setParams(facilityParamsFrom({ ...filters, page: 1, ...changes }), {
       replace: true,

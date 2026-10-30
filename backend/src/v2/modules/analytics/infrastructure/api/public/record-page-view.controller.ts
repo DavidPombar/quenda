@@ -17,23 +17,29 @@ export class RecordPageViewController {
   @ApiOperation({
     summary: "RecordPageView",
     description:
-      "Passes a page view to the municipality's own Umami when it has web analytics on; always 204",
+      "Passes a page view or a fixed event to the deployment's Umami when it counts that site; always 204",
   })
   @ApiResponse({ status: 204, description: "Accepted" })
   async handle(
     @Body() body: PageViewRequestDTO,
     @Headers("user-agent") userAgent: string | undefined,
+    @Headers("dnt") dnt: string | undefined,
+    @Headers("sec-gpc") gpc: string | undefined,
     @Ip() ip: string,
     @Req() request: Request,
   ): Promise<void> {
     await this.operation.execute({
-      slug: body.slug,
+      app: body.app,
+      slug: body.slug ?? null,
       path: body.path,
+      event: body.event ?? null,
       language: body.language,
       screen: body.screen,
       hostname: request.hostname,
       userAgent: userAgent ?? "",
       ip,
+      dnt,
+      gpc,
     });
   }
 }

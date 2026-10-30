@@ -9,23 +9,22 @@ export class MunicipalitySettingsResponseDTO extends MunicipalityResponseDTO {
   })
   holidaysCalendar!: string;
   @ApiProperty({
-    description: "Base URL of the council's Umami; empty when off",
+    description: "Whether the council switched web analytics on (#57)",
   })
-  analyticsUrl!: string;
+  analyticsEnabled!: boolean;
   @ApiProperty({
-    type: String,
-    nullable: true,
-    description: "Umami website id",
+    description: "Whether the deployment has an Umami to count the app in",
   })
-  analyticsWebsiteId!: string | null;
+  analyticsAvailable!: boolean;
   static fromSettings(
     value: MunicipalitySettings,
+    collects = false,
   ): MunicipalitySettingsResponseDTO {
     return {
-      ...MunicipalityResponseDTO.from(value),
+      ...MunicipalityResponseDTO.from(value, collects),
       holidaysCalendar: value.holidaysCalendar,
-      analyticsUrl: value.analyticsUrl,
-      analyticsWebsiteId: value.analyticsWebsiteId,
+      analyticsEnabled: value.analyticsEnabled,
+      analyticsAvailable: collects,
     };
   }
 }

@@ -327,4 +327,19 @@ describe("Indicators through HTTP and PostgreSQL", () => {
       .expect(200);
     expect(galician.body as string).toContain("Luns;10:00;");
   });
+  it("should report web analytics as unavailable while the deployment has no Umami", async () => {
+    const context = await tenant();
+    const response = await context.manager
+      .get("/v2/manager/web-analytics")
+      .expect(200);
+    expect(response.body).toMatchObject({ available: false, app: null });
+    const settings = await context.manager
+      .get("/v2/manager/municipality")
+      .expect(200);
+    expect(settings.body).toMatchObject({
+      analyticsEnabled: false,
+      analyticsAvailable: false,
+      analytics: false,
+    });
+  });
 });

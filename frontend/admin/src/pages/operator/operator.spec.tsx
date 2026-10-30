@@ -4,7 +4,12 @@ import { commands, page } from "vitest/browser";
 import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
-import { municipality, stubShell } from "@/test/fixtures";
+import {
+  municipality,
+  stubShell,
+  siteReport,
+  webAnalyticsFor,
+} from "@/test/fixtures";
 import type {
   DeploymentInsights,
   DeploymentMunicipality,
@@ -16,8 +21,8 @@ import type {
 const settings: MunicipalitySettings = {
   ...municipality,
   holidaysCalendar: "",
-  analyticsUrl: "",
-  analyticsWebsiteId: null,
+  analyticsEnabled: false,
+  analyticsAvailable: true,
 };
 const deployment: DeploymentMunicipality[] = [
   {
@@ -209,6 +214,63 @@ describe("supramunicipal operator area", () => {
     const url = new URL(spy.mock.calls.at(-1)![0].url);
     expect(url.searchParams.get("from")).toBe("2026-10-01");
     expect(url.searchParams.get("to")).toBe("2026-10-31");
+  });
+
+  test("should show web analytics for the app, each council and the website", async () => {
+    stubOperator();
+    const { spy } = stubJsonResponse({
+      path: "*/v2/operator/web-analytics",
+      response: webAnalyticsFor({
+        web: { ...siteReport, visitors: 75 },
+        municipalities: [
+          {
+            slug: municipality.slug,
+            name: municipality.name,
+            visitors: 80,
+            visits: 95,
+            pageviews: 300,
+          },
+        ],
+      }),
+    });
+    await commands.navigate(
+      "/admin/operador/analitica?from=2026-10-01&to=2026-10-31",
+    );
+    await render(<App />);
+    await expect
+      .element(page.getByRole("heading", { level: 2, name: "App cidadá" }))
+      .toBeVisible();
+    const councils = page.getByRole("table", {
+      name: "Visitas á app por concello",
+    });
+    await expect
+      .element(
+        councils.getByRole("rowheader", { name: "Concello de Vilaverde" }),
+      )
+      .toBeVisible();
+    await expect
+      .element(councils.getByRole("cell", { name: "300" }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("heading", { level: 2, name: "Web pública" }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("link", { name: "Analítica web" }))
+      .toHaveAttribute("aria-current", "page");
+    const url = new URL(spy.mock.calls.at(-1)![0].url);
+    expect(url.searchParams.get("from")).toBe("2026-10-01");
+  });
+  test("should explain that the deployment has no Umami configured", async () => {
+    stubOperator();
+    stubJsonResponse({
+      path: "*/v2/operator/web-analytics",
+      response: webAnalyticsFor({ available: false, app: null }),
+    });
+    await commands.navigate("/admin/operador/analitica");
+    await render(<App />);
+    await expect
+      .element(page.getByText(/O despregamento non ten Umami configurado/))
+      .toBeVisible();
   });
 
   test("should offer both municipal management and the operator area from the admin home", async () => {

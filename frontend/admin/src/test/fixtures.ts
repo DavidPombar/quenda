@@ -5,6 +5,8 @@ import type {
   Facility,
   Insights,
   Municipality,
+  SiteReport,
+  WebAnalytics,
 } from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -157,5 +159,31 @@ export function insightsFor(
         occupancy: 0,
       },
     ],
+  };
+}
+export const siteReport: SiteReport = {
+  visitors: 120,
+  visits: 150,
+  pageviews: 480,
+  bounceRate: 35,
+  averageVisitSeconds: 125,
+  pages: [{ value: "/app/vilaverde/instalacions", count: 210 }],
+  referrers: [{ value: "concello.vilaverde.gal", count: 40 }],
+  devices: [{ value: "mobile", count: 90 }],
+  languages: [{ value: "gl", count: 100 }],
+  events: [{ value: "booking-confirmed", count: 18 }],
+};
+export function webAnalyticsFor(
+  overrides: Partial<WebAnalytics> = {},
+): WebAnalytics {
+  return {
+    available: true,
+    enabled: true,
+    from: "2026-10-01",
+    to: "2026-10-31",
+    app: siteReport,
+    web: null,
+    municipalities: [],
+    ...overrides,
   };
 }

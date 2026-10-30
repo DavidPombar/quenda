@@ -188,6 +188,7 @@ describe("Web analytics", () => {
     await render(<App />);
     await expect.poll(() => spy.mock.calls.length).toBe(1);
     expect(spy.mock.calls[0][0].body).toEqual({
+      app: "app",
       slug: "vilaverde",
       path: "/app/vilaverde/accesibilidade",
       language: "gl",
@@ -198,5 +199,24 @@ describe("Web analytics", () => {
     expect(spy.mock.calls[1][0].body).toMatchObject({
       path: "/app/vilaverde/datos-abertos",
     });
+  });
+  test("should send nothing when the browser asks not to be tracked", async () => {
+    vi.spyOn(navigator, "doNotTrack", "get").mockReturnValue("1");
+    stubShell();
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [{ ...municipality, analytics: true }],
+    });
+    const { spy } = stubJsonResponse({
+      path: "*/v2/public/analytics/pageview",
+      method: "POST",
+      status: 204,
+    });
+    await commands.navigate("/app/vilaverde/accesibilidade");
+    await render(<App />);
+    await expect.element(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(spy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 });

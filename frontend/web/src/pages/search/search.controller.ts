@@ -11,12 +11,14 @@ import {
   localized,
   paramsFrom,
 } from "@/services/catalog.service";
+import { useWebAnalytics } from "@/queries/analytics/web-analytics.query";
 import { copy, type Locale } from "@/services/i18n.service";
 import type { CatalogFilters } from "@/types/models";
 export function useSearchController() {
   const [locale, setLocale] = useState<Locale>(() =>
     localStorage.getItem("quenda.locale") === "es" ? "es" : "gl",
   );
+  const analytics = useWebAnalytics(locale);
   useEffect(() => {
     document.documentElement.lang = locale;
     document.title = `${copy[locale].searchTitle} · Quenda`;
@@ -31,6 +33,7 @@ export function useSearchController() {
   const municipalities = useListMunicipalitiesQuery();
   const sports = useListSportsQuery(filters.municipalities);
   function update(patch: Partial<CatalogFilters>) {
+    analytics.track("search");
     // A new filter starts again from the first page.
     setParams(paramsFrom({ ...filters, page: 1, ...patch }), {
       replace: true,

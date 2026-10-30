@@ -12,7 +12,6 @@ import {
   MunicipalitySettings,
 } from "../../../../shared/application/municipality-settings";
 import { normaliseCategories } from "../../../../shared/application/categories";
-import { AnalyticsForwarder } from "../../../../shared/application/analytics-forwarder";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
@@ -22,8 +21,7 @@ export type UpdateMunicipalitySettingsError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"insufficient_contrast">
-  | AppError<"invalid_holidays">
-  | AppError<"invalid_analytics">;
+  | AppError<"invalid_holidays">;
 export type SettingsPatch = Partial<EditableSettings> & {
   legalTexts?: LegalTexts;
 };
@@ -41,8 +39,7 @@ const editable = [
   "noShowBlockDays",
   "dataLicense",
   "dir3Code",
-  "analyticsUrl",
-  "analyticsWebsiteId",
+  "analyticsEnabled",
 ] as const satisfies readonly (keyof EditableSettings)[];
 /**
  * New rules apply to new reservations and changes only: existing bookings keep the cancellation
@@ -54,7 +51,6 @@ export class UpdateMunicipalitySettings {
     private readonly municipalities: Municipalities,
     private readonly settings: MunicipalitySettingsRepository,
     private readonly holidays: HolidayCalendar,
-    private readonly analytics: AnalyticsForwarder,
     private readonly clock: Clock,
     private readonly audit: Audit,
   ) {}
@@ -81,12 +77,6 @@ export class UpdateMunicipalitySettings {
         args.patch.dir3Code === undefined
           ? undefined
           : args.patch.dir3Code?.trim().toUpperCase() || null,
-      // Umami's base URL without a trailing slash; an empty one switches analytics off.
-      analyticsUrl: args.patch.analyticsUrl?.trim().replace(/\/+$/, ""),
-      analyticsWebsiteId:
-        args.patch.analyticsWebsiteId === undefined
-          ? undefined
-          : args.patch.analyticsWebsiteId?.trim().toLowerCase() || null,
       enabledCategories:
         args.patch.enabledCategories &&
         normaliseCategories(args.patch.enabledCategories),
@@ -98,12 +88,6 @@ export class UpdateMunicipalitySettings {
       return Result.err(failure("insufficient_contrast"));
     if (!this.holidays.validate(next.holidaysCalendar))
       return Result.err(failure("invalid_holidays"));
-    // Both or neither, and only an HTTPS server, so the API never posts anywhere else.
-    if (
-      !next.analyticsUrl !== !next.analyticsWebsiteId ||
-      (next.analyticsUrl && !this.analytics.accepts(next.analyticsUrl))
-    )
-      return Result.err(failure("invalid_analytics"));
     const changed = editable.filter(
       (key) => JSON.stringify(existing[key]) !== JSON.stringify(next[key]),
     );

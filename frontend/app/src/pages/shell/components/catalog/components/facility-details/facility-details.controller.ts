@@ -82,6 +82,7 @@ export function useFacilityDetailsController() {
     label: resourceLabel(resource, resources),
   }));
   function select(slot: Slot, resource: Resource | null) {
+    context.track("slot-open");
     setSelected({ slot, resource });
     setRequestId(crypto.randomUUID());
     create.reset();
@@ -96,14 +97,17 @@ export function useFacilityDetailsController() {
       return;
     }
     if (selected)
-      create.mutate({
-        id: requestId,
-        facilityId: id,
-        start: selected.slot.start,
-        ...(showResource && selected.resource
-          ? { resourceId: selected.resource.id }
-          : {}),
-      });
+      create.mutate(
+        {
+          id: requestId,
+          facilityId: id,
+          start: selected.slot.start,
+          ...(showResource && selected.resource
+            ? { resourceId: selected.resource.id }
+            : {}),
+        },
+        { onSuccess: () => context.track("booking-confirmed") },
+      );
   }
   const days = dateOptions.slice(0, 7);
   const slots = currentResource
@@ -172,6 +176,7 @@ export function useFacilityDetailsController() {
   const taken =
     (create.error as { code?: string } | null)?.code === "slot_taken";
   function pick(suggestion: SlotSuggestion) {
+    context.track("suggestion-picked");
     if (!suggestion.sameFacility) {
       close();
       void navigate(

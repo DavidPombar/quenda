@@ -130,3 +130,34 @@ describe("shared facility search", () => {
       .toHaveAttribute("href", "/instalacions");
   });
 });
+test("should count the page and each search when the deployment counts the website", async () => {
+  stubCatalog();
+  stubJsonResponse({
+    path: "*/v2/public/analytics/web",
+    response: { enabled: true },
+  });
+  const { spy } = stubJsonResponse({
+    path: "*/v2/public/analytics/pageview",
+    method: "POST",
+    status: 204,
+  });
+  await commands.navigate("/instalacions");
+  await render(<App />);
+  await expect.poll(() => spy.mock.calls.length).toBe(1);
+  expect(spy.mock.calls[0][0].body).toEqual({
+    app: "web",
+    path: "/instalacions",
+    language: "gl",
+    screen: expect.stringMatching(/^\d+x\d+$/) as string,
+  });
+  await page
+    .getByRole("checkbox", { name: "Só con acceso sen barreiras" })
+    .click();
+  await expect
+    .poll(() =>
+      spy.mock.calls.some(
+        (call) => (call[0].body as { event?: string }).event === "search",
+      ),
+    )
+    .toBe(true);
+});

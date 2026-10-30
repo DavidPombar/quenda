@@ -13,7 +13,8 @@ import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.muta
 import { useGetAuthMethodsQuery } from "@/queries/auth/get-auth-methods.query";
 import { APP_BASE_PATH, ROUTES, routeFor } from "@/constants/routes";
 import { useUpdateLocaleMutation } from "@/queries/account/update-locale.mutation";
-import { useRecordPageViewMutation } from "@/queries/analytics/record-page-view.mutation";
+import { useRecordAnalyticsMutation } from "@/queries/analytics/record-analytics.mutation";
+import type { AnalyticsEvent } from "@/types/models";
 import { translate, type TextKey } from "@/services/i18n.service";
 import {
   AUTH_ERROR_PARAM,
@@ -58,19 +59,30 @@ export function useShellController() {
   }, [searchParams, setSearchParams]);
   const municipality = municipalities.data?.find((item) => item.slug === slug);
   const locale: Locale = chosenLocale ?? municipality?.locale ?? "gl";
-  // Councils with web analytics on count each page shown, through our own API (#25).
-  const pageView = useRecordPageViewMutation();
-  const record = pageView.mutate;
+  // Councils with web analytics on count each page shown and a few events (#25, #57).
+  const analytics = useRecordAnalyticsMutation();
+  const record = analytics.mutate;
   const counted = municipality?.analytics ? municipality.slug : null;
+  const path = `${APP_BASE_PATH}${location.pathname}`;
   useEffect(() => {
     if (!counted) return;
     record({
       slug: counted,
-      path: `${APP_BASE_PATH}${location.pathname}`,
+      path,
       language: locale,
       screen: `${window.screen.width}x${window.screen.height}`,
     });
-  }, [counted, location.pathname, locale, record]);
+  }, [counted, path, locale, record]);
+  function track(event: AnalyticsEvent) {
+    if (!counted) return;
+    record({
+      slug: counted,
+      path,
+      event,
+      language: locale,
+      screen: `${window.screen.width}x${window.screen.height}`,
+    });
+  }
   function setLocale(next: Locale) {
     localStorage.setItem("quenda.locale", next);
     setChosenLocale(next);
@@ -190,6 +202,7 @@ export function useShellController() {
           t,
           signIn: () => setLoginOpen(true),
           showPrivacy: () => setPrivacyOpen(true),
+          track,
         }
       : null,
   };

@@ -8,6 +8,7 @@ import type {
   NewManager,
   NewMunicipality,
   StaffMember,
+  WebAnalytics,
 } from "@/types/models";
 export const operatorRepository = {
   municipalities: () =>
@@ -25,5 +26,9 @@ export const operatorRepository = {
   insights: (range: DateRange) =>
     apiClient.request<DeploymentInsights>(
       `operator/insights?${new URLSearchParams({ ...range }).toString()}`,
+    ),
+  webAnalytics: (range: DateRange) =>
+    apiClient.request<WebAnalytics>(
+      `operator/web-analytics?${new URLSearchParams({ ...range }).toString()}`,
     ),
 };
