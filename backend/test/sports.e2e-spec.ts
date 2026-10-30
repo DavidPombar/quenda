@@ -214,6 +214,26 @@ describe("Sports catalogue per municipality (#26)", () => {
       ).filter((sport) => sport.code === "padel"),
     ).toHaveLength(1);
   });
+  it("should give clubs a sport from the catalogue and keep it while a club uses it", async () => {
+    const context = await tenant();
+    await post(context.manager, "manager/organizations", {
+      name: "Club Xadrez",
+      sport: "chess",
+    }).expect(400);
+    await post(context.manager, "manager/organizations", {
+      name: "Club Fronton",
+      sport: "fronton",
+    }).expect(201);
+    const current = (await managed(context)).map(draft);
+    expect(
+      (
+        await save(
+          context.manager,
+          current.filter((sport) => sport.code !== "fronton"),
+        ).expect(409)
+      ).body.code,
+    ).toBe("sport_in_use");
+  });
   it("should publish the edited CNID classification as open data", async () => {
     const context = await tenant();
     await facility(context);
