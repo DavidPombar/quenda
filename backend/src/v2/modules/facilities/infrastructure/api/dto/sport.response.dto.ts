@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
-import { Sport } from "../../../domain/sport.entity";
+import { Sport, SportArt } from "../../../domain/sport.entity";
 import { LocalizedTextResponseDTO } from "./localized-text.response.dto";
 export class SportResponseDTO {
   @ApiProperty({ description: "Stable sport code" }) code!: string;
@@ -10,6 +10,11 @@ export class SportResponseDTO {
   cnidClass!: string;
   @ApiProperty({ description: "CNID space type" }) cnidType!: string;
   @ApiProperty({ description: "schema.org type" }) schemaType!: string;
+  @ApiProperty({
+    enum: ["padel", "tennis", "futsal", "swimming", "generic"],
+    description: "Illustration and colour of its facilities",
+  })
+  art!: SportArt;
   @ApiProperty({ description: "Not offered in filters or for new facilities" })
   hidden!: boolean;
   @ApiProperty({ description: "Display order" }) position!: number;
@@ -20,6 +25,7 @@ export class SportResponseDTO {
       cnidClass: value.cnidClass,
       cnidType: value.cnidType,
       schemaType: value.schemaType,
+      art: value.art,
       hidden: value.hidden,
       position: value.position,
     };

@@ -6,6 +6,7 @@ import {
   PageRequest,
 } from "../../../domain/facility.repository";
 import { LocalizedTextResponseDTO } from "./localized-text.response.dto";
+import type { SportArt } from "../../../domain/sport.entity";
 import { FacilityPhotoResponseDTO } from "./facility-photo.response.dto";
 export class CatalogMunicipalityDTO {
   @ApiProperty({ description: "Public municipality identifier" }) slug!: string;
@@ -17,6 +18,8 @@ export class CatalogEntryResponseDTO {
   @ApiProperty({ description: "Sport code" }) sport!: string;
   @ApiProperty({ type: LocalizedTextResponseDTO, description: "Sport name" })
   sportName!: LocalizedTextResponseDTO;
+  @ApiProperty({ enum: ["padel", "tennis", "futsal", "swimming", "generic"] })
+  sportArt!: SportArt;
   @ApiProperty({ description: "Postal address" }) address!: string;
   @ApiProperty({ description: "Description" }) description!: string;
   @ApiProperty({ description: "Step-free access" }) accessible!: boolean;
@@ -38,6 +41,7 @@ export class CatalogEntryResponseDTO {
       name: value.name,
       sport: value.sport,
       sportName: { gl: value.sportName.gl, es: value.sportName.es },
+      sportArt: value.sportArt,
       address: value.address,
       description: value.description,
       accessible: value.accessible,

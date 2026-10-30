@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useListSportsQuery } from "@/queries/sports/list-sports.query";
 import { useCreateSportMutation } from "@/queries/sports/create-sport.mutation";
 import { useUpdateSportMutation } from "@/queries/sports/update-sport.mutation";
+import { useRemoveSportMutation } from "@/queries/sports/remove-sport.mutation";
 import type { TextKey } from "@/services/i18n.service";
 import { codeFrom } from "@/services/sports.service";
 import type { SportInfo } from "@/types/models";
@@ -13,6 +14,7 @@ export function useSportsController() {
   const sports = useListSportsQuery();
   const create = useCreateSportMutation();
   const update = useUpdateSportMutation();
+  const removal = useRemoveSportMutation();
   const [edits, setEdits] = useState<Record<string, SportInfo>>({});
   const [draft, setDraft] = useState({ gl: "", es: "" });
   const [message, setMessage] = useState<{
@@ -36,7 +38,11 @@ export function useSportsController() {
         key:
           (error as { code?: string }).code === "sport_exists"
             ? "sportExists"
-            : "sportError",
+            : (error as { code?: string }).code === "sport_in_use"
+              ? "sportInUse"
+              : (error as { code?: string }).code === "validation"
+                ? "sportLastVisible"
+                : "sportError",
         error: true,
       });
       return false;
@@ -61,7 +67,11 @@ export function useSportsController() {
     setDraft: (patch: Partial<typeof draft>) =>
       setDraft((value) => ({ ...value, ...patch })),
     code: codeFrom(draft.gl),
-    pending: create.isPending || update.isPending,
+    pending: create.isPending || update.isPending || removal.isPending,
+    remove: (code: string) =>
+      run(() => removal.mutateAsync(code), "sportRemoved").then((done) => {
+        if (done) setEdits(({ [code]: _, ...rest }) => rest);
+      }),
     message,
     add: async (event: FormEvent) => {
       event.preventDefault();

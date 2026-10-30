@@ -161,7 +161,7 @@ export function Management() {
                       <li key={facility.id}>
                         <div className="facility-mini">
                           <CourtArt
-                            sport={facility.sport}
+                            sport={facility.sportArt ?? "generic"}
                             status={facility.status}
                           />
                         </div>
@@ -169,7 +169,9 @@ export function Management() {
                           <h3>{facility.name}</h3>
                           <ul className="facility-meta">
                             <li>
-                              <span className={`sport-tag ${facility.sport}`}>
+                              <span
+                                className={`sport-tag ${facility.sportArt ?? "generic"}`}
+                              >
                                 {c.sportLabel(facility.sport)}
                               </span>
                             </li>

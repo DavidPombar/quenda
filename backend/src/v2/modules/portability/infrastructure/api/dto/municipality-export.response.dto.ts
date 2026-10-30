@@ -283,6 +283,8 @@ class ExportedSportDTO {
   @ApiProperty() cnidClass!: string;
   @ApiProperty() cnidType!: string;
   @ApiProperty() schemaType!: string;
+  @ApiProperty({ description: "Illustration and colour of its facilities" })
+  art!: string;
   @ApiProperty() hidden!: boolean;
   @ApiProperty() position!: number;
 }

@@ -4,7 +4,6 @@ import type {
   FacilityFilters,
   Locale,
   Localized,
-  SportInfo,
 } from "@/types/models";
 /** Facilities per page in both catalogues (#26). */
 export const PAGE_SIZE = 12;
@@ -20,15 +19,6 @@ function pageFrom(params: URLSearchParams) {
 /** Text in the person's language; an empty Spanish text shows the Galician one. */
 export function localized(text: Localized, locale: Locale) {
   return (locale === "es" && text.es) || text.gl;
-}
-/** Name of a sport code in the catalogue, or the code itself while it loads or if hidden. */
-export function sportLabel(
-  code: string,
-  sports: readonly SportInfo[],
-  locale: Locale,
-) {
-  const sport = sports.find((value) => value.code === code);
-  return sport ? localized(sport.name, locale) : code;
 }
 /** URL search params ↔ filters, so a search can be shared or bookmarked. */
 export function filtersFrom(params: URLSearchParams): CatalogFilters {

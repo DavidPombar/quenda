@@ -26,14 +26,17 @@ export class FacilityDescriber {
       this.sports.list(tenantId),
       this.photos.list(tenantId, ids),
     ]);
-    return facilities.map((facility) => ({
-      ...facility,
-      resources: resources.filter(
-        (resource) => resource.facilityId === facility.id,
-      ),
-      sportName: sports.find((sport) => sport.code === facility.sport)
-        ?.name ?? { gl: facility.sport, es: facility.sport },
-      photos: photos.filter((photo) => photo.facilityId === facility.id),
-    }));
+    return facilities.map((facility) => {
+      const sport = sports.find((value) => value.code === facility.sport);
+      return {
+        ...facility,
+        resources: resources.filter(
+          (resource) => resource.facilityId === facility.id,
+        ),
+        sportName: sport?.name ?? { gl: facility.sport, es: facility.sport },
+        sportArt: sport?.art ?? "generic",
+        photos: photos.filter((photo) => photo.facilityId === facility.id),
+      };
+    });
   }
 }

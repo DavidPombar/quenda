@@ -2,6 +2,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CategoryPriceResponseDTO } from "./category-price.response.dto";
 import { FacilityDetails } from "../../../domain/facility.read-model";
+import type { SportArt } from "../../../domain/sport.entity";
 import { ResourceResponseDTO } from "./resource.response.dto";
 import { LocalizedTextResponseDTO } from "./localized-text.response.dto";
 import { FacilityPhotoResponseDTO } from "./facility-photo.response.dto";
@@ -12,6 +13,11 @@ export class FacilityResponseDTO {
   sport!: string;
   @ApiProperty({ type: LocalizedTextResponseDTO, description: "Sport name" })
   sportName!: LocalizedTextResponseDTO;
+  @ApiProperty({
+    enum: ["padel", "tennis", "futsal", "swimming", "generic"],
+    description: "Illustration and colour of the sport",
+  })
+  sportArt!: SportArt;
   @ApiProperty({ description: "Postal address" }) address!: string;
   @ApiProperty({ description: "Description" }) description!: string;
   @ApiProperty({ description: "Step-free access" }) accessible!: boolean;
@@ -67,6 +73,7 @@ export class FacilityResponseDTO {
       name: value.name,
       sport: value.sport,
       sportName: { gl: value.sportName.gl, es: value.sportName.es },
+      sportArt: value.sportArt,
       address: value.address,
       description: value.description,
       accessible: value.accessible,

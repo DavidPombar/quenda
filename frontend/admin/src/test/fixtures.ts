@@ -71,6 +71,9 @@ export const sports: SportInfo[] = [
   cnidClass: "Pistas",
   cnidType: "Pista polideportiva",
   schemaType: "SportsActivityLocation",
+  art: (["padel", "tennis", "futsal", "swimming"].includes(code as string)
+    ? code
+    : "generic") as SportInfo["art"],
   hidden: hidden as boolean,
   position: index + 1,
 }));

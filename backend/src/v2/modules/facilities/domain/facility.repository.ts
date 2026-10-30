@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Facility } from "./facility.entity";
+import type { SportArt } from "./sport.entity";
 import type { Temporal } from "@js-temporal/polyfill";
 import type { Result } from "../../../shared/application/result";
 import type { AppError } from "../../../shared/application/errors";
@@ -33,6 +34,7 @@ export interface CatalogEntry extends Omit<
 > {
   municipality: { slug: string; name: string };
   sportName: { gl: string; es: string };
+  sportArt: SportArt;
   /** First photo of the facility, for the card. */
   photo: {
     id: string;

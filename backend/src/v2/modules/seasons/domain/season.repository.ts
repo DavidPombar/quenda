@@ -147,6 +147,6 @@ export abstract class SeasonRepository {
     organizationId: string,
     from: Temporal.Instant,
   ): Promise<ClubOccurrence[]>;
-  /** Whether the code is in the municipality's sports catalogue (#26). */
+  /** Whether the code is a visible sport of the municipality's catalogue (#26). */
   abstract sportExists(tenantId: string, code: string): Promise<boolean>;
 }

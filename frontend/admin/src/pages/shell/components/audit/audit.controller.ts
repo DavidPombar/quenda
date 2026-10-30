@@ -50,6 +50,7 @@ const AUDIT_ACTIONS = [
   ["season_allocation.created", "auditAllocationCreated"],
   ["sport.created", "auditSportCreated"],
   ["sport.updated", "auditSportUpdated"],
+  ["sport.removed", "auditSportRemoved"],
   ["facility.photo_added", "auditPhotoAdded"],
   ["facility.photo_updated", "auditPhotoUpdated"],
   ["facility.photo_removed", "auditPhotoRemoved"],
