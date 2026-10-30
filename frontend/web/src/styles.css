@@ -728,3 +728,18 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Result pages (#26) */
+.search-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+.search-pages a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 650;
+}

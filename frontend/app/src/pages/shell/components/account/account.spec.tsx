@@ -98,8 +98,8 @@ describe("Account and privacy page", () => {
     await expect.element(page.getByRole("alertdialog")).toBeVisible();
     await page.getByRole("button", { name: "Si, eliminar a conta" }).click();
     await expect
-      .element(page.getByRole("status"))
-      .toMatchTextContent("A túa conta foi eliminada.");
+      .element(page.getByText("A túa conta foi eliminada.", { exact: false }))
+      .toHaveAttribute("role", "status");
     await expect
       .element(page.getByRole("banner").getByRole("button", { name: "Entrar" }))
       .toBeVisible();

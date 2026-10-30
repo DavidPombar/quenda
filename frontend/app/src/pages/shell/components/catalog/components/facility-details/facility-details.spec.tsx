@@ -8,6 +8,7 @@ import {
   facility,
   pavilion,
   stubAvailability,
+  stubFacilities,
   stubShell,
 } from "@/test/fixtures";
 import type { Slot } from "@/types/models";
@@ -22,6 +23,9 @@ const later: Slot = {
   status: "available",
 };
 const [fullCourt, , thirdA, thirdB] = pavilion.resources;
+/** One transparent pixel, so the gallery needs no network. */
+const PIXEL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 function stubCreate(target = facility) {
   return stubJsonResponse({
     path: "*/v2/citizen/bookings",
@@ -195,7 +199,9 @@ describe("Facility details with several courts", () => {
     await page
       .getByRole("combobox", { name: "Pista" })
       .selectOptions("Todas as pistas");
-    await expect.element(page.getByRole("table")).toBeVisible();
+    await expect
+      .element(page.getByRole("table", { name: /Quendas de todas as pistas/ }))
+      .toBeVisible();
     const region = page
       .getByRole("region", { name: /Quendas de todas as pistas/ })
       .element();
@@ -271,4 +277,78 @@ test("should show a club's season slot as taken and the campaign's published cri
   await expect
     .element(page.getByText(/Clubs con sede no concello/))
     .toBeVisible();
+});
+describe("Facility page details", () => {
+  test("should show the photos with their alternative text, the map and the week's opening hours", async () => {
+    stubShell();
+    stubFacilities([
+      {
+        ...facility,
+        photos: [
+          {
+            id: "photo-1",
+            url: PIXEL,
+            alt: { gl: "Pista vista desde a entrada", es: "" },
+            position: 0,
+          },
+          {
+            id: "photo-2",
+            url: PIXEL,
+            alt: { gl: "Vestiarios", es: "" },
+            position: 1,
+          },
+        ],
+      },
+    ]);
+    stubAvailability(facility, () => []);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    const gallery = page.getByRole("region", { name: "Fotos da instalación" });
+    await expect
+      .element(
+        gallery.getByRole("img", { name: "Pista vista desde a entrada" }),
+      )
+      .toBeInTheDocument();
+    await gallery
+      .getByRole("button", { name: "Ver a foto 2: Vestiarios" })
+      .click();
+    await expect
+      .element(gallery.getByRole("img", { name: "Vestiarios" }))
+      .toBeInTheDocument();
+    const hours = page.getByRole("table", {
+      name: "Horario dos próximos sete días",
+    });
+    await expect.element(hours).toBeVisible();
+    await expect
+      .element(hours.getByRole("cell", { name: "09:00–22:00" }).first())
+      .toBeVisible();
+    expect(hours.getByRole("row").elements()).toHaveLength(8);
+    await expect
+      .element(
+        page.getByRole("region", {
+          name: `Mapa da localización de ${facility.name}`,
+        }),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("link", { name: "Abrir no OpenStreetMap" }))
+      .toHaveAttribute(
+        "href",
+        "https://www.openstreetmap.org/?mlat=42.61&mlon=-8.12#map=18/42.61/-8.12",
+      );
+  });
+  test("should explain that a closed facility cannot be booked instead of listing slots", async () => {
+    stubShell();
+    stubFacilities([{ ...facility, status: "closed" }]);
+    const { spy } = stubAvailability(facility, () => [slot]);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await expect
+      .element(page.getByRole("heading", { name: "Instalación pechada" }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("button", { name: "10:00 Libre" }))
+      .not.toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
 });

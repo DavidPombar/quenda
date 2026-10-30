@@ -50,6 +50,11 @@ const AUDIT_ACTIONS = [
   ["season_campaign.created", "auditCampaignCreated"],
   ["season_campaign.updated", "auditCampaignUpdated"],
   ["season_allocation.created", "auditAllocationCreated"],
+  ["sport.created", "auditSportCreated"],
+  ["sport.updated", "auditSportUpdated"],
+  ["facility.photo_added", "auditPhotoAdded"],
+  ["facility.photo_updated", "auditPhotoUpdated"],
+  ["facility.photo_removed", "auditPhotoRemoved"],
   ["season_allocation.cancelled", "auditAllocationCancelled"],
   ["season_occurrence.cancelled", "auditOccurrenceCancelled"],
 ] as const satisfies readonly (readonly [string, TextKey])[];

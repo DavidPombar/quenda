@@ -37,6 +37,9 @@ export interface MunicipalityPackage {
   seasonCampaigns?: Row[];
   seasonAllocations?: Row[];
   seasonOccurrences?: Row[];
+  /** Sports catalogue and facility photos (#26); optional in older packages. */
+  sports?: Row[];
+  facilityPhotos?: Row[];
 }
 const collections = [
   "facilities",
@@ -268,6 +271,29 @@ const tables = {
     checked_in_at: "checkedInAt",
     recorded_at: "recordedAt",
   },
+  sports: {
+    tenant_id: "tenantId",
+    code: "code",
+    name_gl: "nameGl",
+    name_es: "nameEs",
+    cnid_class: "cnidClass",
+    cnid_type: "cnidType",
+    schema_type: "schemaType",
+    hidden: "hidden",
+    position: "position",
+  },
+  facility_photos: {
+    tenant_id: "tenantId",
+    id: "id",
+    facility_id: "facilityId",
+    content_type: "contentType",
+    data: "data",
+    sha256: "sha256",
+    alt_gl: "altGl",
+    alt_es: "altEs",
+    position: "position",
+    created_at: "createdAt",
+  },
   organizations: {
     tenant_id: "tenantId",
     id: "id",
@@ -374,7 +400,9 @@ export async function importMunicipality(
           columns.map(([, field]) =>
             field === "tenantId"
               ? tenantId
-              : table === "municipality_logos" && field === "data"
+              : (table === "municipality_logos" ||
+                    table === "facility_photos") &&
+                  field === "data"
                 ? Buffer.from(String(row[field]), "base64")
                 : (row[field] ?? null),
           ),
@@ -382,6 +410,12 @@ export async function importMunicipality(
       }
     }
     await insert("municipalities", [{ ...data.municipality, slug }]);
+    // The new municipality starts with the initial sports catalogue; a package that carries its
+    // own catalogue replaces it before any facility or club refers to a sport.
+    if (data.sports) {
+      await client.query("DELETE FROM sports WHERE tenant_id=$1", [tenantId]);
+      await insert("sports", data.sports);
+    }
     // Clubs come before the accounts that represent them.
     await insert("organizations", data.organizations ?? []);
     await insert("users", data.users);
@@ -389,6 +423,7 @@ export async function importMunicipality(
     await insert("facilities", data.facilities);
     await insert("facility_status_periods", data.facilityStatusPeriods ?? []);
     await insert("facility_prices", data.facilityPrices ?? []);
+    await insert("facility_photos", data.facilityPhotos ?? []);
     await insert("user_categories", data.userCategories ?? []);
     // Parents come before their parts; packages without courts get the default one per
     // facility, with the facility's id, exactly as the courts migration does.

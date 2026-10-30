@@ -3,7 +3,8 @@
  * Published schemas of the open data files. They are served at
  * /v2/public/open-data/schemas/{name} and the HTTP tests validate every file against them.
  */
-const sports = ["padel", "tennis", "futsal", "swimming"];
+/** Sport codes come from each municipality's catalogue (#26). */
+const sportCode = "^[a-z0-9-]{2,40}$";
 const statuses = ["active", "maintenance", "closed"];
 const nullableNumber = (minimum: number, maximum: number) => ({
   type: ["number", "null"],
@@ -33,7 +34,7 @@ const record = {
   properties: {
     id: { type: "string", format: "uuid" },
     name: { type: "string", minLength: 1 },
-    sport: { enum: sports },
+    sport: { type: "string", pattern: sportCode },
     cnid_class: { type: "string", minLength: 1 },
     cnid_type: { type: "string", minLength: 1 },
     schema_type: { type: "string", pattern: "^[A-Z][A-Za-z]+$" },
@@ -186,7 +187,10 @@ const facilitiesTable = {
   fields: [
     field("id", "string", "Facility UUID", { required: true, unique: true }),
     field("name", "string", "Facility name", { required: true }),
-    field("sport", "string", "Sport", { required: true, enum: sports }),
+    field("sport", "string", "Sport code from the municipality's catalogue", {
+      required: true,
+      pattern: sportCode,
+    }),
     field("cnid_class", "string", "CNID group of conventional sports spaces", {
       required: true,
     }),
@@ -242,7 +246,7 @@ const occupancyRecord = {
   properties: {
     facility_id: { type: "string", format: "uuid" },
     facility_name: { type: "string", minLength: 1 },
-    sport: { enum: sports },
+    sport: { type: "string", pattern: sportCode },
     iso_year: { type: "integer", minimum: 2000 },
     iso_week: { type: "integer", minimum: 1, maximum: 53 },
     week_start: { type: "string", format: "date" },
@@ -293,7 +297,10 @@ const occupancyTable = {
   fields: [
     field("facility_id", "string", "Facility UUID", { required: true }),
     field("facility_name", "string", "Facility name", { required: true }),
-    field("sport", "string", "Sport", { required: true, enum: sports }),
+    field("sport", "string", "Sport code from the municipality's catalogue", {
+      required: true,
+      pattern: sportCode,
+    }),
     field("iso_year", "integer", "ISO 8601 week-numbering year", {
       required: true,
     }),

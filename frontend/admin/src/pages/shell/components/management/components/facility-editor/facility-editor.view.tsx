@@ -9,11 +9,12 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { PiCaretRight, PiUploadSimple, PiX } from "react-icons/pi";
-import type { Facility, Municipality } from "@/types/models";
+import type { Facility, Locale, Municipality, SportInfo } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 import { categoryLabel } from "@/services/tariff.service";
 import { useFacilityEditorController } from "./facility-editor.controller";
 import { ClosureConfirmation } from "./components/closure-confirmation/closure-confirmation.view";
+import { FacilityPhotos } from "./components/facility-photos/facility-photos.view";
 const WEEKDAYS = [
   ["MO", "mon"],
   ["TU", "tue"],
@@ -26,6 +27,8 @@ const WEEKDAYS = [
 export function FacilityEditor(p: {
   facility?: Facility;
   municipality: Municipality;
+  sports: SportInfo[];
+  locale: Locale;
   t: (key: TextKey) => string;
   onClose: (saved?: boolean) => void;
 }) {
@@ -151,17 +154,12 @@ export function FacilityEditor(p: {
                         <NativeSelect.Field
                           value={c.draft.sport}
                           onChange={(event) =>
-                            c.setField(
-                              "sport",
-                              event.target.value as Facility["sport"],
-                            )
+                            c.setField("sport", event.target.value)
                           }
                         >
-                          {(
-                            ["padel", "tennis", "futsal", "swimming"] as const
-                          ).map((sport) => (
-                            <option key={sport} value={sport}>
-                              {t(sport)}
+                          {c.sportOptions.map((sport) => (
+                            <option key={sport.value} value={sport.value}>
+                              {sport.label}
                             </option>
                           ))}
                         </NativeSelect.Field>
@@ -446,6 +444,13 @@ export function FacilityEditor(p: {
                   </p>
                 )}
               </form>
+              {p.facility && !c.confirming && (
+                <FacilityPhotos
+                  slug={p.municipality.slug}
+                  facilityId={p.facility.id}
+                  t={t}
+                />
+              )}
             </Dialog.Body>
             <Dialog.Footer>
               <Button

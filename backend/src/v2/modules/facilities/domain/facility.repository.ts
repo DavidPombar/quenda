@@ -3,20 +3,45 @@ import type { Facility } from "./facility.entity";
 import type { Temporal } from "@js-temporal/polyfill";
 import type { Result } from "../../../shared/application/result";
 import type { AppError } from "../../../shared/application/errors";
-export interface CatalogFilters {
+export interface FacilityFilters {
   q?: string;
-  sport?: Facility["sport"];
+  sport?: string;
   accessible?: boolean;
+  /** Leaves out closed facilities; maintenance ones still show, marked. */
+  hideClosed?: boolean;
+}
+export interface CatalogFilters extends FacilityFilters {
   /** Municipality slugs; empty means every municipality of the deployment. */
   municipalities: string[];
 }
+export interface PageRequest {
+  /** 1-based page number. */
+  page: number;
+  size: number;
+}
+export interface Page<T> {
+  items: T[];
+  total: number;
+}
 export interface CatalogEntry extends Omit<
   Facility,
-  "tenantId" | "openingCalendar" | "rules" | "followsMunicipalHolidays"
+  | "tenantId"
+  | "openingCalendar"
+  | "rules"
+  | "followsMunicipalHolidays"
+  | "prices"
 > {
   municipality: { slug: string; name: string };
+  sportName: { gl: string; es: string };
+  /** First photo of the facility, for the card. */
+  photo: {
+    id: string;
+    version: string;
+    alt: { gl: string; es: string };
+  } | null;
 }
-export const CATALOG_LIMIT = 200;
+export const DEFAULT_PAGE_SIZE = 12;
+export const MAX_PAGE_SIZE = 50;
 export interface UpcomingBooking {
   id: string;
   userId: string;
@@ -25,8 +50,20 @@ export interface UpcomingBooking {
 }
 export abstract class FacilityRepository {
   /** Public, cross-municipality read of active facilities (R3, #18). */
-  abstract catalog(filters: CatalogFilters): Promise<CatalogEntry[]>;
+  abstract catalog(
+    filters: CatalogFilters,
+    page: PageRequest,
+  ): Promise<Page<CatalogEntry>>;
   abstract list(tenantId: string): Promise<Facility[]>;
+  /**
+   * One page of the municipality's facilities (#26): active first, then in maintenance, then
+   * closed, by name within each group.
+   */
+  abstract search(
+    tenantId: string,
+    filters: FacilityFilters,
+    page: PageRequest,
+  ): Promise<Page<Facility>>;
   abstract find(
     tenantId: string,
     id: string,

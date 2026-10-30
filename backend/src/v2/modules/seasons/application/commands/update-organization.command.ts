@@ -30,7 +30,15 @@ export class UpdateOrganization {
     );
     if (!existing) return Result.err(failure("not_found"));
     const values = cleanOrganization(args.input);
-    if (values.name.length < 2) return Result.err(failure("validation"));
+    if (
+      values.name.length < 2 ||
+      (values.sport !== null &&
+        !(await this.seasons.sportExists(
+          args.principal.tenantId,
+          values.sport,
+        )))
+    )
+      return Result.err(failure("validation"));
     const archivedAt =
       args.input.archived === undefined
         ? existing.archivedAt

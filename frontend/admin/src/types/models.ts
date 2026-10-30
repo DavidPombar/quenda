@@ -117,11 +117,36 @@ export interface Session {
   displayName: string;
   role: "citizen" | "manager" | "access";
 }
-export type Sport = "padel" | "tennis" | "futsal" | "swimming";
+/** Code from the municipality's sports catalogue (#26). */
+export type Sport = string;
+export interface Localized {
+  gl: string;
+  es: string;
+}
+/** One entry of the municipality's sports catalogue, aligned with the CNID taxonomy. */
+export interface SportInfo {
+  code: Sport;
+  name: Localized;
+  cnidClass: string;
+  cnidType: string;
+  schemaType: string;
+  hidden: boolean;
+  position: number;
+}
+export interface FacilityPhoto {
+  id: string;
+  url: string;
+  alt: Localized;
+  position: number;
+}
 export interface Facility {
   id: string;
   name: string;
   sport: Sport;
+  /** Read-only: the sport's name in the catalogue. */
+  sportName?: Localized;
+  /** Read-only: managed through their own endpoints. */
+  photos?: FacilityPhoto[];
   address: string;
   description: string;
   accessible: boolean;

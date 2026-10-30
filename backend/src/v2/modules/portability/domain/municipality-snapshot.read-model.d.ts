@@ -249,7 +249,31 @@ export interface MunicipalitySnapshot {
     conflictBookingId: string | null;
     cancellationReason: string | null;
   }[];
+  /** Sports catalogue (#26). Optional in older packages, which get the initial catalogue. */
+  sports: {
+    code: string;
+    nameGl: string;
+    nameEs: string;
+    cnidClass: string;
+    cnidType: string;
+    schemaType: string;
+    hidden: boolean;
+    position: number;
+  }[];
+  /** Facility photos (#26), base64 like the logo; instants are ISO strings as stored. */
+  facilityPhotos: {
+    id: string;
+    facilityId: string;
+    contentType: string;
+    data: string;
+    sha256: string;
+    altGl: string;
+    altEs: string;
+    position: number;
+    createdAt: string;
+  }[];
 }
+
 export interface MunicipalityExport {
   exportedAt: Temporal.Instant;
   snapshot: MunicipalitySnapshot;

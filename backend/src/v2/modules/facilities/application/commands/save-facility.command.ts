@@ -5,6 +5,8 @@ import { FacilityDetails } from "../../domain/facility.read-model";
 import { FacilityRepository } from "../../domain/facility.repository";
 import { ResourceRepository } from "../../domain/resource.repository";
 import { OpeningCalendar } from "../../domain/opening-calendar";
+import { SportRepository } from "../../domain/sport.repository";
+import { FacilityDescriber } from "../facility-details";
 import { CATEGORIES } from "../../../../shared/application/categories";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
@@ -34,6 +36,8 @@ export class SaveFacility {
     private readonly audit: Audit,
     private readonly ids: IdGenerator,
     private readonly outbox: Outbox,
+    private readonly sports: SportRepository,
+    private readonly describer: FacilityDescriber,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -80,10 +84,8 @@ export class SaveFacility {
     const patch = Object.fromEntries(
       Object.entries(args.patch).filter(([, value]) => value !== undefined),
     );
-    const details = async (value: Facility): Promise<FacilityDetails> => ({
-      ...value,
-      resources: await this.resources.listByFacility(value.tenantId, value.id),
-    });
+    const details = async (value: Facility): Promise<FacilityDetails> =>
+      (await this.describer.describe(value.tenantId, [value]))[0];
     if (existing && Object.keys(patch).length === 0)
       return Result.ok(await details(existing));
     const merged: Facility = { ...(existing ?? defaults), ...patch };
@@ -107,7 +109,13 @@ export class SaveFacility {
       !facility.name.trim() ||
       !facility.address.trim() ||
       (facility.latitude === null) !== (facility.longitude === null) ||
-      !this.calendar.validate(facility.openingCalendar, municipality.timezone)
+      !this.calendar.validate(
+        facility.openingCalendar,
+        municipality.timezone,
+      ) ||
+      // The sport must be in the municipality's catalogue (#26); hidden ones stay valid.
+      (facility.sport !== existing?.sport &&
+        !(await this.sports.find(municipality.id, facility.sport)))
     )
       return Result.err(failure("validation"));
     const now = this.clock.now();
@@ -129,7 +137,13 @@ export class SaveFacility {
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
       return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
-        () => Result.ok({ ...facility, resources: [] }),
+        () =>
+          Result.ok({
+            ...facility,
+            resources: [],
+            sportName: { gl: facility.sport, es: facility.sport },
+            photos: [],
+          }),
         (error) => Result.err(error),
       );
     if (!existing || existing.status !== facility.status)

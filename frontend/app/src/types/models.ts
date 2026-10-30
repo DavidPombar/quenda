@@ -70,11 +70,30 @@ export interface Session {
   displayName: string;
   role: "citizen" | "manager";
 }
-export type Sport = "padel" | "tennis" | "futsal" | "swimming";
+/** Code from the municipality's sports catalogue (#26). */
+export type Sport = string;
+/** Text in both official languages; an empty Spanish text falls back to Galician. */
+export interface Localized {
+  gl: string;
+  es: string;
+}
+export interface SportInfo {
+  code: Sport;
+  name: Localized;
+  position: number;
+}
+export interface FacilityPhoto {
+  id: string;
+  /** Versioned, cacheable image URL. */
+  url: string;
+  alt: Localized;
+  position: number;
+}
 export interface Facility {
   id: string;
   name: string;
   sport: Sport;
+  sportName: Localized;
   address: string;
   description: string;
   accessible: boolean;
@@ -84,7 +103,38 @@ export interface Facility {
   prices: CategoryPrice[];
   openingCalendar: string;
   rules: string;
+  latitude: number | null;
+  longitude: number | null;
   resources: Resource[];
+  photos: FacilityPhoto[];
+}
+export interface FacilityPage {
+  items: Facility[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export interface OpeningDay {
+  /** Local date, YYYY-MM-DD. */
+  date: string;
+  /** Local times, HH:MM; empty when closed. */
+  hours: { from: string; to: string }[];
+  holiday: boolean;
+}
+export interface FacilityWithSchedule extends Facility {
+  /** Opening hours of the next seven days, from today. */
+  openingWeek: OpeningDay[];
+}
+export interface FacilityFilters {
+  q: string;
+  sport: Sport;
+  accessible: boolean;
+  hideClosed: boolean;
+  page: number;
+}
+export interface MapSettings {
+  tileUrl: string;
+  attribution: string;
 }
 /** A bookable court or space; parts point to their composite through parentId. */
 export interface Resource {
@@ -271,6 +321,8 @@ export interface CatalogEntry {
   id: string;
   name: string;
   sport: Sport;
+  sportName: Localized;
+  photo: FacilityPhoto | null;
   address: string;
   description: string;
   accessible: boolean;
@@ -278,11 +330,18 @@ export interface CatalogEntry {
   priceCents: number;
   municipality: { slug: string; name: string };
 }
+export interface CatalogPage {
+  items: CatalogEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 export interface CatalogFilters {
   q: string;
   sport: Sport | "";
   accessible: boolean;
   municipalities: string[];
+  page: number;
 }
 export interface AuthMethods {
   demo: boolean;

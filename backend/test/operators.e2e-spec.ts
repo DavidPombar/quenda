@@ -108,14 +108,15 @@ describe("Supramunicipal operator through HTTP and PostgreSQL", () => {
       .get("/v2/public/catalog")
       .query({ municipality: body.slug })
       .expect(200);
-    expect(catalogue.body).toEqual([
+    expect(catalogue.body.items).toEqual([
       expect.objectContaining({
         id: pool,
         name: "Piscina de Riotorto",
         municipality: { slug: body.slug, name: "Concello de Riotorto" },
       }),
     ]);
-    expect(catalogue.body[0]).not.toHaveProperty("openingCalendar");
+    expect(catalogue.body.items[0]).not.toHaveProperty("openingCalendar");
+    expect(catalogue.body).toMatchObject({ total: 1, page: 1, pageSize: 12 });
   });
   it("should filter the shared catalogue by municipality, sport, access and text", async () => {
     const a = await tenant();
@@ -127,7 +128,7 @@ describe("Supramunicipal operator through HTTP and PostgreSQL", () => {
       .query({ municipality: `${a.slug},${b.slug}` })
       .expect(200);
     expect(
-      all.body
+      all.body.items
         .map(
           (item: { municipality: { slug: string } }) => item.municipality.slug,
         )
@@ -142,14 +143,16 @@ describe("Supramunicipal operator through HTTP and PostgreSQL", () => {
         q: court.name.slice(0, 12),
       })
       .expect(200);
-    expect(filtered.body.map((item: { id: string }) => item.id)).toContain(
-      court.id,
-    );
+    expect(
+      filtered.body.items.map((item: { id: string }) => item.id),
+    ).toContain(court.id);
     await request(harness.app.getHttpServer())
       .get("/v2/public/catalog")
       .query({ municipality: `${a.slug},${b.slug}`, sport: "tennis" })
       .expect(200)
-      .expect(({ body }) => expect(body).toEqual([]));
+      .expect(({ body }) =>
+        expect(body).toMatchObject({ items: [], total: 0 }),
+      );
     await request(harness.app.getHttpServer())
       .get("/v2/public/catalog")
       .query({ municipality: "Bad Slug" })

@@ -3,10 +3,11 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { Facility } from "../../domain/facility.entity";
 import {
-  CATALOG_LIMIT,
   CatalogEntry,
   CatalogFilters,
+  FacilityFilters,
   FacilityRepository,
+  PageRequest,
 } from "../../domain/facility.repository";
 import { Database } from "../../../../shared/infrastructure/database";
 import { Result } from "../../../../shared/application/result";
@@ -14,39 +15,114 @@ import { failure } from "../../../../shared/application/errors";
 const fields =
   'id, tenant_id AS "tenantId", name, sport, address, description, accessible, status, slot_minutes AS "slotMinutes", price_cents AS "priceCents", opening_calendar AS "openingCalendar", rules, latitude, longitude, follows_municipal_holidays AS "followsMunicipalHolidays", ' +
   `COALESCE((SELECT json_agg(json_build_object('category', p.category, 'priceCents', p.price_cents) ORDER BY array_position(ARRAY['resident','family','local_club','minor','large_family','disability','senior'], p.category)) FROM facility_prices p WHERE p.tenant_id=facilities.tenant_id AND p.facility_id=facilities.id), '[]') AS prices`;
+/** Shared filter on $1 (text), $2 (sport), $3 (step-free) and $5 (hide closed). */
+const filtered = (alias: string) =>
+  `($1::text IS NULL OR ${alias}.name ILIKE $1 OR ${alias}.address ILIKE $1)
+  AND ($2::text IS NULL OR ${alias}.sport=$2)
+  AND ($3::boolean IS NULL OR ${alias}.accessible=$3)
+  AND (NOT coalesce($5::boolean, false) OR ${alias}.status<>'closed')`;
+const filterValues = (filters: FacilityFilters) => [
+  filters.q ? `%${filters.q.replace(/[\\%_]/g, "\\$&")}%` : null,
+  filters.sport ?? null,
+  filters.accessible ?? null,
+];
+const pageWindow = (page: PageRequest) => [
+  page.size,
+  (page.page - 1) * page.size,
+];
+const firstPhoto = (alias: string) =>
+  `(SELECT json_build_object('id', p.id, 'version', left(p.sha256, 16), 'gl', p.alt_gl, 'es', p.alt_es)
+    FROM facility_photos p WHERE p.tenant_id=${alias}.tenant_id AND p.facility_id=${alias}.id
+    ORDER BY p.position, p.created_at LIMIT 1)`;
 @Injectable()
 export class PostgresFacilityRepository extends FacilityRepository {
   constructor(private readonly db: Database) {
     super();
   }
-  async catalog(filters: CatalogFilters) {
+  async catalog(filters: CatalogFilters, page: PageRequest) {
     const { rows } = await this.db.query<
-      Omit<CatalogEntry, "municipality"> & {
+      Omit<CatalogEntry, "municipality" | "photo"> & {
         municipalitySlug: string;
         municipalityName: string;
+        photo: { id: string; version: string; gl: string; es: string } | null;
+        total: string;
       }
     >(
       `SELECT f.id, f.name, f.sport, f.address, f.description, f.accessible, f.status,
-        f.slot_minutes AS "slotMinutes", f.price_cents AS "priceCents",
-        m.slug AS "municipalitySlug", m.name AS "municipalityName"
+        f.slot_minutes AS "slotMinutes", f.price_cents AS "priceCents", f.latitude, f.longitude,
+        m.slug AS "municipalitySlug", m.name AS "municipalityName",
+        json_build_object('gl', s.name_gl, 'es', s.name_es) AS "sportName",
+        ${firstPhoto("f")} AS photo, count(*) OVER() AS total
       FROM facilities f JOIN municipalities m ON m.id=f.tenant_id
-      WHERE f.status='active'
-        AND ($1::text IS NULL OR f.name ILIKE $1 OR f.address ILIKE $1)
-        AND ($2::text IS NULL OR f.sport=$2)
-        AND ($3::boolean IS NULL OR f.accessible=$3)
+        JOIN sports s ON s.tenant_id=f.tenant_id AND s.code=f.sport
+      WHERE f.status='active' AND ${filtered("f")}
         AND (cardinality($4::text[])=0 OR m.slug=ANY($4))
-      ORDER BY m.name, f.name LIMIT ${CATALOG_LIMIT}`,
+      ORDER BY m.name, f.name, f.id LIMIT $6 OFFSET $7`,
       [
-        filters.q ? `%${filters.q.replace(/[\\%_]/g, "\\$&")}%` : null,
-        filters.sport ?? null,
-        filters.accessible ?? null,
+        ...filterValues(filters),
         filters.municipalities,
+        null,
+        ...pageWindow(page),
       ],
     );
-    return rows.map(({ municipalitySlug, municipalityName, ...facility }) => ({
-      ...facility,
-      municipality: { slug: municipalitySlug, name: municipalityName },
-    }));
+    return {
+      items: rows.map(
+        ({
+          municipalitySlug,
+          municipalityName,
+          photo,
+          total: _,
+          ...facility
+        }) => ({
+          ...facility,
+          municipality: { slug: municipalitySlug, name: municipalityName },
+          photo: photo && {
+            id: photo.id,
+            version: photo.version,
+            alt: { gl: photo.gl, es: photo.es },
+          },
+        }),
+      ),
+      total: await this.total(rows, page, () =>
+        this.db.query<{ total: string }>(
+          `SELECT count(*) AS total FROM facilities f JOIN municipalities m ON m.id=f.tenant_id
+          WHERE f.status='active' AND ${filtered("f")} AND (cardinality($4::text[])=0 OR m.slug=ANY($4))`,
+          [...filterValues(filters), filters.municipalities, null],
+        ),
+      ),
+    };
+  }
+  async search(tenantId: string, filters: FacilityFilters, page: PageRequest) {
+    const { rows } = await this.db.query<Facility & { total: string }>(
+      `SELECT ${fields}, count(*) OVER() AS total FROM facilities
+      WHERE tenant_id=$4 AND ${filtered("facilities")}
+      ORDER BY array_position(ARRAY['active','maintenance','closed'], status), name, id
+      LIMIT $6 OFFSET $7`,
+      [
+        ...filterValues(filters),
+        tenantId,
+        filters.hideClosed ?? false,
+        ...pageWindow(page),
+      ],
+    );
+    return {
+      items: rows.map(({ total: _, ...facility }) => facility),
+      total: await this.total(rows, page, () =>
+        this.db.query<{ total: string }>(
+          `SELECT count(*) AS total FROM facilities WHERE tenant_id=$4 AND ${filtered("facilities")}`,
+          [...filterValues(filters), tenantId, filters.hideClosed ?? false],
+        ),
+      ),
+    };
+  }
+  /** Total from the window count, or a count query when the page is past the end. */
+  private async total(
+    rows: readonly { total: string }[],
+    page: PageRequest,
+    count: () => Promise<{ rows: { total: string }[] }>,
+  ) {
+    if (rows.length) return Number(rows[0].total);
+    return page.page > 1 ? Number((await count()).rows[0].total) : 0;
   }
   async list(tenantId: string) {
     return (

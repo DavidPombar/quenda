@@ -3,11 +3,15 @@ import { ApiProperty } from "@nestjs/swagger";
 import { CategoryPriceResponseDTO } from "./category-price.response.dto";
 import { FacilityDetails } from "../../../domain/facility.read-model";
 import { ResourceResponseDTO } from "./resource.response.dto";
+import { LocalizedTextResponseDTO } from "./localized-text.response.dto";
+import { FacilityPhotoResponseDTO } from "./facility-photo.response.dto";
 export class FacilityResponseDTO {
   @ApiProperty({ description: "Facility UUID" }) id!: string;
   @ApiProperty({ description: "Facility name" }) name!: string;
-  @ApiProperty({ description: "Sport" }) sport!:
-    "padel" | "tennis" | "futsal" | "swimming";
+  @ApiProperty({ description: "Code from the municipality's sports catalogue" })
+  sport!: string;
+  @ApiProperty({ type: LocalizedTextResponseDTO, description: "Sport name" })
+  sportName!: LocalizedTextResponseDTO;
   @ApiProperty({ description: "Postal address" }) address!: string;
   @ApiProperty({ description: "Description" }) description!: string;
   @ApiProperty({ description: "Step-free access" }) accessible!: boolean;
@@ -52,11 +56,17 @@ export class FacilityResponseDTO {
     type: [ResourceResponseDTO],
   })
   resources!: ResourceResponseDTO[];
+  @ApiProperty({
+    description: "Photos in gallery order",
+    type: [FacilityPhotoResponseDTO],
+  })
+  photos!: FacilityPhotoResponseDTO[];
   static from(value: FacilityDetails): FacilityResponseDTO {
     return {
       id: value.id,
       name: value.name,
       sport: value.sport,
+      sportName: { gl: value.sportName.gl, es: value.sportName.es },
       address: value.address,
       description: value.description,
       accessible: value.accessible,
@@ -70,6 +80,9 @@ export class FacilityResponseDTO {
       latitude: value.latitude,
       longitude: value.longitude,
       resources: value.resources.map(ResourceResponseDTO.from),
+      photos: value.photos.map((photo) =>
+        FacilityPhotoResponseDTO.from(value.id, photo),
+      ),
     };
   }
 }

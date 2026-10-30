@@ -5,7 +5,6 @@ export class ClubResponseDTO {
   @ApiProperty() id!: string;
   @ApiProperty() name!: string;
   @ApiProperty({
-    enum: ["padel", "tennis", "futsal", "swimming"],
     nullable: true,
   })
   sport!: Sport | null;

@@ -6,9 +6,9 @@ import logoMark from "@/assets/illustrations/logo-mark.svg";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
+import { Pagination } from "@/components/pagination/pagination.view";
 import { WEBSITE_URL } from "@/constants/routes";
 import { useHomeController } from "./home.controller";
-const SPORTS = ["padel", "tennis", "futsal", "swimming"] as const;
 export function Home() {
   const c = useHomeController();
   const { t } = c;
@@ -60,15 +60,15 @@ export function Home() {
             />
           </div>
           <div className="filter-row" role="group" aria-label={t("sport")}>
-            {(["", ...SPORTS] as const).map((sport) => (
+            {[{ code: "", label: t("allSports") }, ...c.sports].map((sport) => (
               <button
                 type="button"
-                key={sport || "all"}
-                className={`filter-pill ${c.filters.sport === sport ? "selected" : ""}`}
-                aria-pressed={c.filters.sport === sport}
-                onClick={() => c.update({ sport })}
+                key={sport.code || "all"}
+                className={`filter-pill ${c.filters.sport === sport.code ? "selected" : ""}`}
+                aria-pressed={c.filters.sport === sport.code}
+                onClick={() => c.update({ sport: sport.code })}
               >
-                {t(sport || "allSports")}
+                {sport.label}
               </button>
             ))}
           </div>
@@ -121,40 +121,54 @@ export function Home() {
           />
         ) : c.catalog.isPending ? (
           <Feedback message={t("loading")} />
-        ) : c.catalog.data.length ? (
-          <ul className="facility-grid home-results">
-            {c.catalog.data.map((facility) => (
-              <li key={facility.id}>
-                <article
-                  className="home-card"
-                  aria-labelledby={`facility-${facility.id}`}
-                >
-                  <SportTag sport={facility.sport} label={t(facility.sport)} />
-                  <h2 id={`facility-${facility.id}`}>{facility.name}</h2>
-                  <p className="home-meta">
-                    <PiMapPin size={16} aria-hidden="true" />
-                    {facility.address} ·{" "}
-                    <Link to={c.catalogUrl(facility.municipality.slug)}>
-                      {facility.municipality.name}
-                    </Link>
-                  </p>
-                  {facility.accessible && (
-                    <p className="home-meta">
-                      <PiWheelchair size={16} aria-hidden="true" />
-                      {t("stepFree")}
-                    </p>
-                  )}
-                  <Link
-                    className="home-book"
-                    to={c.detailUrl(facility.municipality.slug, facility.id)}
-                    aria-label={`${t("homeBook")}: ${facility.name}`}
+        ) : c.catalog.data.items.length ? (
+          <>
+            <ul className="facility-grid home-results">
+              {c.catalog.data.items.map((facility) => (
+                <li key={facility.id}>
+                  <article
+                    className="home-card"
+                    aria-labelledby={`facility-${facility.id}`}
                   >
-                    {t("homeBook")}
-                  </Link>
-                </article>
-              </li>
-            ))}
-          </ul>
+                    <SportTag
+                      sport={facility.sport}
+                      label={c.sportLabel(facility.sportName)}
+                    />
+                    <h2 id={`facility-${facility.id}`}>{facility.name}</h2>
+                    <p className="home-meta">
+                      <PiMapPin size={16} aria-hidden="true" />
+                      {facility.address} ·{" "}
+                      <Link to={c.catalogUrl(facility.municipality.slug)}>
+                        {facility.municipality.name}
+                      </Link>
+                    </p>
+                    {facility.accessible && (
+                      <p className="home-meta">
+                        <PiWheelchair size={16} aria-hidden="true" />
+                        {t("stepFree")}
+                      </p>
+                    )}
+                    <Link
+                      className="home-book"
+                      to={c.detailUrl(facility.municipality.slug, facility.id)}
+                      aria-label={`${t("homeBook")}: ${facility.name}`}
+                    >
+                      {t("homeBook")}
+                    </Link>
+                  </article>
+                </li>
+              ))}
+            </ul>
+            <Pagination
+              label={t("pagination")}
+              page={c.filters.page}
+              numbers={c.pageNumbers}
+              hrefFor={c.hrefFor}
+              previousLabel={t("previousPage")}
+              nextLabel={t("nextPage")}
+              pageLabel={c.pageLabel}
+            />
+          </>
         ) : (
           <div className="empty-state">
             <SpotArt kind="search" />

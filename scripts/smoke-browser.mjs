@@ -236,6 +236,21 @@ try {
   await page
     .getByRole("heading", { name: "Pavillón municipal", exact: true })
     .waitFor();
+  // Facility page (#26): photo with its alternative text, map and the week's opening hours.
+  await page
+    .getByRole("img", { name: /Pista do pavillón vista desde arriba/ })
+    .waitFor();
+  await page
+    .getByRole("table", { name: "Horario dos próximos sete días" })
+    .waitFor();
+  await page
+    .getByRole("region", { name: "Mapa da localización de Pavillón municipal" })
+    .waitFor();
+  await audit("facility-page");
+  await page.screenshot({
+    path: ".dev-logs/facility-page.png",
+    fullPage: true,
+  });
   // Tomorrow always has open slots; late in the evening today has none and shows no grid.
   await page.getByRole("button", { name: /^Mañá/ }).click();
   await page
@@ -415,7 +430,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-three accessibility scans, including the three accessibility statements and the season schedule, passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-four accessibility scans, including the three accessibility statements, the season schedule and the facility page with photo and map, passed.",
   );
 } finally {
   await browser.close();

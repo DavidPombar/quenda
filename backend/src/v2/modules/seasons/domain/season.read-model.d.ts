@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
-export type Sport = "padel" | "tennis" | "futsal" | "swimming";
+/** Code from the municipality's sports catalogue (#26). */
+export type Sport = string;
 export interface Representative {
   userId: string;
   displayName: string;

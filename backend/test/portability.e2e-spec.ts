@@ -6,6 +6,7 @@ import { Pool } from "pg";
 import request from "supertest";
 import type { INestApplication } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
+import { courtPhoto } from "../src/database/seed-photo";
 import { openingCalendar } from "../src/database/seed";
 import { migrate } from "../src/database/migrate";
 import { importMunicipality } from "../src/database/import";
@@ -179,6 +180,22 @@ describe("Municipality data portability", () => {
       endsLocal: "08:00",
       reason: "Adestramento",
     }).expect(201);
+    // The sports catalogue and photos (#26) travel too: a renamed sport and one picture.
+    await patch(manager, "manager/sports/futsal", {
+      name: { gl: "Fútbol sala e balonmán", es: "Fútbol sala y balonmano" },
+    }).expect(200);
+    await post(manager, "manager/sports", {
+      code: "boccia",
+      name: { gl: "Boccia", es: "Boccia" },
+      hidden: true,
+    }).expect(201);
+    await manager
+      .post(`/v2/manager/facilities/${court}/photos`)
+      .query({ altGl: "Pista vista desde a entrada" })
+      .set("X-Quenda-Request", "1")
+      .set("Content-Type", "image/png")
+      .send(courtPhoto(32, 20))
+      .expect(201);
     await db.query(
       "INSERT INTO check_ins (id,tenant_id,booking_id,booking_sequence,actor_id,method,checked_in_at,recorded_at) SELECT $1,$2,$3,0,id,'manual','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='manager'",
       [randomUUID(), tenantId, kept],
@@ -327,6 +344,8 @@ describe("Municipality data portability", () => {
       "season_campaign_facilities",
       "season_allocations",
       "season_occurrences",
+      "sports",
+      "facility_photos",
     ]) {
       const scope = table === "municipalities" ? "id" : "tenant_id";
       const filter =

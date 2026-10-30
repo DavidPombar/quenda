@@ -2,11 +2,13 @@
 import { Button, Field, Input, NativeSelect } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import { fill, type TextKey } from "@/services/i18n.service";
-import type { Organization } from "@/types/models";
+import { sportLabel, sportOptions } from "@/services/sports.service";
+import type { Locale, Organization, SportInfo } from "@/types/models";
 import { useOrganizationsController } from "./organizations.controller";
-const SPORTS = ["padel", "tennis", "futsal", "swimming"] as const;
 export function Organizations(p: {
   organizations: Organization[];
+  sports: SportInfo[];
+  locale: Locale;
   t: (key: TextKey) => string;
 }) {
   const c = useOrganizationsController();
@@ -33,7 +35,8 @@ export function Organizations(p: {
                 <span className="muted">
                   {[
                     organization.taxId,
-                    organization.sport && t(organization.sport),
+                    organization.sport &&
+                      sportLabel(organization.sport, p.sports, p.locale),
                     organization.contactEmail,
                     organization.archivedAt && t("clubArchived"),
                   ]
@@ -137,9 +140,9 @@ export function Organizations(p: {
               onChange={(event) => c.setSport(event.target.value)}
             >
               <option value="">{t("clubSportNone")}</option>
-              {SPORTS.map((sport) => (
-                <option key={sport} value={sport}>
-                  {t(sport)}
+              {sportOptions(p.sports, p.locale, c.draft.sport).map((sport) => (
+                <option key={sport.value} value={sport.value}>
+                  {sport.label}
                 </option>
               ))}
             </NativeSelect.Field>

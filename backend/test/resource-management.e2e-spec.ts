@@ -31,10 +31,10 @@ function save(agent: Agent, facilityId: string, resources: Court[]) {
 async function courts(context: Tenant, facilityId: string) {
   const catalog = await context.citizen
     .get("/v2/public/facilities")
-    .query({ slug: context.slug })
+    .query({ slug: context.slug, pageSize: 50 })
     .expect(200);
   return (
-    catalog.body as {
+    catalog.body.items as {
       id: string;
       resources: (Court & { position: number })[];
     }[]

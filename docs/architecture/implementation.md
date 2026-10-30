@@ -65,3 +65,7 @@ Passes are ES256 JWTs signed with a per-municipality key and verified offline by
 ## Season allocation to clubs (#17)
 
 Managers register clubs and their representatives, open campaigns with published criteria and assign weekly slots; each dated occurrence occupies its court units in `booking_units`, so the database keeps club slots and one-off bookings apart, and dates already booked are kept as conflicts. See [season allocation to clubs](seasons.md).
+
+## Facility catalogue (#26)
+
+The catalogue is filtered and paginated on the server, each municipality keeps its own sports catalogue starting from a CNID-based list, and the facility page shows photos with required alternative text, a Leaflet map with a tile server set per deployment, and the opening hours of the coming week. See [facility catalogue](catalogue.md).

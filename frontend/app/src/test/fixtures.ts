@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { stubJsonResponse } from "@frontend-testing/server-stubs";
+import {
+  stubJsonResponse,
+  type ResponseContext,
+} from "@frontend-testing/server-stubs";
+import { Temporal } from "@js-temporal/polyfill";
 import type {
   Account,
   AuthMethods,
   Availability,
   Facility,
   Municipality,
+  OpeningDay,
   Slot,
+  SportInfo,
   MyCategories,
   NotificationSettings,
 } from "@/types/models";
@@ -50,6 +56,7 @@ export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
+  sportName: { gl: "Pádel", es: "Pádel" },
   address: "Rúa da Carballeira, 12",
   description: "Un espazo para xogar.",
   accessible: true,
@@ -59,6 +66,9 @@ export const facility: Facility = {
   prices: [{ category: "resident", priceCents: 250 }],
   openingCalendar: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR",
   rules: "Trae calzado deportivo.",
+  latitude: 42.61,
+  longitude: -8.12,
+  photos: [],
   // V0 facility: one court with the facility's id and name.
   resources: [
     {
@@ -76,6 +86,7 @@ export const pavilion: Facility = {
   id: "20000000-0000-4000-8000-000000000012",
   name: "Pavillón municipal",
   sport: "futsal",
+  sportName: { gl: "Fútbol sala", es: "Fútbol sala" },
   resources: [
     {
       id: "20000000-0000-4000-8000-000000000012",
@@ -176,9 +187,57 @@ export function stubShell(
       method: "PATCH",
       response: {},
     });
+  stubFacilities([facility, pavilion]);
+}
+/** Seven days open 09:00–22:00 from the given local date. */
+export function openingWeek(from = "2026-11-02"): OpeningDay[] {
+  return Array.from({ length: 7 }, (_, index) => ({
+    date: Temporal.PlainDate.from(from).add({ days: index }).toString(),
+    hours: [{ from: "09:00", to: "22:00" }],
+    holiday: false,
+  }));
+}
+export const sports: SportInfo[] = [
+  { code: "padel", name: { gl: "Pádel", es: "Pádel" }, position: 1 },
+  { code: "tennis", name: { gl: "Tenis", es: "Tenis" }, position: 2 },
+  {
+    code: "futsal",
+    name: { gl: "Fútbol sala", es: "Fútbol sala" },
+    position: 3,
+  },
+  { code: "swimming", name: { gl: "Natación", es: "Natación" }, position: 4 },
+];
+/** Catalogue pages, facility pages, sports and map tiles (none, so tests stay offline). */
+export function stubFacilities(items: Facility[]) {
+  stubJsonResponse({ path: "*/v2/public/sports", response: sports });
   stubJsonResponse({
+    path: "*/v2/public/map",
+    response: { tileUrl: "", attribution: "" },
+  });
+  stubJsonResponse({
+    path: "*/v2/public/facilities/:id",
+    response: ({ url }: ResponseContext) => {
+      const id = new URL(url).pathname.split("/").pop();
+      const found = items.find((item) => item.id === id);
+      return found ? { ...found, openingWeek: openingWeek() } : undefined;
+    },
+  });
+  return stubJsonResponse({
     path: "*/v2/public/facilities",
-    response: [facility, pavilion],
+    response: ({ url }: ResponseContext) => {
+      const params = new URL(url).searchParams;
+      const matching = items.filter(
+        (item) => !params.get("sport") || item.sport === params.get("sport"),
+      );
+      const page = Number(params.get("page") ?? 1);
+      const size = Number(params.get("pageSize") ?? 12);
+      return {
+        items: matching.slice((page - 1) * size, page * size),
+        total: matching.length,
+        page,
+        pageSize: size,
+      };
+    },
   });
 }
 export const account: Account = {

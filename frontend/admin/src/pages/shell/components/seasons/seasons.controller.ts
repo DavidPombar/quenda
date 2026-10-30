@@ -3,6 +3,7 @@ import { useOutletContext, useSearchParams } from "react-router-dom";
 import { useListOrganizationsQuery } from "@/queries/seasons/list-organizations.query";
 import { useListCampaignsQuery } from "@/queries/seasons/list-campaigns.query";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
+import { useListSportsQuery } from "@/queries/sports/list-sports.query";
 import type { AppContext } from "@/types/app-context";
 /** Season allocation to clubs (#17): clubs, campaigns and the weekly schedule of each campaign. */
 export function useSeasonsController() {
@@ -11,7 +12,11 @@ export function useSeasonsController() {
   const tenantId = isManager ? context.municipality.id : undefined;
   const organizations = useListOrganizationsQuery(tenantId);
   const campaigns = useListCampaignsQuery(tenantId);
-  const facilities = useListFacilitiesQuery(context.municipality.slug);
+  const facilities = useListFacilitiesQuery(
+    context.municipality.slug,
+    context.session?.role === "manager",
+  );
+  const sports = useListSportsQuery(isManager);
   const [params, setParams] = useSearchParams();
   const chosen = params.get("campanha") ?? "";
   const campaign =
@@ -24,6 +29,7 @@ export function useSeasonsController() {
     organizations,
     campaigns,
     facilities,
+    sports: sports.data ?? [],
     campaign,
     chooseCampaign: (id: string) =>
       setParams(id ? { campanha: id } : {}, { replace: true }),

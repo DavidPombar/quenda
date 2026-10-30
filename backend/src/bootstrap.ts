@@ -14,10 +14,11 @@ export async function createApp() {
   // reverse proxies in front of the API (nginx, a TLS proxy), never from clients.
   app.set("trust proxy", process.env.TRUST_PROXY ?? "loopback, uniquelocal");
   app.use(helmet());
-  // Only the municipal logo upload sends a binary body; the command enforces the 2 MB limit.
+  // Only the municipal logo and facility photos send a binary body; their commands enforce the
+  // 2 MB and 4 MB limits.
   app.useBodyParser("raw", {
     type: ["image/png", "image/jpeg", "image/webp"],
-    limit: "3mb",
+    limit: "5mb",
   });
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Cache-Control", "no-store");

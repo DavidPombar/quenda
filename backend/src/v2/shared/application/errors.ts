@@ -31,6 +31,10 @@ export type ErrorCode =
   | "booking_blocked"
   | "attendance_window"
   | "rate_limited"
+  | "sport_exists"
+  | "unsupported_photo"
+  | "photo_too_large"
+  | "photo_limit"
   | "unsubscribe_stale"
   | "push_unavailable";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
