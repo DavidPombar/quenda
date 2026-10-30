@@ -17,6 +17,7 @@ const pool: CatalogEntry = {
   name: "Piscina de Riotorto",
   sport: "swimming",
   sportName: { gl: "Natación", es: "Natación" },
+  sportArt: "swimming",
   address: "Rúa do Río, 1",
   description: "Piscina cuberta.",
   accessible: true,
@@ -30,6 +31,7 @@ const court: CatalogEntry = {
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
   sportName: { gl: "Pádel", es: "Pádel" },
+  sportArt: "padel",
   accessible: false,
   municipality: { slug: "vilaverde", name: "Concello de Vilaverde" },
 };

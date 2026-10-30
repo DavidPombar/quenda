@@ -32,6 +32,7 @@ export type ErrorCode =
   | "attendance_window"
   | "rate_limited"
   | "sport_exists"
+  | "sport_in_use"
   | "unsupported_photo"
   | "photo_too_large"
   | "photo_limit"

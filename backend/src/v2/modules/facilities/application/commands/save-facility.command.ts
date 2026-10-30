@@ -113,9 +113,11 @@ export class SaveFacility {
         facility.openingCalendar,
         municipality.timezone,
       ) ||
-      // The sport must be in the municipality's catalogue (#26); hidden ones stay valid.
+      // A new or changed sport must be a visible one of the catalogue (#26); facilities that
+      // already have a sport the municipality hid keep it.
       (facility.sport !== existing?.sport &&
-        !(await this.sports.find(municipality.id, facility.sport)))
+        (await this.sports.find(municipality.id, facility.sport))?.hidden !==
+          false)
     )
       return Result.err(failure("validation"));
     const now = this.clock.now();
@@ -142,6 +144,7 @@ export class SaveFacility {
             ...facility,
             resources: [],
             sportName: { gl: facility.sport, es: facility.sport },
+            sportArt: "generic",
             photos: [],
           }),
         (error) => Result.err(error),

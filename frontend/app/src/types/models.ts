@@ -74,6 +74,8 @@ export interface Session {
 }
 /** Code from the municipality's sports catalogue (#26). */
 export type Sport = string;
+/** Illustration and colour of a sport; sports without their own use the generic ones. */
+export type SportArt = "padel" | "tennis" | "futsal" | "swimming" | "generic";
 /** Text in both official languages; an empty Spanish text falls back to Galician. */
 export interface Localized {
   gl: string;
@@ -96,6 +98,7 @@ export interface Facility {
   name: string;
   sport: Sport;
   sportName: Localized;
+  sportArt: SportArt;
   address: string;
   description: string;
   accessible: boolean;
@@ -181,6 +184,8 @@ export interface Booking {
   resourceId: string;
   resourceName: string;
   sport: Sport;
+  sportName: Localized;
+  sportArt: SportArt;
   start: string;
   end: string;
   tariffCategory: TariffCategory | null;
@@ -336,6 +341,7 @@ export interface CatalogEntry {
   name: string;
   sport: Sport;
   sportName: Localized;
+  sportArt: SportArt;
   photo: FacilityPhoto | null;
   address: string;
   description: string;

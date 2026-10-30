@@ -423,7 +423,7 @@ export class PostgresSeasonRepository extends SeasonRepository {
     return Boolean(
       (
         await this.db.query(
-          "SELECT 1 FROM sports WHERE tenant_id=$1 AND code=$2",
+          "SELECT 1 FROM sports WHERE tenant_id=$1 AND code=$2 AND NOT hidden",
           [tenantId, code],
         )
       ).rowCount,

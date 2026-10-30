@@ -1,8 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Button, Field, Input } from "@chakra-ui/react";
+import { Button, Field, Input, NativeSelect } from "@chakra-ui/react";
+import { PiTrash } from "react-icons/pi";
+import { SPORT_ARTS } from "@/types/models";
 import { Feedback } from "@/components/feedback/feedback.view";
 import type { TextKey } from "@/services/i18n.service";
 import { useSportsController } from "./sports.controller";
+const ART_LABELS = {
+  padel: "sportArtPadel",
+  tennis: "sportArtTennis",
+  futsal: "sportArtFutsal",
+  swimming: "sportArtSwimming",
+  generic: "sportArtGeneric",
+} as const satisfies Record<(typeof SPORT_ARTS)[number], TextKey>;
 export function Sports(p: { t: (key: TextKey) => string }) {
   const c = useSportsController();
   const { t } = p;
@@ -29,6 +38,7 @@ export function Sports(p: { t: (key: TextKey) => string }) {
                 <th scope="col">{t("sportNameGl")}</th>
                 <th scope="col">{t("sportNameEs")}</th>
                 <th scope="col">{t("sportCnid")}</th>
+                <th scope="col">{t("sportArt")}</th>
                 <th scope="col">{t("sportHidden")}</th>
                 <th scope="col">
                   <span className="sr-only">{t("save")}</span>
@@ -66,6 +76,27 @@ export function Sports(p: { t: (key: TextKey) => string }) {
                   </td>
                   <td className="muted small">{sport.cnidType}</td>
                   <td>
+                    <NativeSelect.Root size="sm">
+                      <NativeSelect.Field
+                        aria-label={`${t("sportArt")}: ${sport.name.gl}`}
+                        value={sport.art}
+                        onChange={(event) =>
+                          c.edit(sport.code, {
+                            art: event.target
+                              .value as (typeof SPORT_ARTS)[number],
+                          })
+                        }
+                      >
+                        {SPORT_ARTS.map((art) => (
+                          <option key={art} value={art}>
+                            {t(ART_LABELS[art])}
+                          </option>
+                        ))}
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </td>
+                  <td>
                     <label className="checkbox-field">
                       <input
                         type="checkbox"
@@ -90,6 +121,17 @@ export function Sports(p: { t: (key: TextKey) => string }) {
                       }}
                     >
                       {t("save")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      aria-label={`${t("sportRemove")}: ${sport.name.gl}`}
+                      disabled={c.pending}
+                      onClick={() => {
+                        void c.remove(sport.code);
+                      }}
+                    >
+                      <PiTrash aria-hidden="true" />
                     </Button>
                   </td>
                 </tr>

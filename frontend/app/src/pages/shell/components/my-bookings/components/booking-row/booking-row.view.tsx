@@ -15,6 +15,7 @@ import { SportTag } from "@/components/sport-tag/sport-tag.view";
 import { bookingDayLabel, money, timeLabel } from "@/services/date.service";
 import { distinctResource } from "@/services/resources.service";
 import { categoryLabel } from "@/services/tariff.service";
+import { localized } from "@/services/catalog.service";
 import type { Booking, Locale, Municipality } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 const OUTCOMES = {
@@ -28,7 +29,6 @@ export function BookingRow(p: {
   municipality: Municipality;
   locale: Locale;
   t: (key: TextKey) => string;
-  sportLabel: string;
   canChange: boolean;
   calendarHref: string;
   onCancel: () => void;
@@ -83,7 +83,10 @@ export function BookingRow(p: {
           </li>
         )}
         <li>
-          <SportTag sport={p.booking.sport} label={p.sportLabel} />
+          <SportTag
+            sport={p.booking.sportArt}
+            label={localized(p.booking.sportName, p.locale)}
+          />
         </li>
       </ul>
       {p.booking.status === "confirmed" && (

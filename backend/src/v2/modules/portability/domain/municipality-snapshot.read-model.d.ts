@@ -259,6 +259,7 @@ export interface MunicipalitySnapshot {
     cnidClass: string;
     cnidType: string;
     schemaType: string;
+    art: string;
     hidden: boolean;
     position: number;
   }[];

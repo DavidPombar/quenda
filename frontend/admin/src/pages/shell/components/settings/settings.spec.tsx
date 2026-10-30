@@ -335,6 +335,38 @@ describe("municipal settings", () => {
       hidden: false,
     });
   });
+  test("should explain that a sport in use can only be hidden, and remove an unused one", async () => {
+    stubManager();
+    const removal = stubJsonResponse({
+      path: "*/v2/manager/sports/:code",
+      method: "DELETE",
+      status: 409,
+      response: { code: "sport_in_use", detail: "" },
+    });
+    await open();
+    const section = page.getByRole("region", { name: "Deportes" });
+    await section
+      .getByRole("button", { name: "Eliminar o deporte: Pádel" })
+      .click();
+    await expect
+      .element(section.getByRole("alert"))
+      .toHaveTextContent(
+        "Hai instalacións ou clubs con este deporte: non se pode eliminar, pero si ocultar.",
+      );
+    expect(removal.spy.mock.calls[0][0].url).toContain("/manager/sports/padel");
+    stubJsonResponse({
+      path: "*/v2/manager/sports/:code",
+      method: "DELETE",
+      status: 204,
+      response: undefined,
+    });
+    await section
+      .getByRole("button", { name: "Eliminar o deporte: Baloncesto" })
+      .click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Deporte eliminado.");
+  });
 
   test("should switch web analytics on with an https Umami and its site id, rejecting a half configuration", async () => {
     stubManager();

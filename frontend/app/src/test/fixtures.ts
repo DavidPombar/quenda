@@ -58,6 +58,7 @@ export const facility: Facility = {
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
   sportName: { gl: "Pádel", es: "Pádel" },
+  sportArt: "padel",
   address: "Rúa da Carballeira, 12",
   description: "Un espazo para xogar.",
   accessible: true,
@@ -88,6 +89,7 @@ export const pavilion: Facility = {
   name: "Pavillón municipal",
   sport: "futsal",
   sportName: { gl: "Fútbol sala", es: "Fútbol sala" },
+  sportArt: "futsal",
   resources: [
     {
       id: "20000000-0000-4000-8000-000000000012",

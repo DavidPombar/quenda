@@ -34,6 +34,8 @@ import { ListSports } from "./application/queries/list-sports.query";
 import { ListManagedSports } from "./application/queries/list-managed-sports.query";
 import { GetMapSettings } from "./application/queries/get-map-settings.query";
 import { SaveSport } from "./application/commands/save-sport.command";
+import { RemoveSport } from "./application/commands/remove-sport.command";
+import { RemoveSportController } from "./infrastructure/api/manager/remove-sport.controller";
 import { AddFacilityPhoto } from "./application/commands/add-facility-photo.command";
 import { UpdateFacilityPhoto } from "./application/commands/update-facility-photo.command";
 import { RemoveFacilityPhoto } from "./application/commands/remove-facility-photo.command";
@@ -65,6 +67,7 @@ import { RemoveFacilityPhotoController } from "./infrastructure/api/manager/remo
     ListManagedSports,
     GetMapSettings,
     SaveSport,
+    RemoveSport,
     AddFacilityPhoto,
     UpdateFacilityPhoto,
     RemoveFacilityPhoto,
@@ -94,6 +97,7 @@ import { RemoveFacilityPhotoController } from "./infrastructure/api/manager/remo
     ListManagedSportsController,
     CreateSportController,
     UpdateSportController,
+    RemoveSportController,
     AddFacilityPhotoController,
     UpdateFacilityPhotoController,
     RemoveFacilityPhotoController,

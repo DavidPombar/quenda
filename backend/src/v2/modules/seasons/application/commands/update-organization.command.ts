@@ -32,7 +32,9 @@ export class UpdateOrganization {
     const values = cleanOrganization(args.input);
     if (
       values.name.length < 2 ||
+      // A club keeps a sport the municipality later hid; a new choice must be visible.
       (values.sport !== null &&
+        values.sport !== existing.sport &&
         !(await this.seasons.sportExists(
           args.principal.tenantId,
           values.sport,

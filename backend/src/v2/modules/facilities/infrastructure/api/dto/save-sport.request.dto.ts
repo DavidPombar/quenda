@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsString,
   Matches,
@@ -12,7 +13,8 @@ import {
   ValidateIf,
   ValidateNested,
 } from "class-validator";
-import { SPORT_CODE } from "../../../domain/sport.repository";
+import { SPORT_ARTS, SPORT_CODE } from "../../../domain/sport.repository";
+import type { SportArt } from "../../../domain/sport.entity";
 const defined = (_object: unknown, value: unknown) => value !== undefined;
 export class SportNameRequestDTO {
   @ApiProperty({ description: "Galician" })
@@ -44,6 +46,13 @@ export class UpdateSportRequestDTO {
   @ValidateIf(defined)
   @Matches(/^[A-Z][A-Za-z]{0,59}$/)
   schemaType?: string;
+  @ApiPropertyOptional({
+    enum: SPORT_ARTS,
+    description: "Illustration and colour of its facilities",
+  })
+  @ValidateIf(defined)
+  @IsIn(SPORT_ARTS)
+  art?: SportArt;
   @ApiPropertyOptional({ description: "Hide from filters and new facilities" })
   @ValidateIf(defined)
   @IsBoolean()
@@ -79,6 +88,13 @@ export class CreateSportRequestDTO {
   @ValidateIf(defined)
   @Matches(/^[A-Z][A-Za-z]{0,59}$/)
   schemaType?: string;
+  @ApiPropertyOptional({
+    enum: SPORT_ARTS,
+    description: "Illustration and colour of its facilities",
+  })
+  @ValidateIf(defined)
+  @IsIn(SPORT_ARTS)
+  art?: SportArt;
   @ApiPropertyOptional({ description: "Hide from filters and new facilities" })
   @ValidateIf(defined)
   @IsBoolean()

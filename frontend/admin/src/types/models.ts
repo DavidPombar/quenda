@@ -131,12 +131,22 @@ export interface Localized {
   es: string;
 }
 /** One entry of the municipality's sports catalogue, aligned with the CNID taxonomy. */
+/** Illustration and colour of a sport; sports without their own use the generic ones. */
+export type SportArt = "padel" | "tennis" | "futsal" | "swimming" | "generic";
+export const SPORT_ARTS: readonly SportArt[] = [
+  "padel",
+  "tennis",
+  "futsal",
+  "swimming",
+  "generic",
+];
 export interface SportInfo {
   code: Sport;
   name: Localized;
   cnidClass: string;
   cnidType: string;
   schemaType: string;
+  art: SportArt;
   hidden: boolean;
   position: number;
 }
@@ -152,6 +162,8 @@ export interface Facility {
   sport: Sport;
   /** Read-only: the sport's name in the catalogue. */
   sportName?: Localized;
+  /** Read-only: illustration and colour of the sport. */
+  sportArt?: SportArt;
   /** Read-only: managed through their own endpoints. */
   photos?: FacilityPhoto[];
   address: string;

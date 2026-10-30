@@ -19,6 +19,8 @@ export interface CatalogEntry {
   name: string;
   sport: Sport;
   sportName: Localized;
+  /** Illustration and colour of the sport (#26). */
+  sportArt: "padel" | "tennis" | "futsal" | "swimming" | "generic";
   address: string;
   description: string;
   accessible: boolean;

@@ -26,15 +26,27 @@ code, names in Galician and Spanish, CNID group and type, schema.org type, a hid
 order. Facilities and clubs reference it through `(tenant_id, sport)` foreign keys.
 
 Every municipality starts from the same CNID-based list. The four sports of V0 are visible;
-basketball, handball, volleyball, football, athletics, fronton, squash and gym start hidden. A
+basketball, handball, volleyball, badminton, football, 7-a-side football, athletics, fronton,
+squash, gym and the multi-sport court start hidden. A
 trigger adds the list to new municipalities, and existing ones received it in the migration.
 
-Managers rename, hide, reorder and add sports in **Axustes → Deportes**
-(`GET|POST /v2/manager/sports`, `PATCH /v2/manager/sports/:code`). Each change is recorded in the
-audit log as `sport.created` or `sport.updated`.
+Managers rename, hide, reorder, add and remove sports in **Axustes → Deportes**
+(`GET|POST /v2/manager/sports`, `PATCH|DELETE /v2/manager/sports/:code`). Each change is recorded in
+the audit log as `sport.created`, `sport.updated` or `sport.removed`.
 
-A hidden sport is no longer offered in filters or for new facilities and clubs, but those that
-already use it keep it. Open data takes the CNID and schema.org classification from this table
+- **Names** are unique in each language (`409 sport_exists`).
+- **At least one** sport stays visible.
+- **Illustration:** each sport chooses the illustration and colour of its facilities (`art`: pádel,
+  tennis, futsal, swimming or generic). The API returns it as `sportArt` with facilities, the
+  catalogue and bookings, so the frontends never depend on a sport's code.
+- **Removal:** only a sport that no facility or club uses can be removed (`409 sport_in_use`); one
+  in use can be hidden.
+- **Filters:** `GET /v2/public/sports` offers only visible sports that at least one facility has,
+  so a small municipality does not show a filter that leads to no results.
+- **Booking history** carries the sport's name in both languages.
+
+A hidden sport is no longer offered in filters and is refused for a new or changed facility or club
+(`400`), but those that already use it keep it. Open data takes the CNID and schema.org classification from this table
 (see [open data](open-data.md)).
 
 ## Photos
