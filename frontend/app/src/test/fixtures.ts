@@ -51,6 +51,7 @@ export const municipality: Municipality = {
   noShowWindowDays: 30,
   noShowBlockDays: 7,
   dataLicense: "CC-BY-4.0",
+  analytics: false,
 };
 export const facility: Facility = {
   id: "20000000-0000-4000-8000-000000000011",
@@ -137,6 +138,11 @@ export function stubAvailability(
   target: Facility,
   slotsFor: (resourceId: string) => Slot[],
 ) {
+  // A day without free slots asks for alternatives; tests that need them stub their own.
+  stubJsonResponse({
+    path: "*/v2/public/slot-suggestions",
+    response: { suggestions: [] },
+  });
   return stubJsonResponse({
     path: `*/v2/public/availability/${target.id}`,
     response: availabilityFor(target, slotsFor),

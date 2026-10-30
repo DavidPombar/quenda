@@ -170,3 +170,31 @@ describe("Municipal settings in the citizen app", () => {
     );
   });
 });
+describe("Web analytics", () => {
+  test("should count each page shown through the API when the council has analytics on", async () => {
+    stubShell();
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [{ ...municipality, analytics: true }],
+    });
+    const { spy } = stubJsonResponse({
+      path: "*/v2/public/analytics/pageview",
+      method: "POST",
+      status: 204,
+    });
+    await commands.navigate("/app/vilaverde/accesibilidade");
+    await render(<App />);
+    await expect.poll(() => spy.mock.calls.length).toBe(1);
+    expect(spy.mock.calls[0][0].body).toEqual({
+      slug: "vilaverde",
+      path: "/app/vilaverde/accesibilidade",
+      language: "gl",
+      screen: expect.stringMatching(/^\d+x\d+$/) as string,
+    });
+    await page.getByRole("link", { name: "Datos abertos" }).first().click();
+    await expect.poll(() => spy.mock.calls.length).toBe(2);
+    expect(spy.mock.calls[1][0].body).toMatchObject({
+      path: "/app/vilaverde/datos-abertos",
+    });
+  });
+});

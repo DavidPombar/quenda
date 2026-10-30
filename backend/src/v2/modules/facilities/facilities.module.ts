@@ -26,6 +26,7 @@ import { PostgresSportRepository } from "./infrastructure/persistence/postgres-s
 import { FacilityPhotoRepository } from "./domain/facility-photo.repository";
 import { PostgresFacilityPhotoRepository } from "./infrastructure/persistence/postgres-facility-photo.repository";
 import { FacilityDescriber } from "./application/facility-details";
+import { AvailabilityGrid } from "./application/availability-grid";
 import { GetFacility } from "./application/queries/get-facility.query";
 import { GetFacilityPhoto } from "./application/queries/get-facility-photo.query";
 import { ListManagedFacilities } from "./application/queries/list-managed-facilities.query";
@@ -56,6 +57,7 @@ import { RemoveFacilityPhotoController } from "./infrastructure/api/manager/remo
     SaveFacilityResources,
     GetFacilityImpact,
     FacilityDescriber,
+    AvailabilityGrid,
     GetFacility,
     GetFacilityPhoto,
     ListManagedFacilities,
@@ -96,6 +98,13 @@ import { RemoveFacilityPhotoController } from "./infrastructure/api/manager/remo
     UpdateFacilityPhotoController,
     RemoveFacilityPhotoController,
   ],
-  exports: [OpeningCalendar, HolidayCalendar, SportRepository],
+  exports: [
+    OpeningCalendar,
+    HolidayCalendar,
+    SportRepository,
+    FacilityRepository,
+    ResourceRepository,
+    AvailabilityGrid,
+  ],
 })
 export class FacilitiesModule {}

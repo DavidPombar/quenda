@@ -63,6 +63,8 @@ export interface Municipality {
   noShowBlockDays: number;
   /** SPDX identifier of the licence of the municipality's open data. */
   dataLicense: "CC-BY-4.0" | "CC-BY-SA-4.0" | "CC0-1.0" | "ODbL-1.0";
+  /** Whether page views are counted in the council's own Umami (#25). */
+  analytics: boolean;
 }
 export interface Session {
   userId: string;
@@ -159,6 +161,18 @@ export interface ResourceAvailability {
 }
 export interface Availability {
   resources: ResourceAvailability[];
+}
+/** A free slot offered instead of a full one, by usual occupancy (#25). */
+export interface SlotSuggestion {
+  facilityId: string;
+  facilityName: string;
+  resourceId: string;
+  resourceName: string;
+  start: string;
+  end: string;
+  /** Usual occupancy at that weekday and hour; null without history. */
+  occupancyPct: number | null;
+  sameFacility: boolean;
 }
 export interface Booking {
   id: string;

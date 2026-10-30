@@ -34,6 +34,8 @@ export interface MunicipalitySnapshot {
     accessibilityExceptionsEs: string;
     dataLicense: string;
     dir3Code: string | null;
+    analyticsUrl: string;
+    analyticsWebsiteId: string | null;
     accessWebhookUrl: string;
     accessWebhookSecretSealed: string | null;
   };

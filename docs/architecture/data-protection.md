@@ -158,6 +158,12 @@ retention only removes the actor link.
 - Tenant isolation is enforced in every repository query and covered by end-to-end tests.
 - Reservations, notices and audit events commit in one transaction; a failure rolls them all back.
 - No personal data leaves the deployment: no third-party analytics, fonts, maps or AI services.
+  The only exception is optional and the council's own: when a manager turns web analytics on,
+  page views go to the council's self-hosted Umami. Each view carries the path (without query
+  strings or identifiers), the language, the screen size, the browser and the IP address, which
+  Umami turns into a daily rotating hash to count unique visitors. It is off by default and must be
+  mentioned in the privacy notice; see [analytics](analytics.md).
+- Slot suggestions use only aggregated, anonymous occupancy.
   Sign-in happens at the identity provider the operator configures (for example Cl@ve through the
   _deputación_); Quenda only receives the claims listed above.
 - The NIF is encrypted with AES-256-GCM and searched by HMAC digest; the key lives outside the

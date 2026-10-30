@@ -11,7 +11,7 @@ import {
   stubFacilities,
   stubShell,
 } from "@/test/fixtures";
-import type { Slot } from "@/types/models";
+import type { Slot, SlotSuggestion } from "@/types/models";
 const slot: Slot = {
   start: "2026-10-20T08:00:00Z",
   end: "2026-10-20T09:00:00Z",
@@ -350,5 +350,131 @@ describe("Facility page details", () => {
       .element(page.getByRole("button", { name: "10:00 Libre" }))
       .not.toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+describe("Alternatives with less occupancy", () => {
+  const other = "20000000-0000-4000-8000-000000000099";
+  const alternatives: SlotSuggestion[] = [
+    {
+      facilityId: other,
+      facilityName: "Pistas do Castro",
+      resourceId: other,
+      resourceName: "Pista 1",
+      start: "2026-10-20T10:00:00Z",
+      end: "2026-10-20T11:00:00Z",
+      occupancyPct: 10,
+      sameFacility: false,
+    },
+    {
+      facilityId: facility.id,
+      facilityName: facility.name,
+      resourceId: facility.resources[0].id,
+      resourceName: facility.resources[0].name,
+      start: later.start,
+      end: later.end,
+      occupancyPct: 35,
+      sameFacility: true,
+    },
+    {
+      facilityId: other,
+      facilityName: "Pistas do Castro",
+      resourceId: other,
+      resourceName: "Pista 1",
+      start: "2026-10-20T12:00:00Z",
+      end: "2026-10-20T13:00:00Z",
+      occupancyPct: null,
+      sameFacility: false,
+    },
+  ];
+  test("should offer three alternatives in order when the day is full and book one here", async () => {
+    stubShell(true);
+    stubAvailability(facility, () => [
+      { ...slot, status: "booked" },
+      { ...later, status: "booked" },
+    ]);
+    const { spy } = stubJsonResponse({
+      path: "*/v2/public/slot-suggestions",
+      response: { suggestions: alternatives },
+    });
+    const create = stubCreate();
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    const section = page.getByRole("region", {
+      name: "Alternativas con menos ocupación",
+    });
+    const options = section.getByRole("button");
+    await expect.element(options.nth(2)).toBeVisible();
+    await expect
+      .element(options.nth(0))
+      .toHaveAccessibleName(/^Reservar Pistas do Castro/);
+    await expect
+      .element(options.nth(1))
+      .toHaveAccessibleName(/^Reservar Pistas de pádel da Carballeira/);
+    await expect
+      .element(options.nth(2))
+      .toHaveAccessibleName(/^Reservar Pistas do Castro/);
+    await expect
+      .element(section.getByText("Adoita estar ocupada ao 10 %"))
+      .toBeVisible();
+    await expect.element(section.getByText(/Nesta instalación/)).toBeVisible();
+    await expect
+      .element(section.getByText("Sen datos de ocupación"))
+      .toBeVisible();
+    const query = new URL(spy.mock.calls[0][0].url).searchParams;
+    expect(query.get("facilityId")).toBe(facility.id);
+    expect(query.get("around")).toBeNull();
+    await section
+      .getByRole("button", { name: /Reservar Pistas de pádel da Carballeira/ })
+      .click();
+    await page.getByRole("button", { name: "Confirmar reserva" }).click();
+    await expect
+      .element(
+        page.getByRole("heading", { name: "A túa quenda está confirmada!" }),
+      )
+      .toBeVisible();
+    expect(create.spy.mock.calls[0][0].body).toMatchObject({
+      facilityId: facility.id,
+      start: later.start,
+    });
+  });
+  test("should offer alternatives around the wanted time when someone else takes the slot first", async () => {
+    stubShell(true);
+    stubAvailability(facility, () => [slot]);
+    stubJsonResponse({
+      path: "*/v2/citizen/bookings",
+      method: "POST",
+      response: {
+        code: "slot_taken",
+        detail: "Esta quenda xa está reservada.",
+      },
+      status: 409,
+    });
+    const { spy } = stubJsonResponse({
+      path: "*/v2/public/slot-suggestions",
+      response: { suggestions: alternatives.slice(0, 1) },
+    });
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await page.getByRole("button", { name: "10:00 Libre" }).click();
+    await page.getByRole("button", { name: "Confirmar reserva" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect
+      .element(
+        dialog.getByRole("heading", {
+          name: "Alternativas con menos ocupación",
+        }),
+      )
+      .toBeVisible();
+    expect(
+      new URL(spy.mock.calls.at(-1)![0].url).searchParams.get("around"),
+    ).toBe(slot.start);
+    await dialog
+      .getByRole("button", { name: /Reservar Pistas do Castro/ })
+      .click();
+    await expect
+      .poll(() => location.pathname + location.search)
+      .toMatch(
+        new RegExp(`/instalacions/${other}\\?data=\\d{4}-\\d{2}-\\d{2}$`),
+      );
   });
 });

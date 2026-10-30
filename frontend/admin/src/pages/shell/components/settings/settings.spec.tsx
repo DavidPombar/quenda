@@ -14,6 +14,8 @@ import type {
 const settings: MunicipalitySettings = {
   ...municipality,
   holidaysCalendar: "",
+  analyticsUrl: "",
+  analyticsWebsiteId: null,
 };
 
 function stubManager(overrides: Partial<MunicipalitySettings> = {}) {
@@ -331,6 +333,34 @@ describe("municipal settings", () => {
       code: "balonman-praia",
       name: { gl: "Balonmán praia", es: "Balonmán praia" },
       hidden: false,
+    });
+  });
+
+  test("should switch web analytics on with an https Umami and its site id, rejecting a half configuration", async () => {
+    stubManager();
+    const { spy } = stubPatch();
+    await open();
+    const section = page.getByRole("region", { name: "Analítica web" });
+    await expect
+      .element(section.getByText("A analítica web está desactivada."))
+      .toBeVisible();
+    const url = section.getByRole("textbox", { name: "Enderezo do Umami" });
+    await url.fill("https://analitica.vilaverde.gal");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByText(/Indica un enderezo https e o identificador/))
+      .toBeVisible();
+    expect(spy).not.toHaveBeenCalled();
+    await section
+      .getByRole("textbox", { name: "Identificador do sitio en Umami" })
+      .fill("6c7a5e3e-1b2d-4f9a-8c3e-2a1b0c9d8e7f");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Cambios gardados.");
+    expect(spy.mock.calls.at(-1)![0].body).toEqual({
+      analyticsUrl: "https://analitica.vilaverde.gal",
+      analyticsWebsiteId: "6c7a5e3e-1b2d-4f9a-8c3e-2a1b0c9d8e7f",
     });
   });
 });

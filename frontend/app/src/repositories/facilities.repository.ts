@@ -7,6 +7,7 @@ import type {
   FacilityPage,
   FacilityWithSchedule,
   MapSettings,
+  SlotSuggestion,
   SportInfo,
 } from "@/types/models";
 export const facilitiesRepository = {
@@ -21,6 +22,20 @@ export const facilitiesRepository = {
   availability: (args: { slug: string; id: string; date: string }) =>
     apiClient.request<Availability>(
       `public/availability/${args.id}?${new URLSearchParams({ slug: args.slug, date: args.date })}`,
+    ),
+  suggestions: (args: {
+    slug: string;
+    facilityId: string;
+    date: string;
+    around: string | null;
+  }) =>
+    apiClient.request<{ suggestions: SlotSuggestion[] }>(
+      `public/slot-suggestions?${new URLSearchParams({
+        slug: args.slug,
+        facilityId: args.facilityId,
+        date: args.date,
+        ...(args.around ? { around: args.around } : {}),
+      })}`,
     ),
   /** Visible sports of the given municipalities, or of every one when empty. */
   sports: (municipalities: readonly string[]) =>

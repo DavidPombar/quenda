@@ -51,6 +51,15 @@ export class MunicipalityInsights {
     private readonly holidays: HolidayCalendar,
     private readonly clock: Clock,
   ) {}
+  /** The last `weeks` complete ISO weeks (Monday to the last Sunday) before today. */
+  recentWeeks(timezone: string, weeks: number): DateRange {
+    const today = this.clock.now().toZonedDateTimeISO(timezone).toPlainDate();
+    const lastSunday = today.subtract({ days: today.dayOfWeek });
+    return {
+      from: lastSunday.subtract({ days: weeks * 7 - 1 }),
+      to: lastSunday,
+    };
+  }
   /** Inclusive local dates; without both, the coming week. Null when invalid or too long. */
   range(
     timezone: string,

@@ -22,6 +22,8 @@ const columns: Record<keyof EditableSettings, string> = {
   noShowBlockDays: "no_show_block_days",
   dataLicense: "data_license",
   dir3Code: "dir3_code",
+  analyticsUrl: "analytics_url",
+  analyticsWebsiteId: "analytics_website_id",
 };
 @Injectable()
 export class PostgresMunicipalitySettingsRepository extends MunicipalitySettingsRepository {

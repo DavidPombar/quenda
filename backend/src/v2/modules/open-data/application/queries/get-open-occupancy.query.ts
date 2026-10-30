@@ -34,13 +34,12 @@ export class GetOpenOccupancy {
       .toZonedDateTimeISO(municipality.timezone)
       .toPlainDate();
     let range: { from: Temporal.PlainDate; to: Temporal.PlainDate } | null;
-    if (args.from === undefined && args.to === undefined) {
-      const lastSunday = today.subtract({ days: today.dayOfWeek });
-      range = {
-        from: lastSunday.subtract({ days: DEFAULT_OPEN_WEEKS * 7 - 1 }),
-        to: lastSunday,
-      };
-    } else
+    if (args.from === undefined && args.to === undefined)
+      range = this.insights.recentWeeks(
+        municipality.timezone,
+        DEFAULT_OPEN_WEEKS,
+      );
+    else
       range = this.insights.range(municipality.timezone, {
         from: args.from ?? "",
         to: args.to ?? "",

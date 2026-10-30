@@ -129,6 +129,14 @@
           "type": ["string", "null"],
           "description": "DIR3 code of the council, the open data publisher. Optional."
         },
+        "analyticsUrl": {
+          "type": "string",
+          "description": "Base URL of the council's Umami; empty when web analytics is off. Optional."
+        },
+        "analyticsWebsiteId": {
+          "type": ["string", "null"],
+          "description": "Umami website id. Optional."
+        },
         "accessibilityUnit": {
           "type": "string"
         },

@@ -13,6 +13,7 @@ import {
   IsIn,
   IsInt,
   IsString,
+  IsUUID,
   Matches,
   Max,
   MaxLength,
@@ -139,4 +140,20 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @ValidateIf((_object: unknown, value: unknown) => !!value)
   @Matches(/^[A-Za-z0-9]{9}$/)
   dir3Code?: string | null;
+  @ApiPropertyOptional({
+    description:
+      "Base URL of the council's own Umami (https); empty switches web analytics off (#25)",
+  })
+  @ValidateIf(defined)
+  @IsString()
+  @MaxLength(300)
+  analyticsUrl?: string;
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: "Umami website id; null or empty when analytics is off",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => !!value)
+  @IsUUID()
+  analyticsWebsiteId?: string | null;
 }

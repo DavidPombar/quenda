@@ -127,6 +127,11 @@ export class MunicipalityResponseDTO {
     nullable: true,
   })
   dir3Code!: string | null;
+  @ApiProperty({
+    description:
+      "Whether page views are counted in the council's Umami; the server address is not exposed",
+  })
+  analytics!: boolean;
   static from(value: MunicipalitySettings): MunicipalityResponseDTO {
     return {
       id: value.id,
@@ -153,6 +158,7 @@ export class MunicipalityResponseDTO {
       accessibility: AccessibilityResponseDTO.from(value.accessibility),
       dataLicense: value.dataLicense,
       dir3Code: value.dir3Code,
+      analytics: !!value.analyticsUrl,
     };
   }
 }
