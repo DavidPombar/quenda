@@ -6,6 +6,7 @@ import { Feedback } from "@/components/feedback/feedback.view";
 import { useDeploymentController } from "./deployment.controller";
 import { MunicipalityForm } from "./components/municipality-form/municipality-form.view";
 import { ManagerForm } from "./components/manager-form/manager-form.view";
+import { TemporaryPassword } from "@/components/temporary-password/temporary-password.view";
 export function Deployment() {
   const c = useDeploymentController();
   const { t } = c;
@@ -90,11 +91,28 @@ export function Deployment() {
                   <div>
                     <dt>{t("operatorManagers")}</dt>
                     <dd>
-                      {item.managers.length
-                        ? item.managers
-                            .map((manager) => manager.displayName)
-                            .join(", ")
-                        : t("operatorNoManagers")}
+                      {item.managers.length ? (
+                        <ul className="manager-list">
+                          {item.managers.map((manager) => (
+                            <li key={manager.id}>
+                              <span>{manager.displayName}</span>
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                aria-label={`${t("operatorResetManager")}: ${manager.displayName}`}
+                                disabled={c.reset.isPending}
+                                onClick={() => {
+                                  void c.resetManager(item, manager);
+                                }}
+                              >
+                                {t("operatorResetManager")}
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        t("operatorNoManagers")
+                      )}
                     </dd>
                   </div>
                 </dl>
@@ -123,6 +141,20 @@ export function Deployment() {
           t={t}
           municipality={c.addingManager}
           onClose={c.closeManager}
+        />
+      )}
+      {c.reset.error && (
+        <p role="alert" className="error-text">
+          {c.reset.error.message}
+        </p>
+      )}
+      {c.resetDone && (
+        <TemporaryPassword
+          t={t}
+          name={c.resetDone.name}
+          login={c.resetDone.login}
+          password={c.resetDone.password}
+          onClose={c.closeReset}
         />
       )}
     </div>

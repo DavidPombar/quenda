@@ -23,6 +23,7 @@
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:retention": "npm run db:retention -w backend",
+    "staff": "npm run staff -w backend --",
     "worker": "npm run build -w backend && npm run worker -w backend",
     "db:import": "npm run db:import -w backend --",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed",

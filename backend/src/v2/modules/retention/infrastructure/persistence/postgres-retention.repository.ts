@@ -73,6 +73,12 @@ export class PostgresRetentionRepository extends RetentionRepository {
         "DELETE FROM login_codes WHERE tenant_id=$1 AND expires_at<$2::timestamptz - interval '1 day'",
         tenantId,
         now,
+      )) +
+      // Staff sign-in steps (#8) left half-way; operators' ones are purged with any municipality.
+      (await this.run(
+        "DELETE FROM login_tickets t USING credentials c WHERE c.id=t.credential_id AND (c.tenant_id=$1 OR c.realm='operator') AND t.expires_at<$2",
+        tenantId,
+        now,
       ))
     );
   }

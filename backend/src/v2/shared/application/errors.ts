@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 export type ErrorCode =
+  | "local_accounts_unavailable"
+  | "account_locked"
+  | "password_weak"
+  | "login_taken"
   | "email_login_disabled"
   | "code_invalid"
   | "code_expired"
