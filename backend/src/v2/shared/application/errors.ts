@@ -34,7 +34,9 @@ export type ErrorCode =
   | "sport_exists"
   | "unsupported_photo"
   | "photo_too_large"
-  | "photo_limit";
+  | "photo_limit"
+  | "unsubscribe_stale"
+  | "push_unavailable";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

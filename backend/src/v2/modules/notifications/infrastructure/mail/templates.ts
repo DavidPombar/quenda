@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { Temporal } from "@js-temporal/polyfill";
 import type { Delivery } from "../../domain/delivery.read-model";
-import type { MessageKind } from "../../../../shared/application/outbox";
-/** Notices people are emailed about; absences only reach the access-control system. */
-export type EmailKind = Exclude<MessageKind, "no_show">;
 type Locale = Delivery["locale"];
+type Standing = NonNullable<Delivery["standing"]>;
 const TAGS: Record<Locale, string> = { gl: "gl-ES", es: "es-ES" };
 const copy = {
   gl: {
@@ -13,6 +12,9 @@ const copy = {
       cancelled: "Reserva cancelada",
       cancelled_by_municipality: "Reserva cancelada polo concello",
       reminder: "Lembranza da túa reserva",
+      no_show: "Non presentado",
+      blocked: "Reservas bloqueadas temporalmente",
+      unblocked: "Xa podes reservar de novo",
     },
     intro: {
       confirmed: "A túa reserva está confirmada.",
@@ -20,7 +22,19 @@ const copy = {
       cancelled: "A túa reserva foi cancelada.",
       cancelled_by_municipality: "O concello cancelou a túa reserva.",
       reminder: "Lembrámosche que tes unha reserva:",
+      no_show: "O concello marcou esta reserva como non presentada:",
+      blocked:
+        "Acumulaches demasiadas ausencias e non podes facer reservas novas durante uns días.",
+      unblocked:
+        "O concello corrixiu unha ausencia e retirou o bloqueo das túas reservas.",
     },
+    standing: (s: Standing, until: string | null) =>
+      until
+        ? `Non podes reservar ata o ${until}.`
+        : s.limit === 0
+          ? "Este concello non aplica penalizacións por ausencias."
+          : `Ausencias recentes: ${s.count} de ${s.limit}. Podes faltar ${s.remaining} ${s.remaining === 1 ? "vez" : "veces"} máis antes do bloqueo.`,
+    standingLabel: "Situación",
     facility: "Instalación",
     date: "Data",
     time: "Hora",
@@ -29,7 +43,8 @@ const copy = {
     bookings: "Ver as miñas reservas",
     footer: (name: string) =>
       `Recibes este correo porque tes unha reserva no ${name}. Se tes dúbidas, responde a esta mensaxe.`,
-    unsubscribe: "Non queres máis lembranzas por correo? Date de baixa:",
+    unsubscribe:
+      "Non queres recibir este tipo de aviso por correo? Date de baixa:",
   },
   es: {
     subject: {
@@ -38,6 +53,9 @@ const copy = {
       cancelled: "Reserva cancelada",
       cancelled_by_municipality: "Reserva cancelada por el ayuntamiento",
       reminder: "Recordatorio de tu reserva",
+      no_show: "No presentado",
+      blocked: "Reservas bloqueadas temporalmente",
+      unblocked: "Ya puedes reservar de nuevo",
     },
     intro: {
       confirmed: "Tu reserva está confirmada.",
@@ -45,7 +63,19 @@ const copy = {
       cancelled: "Tu reserva ha sido cancelada.",
       cancelled_by_municipality: "El ayuntamiento ha cancelado tu reserva.",
       reminder: "Te recordamos que tienes una reserva:",
+      no_show: "El ayuntamiento ha marcado esta reserva como no presentada:",
+      blocked:
+        "Has acumulado demasiadas ausencias y no puedes hacer reservas nuevas durante unos días.",
+      unblocked:
+        "El ayuntamiento ha corregido una ausencia y ha retirado el bloqueo de tus reservas.",
     },
+    standing: (s: Standing, until: string | null) =>
+      until
+        ? `No puedes reservar hasta el ${until}.`
+        : s.limit === 0
+          ? "Este ayuntamiento no aplica penalizaciones por ausencias."
+          : `Ausencias recientes: ${s.count} de ${s.limit}. Puedes faltar ${s.remaining} ${s.remaining === 1 ? "vez" : "veces"} más antes del bloqueo.`,
+    standingLabel: "Situación",
     facility: "Instalación",
     date: "Fecha",
     time: "Hora",
@@ -54,7 +84,8 @@ const copy = {
     bookings: "Ver mis reservas",
     footer: (name: string) =>
       `Recibes este correo porque tienes una reserva en el ${name}. Si tienes dudas, responde a este mensaje.`,
-    unsubscribe: "¿No quieres más recordatorios por correo? Date de baja:",
+    unsubscribe:
+      "¿No quieres recibir este tipo de aviso por correo? Date de baja:",
   },
 } as const;
 // Municipality names already read "Concello de…"; the article above suits both languages.
@@ -77,7 +108,7 @@ export interface RenderedMail {
   html: string;
 }
 export function renderMail(
-  delivery: Delivery & { kind: EmailKind },
+  delivery: Delivery,
   links: { bookings: string; unsubscribe: string | null },
 ): RenderedMail {
   const t = copy[delivery.locale];
@@ -100,6 +131,25 @@ export function renderMail(
     ...(delivery.kind === "cancelled_by_municipality" &&
     delivery.cancellationReason
       ? ([[t.reason, delivery.cancellationReason]] as [string, string][])
+      : []),
+    ...(delivery.standing
+      ? ([
+          [
+            t.standingLabel,
+            t.standing(
+              delivery.standing,
+              delivery.standing.blockedUntil
+                ? Temporal.Instant.from(delivery.standing.blockedUntil)
+                    .toZonedDateTimeISO(zone)
+                    .toPlainDate()
+                    .toLocaleString(TAGS[delivery.locale], {
+                      day: "numeric",
+                      month: "long",
+                    })
+                : null,
+            ),
+          ],
+        ] as [string, string][])
       : []),
   ];
   const subject = `${t.subject[delivery.kind]}: ${delivery.facility.name}`;

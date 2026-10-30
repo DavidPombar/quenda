@@ -466,6 +466,9 @@
           },
           "details": {
             "type": ["object", "null"]
+          },
+          "dedupeKey": {
+            "type": ["string", "null"]
           }
         },
         "additionalProperties": false
@@ -626,7 +629,7 @@
           },
           "channel": {
             "type": "string",
-            "enum": ["email"]
+            "enum": ["email", "push"]
           },
           "enabled": {
             "type": "boolean"

@@ -3,7 +3,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import type { Type } from "@nestjs/common";
-import request from "supertest";
 import {
   type Agent,
   type Tenant,
@@ -38,9 +37,6 @@ function compiled() {
   const { Commands } = load<{ Commands: Type<Locator> }>(
     "v2/shared/infrastructure/commands.locator",
   );
-  const { UnsubscribeTokens } = load<{ UnsubscribeTokens: Type }>(
-    "v2/shared/application/unsubscribe-tokens",
-  );
   const commands = harness.app.get(Commands);
   const command = (path: string, name: string) =>
     commands.get(load<Record<string, Type>>(path)[name]);
@@ -60,9 +56,6 @@ function compiled() {
         "v2/modules/notifications/application/commands/complete-delivery.command",
         "CompleteDelivery",
       ).execute(args) as Promise<Folded<void>>,
-    tokens: harness.app.get(UnsubscribeTokens) as {
-      sign(target: object): string;
-    },
   };
 }
 function value<T>(result: Folded<T>): T {
@@ -253,7 +246,7 @@ describe("Email notices through the transactional outbox", () => {
       ),
     ).toMatchObject([{ bookingId: id }]);
   });
-  it("should not remind people who switched reminders off, from the account or from the email link", async () => {
+  it("should keep the in-app reminder but send no email to people who switched reminder emails off", async () => {
     await closeOutbox();
     const context = await withEmail();
     await harness.db.query(
@@ -268,45 +261,29 @@ describe("Email notices through the transactional outbox", () => {
       start: start(2, 10),
     }).expect(201);
     await bookedEarlier(id);
+    const current = (
+      await context.citizen
+        .get("/v2/citizen/me/notification-preferences")
+        .expect(200)
+    ).body as { preferences: Record<string, Record<string, boolean>> };
     await put(context.citizen, "citizen/me/notification-preferences", {
-      reminderEmails: false,
+      ...current.preferences,
+      reminder: { email: false, push: true },
     }).expect(204);
-    const account = await context.citizen.get("/v2/citizen/me").expect(200);
-    expect(account.body).toMatchObject({
-      email: `citizen@${context.slug}.example`,
-      reminderEmails: false,
-    });
-    const { scheduleReminders, tokens } = compiled();
+    const { scheduleReminders } = compiled();
+    expect(value(await scheduleReminders(context.id))).toBe(1);
     expect(value(await scheduleReminders(context.id))).toBe(0);
-    await put(context.citizen, "citizen/me/notification-preferences", {
-      reminderEmails: true,
-    }).expect(204);
-    const anonymous = request.agent(harness.app.getHttpServer());
-    const token = tokens.sign({
-      tenantId: context.id,
-      userId: context.users.citizen,
-      kind: "reminder",
-      channel: "email",
-    });
-    await post(anonymous, "public/unsubscribe", { token }).expect(204);
-    await post(anonymous, "public/unsubscribe", { token }).expect(204);
-    await post(anonymous, "public/unsubscribe", {
-      token: `${token.slice(0, -2)}xx`,
-    }).expect(400);
     expect(
-      (await context.citizen.get("/v2/citizen/me").expect(200)).body
-        .reminderEmails,
-    ).toBe(false);
-    expect(value(await scheduleReminders(context.id))).toBe(0);
-    const audit = await harness.db.query<{ action: string }>(
-      "SELECT action FROM audit_events WHERE tenant_id=$1 AND action LIKE 'notification_preferences.%' ORDER BY occurred_at",
-      [context.id],
-    );
-    expect(audit.rows.map((row) => row.action)).toEqual([
-      "notification_preferences.updated",
-      "notification_preferences.updated",
-      "notification_preferences.unsubscribed",
-    ]);
+      (await messages(context)).filter((row) => row.kind === "reminder"),
+    ).toEqual([]);
+    const notices = await context.citizen
+      .get("/v2/citizen/notifications")
+      .expect(200);
+    expect(
+      (notices.body as { kind: string }[]).filter(
+        (notice) => notice.kind === "reminder",
+      ),
+    ).toHaveLength(1);
   });
   it("should export the address and messages and erase them with the account", async () => {
     const context = await withEmail();
@@ -323,7 +300,11 @@ describe("Email notices through the transactional outbox", () => {
       .expect(200);
     expect(exported.body).toMatchObject({
       profile: { email: `citizen@${context.slug}.example`, locale: "gl" },
-      preferences: { reminderEmails: true },
+      preferences: {
+        confirmation: { email: true, push: true },
+        penalty: { email: false, push: false },
+      },
+      pushDevices: [],
       messages: [{ kind: "confirmed", channel: "email" }],
     });
     await del(context.citizen, "citizen/me").expect(204);

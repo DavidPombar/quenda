@@ -11,10 +11,16 @@ export class ExportedMessageResponseDTO {
       "cancelled",
       "cancelled_by_municipality",
       "reminder",
+      "no_show",
+      "blocked",
+      "unblocked",
     ],
   })
   kind!: ExportedMessage["kind"];
-  @ApiProperty({ description: "Delivery channel", enum: ["email"] })
+  @ApiProperty({
+    description: "Delivery channel",
+    enum: ["email", "push", "webhook"],
+  })
   channel!: ExportedMessage["channel"];
   @ApiProperty({ description: "Instant the message was queued" })
   createdAt!: string;

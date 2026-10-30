@@ -33,8 +33,6 @@ export class AccountResponseDTO {
     nullable: true,
   })
   locale!: "gl" | "es" | null;
-  @ApiProperty({ description: "Whether reminders are sent by email" })
-  reminderEmails!: boolean;
   static from(value: AccountSummary): AccountResponseDTO {
     return {
       userId: value.profile.userId,
@@ -47,7 +45,6 @@ export class AccountResponseDTO {
       notifications: value.notifications,
       email: value.profile.email,
       locale: value.profile.locale,
-      reminderEmails: value.preferences.reminderEmails,
     };
   }
 }

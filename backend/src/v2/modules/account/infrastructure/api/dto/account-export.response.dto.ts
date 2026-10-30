@@ -10,7 +10,8 @@ import { ExportedBookingResponseDTO } from "./exported-booking.response.dto";
 import { ExportedNotificationResponseDTO } from "./exported-notification.response.dto";
 import { ExportedAuditEventResponseDTO } from "./exported-audit-event.response.dto";
 import { ExportedMessageResponseDTO } from "./exported-message.response.dto";
-import { NotificationPreferencesResponseDTO } from "./notification-preferences.response.dto";
+import { NoticePreferencesResponseDTO } from "./notice-preferences.response.dto";
+import { ExportedPushDeviceResponseDTO } from "./exported-push-device.response.dto";
 import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
@@ -56,12 +57,18 @@ export class AccountExportResponseDTO {
   })
   notifications!: ExportedNotificationResponseDTO[];
   @ApiProperty({
-    description: "Notice preferences",
-    type: NotificationPreferencesResponseDTO,
+    description: "Notice choices per kind and channel",
+    type: NoticePreferencesResponseDTO,
   })
-  preferences!: NotificationPreferencesResponseDTO;
+  preferences!: NoticePreferencesResponseDTO;
   @ApiProperty({
-    description: "Email messages queued or delivered (without their text)",
+    description: "Devices receiving push notices, without their credentials",
+    type: [ExportedPushDeviceResponseDTO],
+  })
+  pushDevices!: ExportedPushDeviceResponseDTO[];
+  @ApiProperty({
+    description:
+      "Email, push and access-control messages queued or delivered (without their text)",
     type: [ExportedMessageResponseDTO],
   })
   messages!: ExportedMessageResponseDTO[];
@@ -88,7 +95,8 @@ export class AccountExportResponseDTO {
       notifications: value.notifications.map(
         ExportedNotificationResponseDTO.from,
       ),
-      preferences: NotificationPreferencesResponseDTO.from(value.preferences),
+      preferences: NoticePreferencesResponseDTO.from(value.preferences),
+      pushDevices: value.pushDevices.map(ExportedPushDeviceResponseDTO.from),
       messages: value.messages.map(ExportedMessageResponseDTO.from),
       blocks: value.blocks.map(ExportedBlockResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),

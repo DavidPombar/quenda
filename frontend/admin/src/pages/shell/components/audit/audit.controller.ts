@@ -36,6 +36,8 @@ const AUDIT_ACTIONS = [
   ["access_webhook.updated", "auditAccessWebhookUpdated"],
   ["notification_preferences.updated", "auditPreferencesUpdated"],
   ["notification_preferences.unsubscribed", "auditPreferencesUnsubscribed"],
+  ["push_device.added", "auditPushDeviceAdded"],
+  ["push_device.removed", "auditPushDeviceRemoved"],
   ["category.requested", "auditCategoryRequested"],
   ["category.verified", "auditCategoryVerified"],
   ["category.rejected", "auditCategoryRejected"],

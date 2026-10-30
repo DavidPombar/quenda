@@ -10,6 +10,7 @@ import {
 import { ProblemException } from "../../../../../shared/infrastructure/api/problem";
 import { assertNever } from "../../../../../shared/application/errors";
 import { UnsubscribeRequestDTO } from "../dto/unsubscribe.request.dto";
+import { UnsubscribeResponseDTO } from "../dto/unsubscribe.response.dto";
 @V2Controller("public/unsubscribe")
 export class UnsubscribeController {
   private readonly operation;
@@ -17,15 +18,21 @@ export class UnsubscribeController {
     this.operation = locator.get(Unsubscribe);
   }
   @Post()
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({
     summary: "Unsubscribe",
-    description: "Switches email reminders off using the signed link",
+    description: "Switches one notice off by email using the signed link",
   })
-  @ApiResponse({ status: 204, description: "Successful operation" })
-  async handle(@Body() body: UnsubscribeRequestDTO): Promise<void> {
+  @ApiResponse({
+    status: 200,
+    description: "Successful operation",
+    type: UnsubscribeResponseDTO,
+  })
+  async handle(
+    @Body() body: UnsubscribeRequestDTO,
+  ): Promise<UnsubscribeResponseDTO> {
     const result = await this.operation.execute({ token: body.token });
-    return result.fold(() => undefined, this.handleError);
+    return result.fold((value) => ({ kind: value.kind }), this.handleError);
   }
   private handleError(this: void, error: UnsubscribeError): never {
     switch (error.code) {
@@ -33,6 +40,8 @@ export class UnsubscribeController {
         throw new ProblemException(400, error);
       case "not_found":
         throw new ProblemException(404, error);
+      case "unsubscribe_stale":
+        throw new ProblemException(410, error);
       default:
         return assertNever(error);
     }

@@ -5,7 +5,11 @@ import type {
   TariffCategory,
 } from "../../../shared/application/categories";
 import type { Assurance } from "../../../shared/application/principal";
-import type { MessageKind } from "../../../shared/application/outbox";
+import type {
+  MessageChannel,
+  MessageKind,
+} from "../../../shared/application/outbox";
+import type { NoticePreferences } from "../../../shared/application/notice-preferences";
 export interface AccountProfile {
   userId: string;
   displayName: string;
@@ -15,13 +19,27 @@ export interface AccountProfile {
   /** Language for outgoing messages; NULL until the person picks one. */
   locale: "gl" | "es" | null;
 }
-export interface NotificationPreferences {
-  reminderEmails: boolean;
+/** The person's notice choices and how many devices receive push notices. */
+export interface NotificationSettings {
+  preferences: NoticePreferences;
+  push: {
+    /** Whether the deployment has VAPID keys, so devices can subscribe. */
+    available: boolean;
+    publicKey: string | null;
+    devices: number;
+  };
+}
+/** A device receiving push notices; the endpoint itself is a credential and is not exported. */
+export interface ExportedPushDevice {
+  /** Origin of the browser's push service, e.g. https://fcm.googleapis.com. */
+  service: string;
+  userAgent: string;
+  createdAt: Temporal.Instant;
 }
 export interface ExportedMessage {
   id: string;
   kind: MessageKind;
-  channel: "email";
+  channel: MessageChannel;
   createdAt: Temporal.Instant;
   sentAt: Temporal.Instant | null;
 }
@@ -53,7 +71,6 @@ export interface AccountSummary {
   consents: ConsentRecord[];
   bookings: number;
   notifications: number;
-  preferences: NotificationPreferences;
 }
 export interface ExportedBooking {
   id: string;
@@ -126,7 +143,8 @@ export interface AccountExport {
   prefersFamilyTariff: boolean;
   bookings: ExportedBooking[];
   notifications: ExportedNotification[];
-  preferences: NotificationPreferences;
+  preferences: NoticePreferences;
+  pushDevices: ExportedPushDevice[];
   messages: ExportedMessage[];
   blocks: ExportedBlock[];
   auditEvents: ExportedAuditEvent[];

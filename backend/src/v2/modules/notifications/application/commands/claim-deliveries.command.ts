@@ -5,9 +5,11 @@ import { Delivery } from "../../domain/delivery.read-model";
 import { LEASE_MINUTES, MAX_ATTEMPTS } from "../delivery-policy";
 import { Clock } from "../../../../shared/application/clock";
 import { Result } from "../../../../shared/application/result";
+import { wants } from "../../../../shared/application/notice-preferences";
 /**
  * Leases due messages for delivery outside the transaction. Messages nobody can receive any more
- * (no address, deleted account, reminder of a cancelled reservation) are closed without sending.
+ * (no address, deleted account, notice switched off since it was queued, reminder of a cancelled
+ * reservation) are closed without sending.
  */
 @Injectable()
 export class ClaimDeliveries {
@@ -30,12 +32,14 @@ export class ClaimDeliveries {
           ? delivery.webhook
             ? null
             : "skipped:no_webhook"
-          : !delivery.email || delivery.kind === "no_show"
-            ? "skipped:no_recipient"
-            : delivery.kind === "reminder" &&
-                delivery.bookingStatus !== "confirmed"
-              ? "skipped:cancelled"
-              : null;
+          : !wants(delivery.kind, delivery.channel, delivery.preference)
+            ? "skipped:preference"
+            : delivery.channel === "email" && !delivery.email
+              ? "skipped:no_recipient"
+              : delivery.kind === "reminder" &&
+                  delivery.bookingStatus !== "confirmed"
+                ? "skipped:cancelled"
+                : null;
       if (skip) await this.deliveries.markSent(delivery.id, now, skip);
       else ready.push(delivery);
     }

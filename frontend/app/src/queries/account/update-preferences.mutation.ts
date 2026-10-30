@@ -5,6 +5,7 @@ export function useUpdatePreferencesMutation() {
   const cache = useQueryClient();
   return useMutation({
     mutationFn: accountRepository.updatePreferences,
-    onSuccess: () => cache.invalidateQueries({ queryKey: ["account"] }),
+    onSuccess: () =>
+      cache.invalidateQueries({ queryKey: ["notification-settings"] }),
   });
 }

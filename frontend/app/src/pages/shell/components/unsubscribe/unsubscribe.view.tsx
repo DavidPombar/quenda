@@ -7,13 +7,13 @@ export function Unsubscribe() {
   return (
     <div className="page account-page">
       <h1>{c.t("unsubscribeTitle")}</h1>
-      {c.unsubscribe.isSuccess ? (
+      {c.done ? (
         <p role="status" className="success-body">
-          {c.t("unsubscribeDone")}
+          {c.done}
         </p>
       ) : c.invalid ? (
         <p role="alert" className="error-text">
-          {c.t("unsubscribeError")}
+          {c.t(c.stale ? "unsubscribeStale" : "unsubscribeError")}
         </p>
       ) : (
         <>

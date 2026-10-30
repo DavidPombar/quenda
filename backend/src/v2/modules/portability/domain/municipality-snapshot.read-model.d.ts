@@ -144,6 +144,8 @@ export interface MunicipalitySnapshot {
     kind: string;
     createdAt: Temporal.Instant;
     details: Record<string, unknown> | null;
+    /** Marks the single reminder of one start time. */
+    dedupeKey: string | null;
   }[];
   auditEvents: {
     id: string;
