@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { precache } from "../vite-precache.mts";
 import { fileURLToPath, URL } from "node:url";
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), precache()],
   // Long-lived vendor chunks keep each file under Vite's size warning and
   // let browsers cache libraries across releases.
   build: {

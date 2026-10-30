@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { onlineManager } from "@tanstack/react-query";
 import { useOutletContext } from "react-router-dom";
 import { Temporal } from "@js-temporal/polyfill";
 import { useGetAccessDayQuery } from "@/queries/access/get-access-day.query";
@@ -38,6 +39,8 @@ export function useAccessControlController() {
   );
   const queue = useRef(pending);
   const syncing = useRef(false);
+  // A sync asked for while another is sending runs once that one ends.
+  const again = useRef(false);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [result, setResult] = useState<PassCheck | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -63,7 +66,11 @@ export function useAccessControlController() {
     storePendingCheckIns(slug, items);
   }
   async function flush(items: CheckIn[]) {
-    if (!items.length || syncing.current) return;
+    if (!items.length) return;
+    if (syncing.current) {
+      again.current = true;
+      return;
+    }
     syncing.current = true;
     const batch = items.slice(0, 200);
     let delivered = false;
@@ -99,8 +106,25 @@ export function useAccessControlController() {
     } finally {
       syncing.current = false;
     }
-    if (delivered && queue.current.length) await flush(queue.current);
+    const retry = again.current;
+    again.current = false;
+    if ((delivered || retry) && queue.current.length)
+      await flush(queue.current);
   }
+  async function sync() {
+    await flush(queue.current);
+    await dayQuery.refetch();
+  }
+  // Entries made offline go out as soon as the device is back on the network (#24).
+  const latestSync = useRef(sync);
+  latestSync.current = sync;
+  useEffect(
+    () =>
+      onlineManager.subscribe((online) => {
+        if (online && staff) void latestSync.current();
+      }),
+    [staff],
+  );
   function checkIn(booking: AccessBooking, method: CheckIn["method"]) {
     const now = Temporal.Now.instant();
     if (booking.status !== "confirmed") {
@@ -180,10 +204,7 @@ export function useAccessControlController() {
     pendingLabel: pending.length
       ? fill(t("accessPending"), { count: pending.length })
       : "",
-    sync: async () => {
-      await flush(queue.current);
-      await dayQuery.refetch();
-    },
+    sync,
     conflicts,
     result,
     scanning,

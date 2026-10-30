@@ -43,6 +43,8 @@ export interface MunicipalitySettings {
   holidaysCalendar: string;
   /** Content hash prefix of the uploaded logo, or null when there is none. */
   logoVersion: string | null;
+  /** Content hash prefix of the installed app's icon made from the logo (#24), or null. */
+  iconVersion: string | null;
   /** Categories residents can request and facilities can price (M2). */
   enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */

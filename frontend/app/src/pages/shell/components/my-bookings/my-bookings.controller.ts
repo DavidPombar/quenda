@@ -6,6 +6,7 @@ import { useListBookingsQuery } from "@/queries/bookings/list-bookings.query";
 import { useListNotificationsQuery } from "@/queries/bookings/list-notifications.query";
 import { useUpdateBookingMutation } from "@/queries/bookings/update-booking.mutation";
 import { useGetPenaltyStandingQuery } from "@/queries/bookings/get-penalty-standing.query";
+import { usePrefetchAccessPasses } from "@/queries/bookings/get-access-pass.query";
 import { dateLabel } from "@/services/date.service";
 import { fill, type TextKey } from "@/services/i18n.service";
 import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
@@ -25,6 +26,8 @@ const NOTICE_TITLES = {
 const NOTICE_PREVIEW = 10;
 // Bookings shown per page; "Ver máis" reveals the next page.
 const BOOKING_PAGE = 10;
+// Passes of bookings starting this soon are fetched ahead for the door (#24).
+const PASS_AHEAD_HOURS = 24;
 export function useMyBookingsController() {
   const context = useOutletContext<AppContext>();
   const query = useListBookingsQuery(context.session?.userId);
@@ -73,6 +76,7 @@ export function useMyBookingsController() {
   }
   function canChange(booking: Booking) {
     return (
+      context.online &&
       booking.status === "confirmed" &&
       Temporal.Instant.compare(
         now.add({ hours: context.municipality.cancellationHours }),
@@ -80,6 +84,18 @@ export function useMyBookingsController() {
       ) <= 0
     );
   }
+  usePrefetchAccessPasses(
+    (query.data ?? [])
+      .filter(
+        (booking) =>
+          canShowPass(booking) &&
+          Temporal.Instant.compare(
+            Temporal.Instant.from(booking.start),
+            now.add({ hours: PASS_AHEAD_HOURS }),
+          ) <= 0,
+      )
+      .map((booking) => booking.id),
+  );
   const { t } = context;
   /** Where the person stands against the no-show penalty, in plain words (C3). */
   function standingText(standing: Omit<PenaltyStanding, "enabled">) {

@@ -1526,6 +1526,16 @@ main {
 }
 
 /* Account page */
+.offline-banner {
+  /* Lines up with the page content below it. */
+  margin: var(--space-4)
+    max(var(--gutter), calc((100% - 1280px) / 2 + var(--gutter))) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--maintenance);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+}
 .page-notice {
   max-width: 1280px;
   margin: var(--space-4) auto 0;

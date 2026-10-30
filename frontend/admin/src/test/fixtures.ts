@@ -36,6 +36,7 @@ export const municipality: Municipality = {
   legalVersion: "2026-10",
   primaryColor: "#1f5b43",
   logoUrl: null,
+  iconUrl: null,
   enabledCategories: [],
   noShowLimit: 3,
   noShowWindowDays: 30,

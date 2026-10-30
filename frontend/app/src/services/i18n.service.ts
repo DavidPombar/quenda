@@ -383,6 +383,8 @@ const gl = {
   pushTitle: "Avisos neste dispositivo",
   pushIntro:
     "O aviso no dispositivo só di que hai unha novidade, sen nomes nin lugares; o detalle vese ao abrir a app. Pasa cifrado polo servizo de avisos do teu navegador.",
+  offline:
+    "Sen conexión. Ves as túas reservas e os QR gardados neste dispositivo; para reservar, cambiar ou cancelar fai falta conexión.",
   pushEnable: "Activar avisos neste dispositivo",
   pushDisable: "Desactivar neste dispositivo",
   pushActive: "Este dispositivo recibe avisos.",
@@ -816,6 +818,8 @@ const es: Record<TextKey, string> = {
   pushTitle: "Avisos en este dispositivo",
   pushIntro:
     "El aviso en el dispositivo solo dice que hay una novedad, sin nombres ni lugares; el detalle se ve al abrir la app. Pasa cifrado por el servicio de avisos de tu navegador.",
+  offline:
+    "Sin conexión. Ves tus reservas y los QR guardados en este dispositivo; para reservar, cambiar o cancelar hace falta conexión.",
   pushEnable: "Activar avisos en este dispositivo",
   pushDisable: "Desactivar en este dispositivo",
   pushActive: "Este dispositivo recibe avisos.",

@@ -46,6 +46,7 @@ export const municipality: Municipality = {
   reminderHours: 24,
   primaryColor: "#1f5b43",
   logoUrl: null,
+  iconUrl: null,
   enabledCategories: ["resident", "family", "minor"],
   noShowLimit: 3,
   noShowWindowDays: 30,

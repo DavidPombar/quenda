@@ -47,6 +47,17 @@ for (const path of ["/", "/app/", "/app/reservas", "/admin/", "/admin/x"]) {
   );
   assert.doesNotMatch(response.headers.get("server") ?? "", /\d/, "version");
 }
+// Installed apps pick up a new version on their next start (#24).
+for (const path of [
+  "/app/sw.js",
+  "/app/manifest.webmanifest",
+  "/admin/sw.js",
+  "/admin/manifest.webmanifest",
+]) {
+  const response = await head(path);
+  assert.equal(response.status, 200, `${path} status`);
+  assert.equal(response.headers.get("cache-control"), "no-cache", path);
+}
 const api = await head("/v2/public/municipalities");
 assert.equal(api.status, 200);
 // API headers come only from the API, without conflicting proxy duplicates.

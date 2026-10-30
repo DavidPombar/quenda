@@ -65,9 +65,10 @@ Push is standard Web Push and needs no proprietary SDK:
 - payload encryption (RFC 8291) through the `web-push` library (MPL-2.0), with the request sent
   by `fetch`.
 
-**The browser side.** The citizen app registers `frontend/app/public/sw.js` (scope `/app/`) only
-when the person presses **Activar avisos neste dispositivo**. The browser asks for permission then
-and never before. The app sends the `PushSubscription` to
+**The browser side.** The citizen app's service worker, `frontend/app/public/sw.js` (scope `/app/`),
+is registered when the built app starts, because it also keeps the app for offline use (#24, see
+[installable app](pwa.md)). Push only starts when the person presses **Activar avisos neste
+dispositivo**: the browser asks for permission then and never before. The app sends the `PushSubscription` to
 `POST /v2/citizen/me/push-subscriptions`. **Desactivar neste dispositivo** unsubscribes and calls
 `DELETE` with the endpoint. A person can have several devices (`push_subscriptions`, unique per
 municipality and endpoint).

@@ -95,6 +95,13 @@ export class MunicipalityResponseDTO {
   })
   logoUrl!: string | null;
   @ApiProperty({
+    type: String,
+    nullable: true,
+    description:
+      "Versioned URL of the installed app's square icon, or null when there is none",
+  })
+  iconUrl!: string | null;
+  @ApiProperty({
     enum: CATEGORIES,
     isArray: true,
     description: "User categories with their own tariffs (M2)",
@@ -154,6 +161,9 @@ export class MunicipalityResponseDTO {
       primaryColor: value.primaryColor,
       logoUrl: value.logoVersion
         ? `/v2/public/municipalities/${value.slug}/logo?v=${value.logoVersion}`
+        : null,
+      iconUrl: value.iconVersion
+        ? `/v2/public/municipalities/${value.slug}/icon?v=${value.iconVersion}`
         : null,
       enabledCategories: value.enabledCategories,
       noShowLimit: value.noShowLimit,

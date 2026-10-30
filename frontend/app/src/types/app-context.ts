@@ -8,6 +8,8 @@ export interface AppContext {
   t: (key: TextKey) => string;
   signIn: () => void;
   showPrivacy: () => void;
+  /** False while the device has no network; kept data is shown instead (#24). */
+  online: boolean;
   /** Counts a fixed event when the council has web analytics on (#57). */
   track: (event: AnalyticsEvent) => void;
 }
