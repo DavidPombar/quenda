@@ -21,7 +21,8 @@ export function useManagementController() {
     isManager ? context.session?.userId : undefined,
   );
   const [editing, setEditing] = useState<Facility | "new" | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [courtsOf, setCourtsOf] = useState<Facility | null>(null);
+  const [saved, setSaved] = useState<"facility" | "courts" | null>(null);
   const exporting = useExportMunicipalityMutation();
   function exportData() {
     exporting.mutate(undefined, {
@@ -34,7 +35,11 @@ export function useManagementController() {
   }
   function close(saved = false) {
     setEditing(null);
-    setSaved(saved);
+    setSaved(saved ? "facility" : null);
+  }
+  function closeCourts(saved = false) {
+    setCourtsOf(null);
+    setSaved(saved ? "courts" : null);
   }
   const activityTitle =
     insights.data?.from && insights.data.to
@@ -66,6 +71,9 @@ export function useManagementController() {
     setEditing,
     saved,
     close,
+    courtsOf,
+    setCourtsOf,
+    closeCourts,
     exporting,
     exportData,
   };

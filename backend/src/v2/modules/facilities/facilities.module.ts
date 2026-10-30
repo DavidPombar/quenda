@@ -21,6 +21,8 @@ import { ListCatalog } from "./application/queries/list-catalog.query";
 import { ListCatalogController } from "./infrastructure/api/public/list-catalog.controller";
 import { GetAvailability } from "./application/queries/get-availability.query";
 import { SaveFacility } from "./application/commands/save-facility.command";
+import { SaveFacilityResources } from "./application/commands/save-facility-resources.command";
+import { SaveFacilityResourcesController } from "./infrastructure/api/manager/save-facility-resources.controller";
 import { ListFacilitiesController } from "./infrastructure/api/public/list-facilities.controller";
 import { GetAvailabilityController } from "./infrastructure/api/public/get-availability.controller";
 import { CreateFacilityController } from "./infrastructure/api/manager/create-facility.controller";
@@ -37,6 +39,7 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
     ListManagedSports,
     SaveSports,
     { provide: SportRepository, useClass: PostgresSportRepository },
+    SaveFacilityResources,
     GetFacilityImpact,
     { provide: FacilityRepository, useClass: PostgresFacilityRepository },
     { provide: ResourceRepository, useClass: PostgresResourceRepository },
@@ -52,6 +55,7 @@ import { GetFacilityImpactController } from "./infrastructure/api/manager/get-fa
     ListSportsController,
     ListManagedSportsController,
     SaveSportsController,
+    SaveFacilityResourcesController,
     GetFacilityImpactController,
   ],
   exports: [OpeningCalendar, HolidayCalendar, SportRepository],

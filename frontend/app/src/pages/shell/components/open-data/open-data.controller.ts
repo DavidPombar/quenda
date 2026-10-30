@@ -53,6 +53,20 @@ export function useOpenDataController() {
         schema: schema("facilities.geojson.schema.json"),
       },
     ],
+    occupancy: [
+      {
+        label: context.t("openDataOccupancyJson"),
+        type: "application/json",
+        href: file("occupancy.json"),
+        schema: schema("occupancy.schema.json"),
+      },
+      {
+        label: context.t("openDataOccupancyCsv"),
+        type: "text/csv",
+        href: file("occupancy.csv"),
+        schema: schema("occupancy.tableschema.json"),
+      },
+    ],
     catalogs: [
       {
         label: "RDF/XML",

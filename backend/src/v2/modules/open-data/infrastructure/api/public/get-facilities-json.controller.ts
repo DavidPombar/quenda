@@ -47,7 +47,7 @@ export class GetOpenFacilitiesJsonController {
         sendOpenData(
           response,
           "application/ld+json; charset=utf-8",
-          "${data.municipality.slug}-facilities.json",
+          `${data.municipality.slug}-facilities.json`,
           JSON.stringify(facilitiesJsonLd(publication(request, data))),
         ),
       this.handleError,

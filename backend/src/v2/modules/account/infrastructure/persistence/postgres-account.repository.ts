@@ -104,7 +104,7 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     await this.db.query(
-      "UPDATE users SET display_name=$3, deleted_at=$4, prefers_family_tariff=false, email=NULL, locale=NULL, nif_ciphertext=NULL, nif_digest=NULL WHERE tenant_id=$1 AND id=$2",
+      "UPDATE users SET display_name=$3, deleted_at=$4, prefers_family_tariff=false, email=NULL, locale=NULL, nif_ciphertext=NULL, nif_digest=NULL, organization_id=NULL WHERE tenant_id=$1 AND id=$2",
       [tenantId, userId, displayName, now.toString()],
     );
   }

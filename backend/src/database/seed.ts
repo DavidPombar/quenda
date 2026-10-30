@@ -217,10 +217,85 @@ export async function seed(url = databaseUrl) {
         "INSERT INTO user_categories (tenant_id,user_id,category,status,requested_at) VALUES ($1,$2,'resident','requested','2026-10-20T09:00:00Z') ON CONFLICT DO NOTHING",
         [tenant, `10000000-0000-4000-8000-0000000000${i}1`],
       );
+      await seedSeason(db, tenant, slug, name, i);
     }
   } finally {
     await db.end();
   }
+}
+/**
+ * Demo season (#17): a club with a synthetic representative, the school-year campaign with its
+ * published criteria and a Tuesday-and-Thursday 19:00–21:00 slot on the first padel court.
+ * Idempotent; dates already taken by a one-off booking are left out.
+ */
+async function seedSeason(
+  db: Pool,
+  tenant: string,
+  slug: string,
+  municipality: string,
+  i: number,
+) {
+  const club = `50000000-0000-4000-8000-0000000000${i}1`;
+  const campaign = `51000000-0000-4000-8000-0000000000${i}1`;
+  const allocation = `52000000-0000-4000-8000-0000000000${i}1`;
+  const court = `20000000-0000-4000-8000-0000000000${i}1`;
+  const representative = `10000000-0000-4000-8000-0000000000${i}4`;
+  const clubName = `Club Pádel ${municipality.replace(/^Concello de /, "")}`;
+  await db.query(
+    "INSERT INTO organizations (id,tenant_id,name,tax_id,sport,contact_email,created_at) VALUES ($1,$2,$3,$4,'padel',$5,'2026-08-20T09:00:00Z') ON CONFLICT(id) DO NOTHING",
+    [club, tenant, clubName, `G1500000${i}`, `padel@${slug}.example`],
+  );
+  await db.query(
+    "INSERT INTO users (id,tenant_id,display_name,role,email,organization_id) VALUES ($1,$2,$3,'citizen',$4,$5) ON CONFLICT(id) DO NOTHING",
+    [
+      representative,
+      tenant,
+      `Iria · ${clubName}`,
+      `iria@${slug}.example`,
+      club,
+    ],
+  );
+  await db.query(
+    `INSERT INTO season_campaigns (id,tenant_id,name,starts_on,ends_on,criteria_gl,criteria_es,created_at)
+    VALUES ($1,$2,'Curso 2026–2027','2026-09-01','2027-06-30',$3,$4,'2026-07-01T09:00:00Z') ON CONFLICT(id) DO NOTHING`,
+    [
+      campaign,
+      tenant,
+      "Prioridade para clubs con sede no concello, equipos de menores e deportes propios da instalación. A asignación publícase antes do inicio do curso.",
+      "Prioridad para clubes con sede en el municipio, equipos de menores y deportes propios de la instalación. La asignación se publica antes del inicio del curso.",
+    ],
+  );
+  await db.query(
+    "INSERT INTO season_campaign_facilities VALUES ($1,$2,$3) ON CONFLICT DO NOTHING",
+    [tenant, campaign, court],
+  );
+  await db.query(
+    `INSERT INTO season_allocations (id,tenant_id,campaign_id,organization_id,facility_id,resource_id,weekdays,starts_local,ends_local,reason,created_at)
+    VALUES ($1,$2,$3,$4,$5,$5,'{2,4}','19:00','21:00','Escola de pádel de menores con sede no concello','2026-08-25T09:00:00Z') ON CONFLICT(id) DO NOTHING`,
+    [allocation, tenant, campaign, club, court],
+  );
+  // Future Tuesdays and Thursdays of the campaign whose court is still free.
+  await db.query(
+    `WITH dates AS (
+      SELECT d::date AS day FROM generate_series(GREATEST(current_date + 1, DATE '2026-09-01'), DATE '2027-06-30', interval '1 day') d
+      WHERE extract(isodow FROM d) IN (2, 4)
+    ), slots AS (
+      SELECT md5($3::text || day::text)::uuid AS id,
+        (day + time '19:00') AT TIME ZONE 'Europe/Madrid' AS starts_at,
+        (day + time '21:00') AT TIME ZONE 'Europe/Madrid' AS ends_at
+      FROM dates
+    ), free AS (
+      SELECT * FROM slots s WHERE NOT EXISTS (
+        SELECT 1 FROM booking_units u WHERE u.tenant_id=$1::uuid AND u.unit_id=$2::uuid AND u.starts_at<s.ends_at AND u.ends_at>s.starts_at
+      )
+    ), stored AS (
+      INSERT INTO season_occurrences (id,tenant_id,allocation_id,starts_at,ends_at,status)
+      SELECT id,$1::uuid,$3::uuid,starts_at,ends_at,'active' FROM free ON CONFLICT(id) DO NOTHING RETURNING id, starts_at, ends_at
+    )
+    INSERT INTO booking_units (tenant_id,occurrence_id,unit_id,starts_at,ends_at)
+    SELECT $1::uuid,id,$2::uuid,starts_at,ends_at FROM stored`,
+    [tenant, court, allocation],
+  );
 }
 /**
  * Default resource (same id as the facility) plus demo courts. Idempotent: existing rows and names

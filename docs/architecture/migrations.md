@@ -49,4 +49,6 @@ restoring a backup taken before the upgrade, not by down migrations.
 
 - `0012` adds QR signing keys, attendance per booking revision and the access webhook channel (C3, C4, T3, T4).
 
-- `0013` adds the per-municipality sports catalogue (`sports`), seeded from a CNID-aligned list for existing municipalities and, through a trigger, for new ones, and replaces the fixed sport check on facilities with a foreign key to it (C1, M1).
+- `0013` adds season allocation to clubs (#17): `organizations`, the representative link on `users`, `season_campaigns` with their facilities, `season_allocations` (recurring weekly slots) and their dated `season_occurrences`. `booking_units` rows now belong to either a booking or an occurrence, so the existing `booking_units_no_overlap` constraint keeps club slots and one-off bookings apart. Transfers include the new collections (T3, R3).
+
+- `0014` adds the per-municipality sports catalogue (`sports`), seeded from a CNID-aligned list for existing municipalities and, through a trigger, for new ones, and replaces the fixed sport check on facilities with a foreign key to it (C1, M1).

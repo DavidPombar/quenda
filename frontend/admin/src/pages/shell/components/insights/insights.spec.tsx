@@ -111,6 +111,57 @@ describe("indicators", () => {
     );
   });
 
+  test("should break a facility with several courts down by court", async () => {
+    stubManager();
+    const report = insightsFor("2026-10-01", "2026-10-31", 42);
+    const court = (
+      id: string,
+      name: string,
+      parentId: string | null,
+      occupancy: number,
+    ) => ({
+      id,
+      name,
+      parentId,
+      confirmed: 1,
+      cancelled: 0,
+      noShows: 0,
+      bookedMinutes: 60,
+      openMinutes: 120,
+      occupancy,
+    });
+    stubJsonResponse({
+      path: "*/v2/manager/insights",
+      response: {
+        ...report,
+        byFacility: report.byFacility.map((facility) => ({
+          ...facility,
+          byResource: [
+            court("whole", "Pista completa", null, 50),
+            court("a", "Tercio A", "whole", 75),
+          ],
+        })),
+      },
+    });
+    await commands.navigate(
+      "/admin/vilaverde/indicadores?from=2026-10-01&to=2026-10-31",
+    );
+    await render(<App />);
+    const table = page.getByRole("table", {
+      name: "Ocupación por instalación",
+    });
+    const third = table.getByRole("row").filter({ hasText: "Tercio A" });
+    await expect
+      .element(
+        table.getByRole("rowheader", {
+          name: "Pistas de pádel da Carballeira, Tercio A",
+        }),
+      )
+      .toBeVisible();
+    await expect
+      .element(third.getByRole("cell", { name: "75 %" }))
+      .toBeVisible();
+  });
   test("should explain a period longer than 16 months without calling the API", async () => {
     const { spy } = stubManager();
     await commands.navigate(

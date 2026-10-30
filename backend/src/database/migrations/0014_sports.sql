@@ -65,3 +65,17 @@ BEGIN
 END $$;
 ALTER TABLE facilities ADD CONSTRAINT facilities_sport_fk
   FOREIGN KEY (tenant_id, sport) REFERENCES sports(tenant_id, code);
+-- Clubs (#17) name their sport from the same catalogue.
+DO $$
+DECLARE name text;
+BEGIN
+  FOR name IN
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'organizations'::regclass AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%sport%'
+  LOOP
+    EXECUTE format('ALTER TABLE organizations DROP CONSTRAINT %I', name);
+  END LOOP;
+END $$;
+ALTER TABLE organizations ADD CONSTRAINT organizations_sport_fk
+  FOREIGN KEY (tenant_id, sport) REFERENCES sports(tenant_id, code);

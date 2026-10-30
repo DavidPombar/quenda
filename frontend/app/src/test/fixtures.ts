@@ -165,6 +165,7 @@ export function stubShell(
   methods: Partial<AuthMethods> = {},
 ) {
   stubAuthMethods(methods);
+  stubJsonResponse({ path: "*/v2/public/season-campaigns", response: [] });
   if (authenticated)
     stubJsonResponse({
       path: "*/v2/citizen/tariffs/*",
@@ -225,5 +226,9 @@ export function stubAccount(
   const response = { ...account, ...overrides };
   stubJsonResponse({ path: "*/v2/citizen/me", response });
   stubJsonResponse({ path: "*/v2/citizen/categories", response: categories });
+  stubJsonResponse({
+    path: "*/v2/citizen/me/club",
+    response: { organization: null, occurrences: [] },
+  });
   return response;
 }

@@ -18,6 +18,8 @@ export type EditableSettings = Pick<
   | "noShowLimit"
   | "noShowWindowDays"
   | "noShowBlockDays"
+  | "dataLicense"
+  | "dir3Code"
 >;
 export abstract class MunicipalitySettingsRepository {
   /** Serialises concurrent edits of one municipality within the current transaction. */

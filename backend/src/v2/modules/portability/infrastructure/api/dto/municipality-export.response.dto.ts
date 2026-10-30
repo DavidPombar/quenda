@@ -98,6 +98,12 @@ class ExportedUserDTO {
   nifCiphertext!: string | null;
   @ApiProperty({ type: String, nullable: true }) nifDigest!: string | null;
   @ApiProperty() prefersFamilyTariff!: boolean;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Club represented (#17)",
+  })
+  organizationId!: string | null;
 }
 class ExportedIdentityDTO {
   @ApiProperty() id!: string;
@@ -232,7 +238,64 @@ class ExportedCheckInsDTO {
   @ApiProperty() checkedInAt!: string;
   @ApiProperty() recordedAt!: string;
 }
+class ExportedOrganizationDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty({ type: String, nullable: true }) taxId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) sport!: string | null;
+  @ApiProperty({ type: String, nullable: true }) contactEmail!: string | null;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({ type: String, nullable: true }) archivedAt!: string | null;
+}
+class ExportedSeasonCampaignDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty({ format: "date" }) startsOn!: string;
+  @ApiProperty({ format: "date" }) endsOn!: string;
+  @ApiProperty() criteriaGl!: string;
+  @ApiProperty() criteriaEs!: string;
+  @ApiProperty({ type: [String] }) facilityIds!: string[];
+  @ApiProperty() createdAt!: string;
+}
+class ExportedSeasonAllocationDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() campaignId!: string;
+  @ApiProperty() organizationId!: string;
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() resourceId!: string;
+  @ApiProperty({ type: [Number], description: "ISO weekdays, 1 = Monday" })
+  weekdays!: number[];
+  @ApiProperty({ description: "Local time HH:MM" }) startsLocal!: string;
+  @ApiProperty({ description: "Local time HH:MM" }) endsLocal!: string;
+  @ApiProperty({ description: "RFC 5545 rule; occurrences are authoritative" })
+  rrule!: string;
+  @ApiProperty() reason!: string;
+  @ApiProperty({ type: String, nullable: true }) createdBy!: string | null;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({ type: String, nullable: true }) cancelledAt!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  cancellationReason!: string | null;
+}
+class ExportedSeasonOccurrenceDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() allocationId!: string;
+  @ApiProperty() start!: string;
+  @ApiProperty() end!: string;
+  @ApiProperty({ enum: ["active", "conflict", "cancelled"] }) status!: string;
+  @ApiProperty({ type: String, nullable: true })
+  conflictBookingId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  cancellationReason!: string | null;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({ type: [ExportedOrganizationDTO] })
+  organizations!: ExportedOrganizationDTO[];
+  @ApiProperty({ type: [ExportedSeasonCampaignDTO] })
+  seasonCampaigns!: ExportedSeasonCampaignDTO[];
+  @ApiProperty({ type: [ExportedSeasonAllocationDTO] })
+  seasonAllocations!: ExportedSeasonAllocationDTO[];
+  @ApiProperty({ type: [ExportedSeasonOccurrenceDTO] })
+  seasonOccurrences!: ExportedSeasonOccurrenceDTO[];
   @ApiProperty({ type: [ExportedAccessKeysDTO] })
   accessKeys!: ExportedAccessKeysDTO[];
   @ApiProperty({ type: [ExportedCheckInsDTO] })
@@ -303,6 +366,10 @@ export class MunicipalityExportResponseDTO {
         recordedAt: value.recordedAt.toString(),
       })),
       facilityPrices: snapshot.facilityPrices,
+      organizations: snapshot.organizations,
+      seasonCampaigns: snapshot.seasonCampaigns,
+      seasonAllocations: snapshot.seasonAllocations,
+      seasonOccurrences: snapshot.seasonOccurrences,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

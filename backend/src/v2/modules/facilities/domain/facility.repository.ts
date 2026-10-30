@@ -59,13 +59,21 @@ export abstract class FacilityRepository {
     reason: string;
     at: Temporal.Instant;
   }): Promise<void>;
-  /** Occupied units of the facility's resources overlapping the interval. */
+  /**
+   * Occupied units of the facility's resources overlapping the interval; `season` marks units held
+   * by a club's season slot (#17) rather than a one-off booking.
+   */
   abstract busy(
     tenantId: string,
     id: string,
     dateStart: Temporal.Instant,
     dateEnd: Temporal.Instant,
   ): Promise<
-    { unitId: string; start: Temporal.Instant; end: Temporal.Instant }[]
+    {
+      unitId: string;
+      start: Temporal.Instant;
+      end: Temporal.Instant;
+      season: boolean;
+    }[]
   >;
 }

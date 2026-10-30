@@ -153,6 +153,32 @@ describe("Municipality data portability", () => {
       .set("X-Quenda-Request", "1")
       .send({ url: "https://access.example.invalid/hook" })
       .expect(200);
+    // A club's season (#17): its dates occupy court units that the import must rebuild.
+    const club = (
+      await post(manager, "manager/organizations", { name: "Club de proba" })
+    ).body.id as string;
+    const seasonStart = Temporal.Now.zonedDateTimeISO("Europe/Madrid")
+      .toPlainDate()
+      .add({ days: 1 });
+    const seasonCampaign = (
+      await post(manager, "manager/season-campaigns", {
+        name: "Tempada de proba",
+        startsOn: seasonStart.toString(),
+        endsOn: seasonStart.add({ days: 13 }).toString(),
+        criteria: { gl: "Sede local", es: "Sede local" },
+        facilityIds: [court],
+      })
+    ).body.id as string;
+    await post(manager, "manager/season-allocations", {
+      campaignId: seasonCampaign,
+      organizationId: club,
+      facilityId: court,
+      resourceId: court,
+      weekdays: [seasonStart.dayOfWeek],
+      startsLocal: "07:00",
+      endsLocal: "08:00",
+      reason: "Adestramento",
+    }).expect(201);
     await db.query(
       "INSERT INTO check_ins (id,tenant_id,booking_id,booking_sequence,actor_id,method,checked_in_at,recorded_at) SELECT $1,$2,$3,0,id,'manual','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='manager'",
       [randomUUID(), tenantId, kept],
@@ -242,6 +268,7 @@ describe("Municipality data portability", () => {
       "locale",
       "nifCiphertext",
       "nifDigest",
+      "organizationId",
       "prefersFamilyTariff",
       "role",
     ]);
@@ -296,6 +323,11 @@ describe("Municipality data portability", () => {
       "booking_blocks",
       "notification_preferences",
       "outbox",
+      "organizations",
+      "season_campaigns",
+      "season_campaign_facilities",
+      "season_allocations",
+      "season_occurrences",
     ]) {
       const scope = table === "municipalities" ? "id" : "tenant_id";
       const filter =

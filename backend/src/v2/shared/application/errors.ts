@@ -21,6 +21,8 @@ export type ErrorCode =
   | "resource_unavailable"
   | "sport_unknown"
   | "sport_in_use"
+  | "resource_in_use"
+  | "resource_has_history"
   | "insufficient_contrast"
   | "invalid_holidays"
   | "unsupported_logo"

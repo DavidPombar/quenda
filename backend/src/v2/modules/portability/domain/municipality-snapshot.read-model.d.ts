@@ -121,6 +121,8 @@ export interface MunicipalitySnapshot {
     nifCiphertext: string | null;
     nifDigest: string | null;
     prefersFamilyTariff: boolean;
+    /** Club the person represents (#17). */
+    organizationId: string | null;
   }[];
   /** Links to the identity provider (issuer and subject), so people keep their account. */
   identities: {
@@ -210,6 +212,52 @@ export interface MunicipalitySnapshot {
     lockedUntil: Temporal.Instant | null;
     sentAt: Temporal.Instant | null;
     lastError: string | null;
+  }[];
+  /** Season allocation to clubs (#17). Instants and dates are ISO strings as stored. */
+  organizations: {
+    id: string;
+    name: string;
+    taxId: string | null;
+    sport: string | null;
+    contactEmail: string | null;
+    createdAt: string;
+    archivedAt: string | null;
+  }[];
+  seasonCampaigns: {
+    id: string;
+    name: string;
+    startsOn: string;
+    endsOn: string;
+    criteriaGl: string;
+    criteriaEs: string;
+    facilityIds: string[];
+    createdAt: string;
+  }[];
+  seasonAllocations: {
+    id: string;
+    campaignId: string;
+    organizationId: string;
+    facilityId: string;
+    resourceId: string;
+    weekdays: number[];
+    startsLocal: string;
+    endsLocal: string;
+    /** Informative RFC 5545 rule; the dated occurrences below are authoritative. */
+    rrule: string;
+    reason: string;
+    createdBy: string | null;
+    createdAt: string;
+    cancelledAt: string | null;
+    cancellationReason: string | null;
+  }[];
+  seasonOccurrences: {
+    id: string;
+    allocationId: string;
+    start: string;
+    end: string;
+    status: string;
+    conflictBookingId: string | null;
+    cancellationReason: string | null;
   }[];
 }
 export interface MunicipalityExport {

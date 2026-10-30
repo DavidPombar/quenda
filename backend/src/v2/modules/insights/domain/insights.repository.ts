@@ -8,6 +8,13 @@ export interface InsightsFacility {
   openingCalendar: string;
   followsMunicipalHolidays: boolean;
   unitIds: string[];
+  /** Courts in service with their active units (a whole court's are its parts). */
+  resources: {
+    id: string;
+    name: string;
+    parentId: string | null;
+    unitIds: string[];
+  }[];
   hasStatusHistory: boolean;
 }
 export interface StatusPeriod {
@@ -19,10 +26,12 @@ export interface StatusPeriod {
 }
 export interface BookingSpan {
   unitIds: string[];
+  resourceId: string;
   facilityId: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled" | "no_show";
+  /** `season`: an active occurrence of a club's season slot (#17). */
+  status: "confirmed" | "cancelled" | "no_show" | "season";
 }
 export abstract class InsightsRepository {
   abstract facilities(tenantId: string): Promise<InsightsFacility[]>;

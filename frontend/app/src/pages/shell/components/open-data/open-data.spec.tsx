@@ -28,6 +28,20 @@ describe("Open data page", () => {
         "/v2/public/open-data/schemas/facilities.tableschema.json",
       );
     await expect
+      .element(
+        page.getByRole("link", { name: "Ocupación en CSV", exact: true }),
+      )
+      .toHaveAttribute(
+        "href",
+        "/v2/public/open-data/occupancy.csv?slug=vilaverde",
+      );
+    await expect
+      .element(page.getByRole("link", { name: "Esquema Ocupación en JSON" }))
+      .toHaveAttribute(
+        "href",
+        "/v2/public/open-data/schemas/occupancy.schema.json",
+      );
+    await expect
       .element(page.getByRole("link", { name: "RDF/XML" }))
       .toHaveAttribute(
         "href",

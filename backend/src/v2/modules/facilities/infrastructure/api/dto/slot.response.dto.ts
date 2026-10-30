@@ -4,8 +4,12 @@ import { AvailabilitySlot } from "../../../application/queries/get-availability.
 export class SlotResponseDTO {
   @ApiProperty({ description: "UTC start instant" }) start!: string;
   @ApiProperty({ description: "UTC end instant" }) end!: string;
-  @ApiProperty({ description: "Availability status; no personal data" })
-  status!: "available" | "booked" | "past";
+  @ApiProperty({
+    description:
+      "Availability status; no personal data. `season` is a club's season slot (#17)",
+    enum: ["available", "booked", "season", "past"],
+  })
+  status!: "available" | "booked" | "season" | "past";
   static from(value: AvailabilitySlot): SlotResponseDTO {
     return {
       start: value.start.toString(),

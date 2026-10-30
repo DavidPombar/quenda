@@ -3,6 +3,7 @@ import type { DataLicense } from "../../../../shared/application/municipality-se
 import type {
   OpenFacilities,
   OpenFacility,
+  OpenPublication,
 } from "../../domain/open-facility.read-model";
 export const licenses: Record<DataLicense, { name: string; url: string }> = {
   "CC-BY-4.0": {
@@ -27,11 +28,15 @@ export const facilityFiles = {
   csv: { file: "facilities.csv", mediaType: "text/csv" },
   geojson: { file: "facilities.geojson", mediaType: "application/geo+json" },
 } as const;
+export const occupancyFiles = {
+  json: { file: "occupancy.json", mediaType: "application/json" },
+  csv: { file: "occupancy.csv", mediaType: "text/csv" },
+} as const;
 /** Absolute URLs of one municipality's publication, built from the public origin. */
-export class Publication {
+export class Publication<T extends OpenPublication = OpenFacilities> {
   constructor(
     readonly origin: string,
-    readonly data: OpenFacilities,
+    readonly data: T,
   ) {}
   get slug() {
     return encodeURIComponent(this.data.municipality.slug);

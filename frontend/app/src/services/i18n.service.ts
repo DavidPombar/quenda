@@ -201,6 +201,11 @@ const gl = {
   openDataFacilitiesBody:
     "Nome, deporte, tipo de espazo segundo o Censo Nacional de Instalacións Deportivas (CNID), enderezo, coordenadas, accesibilidade, estado, prezo indicativo e número de pistas.",
   openDataSchema: "Esquema",
+  openDataOccupancy: "Ocupación das instalacións",
+  openDataOccupancyBody:
+    "Minutos abertos, reservados e de non presentados por instalación, semana, día e hora das últimas 12 semanas completas. Son datos agregados: non inclúen reservas nin persoas.",
+  openDataOccupancyJson: "Ocupación en JSON",
+  openDataOccupancyCsv: "Ocupación en CSV",
   openDataCatalog: "Catálogo DCAT",
   openDataCatalogBody:
     "Describe os conxuntos de datos para que os portais datos.gob.es e abertos.xunta.gal poidan recollelos automaticamente.",
@@ -370,6 +375,14 @@ const gl = {
   passCode: "Código para dicir en voz alta",
   passError: "Non puidemos xerar o pase. Volve tentalo.",
   passImage: "Código QR do pase de acceso para {facility}",
+  season: "Uso de club",
+  myClub: "O meu club",
+  myClubBody:
+    "Representas este club. Estas son as súas próximas franxas de temporada; non contan no teu límite de reservas.",
+  myClubEmpty: "O club non ten franxas próximas.",
+  seasonCampaigns: "Temporada de clubs",
+  seasonPeriod: "Do {from} ao {to}",
+  seasonCriteria: "Criterios de prioridade publicados",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -552,6 +565,11 @@ const es: Record<TextKey, string> = {
   openDataFacilitiesBody:
     "Nombre, deporte, tipo de espacio según el Censo Nacional de Instalaciones Deportivas (CNID), dirección, coordenadas, accesibilidad, estado, precio indicativo y número de pistas.",
   openDataSchema: "Esquema",
+  openDataOccupancy: "Ocupación de las instalaciones",
+  openDataOccupancyBody:
+    "Minutos abiertos, reservados y de no presentados por instalación, semana, día y hora de las últimas 12 semanas completas. Son datos agregados: no incluyen reservas ni personas.",
+  openDataOccupancyJson: "Ocupación en JSON",
+  openDataOccupancyCsv: "Ocupación en CSV",
   openDataCatalog: "Catálogo DCAT",
   openDataCatalogBody:
     "Describe los conjuntos de datos para que los portales datos.gob.es y abertos.xunta.gal puedan recogerlos automáticamente.",
@@ -723,6 +741,14 @@ const es: Record<TextKey, string> = {
   passCode: "Código para decir en voz alta",
   passError: "No pudimos generar el pase. Vuelve a intentarlo.",
   passImage: "Código QR del pase de acceso para {facility}",
+  season: "Uso de club",
+  myClub: "Mi club",
+  myClubBody:
+    "Representas a este club. Estas son sus próximas franjas de temporada; no cuentan en tu límite de reservas.",
+  myClubEmpty: "El club no tiene franjas próximas.",
+  seasonCampaigns: "Temporada de clubes",
+  seasonPeriod: "Del {from} al {to}",
+  seasonCriteria: "Criterios de prioridad publicados",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

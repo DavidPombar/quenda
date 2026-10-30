@@ -39,7 +39,7 @@ export class GetOpenDataCatalogRdfController {
         sendOpenData(
           response,
           "application/rdf+xml; charset=utf-8",
-          "${data.municipality.slug}-catalog.rdf",
+          `${data.municipality.slug}-catalog.rdf`,
           catalogRdfXml(catalog(publication(request, data))),
         ),
       this.handleError,

@@ -24,6 +24,7 @@ import { categoryLabel } from "@/services/tariff.service";
 import { BookingDialog } from "./components/booking-dialog/booking-dialog.view";
 import { ResourceGrid } from "./components/resource-grid/resource-grid.view";
 import { useFacilityDetailsController } from "./facility-details.controller";
+import { SeasonCampaigns } from "./components/season-campaigns/season-campaigns.view";
 export function FacilityDetails() {
   const c = useFacilityDetailsController();
   if (c.facilities.isPending) return <Feedback message={c.t("loading")} />;
@@ -104,6 +105,12 @@ export function FacilityDetails() {
               {c.t("deadline")} {c.municipality.cancellationHours}{" "}
               {c.t("hoursBefore")}
             </p>
+            <SeasonCampaigns
+              slug={c.municipality.slug}
+              facilityId={f.id}
+              locale={c.locale}
+              t={c.t}
+            />
           </section>
         </div>
         <section

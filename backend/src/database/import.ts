@@ -34,6 +34,11 @@ export interface MunicipalityPackage {
   bookingBlocks: Row[];
   notificationPreferences: Row[];
   messages: Row[];
+  /** Season allocation to clubs (#17); optional in older packages. */
+  organizations?: Row[];
+  seasonCampaigns?: Row[];
+  seasonAllocations?: Row[];
+  seasonOccurrences?: Row[];
 }
 const collections = [
   "facilities",
@@ -173,6 +178,7 @@ const tables = {
     nif_ciphertext: "nifCiphertext",
     nif_digest: "nifDigest",
     prefers_family_tariff: "prefersFamilyTariff",
+    organization_id: "organizationId",
   },
   identities: {
     tenant_id: "tenantId",
@@ -275,6 +281,57 @@ const tables = {
     checked_in_at: "checkedInAt",
     recorded_at: "recordedAt",
   },
+  organizations: {
+    tenant_id: "tenantId",
+    id: "id",
+    name: "name",
+    tax_id: "taxId",
+    sport: "sport",
+    contact_email: "contactEmail",
+    created_at: "createdAt",
+    archived_at: "archivedAt",
+  },
+  season_campaigns: {
+    tenant_id: "tenantId",
+    id: "id",
+    name: "name",
+    starts_on: "startsOn",
+    ends_on: "endsOn",
+    criteria_gl: "criteriaGl",
+    criteria_es: "criteriaEs",
+    created_at: "createdAt",
+  },
+  season_campaign_facilities: {
+    tenant_id: "tenantId",
+    campaign_id: "campaignId",
+    facility_id: "facilityId",
+  },
+  season_allocations: {
+    tenant_id: "tenantId",
+    id: "id",
+    campaign_id: "campaignId",
+    organization_id: "organizationId",
+    facility_id: "facilityId",
+    resource_id: "resourceId",
+    weekdays: "weekdays",
+    starts_local: "startsLocal",
+    ends_local: "endsLocal",
+    reason: "reason",
+    created_by: "createdBy",
+    created_at: "createdAt",
+    cancelled_at: "cancelledAt",
+    cancellation_reason: "cancellationReason",
+  },
+  season_occurrences: {
+    tenant_id: "tenantId",
+    id: "id",
+    allocation_id: "allocationId",
+    starts_at: "start",
+    ends_at: "end",
+    status: "status",
+    conflict_booking_id: "conflictBookingId",
+    cancellation_reason: "cancellationReason",
+  },
   outbox: {
     tenant_id: "tenantId",
     id: "id",
@@ -338,6 +395,8 @@ export async function importMunicipality(
       }
     }
     await insert("municipalities", [{ ...data.municipality, slug }]);
+    // Clubs come before the accounts that represent them.
+    await insert("organizations", data.organizations ?? []);
     await insert("users", data.users);
     await insert("identities", data.identities ?? []);
     // A new municipality starts with the initial list (database trigger); a package with its own
@@ -378,6 +437,29 @@ export async function importMunicipality(
       JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id
       LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
       WHERE b.tenant_id=$1 AND b.status IN ('confirmed', 'no_show')`,
+      [tenantId],
+    );
+    await insert("season_campaigns", data.seasonCampaigns ?? []);
+    await insert(
+      "season_campaign_facilities",
+      (data.seasonCampaigns ?? []).flatMap((campaign) =>
+        (campaign.facilityIds as string[]).map((facilityId) => ({
+          campaignId: campaign.id,
+          facilityId,
+        })),
+      ),
+    );
+    await insert("season_allocations", data.seasonAllocations ?? []);
+    await insert("season_occurrences", data.seasonOccurrences ?? []);
+    // Active club dates occupy their units like bookings: the court, or every part of it.
+    await client.query(
+      `INSERT INTO booking_units (tenant_id, occurrence_id, unit_id, starts_at, ends_at)
+      SELECT s.tenant_id, s.id, coalesce(part.id, r.id), s.starts_at, s.ends_at
+      FROM season_occurrences s
+      JOIN season_allocations a ON a.tenant_id=s.tenant_id AND a.id=s.allocation_id
+      JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
+      LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
+      WHERE s.tenant_id=$1 AND s.status='active'`,
       [tenantId],
     );
     await insert("notifications", data.notifications);

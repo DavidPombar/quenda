@@ -24,11 +24,14 @@ export interface OpenFacility extends Pick<
   /** From the municipality's sports catalogue: CNID group and type, and schema.org type. */
   classification: { cnidClass: string; cnidType: string; schemaType: string };
 }
-export interface OpenFacilities {
+/** What every open data file of a municipality shares: publisher, licence and date. */
+export interface OpenPublication {
   municipality: Pick<MunicipalitySettings, "slug" | "name" | "dir3Code"> & {
     dataLicense: DataLicense;
   };
-  facilities: OpenFacility[];
   /** Local date (YYYY-MM-DD) the publication was generated, in the municipality time zone. */
   generatedOn: string;
+}
+export interface OpenFacilities extends OpenPublication {
+  facilities: OpenFacility[];
 }

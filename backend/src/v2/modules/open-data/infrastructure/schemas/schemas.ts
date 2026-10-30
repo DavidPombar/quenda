@@ -219,9 +219,126 @@ const facilitiesTable = {
   primaryKey: "id",
   missingValues: [""],
 };
+const occupancyRecord = {
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "facility_id",
+    "facility_name",
+    "sport",
+    "iso_year",
+    "iso_week",
+    "week_start",
+    "weekday",
+    "hour",
+    "open_minutes",
+    "booked_minutes",
+    "no_show_minutes",
+    "occupancy_pct",
+  ],
+  properties: {
+    facility_id: { type: "string", format: "uuid" },
+    facility_name: { type: "string", minLength: 1 },
+    sport: { type: "string", pattern: sportCode },
+    iso_year: { type: "integer", minimum: 2000 },
+    iso_week: { type: "integer", minimum: 1, maximum: 53 },
+    week_start: { type: "string", format: "date" },
+    weekday: { type: "integer", minimum: 1, maximum: 7 },
+    hour: { type: "integer", minimum: 0, maximum: 23 },
+    open_minutes: { type: "integer", minimum: 1 },
+    booked_minutes: { type: "integer", minimum: 0 },
+    no_show_minutes: { type: "integer", minimum: 0 },
+    occupancy_pct: { type: "integer", minimum: 0, maximum: 100 },
+  },
+};
+const occupancyJson = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "occupancy.schema.json",
+  title: "Quenda aggregated occupancy",
+  description:
+    "Open, booked and no-show minutes per facility, ISO week, weekday and local hour. Only cells with open time are listed.",
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "$schema",
+    "id",
+    "title",
+    "publisher",
+    "license",
+    "generated_on",
+    "timezone",
+    "from",
+    "to",
+    "cells",
+  ],
+  properties: {
+    $schema: { type: "string", format: "uri" },
+    id: { type: "string", format: "uri" },
+    title: { type: "string", minLength: 1 },
+    publisher: { type: "string", minLength: 1 },
+    license: { type: "string", format: "uri" },
+    generated_on: { type: "string", format: "date" },
+    timezone: { type: "string", minLength: 1 },
+    from: { type: "string", format: "date" },
+    to: { type: "string", format: "date" },
+    cells: { type: "array", items: occupancyRecord },
+  },
+};
+/** Frictionless Table Schema of occupancy.csv. */
+const occupancyTable = {
+  $schema: "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  fields: [
+    field("facility_id", "string", "Facility UUID", { required: true }),
+    field("facility_name", "string", "Facility name", { required: true }),
+    field("sport", "string", "Sport code in the municipality's catalogue", {
+      required: true,
+      pattern: sportCode,
+    }),
+    field("iso_year", "integer", "ISO 8601 week-numbering year", {
+      required: true,
+    }),
+    field("iso_week", "integer", "ISO 8601 week", {
+      required: true,
+      minimum: 1,
+      maximum: 53,
+    }),
+    field("week_start", "date", "Monday of the ISO week", { required: true }),
+    field("weekday", "integer", "ISO weekday, 1 = Monday", {
+      required: true,
+      minimum: 1,
+      maximum: 7,
+    }),
+    field("hour", "integer", "Local hour in the municipality time zone", {
+      required: true,
+      minimum: 0,
+      maximum: 23,
+    }),
+    field("open_minutes", "integer", "Open minutes, times active courts", {
+      required: true,
+      minimum: 1,
+    }),
+    field("booked_minutes", "integer", "Minutes held by confirmed bookings", {
+      required: true,
+      minimum: 0,
+    }),
+    field("no_show_minutes", "integer", "Minutes booked but not used", {
+      required: true,
+      minimum: 0,
+    }),
+    field("occupancy_pct", "integer", "Booked over open minutes, percent", {
+      required: true,
+      minimum: 0,
+      maximum: 100,
+    }),
+  ],
+  primaryKey: ["facility_id", "iso_year", "iso_week", "weekday", "hour"],
+  missingValues: [""],
+};
 export const openDataSchemas = {
   "facilities.schema.json": facilitiesJson,
   "facilities.geojson.schema.json": facilitiesGeoJson,
   "facilities.tableschema.json": facilitiesTable,
+  "occupancy.schema.json": occupancyJson,
+  "occupancy.tableschema.json": occupancyTable,
 } as const;
 export type OpenDataSchemaName = keyof typeof openDataSchemas;

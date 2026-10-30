@@ -239,3 +239,36 @@ test("should show the general price and invite the visitor to sign in for their 
     .element(dialog)
     .toMatchTextContent("verás o teu prezo ao entrar");
 });
+test("should show a club's season slot as taken and the campaign's published criteria", async () => {
+  stubShell(true);
+  stubJsonResponse({
+    path: "*/v2/public/season-campaigns",
+    response: [
+      {
+        id: "51000000-0000-4000-8000-000000000011",
+        name: "Curso 2026–2027",
+        startsOn: "2026-09-01",
+        endsOn: "2027-06-30",
+        criteria: { gl: "Clubs con sede no concello", es: "Clubes con sede" },
+        facilityIds: [pavilion.id],
+      },
+    ],
+  });
+  stubAvailability(pavilion, () => [{ ...slot, status: "season" }, later]);
+  await commands.navigate(`/app/vilaverde/instalacions/${pavilion.id}`);
+  await render(<App />);
+  await page
+    .getByRole("combobox", { name: "Pista" })
+    .selectOptions("Todas as pistas");
+  await expect
+    .element(
+      page.getByRole("button", { name: "10:00, Pista completa, Uso de club" }),
+    )
+    .toBeDisabled();
+  await expect
+    .element(page.getByRole("heading", { name: "Temporada de clubs" }))
+    .toBeVisible();
+  await expect
+    .element(page.getByText(/Clubs con sede no concello/))
+    .toBeVisible();
+});

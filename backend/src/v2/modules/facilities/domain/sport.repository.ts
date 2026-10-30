@@ -11,7 +11,7 @@ export abstract class SportRepository {
   /** Visible sports with at least one facility, one per code, as filters for the catalogue. */
   abstract listShared(slugs: readonly string[]): Promise<Sport[]>;
   abstract find(tenantId: string, code: string): Promise<Sport | null>;
-  /** Codes used by at least one facility of the municipality. */
+  /** Codes used by at least one facility or club of the municipality. */
   abstract usedCodes(tenantId: string): Promise<string[]>;
   abstract apply(
     tenantId: string,

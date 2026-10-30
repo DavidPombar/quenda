@@ -1825,3 +1825,23 @@ a.account:hover .account-name strong {
   min-height: 44px;
   width: fit-content;
 }
+
+/* Season allocation to clubs (#17): taken like a booking, told apart by its label and a solid edge. */
+.time-slot.season:disabled {
+  border-style: solid;
+}
+.club-slots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.club-slots li {
+  display: flex;
+  flex-direction: column;
+}
+.season-campaign + .season-campaign {
+  margin-top: var(--space-2);
+}

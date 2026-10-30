@@ -1,7 +1,7 @@
 # Open data (T3, criterion 4)
 
-Each municipality publishes its sports facility catalogue as open data, with a DCAT description
-so that national and regional portals can harvest it. This addresses the «estándares abertos»
+Each municipality publishes its sports facility catalogue and its aggregated occupancy as open
+data, with a DCAT description so that national and regional portals can harvest it. This addresses the «estándares abertos»
 requirement (T3) and the open formats and data portability parts of criterion 4. The files contain
 no personal data: no people, no individual reservations.
 
@@ -15,6 +15,8 @@ All endpoints are public `GET` routes under `/v2/public/open-data/` and take the
 | `facilities.json`    | `application/ld+json`  | schema.org `ItemList` of `SportsActivityLocation` (or `TennisComplex`, `PublicSwimmingPool`)                           | `schemas/facilities.schema.json` (JSON Schema 2020-12)            |
 | `facilities.csv`     | `text/csv`             | One row per facility: RFC 4180, UTF-8 without BOM, comma, CRLF, decimal point, snake_case headers                      | `schemas/facilities.tableschema.json` (Frictionless Table Schema) |
 | `facilities.geojson` | `application/geo+json` | RFC 7946 `FeatureCollection` of `Point [longitude, latitude]`; `geometry` is `null` when a facility has no coordinates | `schemas/facilities.geojson.schema.json`                          |
+| `occupancy.json`     | `application/json`     | Aggregated occupancy, one item per facility × ISO week × weekday × local hour with open time (see below)               | `schemas/occupancy.schema.json`                                   |
+| `occupancy.csv`      | `text/csv`             | The same cells as RFC 4180 CSV, like `facilities.csv`                                                                  | `schemas/occupancy.tableschema.json`                              |
 | `catalog.rdf`        | `application/rdf+xml`  | DCAT-AP-ES (NTI-RISP) catalogue, for the datos.gob.es federation                                                       | —                                                                 |
 | `catalog.jsonld`     | `application/ld+json`  | The same catalogue as JSON-LD, for CKAN harvesters such as abertos.xunta.gal                                           | —                                                                 |
 
@@ -75,18 +77,46 @@ includes, among others:
 
 The names should be checked against the census manual before a council registers the catalogue.
 
+## Aggregated occupancy
+
+Following the Münster and Paris open data, `occupancy.json` and `occupancy.csv` publish how the
+facilities are used, as decided in #21: one cell per facility × ISO 8601 week × ISO weekday ×
+local hour (municipality time zone), with no minimum threshold. Each cell has:
+
+| Column                                        | Meaning                                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------- |
+| `facility_id`, `facility_name`, `sport`       | The facility, as in `facilities.csv`                                            |
+| `iso_year`, `iso_week`, `week_start`          | ISO week-numbering year and week, and its Monday                                |
+| `weekday`, `hour`                             | ISO weekday (1 = Monday) and local hour 0–23                                    |
+| `open_minutes`                                | Open time in that hour, times the active courts                                 |
+| `booked_minutes`                              | Open time held by confirmed bookings (attended or upcoming)                     |
+| `no_show_minutes`                             | Open time held by bookings marked as no-shows: booked but not used              |
+| `occupancy_pct`                               | `booked_minutes` over `open_minutes`, rounded percent                           |
+
+Only cells with open time are listed, so a missing hour means "closed", not "0 %". Open time is
+the opening calendar while the facility was active, minus the municipal holidays it follows. The
+calculation is the one behind the manager's indicators (`insights/domain/occupancy.ts`), so both
+always agree. Cancelled bookings are not counted.
+
+Without parameters, the files cover the last 12 complete ISO weeks (Monday to the last Sunday).
+`from` and `to` (local dates, `YYYY-MM-DD`, both required) select another range of at most
+16 months; future dates show bookings already made. No booking, person or court identifier is
+published.
+
 ## Licence and publisher
 
 Each municipality has `data_license` (`CC-BY-4.0` by default; also `CC-BY-SA-4.0`, `CC0-1.0`,
 `ODbL-1.0`) and an optional `dir3_code`. The licence appears in every file and in the catalogue.
 With a DIR3 code, the DCAT publisher is the datos.gob.es organisation URI
 (`http://datos.gob.es/recurso/sector-publico/org/Organismo/{DIR3}`); without it, a `foaf:Agent`
-with the council's name. Both columns are bootstrap configuration until the municipal settings
-screen (#11) can edit them.
+with the council's name. Managers edit both in **Axustes → Datos abertos** of the backoffice
+(`PATCH /v2/manager/municipality` with `dataLicense` and `dir3Code`; an empty or null code
+removes it), and the change is audited like any other setting.
 
 ## DCAT-AP-ES
 
-The catalogue (`dcat:Catalog`) describes one dataset, «Instalacións deportivas», with:
+The catalogue (`dcat:Catalog`) describes two datasets, «Instalacións deportivas» and «Ocupación
+das instalacións deportivas» (its distributions cover the default 12 weeks), each with:
 
 - title and description in Galician and Spanish;
 - keywords, the NTI-RISP theme `http://datos.gob.es/kos/sector-publico/sector/deporte`, the
@@ -122,8 +152,6 @@ the project does not depend on. Use the datos.gob.es validator when registering.
 
 ## Not covered yet
 
-- **Aggregated occupancy** (facility × ISO week × weekday × local hour, following the Münster and
-  Paris open data) is the second part of issue #21.
 - **Roadmap: OpenActive (RPDE).** OpenActive is the only open European standard for live sports
   availability. More than 4,000 UK providers publish it, and Sport England requires it from
   facilities it funds. A feed would publish `FacilityUse` and `Slot` items through the Realtime

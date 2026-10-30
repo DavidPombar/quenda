@@ -58,7 +58,7 @@ export class PostgresSportRepository extends SportRepository {
   async usedCodes(tenantId: string) {
     return (
       await this.db.query<{ sport: string }>(
-        "SELECT DISTINCT sport FROM facilities WHERE tenant_id=$1",
+        "SELECT sport FROM facilities WHERE tenant_id=$1 UNION SELECT sport FROM organizations WHERE tenant_id=$1 AND sport IS NOT NULL",
         [tenantId],
       )
     ).rows.map((row) => row.sport);

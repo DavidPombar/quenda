@@ -9,6 +9,8 @@ import { facilitiesCsv } from "./facilities-csv";
 import { facilitiesGeoJson } from "./facilities-geojson";
 import { facilitiesJsonLd } from "./facilities-jsonld";
 import { catalog, catalogJsonLd, catalogRdfXml } from "./dcat";
+import { isoWeekStart, occupancyCsv, occupancyJson } from "./occupancy";
+import type { OpenOccupancy } from "../../domain/open-occupancy.read-model";
 const pool: OpenFacility = {
   id: "20000000-0000-4000-8000-000000000014",
   name: 'Piscina "O Río", cuberta',
@@ -104,7 +106,7 @@ describe("Open data formats", () => {
       ...rdf.matchAll(/<dcat:Distribution rdf:about="([^"]+)"/g),
     ].map((match) => match[1].replaceAll("&amp;", "&"));
     expect(fromXml).toEqual(fromJson);
-    expect(fromJson).toHaveLength(3);
+    expect(fromJson).toHaveLength(5);
     expect(jsonld["dct:publisher"]["@id"]).toBe(
       "http://datos.gob.es/recurso/sector-publico/org/Organismo/L01360000",
     );
@@ -132,5 +134,51 @@ describe("Open data formats", () => {
       "<foaf:Agent><foaf:name>A &amp; &lt;B&gt;</foaf:name></foaf:Agent>",
     );
     expect(rdf).not.toMatch(/&(?!amp;|lt;|gt;|quot;)/);
+  });
+  it("should publish occupancy cells with the facility name, the ISO week start and a valid schema", () => {
+    const occupancy = new Publication<OpenOccupancy>(
+      "https://reservas.example.gal",
+      {
+        ...publication.data,
+        timezone: "Europe/Madrid",
+        from: "2026-10-05",
+        to: "2026-10-11",
+        facilities: [
+          { id: court.id, name: "Pavillón, norte", sport: "futsal" },
+        ],
+        cells: [
+          {
+            facilityId: court.id,
+            isoYear: 2026,
+            isoWeek: 41,
+            weekday: 3,
+            hour: 18,
+            openMinutes: 120,
+            bookedMinutes: 60,
+            noShowMinutes: 30,
+            occupancy: 50,
+          },
+        ],
+      },
+    );
+    const lines = occupancyCsv(occupancy).split("\r\n");
+    expect(lines[0]).toBe(
+      "facility_id,facility_name,sport,iso_year,iso_week,week_start,weekday,hour,open_minutes,booked_minutes,no_show_minutes,occupancy_pct",
+    );
+    expect(lines[1]).toBe(
+      `${court.id},"Pavillón, norte",futsal,2026,41,2026-10-05,3,18,120,60,30,50`,
+    );
+    const json = occupancyJson(occupancy);
+    expect(ajv.validate(openDataSchemas["occupancy.schema.json"], json)).toBe(
+      true,
+    );
+    expect(json.license).toBe("https://creativecommons.org/licenses/by/4.0/");
+  });
+  it.each([
+    [2026, 1, "2025-12-29"],
+    [2026, 53, "2026-12-28"],
+    [2027, 1, "2027-01-04"],
+  ])("should place ISO week %i-%i on Monday %s", (year, week, monday) => {
+    expect(isoWeekStart(year, week).toString()).toBe(monday);
   });
 });

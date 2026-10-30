@@ -68,7 +68,18 @@ export interface Municipality {
   noShowWindowDays: number;
   noShowBlockDays: number;
   accessibility: Accessibility;
+  /** Licence of the published open data. */
+  dataLicense: DataLicense;
+  /** DIR3 code, publisher of the DCAT catalogue; null when not set. */
+  dir3Code: string | null;
 }
+export const DATA_LICENSES = [
+  "CC-BY-4.0",
+  "CC-BY-SA-4.0",
+  "CC0-1.0",
+  "ODbL-1.0",
+] as const;
+export type DataLicense = (typeof DATA_LICENSES)[number];
 export interface LegalTexts {
   gl: string;
   es: string;
@@ -92,6 +103,8 @@ export type SettingsPatch = Partial<
     | "noShowLimit"
     | "noShowWindowDays"
     | "noShowBlockDays"
+    | "dataLicense"
+    | "dir3Code"
   >
 >;
 export interface SettingsUpdate {
@@ -153,11 +166,22 @@ export interface Facility {
   /** WGS 84 position, published as open data; both set or both null. */
   latitude: number | null;
   longitude: number | null;
+  /** Courts and spaces, ordered by position; parts point at their whole court. */
+  resources?: Resource[];
 }
+/** A bookable court or space of a facility. */
+export interface Resource {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+  position: number;
+}
+export type ResourceDraft = Omit<Resource, "position">;
 export interface Slot {
   start: string;
   end: string;
-  status: "available" | "booked" | "past";
+  status: "available" | "booked" | "season" | "past";
 }
 export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
 /** One person's reservation as the municipality sees it on the bookings page. */
@@ -196,6 +220,19 @@ export interface FacilityUsage {
   bookedMinutes: number;
   openMinutes: number;
   /** Booked over open time, rounded percent; null when never open. */
+  occupancy: number | null;
+  /** Courts in service; a whole court aggregates the time of its parts. */
+  byResource: ResourceUsage[];
+}
+export interface ResourceUsage {
+  id: string;
+  name: string;
+  parentId: string | null;
+  confirmed: number;
+  cancelled: number;
+  noShows: number;
+  bookedMinutes: number;
+  openMinutes: number;
   occupancy: number | null;
 }
 export interface HeatmapCell {
@@ -337,4 +374,76 @@ export interface MunicipalityExport {
   version: number;
   exportedAt: string;
   municipality: { slug: string };
+}
+/** Season allocation to clubs (#17). */
+export interface Organization {
+  id: string;
+  name: string;
+  taxId: string | null;
+  sport: Sport | null;
+  contactEmail: string | null;
+  createdAt: string;
+  archivedAt: string | null;
+  representatives: {
+    userId: string;
+    displayName: string;
+    email: string | null;
+  }[];
+}
+export interface OrganizationInput {
+  name: string;
+  taxId: string | null;
+  sport: Sport | null;
+  contactEmail: string | null;
+}
+export interface Campaign {
+  id: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  criteria: { gl: string; es: string };
+  facilityIds: string[];
+}
+export type CampaignInput = Omit<Campaign, "id">;
+export interface SeasonConflict {
+  occurrenceId: string;
+  start: string;
+  end: string;
+  bookingId: string | null;
+}
+export interface SeasonAllocation {
+  id: string;
+  campaignId: string;
+  organizationId: string;
+  organizationName: string;
+  facilityId: string;
+  facilityName: string;
+  resourceId: string;
+  resourceName: string;
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  reason: string;
+  createdAt: string;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  active: number;
+  cancelled: number;
+  conflicts: SeasonConflict[];
+  dates: { id: string; start: string; end: string }[];
+}
+export interface SeasonSlotInput {
+  campaignId: string;
+  organizationId: string;
+  facilityId: string;
+  resourceId: string;
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  reason: string;
+}
+export interface SeasonAssignment {
+  allocation: SeasonAllocation;
+  created: number;
+  conflicts: SeasonConflict[];
 }
