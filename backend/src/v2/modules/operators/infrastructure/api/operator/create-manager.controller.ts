@@ -40,6 +40,7 @@ export class CreateManagerController {
       id: body.id,
       displayName: body.displayName,
       email: body.email,
+      login: body.login,
     });
     return result.fold(StaffMemberResponseDTO.from, this.handleError);
   }
@@ -50,7 +51,12 @@ export class CreateManagerController {
       case "not_found":
         throw new ProblemException(404, error);
       case "id_reused":
+      case "login_taken":
         throw new ProblemException(409, error);
+      case "validation":
+        throw new ProblemException(400, error);
+      case "local_accounts_unavailable":
+        throw new ProblemException(503, error);
       default:
         return assertNever(error);
     }

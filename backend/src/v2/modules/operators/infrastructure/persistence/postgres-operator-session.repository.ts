@@ -24,7 +24,10 @@ export class PostgresOperatorSessionRepository extends OperatorSessionRepository
       operatorId: string;
       displayName: string;
     }>(
-      'SELECT id AS "operatorId", display_name AS "displayName" FROM operators WHERE deleted_at IS NULL ORDER BY id LIMIT 1',
+      // Operators with a local account (#8) are never handed out by the demo sign-in.
+      `SELECT id AS "operatorId", display_name AS "displayName" FROM operators o WHERE deleted_at IS NULL
+      AND NOT EXISTS (SELECT 1 FROM credentials c WHERE c.realm='operator' AND c.subject_id=o.id)
+      ORDER BY id LIMIT 1`,
     );
     return rows[0] ? principal(rows[0]) : null;
   }

@@ -8,6 +8,7 @@ import type {
   NewManager,
   NewMunicipality,
   StaffMember,
+  TemporaryPassword,
   WebAnalytics,
 } from "@/types/models";
 export const operatorRepository = {
@@ -19,9 +20,15 @@ export const operatorRepository = {
       body: JSON.stringify(body),
     }),
   createManager: (args: { municipalityId: string; manager: NewManager }) =>
-    apiClient.request<StaffMember>(
+    apiClient.request<StaffMember & Partial<TemporaryPassword>>(
       `operator/municipalities/${args.municipalityId}/managers`,
       { method: "POST", body: JSON.stringify(args.manager) },
+    ),
+  /** New temporary password; the manager sets up the second factor again. */
+  resetManager: (args: { municipalityId: string; userId: string }) =>
+    apiClient.request<TemporaryPassword>(
+      `operator/municipalities/${args.municipalityId}/managers/${args.userId}/reset`,
+      { method: "POST", body: "{}" },
     ),
   insights: (range: DateRange) =>
     apiClient.request<DeploymentInsights>(

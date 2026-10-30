@@ -364,6 +364,8 @@ export interface NewManager {
   id: string;
   displayName: string;
   email: string;
+  /** Login of the local account (#8); the answer brings a temporary password once. */
+  login: string;
 }
 export interface InsightTotals {
   total: number;
@@ -493,4 +495,33 @@ export interface WebAnalytics {
     visits: number;
     pageviews: number;
   }[];
+}
+
+/** Sign-in methods of the deployment (#8). */
+export interface AuthMethods {
+  demo: boolean;
+  oidc: { label: string } | null;
+  email: boolean;
+  /** Staff accounts with password and second factor. */
+  local: boolean;
+}
+/** A step of the staff sign-in: password change, second factor setup or code. */
+export interface SignInStep {
+  ticket: string;
+  step: "password_change" | "enroll" | "totp";
+  enrollment?: { secret: string; otpauthUri: string };
+}
+/** Managers and door staff of the municipality (#8). */
+export interface StaffAccount {
+  userId: string;
+  displayName: string;
+  role: "manager" | "access";
+  login: string | null;
+  enrolled: boolean;
+  disabled: boolean;
+}
+/** Shown once, when an account is created or reset. */
+export interface TemporaryPassword {
+  login: string;
+  temporaryPassword: string | null;
 }

@@ -71,6 +71,9 @@ describe("Supramunicipal operator through HTTP and PostgreSQL", () => {
           municipalityId: body.id,
           displayName: "Antía Souto",
           email: "antia.souto@riotorto.example",
+          // Without a login the manager has no local account yet (#8).
+          login: null,
+          temporaryPassword: null,
         }),
       );
     const manager = request.agent(harness.app.getHttpServer());

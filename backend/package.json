@@ -13,6 +13,7 @@
     "db:seed": "tsx src/database/seed.ts",
     "db:retention": "npm run build && node dist/database/retention.js",
     "worker": "node dist/worker.js",
+    "staff": "npm run build && node dist/database/staff.js",
     "db:import": "tsx src/database/import.ts",
     "test": "vitest run --config vitest.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts"

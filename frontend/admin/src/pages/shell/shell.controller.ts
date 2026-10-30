@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
 import { useCreateSessionMutation } from "@/queries/sessions/create-session.mutation";
+import { useGetAuthMethodsQuery } from "@/queries/auth/get-auth-methods.query";
 import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.mutation";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
@@ -16,6 +17,7 @@ export function useShellController() {
   const municipalities = useListMunicipalitiesQuery();
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
+  const authMethods = useGetAuthMethodsQuery();
   const remove = useDeleteSessionMutation();
   // Only an explicit choice is stored; until then the municipality's default language applies.
   const [chosenLocale, setChosenLocale] = useState<Locale | null>(() => {
@@ -73,6 +75,7 @@ export function useShellController() {
     }
   }
   return {
+    authMethods,
     municipalities,
     municipality,
     session,

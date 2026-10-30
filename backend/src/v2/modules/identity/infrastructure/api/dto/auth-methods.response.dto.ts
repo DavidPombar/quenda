@@ -15,11 +15,17 @@ export class AuthMethodsResponseDTO {
   oidc!: OidcMethodResponseDTO | null;
   @ApiProperty({ description: "Sign-in with an e-mailed code" })
   email!: boolean;
+  @ApiProperty({
+    description:
+      "Staff sign-in with password and second factor (needs QUENDA_DATA_KEY)",
+  })
+  local!: boolean;
   static from(value: AuthMethods): AuthMethodsResponseDTO {
     return {
       demo: value.demo,
       oidc: value.oidc ? OidcMethodResponseDTO.from(value.oidc) : null,
       email: value.email,
+      local: value.local,
     };
   }
 }

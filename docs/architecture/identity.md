@@ -12,10 +12,10 @@ whole path can be demonstrated without access to the real Cl@ve test environment
 |---|---|---|---|
 | OIDC (Cl@ve through a broker, Chave365, any provider) | Citizens | `eid` | Done (#36) |
 | Email and one-time code | Citizens, occasional bookings | `email` | Done (issue #8, part B) |
-| Local account with password and TOTP | Municipal managers | `local` | Last slice (issue #8, part C) |
+| Local account with password and TOTP | Operators, municipal managers, door staff | `local` | Done (issue #8, part C) |
 | One-click synthetic accounts | Jury and developers | `demo` | Only with `DEMO_MODE=true` |
 
-`GET /v2/public/auth/methods` returns `{ demo, oidc: { label } | null, email }`, and the citizen
+`GET /v2/public/auth/methods` returns `{ demo, oidc: { label } | null, email, local }`, and the citizen
 sign-in dialog shows only the enabled methods. Every account records its `assurance` and the
 `Principal` carries it, so later features (for example the season allocation to clubs in #17) can
 require an electronic identity instead of an email address.
@@ -44,6 +44,41 @@ email never reaches an account with a higher assurance. The display name is the 
 The method is offered when `EMAIL_LOGIN` is not `false` and a mail server (`SMTP_URL`) is
 configured, or in the demo, where codes go to the local Mailpit (`http://127.0.0.1:8025`).
 Retention removes codes a day after they expire, and deleting the account removes its codes.
+
+## Local staff accounts
+
+The people who run the service never sign in as citizens. Operators of the deployment (#18),
+municipal managers and door staff (#23) have a **local account**: a login, a password (scrypt,
+N=2^15, r=8, p=1, salted) and a **time-based one-time code** (RFC 6238, any authenticator app such as
+FreeOTP or Aegis). The second factor's secret is encrypted with `QUENDA_DATA_KEY`; without the key
+local accounts are unavailable (`local: false`, `503 local_accounts_unavailable`).
+
+Accounts are created with a **temporary password shown once** to whoever creates them:
+
+- the first operator, and managers or door staff of a council without an operator, from the command
+  line (`npm run staff -- create …`, `npm run staff -- reset …`);
+- managers by the operator, in its area (`POST /v2/operator/municipalities/:id/managers` with a
+  `login`; `POST …/managers/:userId/reset`);
+- door staff by a manager, under **Persoal** (`GET|POST /v2/manager/staff`,
+  `PATCH /v2/manager/staff/:userId` with `reset`, `disable` or `enable`). A manager cannot change
+  another manager's account.
+
+Sign-in has up to three steps, each opening the next with a ticket valid ten minutes:
+
+1. `POST /v2/public/auth/staff/password {slug, login, password}` (operators:
+   `/v2/public/auth/operator/password` without `slug`). A wrong password and an unknown login
+   answer the same `401 login_rejected`, in the same time.
+2. The first time, `POST /v2/public/auth/local/password-change {ticket, newPassword}`: at least 12
+   characters and not the login.
+3. `POST /v2/public/auth/local/totp {ticket, code}`. The first time the answer to step 2 carries
+   the secret and an `otpauth://` address shown as a QR code; the first accepted code confirms it.
+   A code is never accepted twice, with one 30-second step of drift either side.
+
+Five failed passwords or codes lock the account for 15 minutes (`423 account_locked`); a reset
+unlocks it, ends its sessions and asks for a new second factor. Disabling an account ends its
+sessions at once. Every sign-in, failure, lock, password change and second-factor setup is in the
+audit trail (`auth.*`), the municipality's for its staff and the deployment's for operators.
+Accounts with a local login are never handed out by the demo sign-in.
 
 ## OIDC flow
 
@@ -147,5 +182,6 @@ The development values for the backend are in `.env.example`. Keycloak is option
 
 ## Not covered yet
 
-Local manager accounts arrive in the last slice of issue #8. Single logout at the provider, account
-linking across methods and step-up authentication are not implemented.
+Single logout at the provider, account linking across methods, step-up authentication, recovery
+codes for a lost authenticator (a reset by the operator or manager stands in) and WebAuthn keys are
+not implemented.

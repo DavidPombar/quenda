@@ -3,6 +3,7 @@ import { Button, Dialog, Field, Input, Portal } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import type { TextKey } from "@/services/i18n.service";
 import type { DeploymentMunicipality } from "@/types/models";
+import { TemporaryPassword } from "@/components/temporary-password/temporary-password.view";
 import { useManagerFormController } from "./manager-form.controller";
 export function ManagerForm(p: {
   t: (key: TextKey) => string;
@@ -11,6 +12,16 @@ export function ManagerForm(p: {
 }) {
   const c = useManagerFormController(p);
   const { t } = p;
+  if (c.created)
+    return (
+      <TemporaryPassword
+        t={t}
+        name={c.created.name}
+        login={c.created.login}
+        password={c.created.password}
+        onClose={c.done}
+      />
+    );
   return (
     <Dialog.Root
       open
@@ -85,6 +96,33 @@ export function ManagerForm(p: {
                     </Field.HelperText>
                     {c.errors.email && (
                       <Field.ErrorText>{t(c.errors.email)}</Field.ErrorText>
+                    )}
+                  </Field.Root>
+                  <Field.Root
+                    className="field full"
+                    required
+                    invalid={!!c.errors.login}
+                  >
+                    <Field.Label>
+                      {t("staffLogin")}
+                      <Field.RequiredIndicator />
+                    </Field.Label>
+                    <Input
+                      name="login"
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      maxLength={64}
+                      value={c.draft.login}
+                      onChange={(event) =>
+                        c.setField("login", event.target.value)
+                      }
+                    />
+                    <Field.HelperText>
+                      {t("operatorLoginHint")}
+                    </Field.HelperText>
+                    {c.errors.login && (
+                      <Field.ErrorText>{t(c.errors.login)}</Field.ErrorText>
                     )}
                   </Field.Root>
                 </div>

@@ -45,7 +45,7 @@ The container images are the same for both; the difference is configuration and 
 
 |                | Demo (`compose.demo.yml`)                                  | Production                                                                                |
 | -------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); real sign-in is still future work                      |
+| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); citizens use OIDC or an email code, staff local accounts |
 | Transport      | Plain HTTP on `127.0.0.1:8080`                             | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS   |
 | Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false` |
 | Seed data      | Synthetic municipalities and accounts                      | No seed; municipalities are configured explicitly                                         |
@@ -53,6 +53,24 @@ The container images are the same for both; the difference is configuration and 
 The `web` container (nginx) sends a Content Security Policy, `X-Frame-Options`, `Permissions-Policy` and `nosniff` for the three SPAs; the API sends its own headers. Only the TLS proxy may reach the `web` container, because the API trusts `X-Forwarded-For` from private-network proxies (`TRUST_PROXY`, default `loopback, uniquelocal`) to identify clients.
 
 The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) and `SESSION_RATE_LIMIT_PER_MINUTE` sign-ins (default 30) per minute and answers `429` with an RFC 7807 problem and `Retry-After`. Limits are in memory per API process. Expired sessions are deleted at start-up and every `SESSION_PURGE_MINUTES` (default 60; `0` disables it).
+
+### First accounts in production
+
+Staff (the deployment's operators, municipal managers and door staff) sign in with a login, a
+password and an authenticator app; this needs `QUENDA_DATA_KEY`. The first accounts are created on
+the server, and the command prints a temporary password once:
+
+```bash
+npm run staff -- create --operator --login operacion --name "Deputación · operación"
+```
+
+```bash
+npm run staff -- create --slug vilaverde --login uxia.xestion --name "Uxía Pereira"
+```
+
+`npm run staff -- reset …` gives a new temporary password. Afterwards the operator creates and
+resets managers in its area, and each manager does the same for door staff under **Persoal**. See
+[public identity](docs/architecture/identity.md).
 
 `HEADERS_URL=https://reservas.example EXPECT_SECURE_COOKIE=true npm run test:headers` checks a running instance's headers and session cookie.
 
