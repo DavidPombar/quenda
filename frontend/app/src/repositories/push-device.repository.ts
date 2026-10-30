@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { PushDevice } from "@/types/models";
+import { serviceWorkerRepository } from "@/repositories/service-worker.repository";
 /** Where this browser stands with push notices, before asking the server anything. */
 export type DeviceSupport = "supported" | "unsupported" | "ios_home_screen";
 const SCOPE = `${import.meta.env.BASE_URL}`;
-const WORKER = `${import.meta.env.BASE_URL}sw.js`;
 function standalone() {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
@@ -37,7 +37,7 @@ export const pushDeviceRepository = {
   /** Asks for permission (call it from a click), registers the worker and subscribes. */
   async subscribe(publicKey: string): Promise<PushDevice | null> {
     if ((await Notification.requestPermission()) !== "granted") return null;
-    await navigator.serviceWorker.register(WORKER, { scope: SCOPE });
+    await serviceWorkerRepository.register();
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,

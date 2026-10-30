@@ -225,6 +225,11 @@ export function Shell() {
           </div>
         </header>
         <main id="main" tabIndex={-1}>
+          {!c.online && (
+            <p role="status" className="offline-banner">
+              {t("offline")}
+            </p>
+          )}
           {c.notice && (
             <p role="status" className="page-notice">
               {t(c.notice)}

@@ -159,6 +159,13 @@ class ExportedLogoDTO {
   @ApiProperty({ description: "Base64 encoded image bytes" }) data!: string;
   @ApiProperty() sha256!: string;
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Base64 encoded 512 px PNG icon of the installed app",
+  })
+  icon!: string | null;
+  @ApiProperty({ type: String, nullable: true }) iconSha256!: string | null;
 }
 class ExportedBookingBlockDTO {
   @ApiProperty() id!: string;

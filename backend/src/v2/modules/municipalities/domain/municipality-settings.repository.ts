@@ -4,7 +4,7 @@ import type {
   LegalTexts,
   MunicipalitySettings,
 } from "../../../shared/application/municipality-settings";
-import type { Logo } from "./logo";
+import type { Icon, Logo } from "./logo";
 export type EditableSettings = Pick<
   MunicipalitySettings,
   | "locale"
@@ -42,6 +42,7 @@ export abstract class MunicipalitySettingsRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<Temporal.Instant[]>;
+  /** Replacing the logo drops its icon until the backoffice sends a new one. */
   abstract saveLogo(
     tenantId: string,
     logo: Logo,
@@ -49,4 +50,7 @@ export abstract class MunicipalitySettingsRepository {
   ): Promise<void>;
   abstract deleteLogo(tenantId: string): Promise<boolean>;
   abstract findLogo(slug: string): Promise<(Logo & { version: string }) | null>;
+  /** False when the municipality has no logo for the icon to belong to. */
+  abstract saveIcon(tenantId: string, icon: Icon): Promise<boolean>;
+  abstract findIcon(slug: string): Promise<(Icon & { version: string }) | null>;
 }

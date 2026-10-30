@@ -214,7 +214,8 @@ describe("Municipality data portability", () => {
       [tenantId],
     );
     await db.query(
-      "INSERT INTO municipality_logos VALUES ($1,'image/png',$2,'logo-hash','2026-10-20T10:00:00Z')",
+      // The installed app's icon (#24) travels with its logo.
+      "INSERT INTO municipality_logos VALUES ($1,'image/png',$2,'logo-hash','2026-10-20T10:00:00Z',$2,'icon-hash')",
       [
         tenantId,
         Buffer.from(

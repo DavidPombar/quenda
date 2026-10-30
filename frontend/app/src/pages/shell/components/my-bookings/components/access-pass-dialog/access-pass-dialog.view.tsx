@@ -32,7 +32,7 @@ export function AccessPassDialog(p: {
               <h3>{p.booking.facilityName}</h3>
               {c.query.isPending ? (
                 <Feedback message={t("loading")} />
-              ) : c.query.isError || !c.pass || !c.qr ? (
+              ) : !c.pass || !c.qr ? (
                 <Feedback
                   message={t("passError")}
                   error

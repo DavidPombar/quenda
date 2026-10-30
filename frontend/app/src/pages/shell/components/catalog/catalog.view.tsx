@@ -70,7 +70,7 @@ export function Catalog() {
         </div>
         {c.query.isPending ? (
           <Feedback message={c.t("loading")} />
-        ) : c.query.isError ? (
+        ) : c.query.isError && !c.query.data ? (
           <Feedback
             message={c.t("loadError")}
             error

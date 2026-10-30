@@ -73,7 +73,7 @@ export function MyBookings() {
             </div>
             {c.query.isPending ? (
               <Feedback message={c.t("loading")} />
-            ) : c.query.isError ? (
+            ) : c.query.isError && !c.query.data ? (
               <Feedback
                 message={c.t("loadError")}
                 error
@@ -127,7 +127,7 @@ export function MyBookings() {
           </section>
           <aside className="notices-panel">
             <h2>{c.t("notices")}</h2>
-            {c.notices.isError ? (
+            {c.notices.isError && !c.notices.data ? (
               <Feedback
                 error
                 message={c.t("loadError")}
@@ -294,6 +294,7 @@ export function MyBookings() {
             t: c.t,
             signIn: c.signIn,
             showPrivacy: c.showPrivacy,
+            online: c.online,
             track: c.track,
           }}
         />
@@ -309,6 +310,7 @@ export function MyBookings() {
             t: c.t,
             signIn: c.signIn,
             showPrivacy: c.showPrivacy,
+            online: c.online,
             track: c.track,
           }}
         />

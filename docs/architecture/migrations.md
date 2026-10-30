@@ -55,3 +55,4 @@ restoring a backup taken before the upgrade, not by down migrations.
 - `0016` gives each sport an illustration (`art`) and adds badminton, 7-a-side football and the multi-sport court to the initial list, hidden for existing municipalities (#26).
 - `0017` adds optional web analytics per municipality (#25): `analytics_url` (empty = off) and `analytics_website_id`, both set or both empty. Transfers include them (T3).
 - `0018` moves web analytics to the deployment's Umami (#57): `analytics_enabled` (default false, true where a council had its own Umami) replaces `analytics_url` and `analytics_website_id`. Transfers carry `analyticsEnabled`; older exports with `analyticsUrl` import as switched on.
+- `0019` adds the installed app's icon (#24): `municipality_logos.icon`, a square 512 px PNG of at most 512 kB drawn from the logo by the backoffice, and `icon_sha256`, both set or both empty. A new logo clears it. Transfers include it; older exports import without one.

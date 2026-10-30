@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, test, expect } from "vitest";
+import { onlineManager } from "@tanstack/react-query";
 import { page, commands } from "vitest/browser";
 import { render } from "vitest-browser-react";
 import { http, HttpResponse } from "msw";
@@ -161,6 +162,77 @@ describe("Access control at the door", () => {
         body: { items: [expect.objectContaining({ bookingId: booking.id })] },
       }),
     );
+  });
+  test("should send entries made offline as soon as the network is back (#24)", async () => {
+    stubAccessStaff();
+    localStorage.setItem(
+      `quenda.access.${municipality.slug}.day`,
+      JSON.stringify(day),
+    );
+    stubJsonResponse({
+      path: "*/v2/access/day",
+      status: 503,
+      response: { code: "unavailable", detail: "" },
+    });
+    stubJsonResponse({
+      path: "*/v2/access/check-ins",
+      method: "POST",
+      status: 503,
+      response: { code: "unavailable", detail: "" },
+    });
+    await commands.navigate("/admin/vilaverde/acceso");
+    await render(<App />);
+    onlineManager.setOnline(false);
+    try {
+      await page
+        .getByRole("button", { name: `Rexistrar entrada: ${booking.code}` })
+        .click();
+      await expect
+        .element(page.getByText(/1 entradas pendentes de enviar/))
+        .toBeVisible();
+      stubJsonResponse({ path: "*/v2/access/day", response: day });
+      const sent = stubJsonResponse({
+        path: "*/v2/access/check-ins",
+        method: "POST",
+        response: { results: [{ bookingId: booking.id, outcome: "recorded" }] },
+      });
+      onlineManager.setOnline(true);
+      await expect.poll(() => sent.spy.mock.calls.length).toBeGreaterThan(0);
+      await expect
+        .element(page.getByText(/entradas pendentes de enviar/))
+        .not.toBeInTheDocument();
+    } finally {
+      onlineManager.setOnline(true);
+    }
+  });
+  test("should forget the synced day on sign-out but keep unsent entries (#24)", async () => {
+    stubAccessStaff();
+    stubJsonResponse({ path: "*/v2/access/day", response: day });
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      method: "DELETE",
+      response: {},
+    });
+    localStorage.setItem(
+      `quenda.access.${municipality.slug}.queue`,
+      JSON.stringify([]),
+    );
+    await commands.navigate("/admin/vilaverde/acceso");
+    await render(<App />);
+    await expect
+      .poll(() =>
+        localStorage.getItem(`quenda.access.${municipality.slug}.day`),
+      )
+      .not.toBeNull();
+    await page.getByRole("button", { name: "Saír" }).click();
+    await expect
+      .poll(() =>
+        localStorage.getItem(`quenda.access.${municipality.slug}.day`),
+      )
+      .toBeNull();
+    expect(
+      localStorage.getItem(`quenda.access.${municipality.slug}.queue`),
+    ).not.toBeNull();
   });
   test("should refuse cached door data when the session is rejected", async () => {
     stubAccessStaff();

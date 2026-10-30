@@ -62,6 +62,8 @@ export interface Municipality {
   legalVersion: string;
   primaryColor: string;
   logoUrl: string | null;
+  /** Square icon of the installed app, drawn from the logo (#24). */
+  iconUrl: string | null;
   enabledCategories: Category[];
   /** No-shows within the window that block new bookings; 0 disables the penalty. */
   noShowLimit: number;

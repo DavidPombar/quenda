@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { onlineManager } from "@tanstack/react-query";
 import {
   useLocation,
   useNavigate,
@@ -25,6 +26,19 @@ import {
 import { navigationService } from "@/services/navigation.service";
 import { BRAND_VARIABLES, brandVariables } from "@/services/color.service";
 import type { Locale } from "@/types/models";
+/** Points a head link or meta tag of the document at a new value, creating it if missing. */
+function setHead(tag: "link" | "meta", name: string, value: string) {
+  const attribute = tag === "link" ? "rel" : "name";
+  let element = document.head.querySelector<HTMLLinkElement | HTMLMetaElement>(
+    `${tag}[${attribute}="${name}"]`,
+  );
+  if (!element) {
+    element = document.createElement(tag);
+    element.setAttribute(attribute, name);
+    document.head.append(element);
+  }
+  element.setAttribute(tag === "link" ? "href" : "content", value);
+}
 // Pages may hand the shell a one-off status line through navigation state.
 const NOTICES: readonly TextKey[] = ["deleteDone"];
 export function useShellController() {
@@ -57,6 +71,10 @@ export function useShellController() {
     next.delete(AUTH_ERROR_PARAM);
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
+  const online = useSyncExternalStore(
+    (listener) => onlineManager.subscribe(listener),
+    () => onlineManager.isOnline(),
+  );
   const municipality = municipalities.data?.find((item) => item.slug === slug);
   const locale: Locale = chosenLocale ?? municipality?.locale ?? "gl";
   // Councils with web analytics on count each page shown and a few events (#25, #57).
@@ -115,6 +133,22 @@ export function useShellController() {
   useEffect(() => {
     if (sessionUser) rememberLocale(locale);
   }, [sessionUser, locale, rememberLocale]);
+  // Installing from a council's pages gives an app with its name, colour and icon (#24).
+  const installSlug = municipality?.slug;
+  const installName = municipality?.name;
+  const installColor = municipality?.primaryColor;
+  const installIcon = municipality?.iconUrl;
+  useEffect(() => {
+    if (!installSlug || !installName) return;
+    setHead(
+      "link",
+      "manifest",
+      `/v2/public/municipalities/${installSlug}/manifest`,
+    );
+    setHead("meta", "apple-mobile-web-app-title", installName);
+    if (installColor) setHead("meta", "theme-color", installColor);
+    if (installIcon) setHead("link", "apple-touch-icon", installIcon);
+  }, [installSlug, installName, installColor, installIcon]);
   const primaryColor = municipality?.primaryColor ?? "";
   useEffect(() => {
     const style = document.documentElement.style;
@@ -172,6 +206,7 @@ export function useShellController() {
       accountRole.charAt(0).toLocaleUpperCase() + accountRole.slice(1),
     locale,
     t,
+    online,
     notice,
     setLocale,
     selectMunicipality,
@@ -202,6 +237,7 @@ export function useShellController() {
           t,
           signIn: () => setLoginOpen(true),
           showPrivacy: () => setPrivacyOpen(true),
+          online,
           track,
         }
       : null,

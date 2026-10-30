@@ -51,7 +51,7 @@ someone who cannot show a code, use the searchable list with **Rexistrar entrada
 presentado** buttons.
 
 Entries are sent with `POST /v2/access/check-ins` in batches; entries made offline wait in a local
-queue and go out on the next sync. Batches are limited to 200 and serialized so a successful earlier batch cannot erase newer pending entries. Each item gets its own outcome (`recorded`, `duplicate`,
+queue and go out on the next sync, or as soon as the browser reports it is back online (#24). The backoffice is installable and keeps its shell offline, so the door page also opens without a network ([installable app](pwa.md)). Signing out drops the synced days, which list reservations, but keeps unsent entries for the next staff session. Batches are limited to 200 and serialized so a successful earlier batch cannot erase newer pending entries. Each item gets its own outcome (`recorded`, `duplicate`,
 `cancelled`, `no_show`, `out_of_window`, `not_found`, `stale`) and the device shows the rejected ones.
 `check_ins` is the evidence of attendance (#16): a reservation with a check-in cannot be marked as a
 no-show. Each recorded entry is audited as `booking.checked_in`. Each request includes the synced `sequence`; a queued entry for an older revision is rejected as `stale`. Attendance is unique per reservation revision, so attendance before a move is not reused for the new slot. Manual entries obey the same opening window as QR entries. A refused session never falls back to cached data.

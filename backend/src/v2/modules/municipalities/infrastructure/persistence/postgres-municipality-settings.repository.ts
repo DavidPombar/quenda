@@ -5,7 +5,7 @@ import {
   EditableSettings,
   MunicipalitySettingsRepository,
 } from "../../domain/municipality-settings.repository";
-import { Logo, LogoType } from "../../domain/logo";
+import { Icon, Logo, LogoType } from "../../domain/logo";
 import { LegalTexts } from "../../../../shared/application/municipality-settings";
 import { Database } from "../../../../shared/infrastructure/database";
 const columns: Record<keyof EditableSettings, string> = {
@@ -77,7 +77,7 @@ export class PostgresMunicipalitySettingsRepository extends MunicipalitySettings
   }
   async saveLogo(tenantId: string, logo: Logo, updatedAt: Temporal.Instant) {
     await this.db.query(
-      "INSERT INTO municipality_logos (tenant_id,content_type,data,sha256,updated_at) VALUES ($1,$2,$3,encode(sha256($3),'hex'),$4) ON CONFLICT (tenant_id) DO UPDATE SET content_type=$2, data=$3, sha256=encode(sha256($3),'hex'), updated_at=$4",
+      "INSERT INTO municipality_logos (tenant_id,content_type,data,sha256,updated_at) VALUES ($1,$2,$3,encode(sha256($3),'hex'),$4) ON CONFLICT (tenant_id) DO UPDATE SET content_type=$2, data=$3, sha256=encode(sha256($3),'hex'), updated_at=$4, icon=NULL, icon_sha256=NULL",
       [
         tenantId,
         logo.contentType,
@@ -103,6 +103,23 @@ export class PostgresMunicipalitySettingsRepository extends MunicipalitySettings
       version: string;
     }>(
       'SELECT l.content_type AS "contentType", l.data, left(l.sha256, 16) AS version FROM municipality_logos l JOIN municipalities m ON m.id=l.tenant_id WHERE m.slug=$1',
+      [slug],
+    );
+    return rows[0] ?? null;
+  }
+  async saveIcon(tenantId: string, icon: Icon) {
+    return Boolean(
+      (
+        await this.db.query(
+          "UPDATE municipality_logos SET icon=$2, icon_sha256=encode(sha256($2),'hex') WHERE tenant_id=$1",
+          [tenantId, Buffer.from(icon.data)],
+        )
+      ).rowCount,
+    );
+  }
+  async findIcon(slug: string) {
+    const { rows } = await this.db.query<{ data: Buffer; version: string }>(
+      "SELECT l.icon AS data, left(l.icon_sha256, 16) AS version FROM municipality_logos l JOIN municipalities m ON m.id=l.tenant_id WHERE m.slug=$1 AND l.icon IS NOT NULL",
       [slug],
     );
     return rows[0] ?? null;

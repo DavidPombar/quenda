@@ -25,6 +25,8 @@ export type ErrorCode =
   | "invalid_holidays"
   | "unsupported_logo"
   | "logo_too_large"
+  | "unsupported_icon"
+  | "logo_required"
   | "slug_taken"
   | "category_not_enabled"
   | "category_already_requested"

@@ -174,6 +174,9 @@ export interface MunicipalitySnapshot {
     data: string;
     sha256: string;
     updatedAt: Temporal.Instant;
+    /** Base64 icon of the installed app made from the logo (#24), or null. */
+    icon: string | null;
+    iconSha256: string | null;
   }[];
   bookingBlocks: {
     id: string;

@@ -591,6 +591,14 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "icon": {
+            "type": ["string", "null"],
+            "contentEncoding": "base64",
+            "description": "Square 512 px PNG icon of the installed app, drawn from the logo (#24). Absent in older exports."
+          },
+          "iconSha256": {
+            "type": ["string", "null"]
           }
         },
         "additionalProperties": false

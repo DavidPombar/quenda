@@ -394,4 +394,33 @@ describe("municipal settings", () => {
       .toBeVisible();
     await expect.element(section.getByRole("checkbox")).not.toBeInTheDocument();
   });
+  test("should draw the installed app's icon from a new logo and send it after the logo (#24)", async () => {
+    stubManager();
+    const logo = stubJsonResponse({
+      path: "*/v2/manager/municipality/logo",
+      method: "PUT",
+      status: 204,
+      response: null,
+    });
+    const icon = stubJsonResponse({
+      path: "*/v2/manager/municipality/icon",
+      method: "PUT",
+      status: 204,
+      response: null,
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = 300;
+    canvas.height = 100;
+    canvas.getContext("2d")!.fillRect(0, 0, 300, 100);
+    const png = await new Promise<Blob>((resolve) =>
+      canvas.toBlob((blob) => resolve(blob!), "image/png"),
+    );
+    await open();
+    await page
+      .getByLabelText("Subir logotipo")
+      .upload(new File([png], "logo.png", { type: "image/png" }));
+    await expect.element(page.getByText("Logotipo actualizado.")).toBeVisible();
+    expect(logo.spy).toHaveBeenCalledTimes(1);
+    expect(icon.spy).toHaveBeenCalledTimes(1);
+  });
 });

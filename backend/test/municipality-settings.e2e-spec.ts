@@ -23,6 +23,13 @@ const PNG = Buffer.from(
     "1f15c4890000000d49444154789c6360000002000154a24f5d0000000049454e44ae426082",
   "hex",
 );
+/** A 512 × 512 PNG header: the icon check reads the size from it (#24). */
+function pngOf(width: number, height: number) {
+  const icon = Buffer.from(PNG);
+  icon.writeUInt32BE(width, 16);
+  icon.writeUInt32BE(height, 20);
+  return icon;
+}
 const LEGAL = {
   gl: "Novo aviso de privacidade do concello para as reservas.",
   es: "Nuevo aviso de privacidad del ayuntamiento para las reservas.",
@@ -271,6 +278,77 @@ describe("Municipal settings through HTTP and PostgreSQL", () => {
     expect((await publicSettings(context.slug)).logoUrl).toBe(null);
     await request(harness.app.getHttpServer())
       .get(`/v2/public/municipalities/${context.slug}/logo`)
+      .expect(404);
+  });
+  it("should give the installed app the council's name, colour and the icon made from its logo (#24)", async () => {
+    const context = await tenant();
+    const server = request(harness.app.getHttpServer());
+    const manifest = async () =>
+      (
+        await server
+          .get(`/v2/public/municipalities/${context.slug}/manifest`)
+          .expect(200)
+          .expect("Content-Type", /application\/manifest\+json/)
+          .expect("Cache-Control", "no-cache")
+      ).body as {
+        id: string;
+        start_url: string;
+        scope: string;
+        name: string;
+        theme_color: string;
+        icons: { src: string; purpose?: string }[];
+      };
+    const icon = (body: Buffer) =>
+      context.manager
+        .put("/v2/manager/municipality/icon")
+        .set("X-Quenda-Request", "1")
+        .set("Content-Type", "image/png")
+        .send(body);
+    const before = await manifest();
+    expect(before).toMatchObject({
+      id: `/app/${context.slug}/`,
+      start_url: `/app/${context.slug}/`,
+      scope: "/app/",
+      theme_color: "#1f5b43",
+    });
+    expect(before.name).toMatch(/: reservas$/);
+    expect(before.icons.map((item) => item.src)).toContain("/app/icon-512.png");
+    // The icon belongs to the logo: none can be stored without one.
+    await icon(pngOf(512, 512)).expect(409);
+    await upload(context.manager, "image/png", PNG).expect(204);
+    await icon(pngOf(512, 256)).expect(415);
+    await icon(pngOf(192, 192)).expect(415);
+    await icon(Buffer.from("<svg/>")).expect(415);
+    await icon(pngOf(512, 512)).expect(204);
+    await context.citizen
+      .put("/v2/manager/municipality/icon")
+      .set("X-Quenda-Request", "1")
+      .set("Content-Type", "image/png")
+      .send(pngOf(512, 512))
+      .expect(403);
+    const { iconUrl } = await publicSettings(context.slug);
+    expect(iconUrl).toMatch(
+      new RegExp(`^/v2/public/municipalities/${context.slug}/icon\\?v=`),
+    );
+    const served = await server.get(iconUrl).buffer(true).expect(200);
+    expect(served.headers["content-type"]).toBe("image/png");
+    expect(served.headers["cache-control"]).toContain("immutable");
+    expect(Buffer.compare(served.body as Buffer, pngOf(512, 512))).toBe(0);
+    const after = await manifest();
+    expect(after.icons).toEqual([
+      expect.objectContaining({ src: iconUrl }),
+      expect.objectContaining({ src: iconUrl, purpose: "maskable" }),
+    ]);
+    // A new logo drops the icon drawn from the old one; removing the logo removes both.
+    await upload(context.manager, "image/png", PNG).expect(204);
+    expect((await publicSettings(context.slug)).iconUrl).toBe(null);
+    await icon(pngOf(512, 512)).expect(204);
+    await del(context.manager, "manager/municipality/logo").expect(204);
+    await server
+      .get(`/v2/public/municipalities/${context.slug}/icon`)
+      .expect(404);
+    await server
+      .get("/v2/public/municipalities/non-existent/manifest")
       .expect(404);
   });
 });
