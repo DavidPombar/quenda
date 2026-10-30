@@ -62,11 +62,18 @@ export class PostgresRetentionRepository extends RetentionRepository {
       now,
     );
   }
-  purgeLoginAttempts(tenantId: string, now: Temporal.Instant) {
-    return this.run(
-      "DELETE FROM login_attempts WHERE tenant_id=$1 AND expires_at<$2",
-      tenantId,
-      now,
+  async purgeLoginAttempts(tenantId: string, now: Temporal.Instant) {
+    return (
+      (await this.run(
+        "DELETE FROM login_attempts WHERE tenant_id=$1 AND expires_at<$2",
+        tenantId,
+        now,
+      )) +
+      (await this.run(
+        "DELETE FROM login_codes WHERE tenant_id=$1 AND expires_at<$2::timestamptz - interval '1 day'",
+        tenantId,
+        now,
+      ))
     );
   }
   deleteConsentsOfPurgedUsers(tenantId: string, cutoff: Temporal.Instant) {

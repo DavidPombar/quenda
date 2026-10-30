@@ -23,6 +23,15 @@ import { GetAuthMethodsController } from "./infrastructure/api/public/get-auth-m
 import { StartOidcLoginController } from "./infrastructure/api/public/start-oidc-login.controller";
 import { CompleteOidcLoginController } from "./infrastructure/api/public/complete-oidc-login.controller";
 import { SessionPurgeScheduler } from "./infrastructure/schedule/session-purge.scheduler";
+import { RequestEmailCode } from "./application/commands/request-email-code.command";
+import { VerifyEmailCode } from "./application/commands/verify-email-code.command";
+import { ClaimLoginCodes } from "./application/commands/claim-login-codes.command";
+import { CompleteLoginCode } from "./application/commands/complete-login-code.command";
+import { LoginCodeRepository } from "./domain/login-code.repository";
+import { PostgresLoginCodeRepository } from "./infrastructure/persistence/postgres-login-code.repository";
+import { LoginCodeSender } from "./infrastructure/mail/login-code-sender";
+import { RequestEmailCodeController } from "./infrastructure/api/public/request-email-code.controller";
+import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-email-code.controller";
 @Module({
   imports: [AccountModule],
   providers: [
@@ -45,6 +54,12 @@ import { SessionPurgeScheduler } from "./infrastructure/schedule/session-purge.s
     },
     PurgeExpiredSessions,
     SessionPurgeScheduler,
+    RequestEmailCode,
+    VerifyEmailCode,
+    ClaimLoginCodes,
+    CompleteLoginCode,
+    LoginCodeSender,
+    { provide: LoginCodeRepository, useClass: PostgresLoginCodeRepository },
   ],
   controllers: [
     CreateSessionController,
@@ -53,6 +68,9 @@ import { SessionPurgeScheduler } from "./infrastructure/schedule/session-purge.s
     GetAuthMethodsController,
     StartOidcLoginController,
     CompleteOidcLoginController,
+    RequestEmailCodeController,
+    VerifyEmailCodeController,
   ],
+  exports: [LoginCodeSender],
 })
 export class IdentityModule {}

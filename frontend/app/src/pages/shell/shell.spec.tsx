@@ -109,6 +109,86 @@ describe("Citizen sign-in", () => {
       .element(page.getByRole("alert"))
       .toMatchTextContent("Non puidemos completar a entrada. Volve tentalo.");
   });
+  test("should sign in with a mailed code in two steps without saying whether the account exists", async () => {
+    stubShell(false, { demo: false, oidc: null, email: true });
+    const requested = stubJsonResponse({
+      path: "*/v2/public/auth/email/codes",
+      method: "POST",
+      status: 202,
+      response: undefined,
+    });
+    const verified = stubJsonResponse({
+      path: "*/v2/public/auth/email/sessions",
+      method: "POST",
+      status: 400,
+      response: { code: "code_invalid", detail: "" },
+    });
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    await openSignIn();
+    const send = page.getByRole("button", { name: "Enviar código" });
+    await expect.element(send).toBeDisabled();
+    await page.getByText("Lin e acepto o aviso de privacidade").click();
+    await page
+      .getByRole("textbox", { name: "Correo electrónico" })
+      .fill("ana@example.org");
+    await send.click();
+    await expect
+      .element(page.getByRole("status").filter({ hasText: "ana@example.org" }))
+      .toHaveTextContent(
+        "Se ana@example.org pode entrar, acaba de recibir un código. Mira tamén no correo non desexado.",
+      );
+    expect(requested.spy.mock.calls[0][0].body).toEqual({
+      slug: "vilaverde",
+      email: "ana@example.org",
+      legalVersion: municipality.legalVersion,
+      locale: "gl",
+    });
+    const code = page.getByRole("textbox", { name: "Código de 6 cifras" });
+    await code.fill("12a");
+    await page
+      .getByRole("button", { name: "Entrar", exact: true })
+      .last()
+      .click();
+    await expect
+      .element(page.getByRole("alert"))
+      .toHaveTextContent("O código ten 6 cifras.");
+    await code.fill("123456");
+    await page
+      .getByRole("button", { name: "Entrar", exact: true })
+      .last()
+      .click();
+    await expect
+      .element(page.getByRole("alert"))
+      .toHaveTextContent("O código non é correcto. Revísao ou pide outro.");
+    stubJsonResponse({
+      path: "*/v2/public/auth/email/sessions",
+      method: "POST",
+      status: 201,
+      response: {
+        userId: "u1",
+        tenantId: municipality.id,
+        displayName: "ana",
+        role: "citizen",
+        assurance: "email",
+      },
+    });
+    stubJsonResponse({
+      path: "*/v2/citizen/me",
+      method: "PATCH",
+      response: {},
+    });
+    await page
+      .getByRole("button", { name: "Entrar", exact: true })
+      .last()
+      .click();
+    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+    expect(verified.spy.mock.calls[0][0].body).toEqual({
+      slug: "vilaverde",
+      email: "ana@example.org",
+      code: "123456",
+    });
+  });
 });
 function stubMunicipality(overrides: Partial<typeof municipality>) {
   stubJsonResponse({

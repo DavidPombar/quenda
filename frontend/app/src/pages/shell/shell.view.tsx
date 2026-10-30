@@ -264,6 +264,16 @@ export function Shell() {
         onEid={c.signInWithEid}
         eidLabel={c.eidButtonLabel}
         demo={c.authMethods.data?.demo ?? false}
+        email={
+          c.authMethods.data?.email
+            ? {
+                slug: municipality.slug,
+                legalVersion: municipality.legalVersion,
+                locale: c.locale,
+              }
+            : null
+        }
+        onSignedIn={c.closeLogin}
         methodsStatus={c.authMethods.status}
         onRetryMethods={() => {
           void c.authMethods.refetch();

@@ -12,6 +12,8 @@ import { Outbox } from "./application/outbox";
 import { SecretBox } from "./application/secret-box";
 import { UnsubscribeTokens } from "./application/unsubscribe-tokens";
 import { PushSender } from "./application/push-sender";
+import { Mailer } from "./application/mailer";
+import { SmtpMailer } from "./infrastructure/smtp-mailer";
 import { AnalyticsForwarder } from "./application/analytics-forwarder";
 import { AnalyticsConfig } from "./application/analytics-config";
 import { Database } from "./infrastructure/database";
@@ -44,6 +46,7 @@ const bindings = [
   { provide: SecretBox, useClass: AesSecretBox },
   { provide: UnsubscribeTokens, useClass: HmacUnsubscribeTokens },
   { provide: PushSender, useClass: WebPushSender },
+  { provide: Mailer, useClass: SmtpMailer },
   { provide: AnalyticsConfig, useClass: EnvAnalyticsConfig },
   { provide: AnalyticsForwarder, useClass: FetchAnalyticsForwarder },
   { provide: SessionRepository, useClass: PostgresSessionRepository },

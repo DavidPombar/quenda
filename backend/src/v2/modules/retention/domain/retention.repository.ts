@@ -25,7 +25,10 @@ export abstract class RetentionRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<number>;
-  /** Removes OIDC sign-in attempts that were never completed. */
+  /**
+   * Removes OIDC sign-in attempts that were never completed, and email sign-in codes a day after
+   * they expired (#8).
+   */
   abstract purgeLoginAttempts(
     tenantId: string,
     now: Temporal.Instant,

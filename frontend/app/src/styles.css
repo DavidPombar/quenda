@@ -2108,3 +2108,24 @@ a.account:hover .account-name strong {
 .facility-unavailable h2 {
   margin-bottom: var(--space-2);
 }
+
+/* Sign-in with an email code (#8) */
+.email-sign-in {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.email-sign-in h3 {
+  margin-bottom: var(--space-2);
+  font-size: var(--t-body);
+}
+.email-sign-in form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.email-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

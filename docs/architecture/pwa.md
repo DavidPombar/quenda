@@ -34,7 +34,7 @@ backend has no image library: sharp depends on libvips, which is LGPL and fails
 
 It goes to `PUT /v2/manager/municipality/icon`.
 
-The icon is stored next to the logo (`municipality_logos.icon`, migration `0019`):
+The icon is stored next to the logo (`municipality_logos.icon`, migration `0020`):
 
 - a new logo drops it until the backoffice sends the new one;
 - deleting the logo deletes it;

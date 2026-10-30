@@ -2,6 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { OidcProvider } from "../../domain/oidc-provider";
 import { Result } from "../../../../shared/application/result";
+import { emailLoginEnabled } from "../email-login";
 export interface AuthMethods {
   demo: boolean;
   oidc: { label: string } | null;
@@ -18,7 +19,10 @@ export class GetAuthMethods {
     return Result.ok({
       demo: process.env.DEMO_MODE === "true",
       oidc: this.oidc.enabled() && label ? { label } : null,
-      email: false,
+      // Codes need a mail server; the demo sends them to the local Mailpit.
+      email:
+        emailLoginEnabled() &&
+        (Boolean(process.env.SMTP_URL) || process.env.DEMO_MODE === "true"),
     });
   }
 }

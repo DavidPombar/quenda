@@ -10,8 +10,8 @@ whole path can be demonstrated without access to the real Cl@ve test environment
 
 | Method | Who | Assurance | Status |
 |---|---|---|---|
-| OIDC (Cl@ve through a broker, Chave365, any provider) | Citizens | `eid` | This slice |
-| Email and one-time code | Citizens, occasional bookings | `email` | Next slice (issue #8, part B) |
+| OIDC (Cl@ve through a broker, Chave365, any provider) | Citizens | `eid` | Done (#36) |
+| Email and one-time code | Citizens, occasional bookings | `email` | Done (issue #8, part B) |
 | Local account with password and TOTP | Municipal managers | `local` | Last slice (issue #8, part C) |
 | One-click synthetic accounts | Jury and developers | `demo` | Only with `DEMO_MODE=true` |
 
@@ -19,6 +19,31 @@ whole path can be demonstrated without access to the real Cl@ve test environment
 sign-in dialog shows only the enabled methods. Every account records its `assurance` and the
 `Principal` carries it, so later features (for example the season allocation to clubs in #17) can
 require an electronic identity instead of an email address.
+
+## Email and one-time code
+
+For people without Cl@ve, or for a one-off booking, the dialog offers «Entrar co correo». It is a
+lower assurance than an electronic identity: it proves control of a mailbox, nothing more.
+
+1. `POST /v2/public/auth/email/codes {slug, email, legalVersion, locale}` stores a six-digit code
+   valid for ten minutes and answers **202** whether or not an account exists. The privacy notice
+   must have been accepted (`consent_required` otherwise). An address gets at most five codes an
+   hour; past that the request is still accepted but no mail is sent.
+2. The mail is sent right after the transaction commits, never inside it. If the mail server
+   refuses it, the delivery worker retries it (up to five attempts, while the code is valid). Once
+   sent, the row keeps only hashes: the address and the code in clear are cleared.
+3. `POST /v2/public/auth/email/sessions {slug, email, code}` compares the code in constant time.
+   Five wrong attempts invalidate it (`code_expired`); a wrong code answers `code_invalid`. On
+   success the account is found or created through the identity `(municipality, 'email',
+   SHA-256 of the address)`, the consent is recorded and the 8-hour session cookie is set.
+
+An address that also belongs to a Cl@ve account opens a **separate** email account: signing in by
+email never reaches an account with a higher assurance. The display name is the part before the
+@. Both endpoints carry the per-IP limit of the other sign-in endpoints.
+
+The method is offered when `EMAIL_LOGIN` is not `false` and a mail server (`SMTP_URL`) is
+configured, or in the demo, where codes go to the local Mailpit (`http://127.0.0.1:8025`).
+Retention removes codes a day after they expire, and deleting the account removes its codes.
 
 ## OIDC flow
 
@@ -122,5 +147,5 @@ The development values for the backend are in `.env.example`. Keycloak is option
 
 ## Not covered yet
 
-Email codes and local manager accounts arrive in the next slices of issue #8. Single logout at the
-provider, account linking across methods and step-up authentication are not implemented.
+Local manager accounts arrive in the last slice of issue #8. Single logout at the provider, account
+linking across methods and step-up authentication are not implemented.
