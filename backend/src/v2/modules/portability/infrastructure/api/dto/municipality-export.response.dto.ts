@@ -276,7 +276,31 @@ class ExportedSeasonOccurrenceDTO {
   @ApiProperty({ type: String, nullable: true })
   cancellationReason!: string | null;
 }
+class ExportedSportDTO {
+  @ApiProperty() code!: string;
+  @ApiProperty() nameGl!: string;
+  @ApiProperty() nameEs!: string;
+  @ApiProperty() cnidClass!: string;
+  @ApiProperty() cnidType!: string;
+  @ApiProperty() schemaType!: string;
+  @ApiProperty() hidden!: boolean;
+  @ApiProperty() position!: number;
+}
+class ExportedFacilityPhotoDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() contentType!: string;
+  @ApiProperty({ description: "Base64 encoded image bytes" }) data!: string;
+  @ApiProperty() sha256!: string;
+  @ApiProperty() altGl!: string;
+  @ApiProperty() altEs!: string;
+  @ApiProperty() position!: number;
+  @ApiProperty() createdAt!: string;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
+  @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
+  facilityPhotos!: ExportedFacilityPhotoDTO[];
   @ApiProperty({ type: [ExportedOrganizationDTO] })
   organizations!: ExportedOrganizationDTO[];
   @ApiProperty({ type: [ExportedSeasonCampaignDTO] })
@@ -353,6 +377,8 @@ export class MunicipalityExportResponseDTO {
       seasonCampaigns: snapshot.seasonCampaigns,
       seasonAllocations: snapshot.seasonAllocations,
       seasonOccurrences: snapshot.seasonOccurrences,
+      sports: snapshot.sports,
+      facilityPhotos: snapshot.facilityPhotos,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

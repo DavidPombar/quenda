@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListCatalogQuery } from "@/queries/catalog/list-catalog.query";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
+import { useListSportsQuery } from "@/queries/catalog/list-sports.query";
 import {
+  PAGE_SIZE,
   bookingUrl,
   filtersFrom,
+  localized,
   paramsFrom,
 } from "@/services/catalog.service";
 import { copy, type Locale } from "@/services/i18n.service";
@@ -26,8 +29,12 @@ export function useSearchController() {
   const filters = filtersFrom(params);
   const catalog = useListCatalogQuery(filters);
   const municipalities = useListMunicipalitiesQuery();
+  const sports = useListSportsQuery(filters.municipalities);
   function update(patch: Partial<CatalogFilters>) {
-    setParams(paramsFrom({ ...filters, ...patch }), { replace: true });
+    // A new filter starts again from the first page.
+    setParams(paramsFrom({ ...filters, page: 1, ...patch }), {
+      replace: true,
+    });
   }
   function toggleMunicipality(slug: string) {
     update({
@@ -37,7 +44,10 @@ export function useSearchController() {
     });
   }
   const t = copy[locale];
-  const count = catalog.data?.length ?? 0;
+  const count = catalog.data?.total ?? 0;
+  const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+  const pageHref = (page: number) =>
+    `?${paramsFrom({ ...filters, page }).toString()}`;
   return {
     t,
     locale,
@@ -50,6 +60,17 @@ export function useSearchController() {
     catalog,
     municipalities,
     countLabel: `${count} ${count === 1 ? t.searchOne : t.searchResults}`,
+    sports: (sports.data ?? []).map((sport) => ({
+      code: sport.code,
+      label: localized(sport.name, locale),
+    })),
+    sportLabel: (name: { gl: string; es: string }) => localized(name, locale),
+    pages,
+    pageLabel: t.searchPage
+      .replace("{page}", String(filters.page))
+      .replace("{pages}", String(pages)),
+    previousHref: filters.page > 1 ? pageHref(filters.page - 1) : null,
+    nextHref: filters.page < pages ? pageHref(filters.page + 1) : null,
     bookingUrl,
   };
 }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Facility } from "../../facilities/domain/facility.entity";
+import type { SportClassification } from "./sport-taxonomy";
 import type {
   DataLicense,
   MunicipalitySettings,
@@ -21,6 +22,8 @@ export interface OpenFacility extends Pick<
 > {
   /** Active courts or spaces; the parts of a divisible court are not counted separately. */
   courts: number;
+  /** CNID and schema.org classification of the facility's sport. */
+  classification: SportClassification;
 }
 /** What every open data file of a municipality shares: publisher, licence and date. */
 export interface OpenPublication {

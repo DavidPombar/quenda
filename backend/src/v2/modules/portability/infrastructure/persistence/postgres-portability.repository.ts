@@ -44,6 +44,8 @@ coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bo
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'name', r.name, 'startsOn', to_char(r.starts_on, 'YYYY-MM-DD'), 'endsOn', to_char(r.ends_on, 'YYYY-MM-DD'), 'criteriaGl', r.criteria_gl, 'criteriaEs', r.criteria_es, 'facilityIds', ARRAY(SELECT f.facility_id FROM season_campaign_facilities f WHERE f.tenant_id=r.tenant_id AND f.campaign_id=r.id ORDER BY f.facility_id), 'createdAt', r.created_at) ORDER BY r.id) FROM season_campaigns r WHERE r.tenant_id=m.id), '[]') AS "seasonCampaigns"
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'campaignId', r.campaign_id, 'organizationId', r.organization_id, 'facilityId', r.facility_id, 'resourceId', r.resource_id, 'weekdays', r.weekdays, 'startsLocal', to_char(r.starts_local, 'HH24:MI'), 'endsLocal', to_char(r.ends_local, 'HH24:MI'), 'reason', r.reason, 'createdBy', r.created_by, 'createdAt', r.created_at, 'cancelledAt', r.cancelled_at, 'cancellationReason', r.cancellation_reason, 'endsOn', (SELECT to_char(c.ends_on, 'YYYY-MM-DD') FROM season_campaigns c WHERE c.tenant_id=r.tenant_id AND c.id=r.campaign_id)) ORDER BY r.id) FROM season_allocations r WHERE r.tenant_id=m.id), '[]') AS "seasonAllocations"
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'allocationId', r.allocation_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'conflictBookingId', r.conflict_booking_id, 'cancellationReason', r.cancellation_reason) ORDER BY r.id) FROM season_occurrences r WHERE r.tenant_id=m.id), '[]') AS "seasonOccurrences"
+,coalesce((SELECT json_agg(json_build_object('code', r.code, 'nameGl', r.name_gl, 'nameEs', r.name_es, 'cnidClass', r.cnid_class, 'cnidType', r.cnid_type, 'schemaType', r.schema_type, 'hidden', r.hidden, 'position', r.position) ORDER BY r.position, r.code) FROM sports r WHERE r.tenant_id=m.id), '[]') AS "sports"
+,coalesce((SELECT json_agg(json_build_object('id', r.id, 'facilityId', r.facility_id, 'contentType', r.content_type, 'data', encode(r.data, 'base64'), 'sha256', r.sha256, 'altGl', r.alt_gl, 'altEs', r.alt_es, 'position', r.position, 'createdAt', r.created_at) ORDER BY r.facility_id, r.position, r.id) FROM facility_photos r WHERE r.tenant_id=m.id), '[]') AS "facilityPhotos"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -157,6 +159,8 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
         rrule: weeklyRule(value.weekdays, endsOn),
       })),
       seasonOccurrences: row.seasonOccurrences,
+      sports: row.sports,
+      facilityPhotos: row.facilityPhotos,
       messages: row.messages.map((value) => ({
         ...value,
         createdAt: Temporal.Instant.from(value.createdAt),

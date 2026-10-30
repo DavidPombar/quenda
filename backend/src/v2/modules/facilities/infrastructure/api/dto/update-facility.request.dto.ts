@@ -15,7 +15,9 @@ import {
   IsBoolean,
   ValidateIf,
   IsNumber,
+  Matches,
 } from "class-validator";
+import { SPORT_CODE } from "../../../domain/sport.repository";
 import { CATEGORIES } from "../../../../../shared/application/categories";
 import { CategoryPriceRequestDTO } from "./category-price.request.dto";
 
@@ -26,10 +28,12 @@ export class UpdateFacilityRequestDTO {
   @MinLength(2)
   @MaxLength(120)
   name?: string;
-  @ApiPropertyOptional({ description: "Sport" })
+  @ApiPropertyOptional({
+    description: "Code from the municipality's sports catalogue",
+  })
   @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
-  @IsIn(["padel", "tennis", "futsal", "swimming"])
-  sport?: "padel" | "tennis" | "futsal" | "swimming";
+  @Matches(SPORT_CODE)
+  sport?: string;
   @ApiPropertyOptional({ description: "Postal address" })
   @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @IsString()

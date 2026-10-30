@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { courtPhoto } from "./seed-photo";
 import { Pool } from "pg";
 import { databaseUrl } from "./config";
 export function openingCalendar(id: string) {
@@ -218,6 +219,18 @@ export async function seed(url = databaseUrl) {
         [tenant, `10000000-0000-4000-8000-0000000000${i}1`],
       );
       await seedSeason(db, tenant, slug, name, i);
+      // Demo photo (#26) with its alternative text, on the municipal sports hall.
+      await db.query(
+        "INSERT INTO facility_photos (id,tenant_id,facility_id,content_type,data,sha256,alt_gl,alt_es,position,created_at) VALUES ($1,$2,$3,'image/png',$4,encode(sha256($4),'hex'),$5,$6,0,'2026-09-01T09:00:00Z') ON CONFLICT DO NOTHING",
+        [
+          `54000000-0000-4000-8000-0000000000${i}1`,
+          tenant,
+          `20000000-0000-4000-8000-0000000000${i}2`,
+          courtPhoto(),
+          "Pista do pavillón vista desde arriba: chan de madeira, área de xogo laranxa e liñas brancas de fútbol sala.",
+          "Pista del pabellón vista desde arriba: suelo de madera, zona de juego naranja y líneas blancas de fútbol sala.",
+        ],
+      );
     }
   } finally {
     await db.end();

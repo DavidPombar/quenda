@@ -2,7 +2,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsBoolean,
-  IsIn,
+  Matches,
   IsOptional,
   IsString,
   MaxLength,
@@ -21,12 +21,11 @@ export class OrganizationRequestDTO {
   @MaxLength(20)
   taxId?: string | null;
   @ApiPropertyOptional({
-    enum: ["padel", "tennis", "futsal", "swimming"],
     nullable: true,
   })
   @IsOptional()
   @ValidateIf((_object: unknown, value: unknown) => value !== null)
-  @IsIn(["padel", "tennis", "futsal", "swimming"])
+  @Matches(/^[a-z0-9-]{2,40}$/)
   sport?: Sport | null;
   @ApiPropertyOptional({ description: "Contact address", nullable: true })
   @IsOptional()

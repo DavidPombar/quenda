@@ -170,7 +170,7 @@ export function Management() {
                           <ul className="facility-meta">
                             <li>
                               <span className={`sport-tag ${facility.sport}`}>
-                                {c.t(facility.sport)}
+                                {c.sportLabel(facility.sport)}
                               </span>
                             </li>
                             <li>
@@ -275,6 +275,8 @@ export function Management() {
             <FacilityEditor
               facility={c.editing === "new" ? undefined : c.editing}
               municipality={c.municipality}
+              sports={c.sports}
+              locale={c.locale}
               t={c.t}
               onClose={c.close}
             />

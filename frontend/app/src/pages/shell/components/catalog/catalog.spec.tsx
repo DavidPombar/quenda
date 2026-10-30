@@ -4,7 +4,7 @@ import { page, commands } from "vitest/browser";
 import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
-import { stubShell } from "@/test/fixtures";
+import { facility, stubFacilities, stubShell } from "@/test/fixtures";
 describe("Facility catalog", () => {
   test("should offer only citizen access when a visitor opens the sign-in dialog", async () => {
     stubShell();
@@ -65,5 +65,41 @@ describe("Facility catalog", () => {
     await expect
       .element(page.getByRole("heading", { name: "Instalaciones deportivas" }))
       .toBeVisible();
+  });
+  test("should page through the catalogue on the server and keep the filters in the address", async () => {
+    stubShell();
+    const many = Array.from({ length: 30 }, (_, index) => ({
+      ...facility,
+      id: `facility-${index + 1}`,
+      name: `Instalación ${String(index + 1).padStart(2, "0")}`,
+    }));
+    const { spy } = stubFacilities(many);
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    await expect
+      .element(page.getByRole("status"))
+      .toHaveTextContent("30 resultados");
+    const pages = page.getByRole("navigation", {
+      name: "Páxinas de resultados",
+    });
+    await expect
+      .element(pages.getByRole("link", { name: "Páxina 1 de 3" }))
+      .toHaveAttribute("aria-current", "page");
+    await pages.getByRole("link", { name: "Páxina 2 de 3" }).click();
+    await expect
+      .element(page.getByRole("heading", { name: "Instalación 13" }))
+      .toBeVisible();
+    expect(window.location.search).toBe("?paxina=2");
+    expect(new URL(spy.mock.lastCall![0].url).searchParams.get("page")).toBe(
+      "2",
+    );
+    await page.getByRole("checkbox", { name: "Ocultar as pechadas" }).click();
+    await expect
+      .element(page.getByRole("heading", { name: "Instalación 01" }))
+      .toBeVisible();
+    const params = new URL(spy.mock.lastCall![0].url).searchParams;
+    expect(params.get("hideClosed")).toBe("true");
+    expect(params.get("page")).toBe("1");
+    expect(window.location.search).toBe("?ocultarPechadas=1");
   });
 });

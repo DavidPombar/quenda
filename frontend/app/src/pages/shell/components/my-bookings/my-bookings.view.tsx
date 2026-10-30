@@ -91,6 +91,7 @@ export function MyBookings() {
                     municipality={c.municipality}
                     locale={c.locale}
                     t={c.t}
+                    sportLabel={c.sportLabel(booking.sport)}
                     canChange={c.canChange(booking)}
                     calendarHref={c.calendarHref(booking.id)}
                     onCancel={() => {

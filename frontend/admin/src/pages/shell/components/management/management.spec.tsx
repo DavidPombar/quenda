@@ -6,6 +6,9 @@ import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { stubShell, municipality, facility } from "@/test/fixtures";
 import type { Facility } from "@/types/models";
+/** One transparent pixel, so the editor needs no network for images. */
+const PIXEL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 test("should require municipal access when a citizen opens the backoffice", async () => {
   stubShell(true);
@@ -58,7 +61,7 @@ test("should save the selected sport, status and duration when a manager creates
   });
   let created: Facility | undefined;
   stubJsonResponse({
-    path: "*/v2/public/facilities",
+    path: "*/v2/manager/facilities",
     response: () => (created ? [facility, created] : [facility]),
   });
   stubJsonResponse({
@@ -122,7 +125,7 @@ test("should download the municipality's open data package when a manager export
       byFacility: [],
     },
   });
-  stubJsonResponse({ path: "*/v2/public/facilities", response: [facility] });
+  stubJsonResponse({ path: "*/v2/manager/facilities", response: [facility] });
   let exports = 0;
   stubJsonResponse({
     path: "*/v2/manager/export",
@@ -173,7 +176,7 @@ test("should send only editable fields when a manager saves an existing facility
   });
   // The public listing carries the courts, which the update endpoint does not accept.
   stubJsonResponse({
-    path: "*/v2/public/facilities",
+    path: "*/v2/manager/facilities",
     response: [
       {
         ...facility,
@@ -226,7 +229,7 @@ test("should ask for both coordinates and save them as numbers when a manager pl
     },
   });
   stubJsonResponse({
-    path: "*/v2/public/facilities",
+    path: "*/v2/manager/facilities",
     response: [{ ...facility, latitude: null, longitude: null }],
   });
   const { spy } = stubJsonResponse({
@@ -307,4 +310,87 @@ test("should save a price for each category the municipality offers", async () =
   expect(spy.mock.calls[0][0].body).toMatchObject({
     prices: [{ category: "resident", priceCents: 250 }],
   });
+});
+test("should only upload a facility photo together with its alternative text", async () => {
+  stubShell();
+  stubJsonResponse({
+    path: "*/v2/public/session",
+    response: {
+      session: {
+        userId: "manager",
+        tenantId: municipality.id,
+        displayName: "Uxía",
+        role: "manager",
+      },
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/manager/insights",
+    response: {
+      confirmed: 0,
+      cancelled: 0,
+      occupancy: 0,
+      facilities: 1,
+      byFacility: [],
+    },
+  });
+  stubJsonResponse({
+    path: "*/v2/manager/facilities",
+    response: [
+      {
+        ...facility,
+        photos: [
+          {
+            id: "photo-1",
+            url: PIXEL,
+            alt: { gl: "Pista desde a entrada", es: "" },
+            position: 0,
+          },
+        ],
+      },
+    ],
+  });
+  const { spy } = stubJsonResponse({
+    path: `*/v2/manager/facilities/${facility.id}/photos`,
+    method: "POST",
+    status: 201,
+    response: { id: "photo-2" },
+  });
+  await commands.navigate("/admin/vilaverde/xestion");
+  await render(<App />);
+  await page.getByRole("button", { name: `Editar ${facility.name}` }).click();
+  const photos = page.getByRole("region", { name: "Fotos" });
+  await expect
+    .element(photos.getByText("1 de 10 fotos.", { exact: false }))
+    .toBeVisible();
+  await expect
+    .element(photos.getByRole("img", { name: "Pista desde a entrada" }))
+    .toBeInTheDocument();
+  const form = photos.getByRole("form", { name: "Engadir a foto" });
+  const input = form
+    .element()
+    .querySelector<HTMLInputElement>('input[type="file"]')!;
+  const file = new File(
+    [Uint8Array.from(atob(PIXEL.split(",")[1]), (c) => c.charCodeAt(0))],
+    "pista.png",
+    { type: "image/png" },
+  );
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  input.files = transfer.files;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  await form.getByRole("button", { name: "Engadir a foto" }).click();
+  await expect
+    .element(photos.getByRole("alert"))
+    .toHaveTextContent("Escribe o texto alternativo en galego.");
+  expect(spy).not.toHaveBeenCalled();
+  await form
+    .getByRole("textbox", { name: "Texto alternativo en galego" })
+    .fill("Vestiarios adaptados");
+  await form.getByRole("button", { name: "Engadir a foto" }).click();
+  await expect
+    .element(photos.getByRole("status"))
+    .toHaveTextContent("Foto engadida.");
+  const url = new URL(spy.mock.calls[0][0].url);
+  expect(url.searchParams.get("altGl")).toBe("Vestiarios adaptados");
 });

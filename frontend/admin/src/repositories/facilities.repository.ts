@@ -3,13 +3,44 @@ import { apiClient } from "@/client/api-client";
 import type {
   Facility,
   FacilityImpact,
+  FacilityPhoto,
   Resource,
   ResourceDraft,
 } from "@/types/models";
 export const facilitiesRepository = {
-  list: (slug: string) =>
-    apiClient.request<Facility[]>(
-      `public/facilities?slug=${encodeURIComponent(slug)}`,
+  list: () => apiClient.request<Facility[]>("manager/facilities"),
+  /** The image is the raw body; its required alternative text travels in the query. */
+  addPhoto: (args: {
+    facilityId: string;
+    file: File;
+    alt: { gl: string; es: string };
+  }) =>
+    apiClient.request<{ id: string }>(
+      `manager/facilities/${args.facilityId}/photos?${new URLSearchParams({ altGl: args.alt.gl, altEs: args.alt.es })}`,
+      {
+        method: "POST",
+        body: args.file,
+        headers: { "Content-Type": args.file.type },
+      },
+    ),
+  updatePhoto: (args: {
+    facilityId: string;
+    photo: Pick<FacilityPhoto, "id" | "alt" | "position">;
+  }) =>
+    apiClient.request<void>(
+      `manager/facilities/${args.facilityId}/photos/${args.photo.id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          alt: args.photo.alt,
+          position: args.photo.position,
+        }),
+      },
+    ),
+  removePhoto: (args: { facilityId: string; photoId: string }) =>
+    apiClient.request<void>(
+      `manager/facilities/${args.facilityId}/photos/${args.photoId}`,
+      { method: "DELETE" },
     ),
   saveResources: (args: { facilityId: string; resources: ResourceDraft[] }) =>
     apiClient.request<Resource[]>(

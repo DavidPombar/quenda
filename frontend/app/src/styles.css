@@ -58,7 +58,12 @@
   --gutter: 40px;
 }
 
-/* Each sport sets --sport / --sport-tint for its descendants. */
+/* Each sport sets --sport / --sport-tint for its descendants; sports added by a municipality (#26)
+   use the neutral colour. */
+:root {
+  --sport: var(--sport-other);
+  --sport-tint: var(--sport-other-tint);
+}
 .sport-tennis {
   --sport: var(--sport-tennis);
   --sport-tint: var(--sport-tennis-tint);
@@ -510,7 +515,16 @@ main {
 
 /* Catalog */
 .catalog-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
   margin-bottom: var(--space-4);
+}
+.catalog-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
 }
 .search-input {
   position: relative;
@@ -1435,9 +1449,13 @@ main {
   }
 }
 @media (max-width: 479px) {
-  .account-avatar,
-  .result-count {
+  .account-avatar {
     display: none;
+  }
+  /* On a phone the count takes its own line, still announced when the filters change. */
+  .result-count {
+    width: 100%;
+    margin-left: 0;
   }
   .availability-panel .section-heading {
     flex-direction: column;
@@ -1840,4 +1858,157 @@ a.account:hover .account-name strong {
 }
 .season-campaign + .season-campaign {
   margin-top: var(--space-2);
+}
+
+/* Facility catalogue (#26): photos, pagination, opening hours and map */
+.facility-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.facility-closed .facility-photo {
+  filter: grayscale(0.85) brightness(1.08) contrast(0.85);
+}
+.facility-maintenance .facility-photo {
+  filter: saturate(0.55);
+}
+.pagination {
+  margin-top: var(--space-8);
+}
+.pagination ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pagination a,
+.pagination-disabled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 650;
+  text-decoration: none;
+}
+.pagination a:hover {
+  border-color: var(--ink-2);
+}
+.pagination a[aria-current="page"] {
+  background: var(--court);
+  border-color: var(--court);
+  color: #fff;
+}
+.pagination-disabled {
+  color: var(--ink-2);
+  opacity: 0.6;
+}
+.pagination-gap {
+  padding: 0 var(--space-1);
+  color: var(--ink-2);
+}
+.photo-gallery figure {
+  margin: 0;
+  height: 280px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--sport-tint);
+}
+.photo-gallery figure img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.photo-thumbnails button {
+  display: block;
+  width: 72px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+}
+.photo-thumbnails button[aria-pressed="true"] {
+  border-color: var(--court);
+}
+.photo-thumbnails img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.opening-hours {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+}
+.opening-hours caption {
+  margin-bottom: var(--space-2);
+  text-align: left;
+  font-weight: 700;
+  font-size: var(--t-body);
+}
+.opening-hours th,
+.opening-hours td {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.opening-hours thead th {
+  color: var(--ink-2);
+  font-weight: 650;
+}
+.opening-hours tbody th {
+  font-weight: 600;
+}
+.opening-hours tr.closed td {
+  color: var(--ink-2);
+}
+.facility-map {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.facility-map .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}
+.facility-map-canvas {
+  height: 240px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  z-index: 0;
+}
+.facility-map-canvas:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.facility-unavailable {
+  align-self: start;
+}
+.facility-unavailable h2 {
+  margin-bottom: var(--space-2);
 }

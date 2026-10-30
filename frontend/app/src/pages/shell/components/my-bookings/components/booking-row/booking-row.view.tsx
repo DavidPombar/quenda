@@ -28,6 +28,7 @@ export function BookingRow(p: {
   municipality: Municipality;
   locale: Locale;
   t: (key: TextKey) => string;
+  sportLabel: string;
   canChange: boolean;
   calendarHref: string;
   onCancel: () => void;
@@ -82,7 +83,7 @@ export function BookingRow(p: {
           </li>
         )}
         <li>
-          <SportTag sport={p.booking.sport} label={p.t(p.booking.sport)} />
+          <SportTag sport={p.booking.sport} label={p.sportLabel} />
         </li>
       </ul>
       {p.booking.status === "confirmed" && (

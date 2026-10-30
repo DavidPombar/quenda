@@ -27,7 +27,9 @@ EXPOSE 3001
 CMD ["node", "backend/dist/main.js"]
 
 FROM nginx:1.29-alpine AS web
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# The image renders templates with the container's environment at start-up (map tiles, #26).
+ENV MAP_TILE_ORIGIN=https://tile.openstreetmap.org
+COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template
 COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /app/frontend/web/dist /usr/share/nginx/html
 COPY --from=build /app/frontend/app/dist /usr/share/nginx/html/app

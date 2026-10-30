@@ -56,6 +56,12 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 | `check_ins` | Link to a reservation, the time of entry and the staff member who recorded it | Evidence of attendance at the door | Deleted after `retention_months` |
 | `access_keys` | None (signing keys; the private half is sealed) | Sign access passes | Kept; retired keys stop being published after 48 hours |
 
+Facility photos (#26) are meant to show the space; the backoffice asks for a description of what
+is seen, and managers should not upload pictures in which people can be identified. The facility
+map loads tiles from the server set in `MAP_TILE_URL`. With the default, OpenStreetMap, each
+visitor's IP address and user agent reach that third party when the map is shown, which the
+privacy notice must say; a council can use its own or the provincial council's tile server.
+
 Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
 about minors. It keeps the identifier the identity provider returns and the name it supplies; the
 email address only when the provider sends one, used only for notices about the person's own

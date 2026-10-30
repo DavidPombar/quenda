@@ -49,7 +49,7 @@ describe("Municipal reservations through HTTP and PostgreSQL", () => {
       .get("/v2/public/facilities")
       .query({ slug: context.slug })
       .expect(200);
-    expect(catalog.body[0]).toMatchObject({
+    expect(catalog.body.items[0]).toMatchObject({
       id: court.id,
       resources: [
         {

@@ -22,6 +22,8 @@ services:
       OIDC_CLIENT_SECRET: quenda-local-dev-secret-NO-PRODUCCION
       OIDC_LABEL: Cl@ve
       OIDC_IDP_HINT: clave
+      # Map tiles (#26): OpenStreetMap for the demo; a deployment may point to its own server.
+      MAP_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
     depends_on:
       db:
         condition: service_healthy
@@ -66,6 +68,8 @@ services:
       context: .
       target: web
     ports: ["127.0.0.1:8080:80"]
+    environment:
+      MAP_TILE_ORIGIN: https://tile.openstreetmap.org
     depends_on:
       api:
         condition: service_healthy

@@ -43,6 +43,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "O calendario de festivos non é un iCalendar válido de días completos.",
     unsupported_logo: "O logotipo debe ser unha imaxe PNG, JPEG ou WebP.",
     logo_too_large: "O logotipo non pode superar os 2 MB.",
+    sport_exists: "Xa hai un deporte con ese código.",
+    unsupported_photo: "A foto debe ser unha imaxe PNG, JPEG ou WebP.",
+    photo_too_large: "A foto non pode superar os 4 MB.",
+    photo_limit: "Cada instalación pode ter ata 10 fotos.",
     slug_taken: "Xa existe un concello con ese identificador.",
     category_not_enabled: "O concello non ofrece esta categoría.",
     category_already_requested:
@@ -87,6 +91,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "El calendario de festivos no es un iCalendar válido de días completos.",
     unsupported_logo: "El logotipo debe ser una imagen PNG, JPEG o WebP.",
     logo_too_large: "El logotipo no puede superar los 2 MB.",
+    sport_exists: "Ya hay un deporte con ese código.",
+    unsupported_photo: "La foto debe ser una imagen PNG, JPEG o WebP.",
+    photo_too_large: "La foto no puede superar los 4 MB.",
+    photo_limit: "Cada instalación puede tener hasta 10 fotos.",
     slug_taken: "Ya existe un ayuntamiento con ese identificador.",
     category_not_enabled: "El ayuntamiento no ofrece esta categoría.",
     category_already_requested:

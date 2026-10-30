@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
 import { Temporal } from "@js-temporal/polyfill";
-import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
+import { useGetFacilityQuery } from "@/queries/facilities/get-facility.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
 import { useCreateBookingMutation } from "@/queries/bookings/create-booking.mutation";
 import { useGetTariffQuery } from "@/queries/categories/get-tariff.query";
 import { offeredPrices } from "@/services/tariff.service";
-import { today, timeLabel } from "@/services/date.service";
+import { today, timeLabel, longDayLabel } from "@/services/date.service";
+import { localized } from "@/services/catalog.service";
 import { orderResources, resourceLabel } from "@/services/resources.service";
 import type { AppContext } from "@/types/app-context";
 import type { Resource, Slot } from "@/types/models";
@@ -16,8 +17,11 @@ const ALL_RESOURCES = "all";
 export function useFacilityDetailsController() {
   const context = useOutletContext<AppContext>();
   const { id = "" } = useParams();
-  const facilities = useListFacilitiesQuery(context.municipality.slug);
-  const facility = facilities.data?.find((item) => item.id === id);
+  const facilities = useGetFacilityQuery({
+    slug: context.municipality.slug,
+    id,
+  });
+  const facility = facilities.data;
   const firstDay = today(context.municipality.timezone);
   const [date, setDate] = useState(firstDay);
   const [selected, setSelected] = useState<{
@@ -31,6 +35,8 @@ export function useFacilityDetailsController() {
     slug: context.municipality.slug,
     id,
     date,
+    // Closed or in maintenance: the page explains it instead of offering slots.
+    enabled: facility?.status === "active",
   });
   const create = useCreateBookingMutation();
   const tariff = useGetTariffQuery({
@@ -153,10 +159,32 @@ export function useFacilityDetailsController() {
     setChosenView(value);
     setShowPast(false);
   }
+  const openingDays = (facility?.openingWeek ?? []).map((day) => ({
+    date: day.date,
+    label: longDayLabel(day.date, context.locale),
+    closed: !day.hours.length,
+    hours: day.holiday
+      ? context.t("holidayClosed")
+      : day.hours.length
+        ? day.hours.map((hours) => `${hours.from}–${hours.to}`).join(", ")
+        : context.t("closedDay"),
+  }));
   return {
     ...context,
     facilities,
     facility,
+    sportName: facility ? localized(facility.sportName, context.locale) : "",
+    photos: (facility?.photos ?? []).map((photo) => ({
+      id: photo.id,
+      url: photo.url,
+      alt: localized(photo.alt, context.locale),
+    })),
+    openingDays,
+    showPhotoLabel: (index: number, alt: string) =>
+      context
+        .t("showPhoto")
+        .replace("{n}", String(index))
+        .replace("{alt}", alt),
     availability,
     date,
     setDate: changeDate,
