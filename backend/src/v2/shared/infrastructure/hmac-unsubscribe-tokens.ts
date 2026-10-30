@@ -5,7 +5,9 @@ import {
   UnsubscribeTarget,
   UnsubscribeTokens,
 } from "../application/unsubscribe-tokens";
+import { NoticeKind, noticeKinds } from "../application/notice-preferences";
 const UUID = /^[0-9a-f-]{36}$/;
+const VERSION = /^\d{1,16}$/;
 @Injectable()
 export class HmacUnsubscribeTokens extends UnsubscribeTokens {
   private readonly secret: string;
@@ -23,9 +25,15 @@ export class HmacUnsubscribeTokens extends UnsubscribeTokens {
       this.secret = randomBytes(32).toString("hex");
     }
   }
-  sign(target: UnsubscribeTarget) {
+  sign(target: UnsubscribeTarget & { version: string }) {
     const payload = Buffer.from(
-      [target.tenantId, target.userId, target.kind, target.channel].join("."),
+      [
+        target.tenantId,
+        target.userId,
+        target.kind,
+        target.channel,
+        target.version,
+      ].join("."),
     ).toString("base64url");
     return `${payload}.${this.mac(payload)}`;
   }
@@ -36,12 +44,26 @@ export class HmacUnsubscribeTokens extends UnsubscribeTokens {
     const given = Buffer.from(mac);
     if (expected.length !== given.length || !timingSafeEqual(expected, given))
       return null;
-    const [tenantId, userId, kind, channel] = Buffer.from(payload, "base64url")
+    const [tenantId, userId, kind, channel, version, ...extra] = Buffer.from(
+      payload,
+      "base64url",
+    )
       .toString()
       .split(".");
     if (!UUID.test(tenantId ?? "") || !UUID.test(userId ?? "")) return null;
-    if (kind !== "reminder" || channel !== "email") return null;
-    return { tenantId, userId, kind, channel };
+    if (!noticeKinds.includes(kind as NoticeKind) || channel !== "email")
+      return null;
+    // Links sent before versions existed name the reminder and carry no version.
+    if (version === undefined && kind !== "reminder") return null;
+    if (version !== undefined && !VERSION.test(version)) return null;
+    if (extra.length) return null;
+    return {
+      tenantId,
+      userId,
+      kind: kind as NoticeKind,
+      channel,
+      version: version ?? null,
+    };
   }
   private mac(payload: string) {
     return createHmac("sha256", this.secret)

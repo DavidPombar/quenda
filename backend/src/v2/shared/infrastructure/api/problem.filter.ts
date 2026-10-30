@@ -52,6 +52,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     attendance_window:
       "Só se pode marcar como non presentada unha reserva xa comezada e no mesmo día.",
     rate_limited: "Demasiadas solicitudes. Agarda un minuto e téntao de novo.",
+    unsubscribe_stale:
+      "Este enlace xa non serve: cambiaches os avisos despois de recibilo. Xestiónaos en Conta e privacidade.",
+    push_unavailable:
+      "Este concello non ten activados os avisos no dispositivo.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -97,6 +101,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Solo se puede marcar como no presentada una reserva ya empezada y en el mismo día.",
     rate_limited:
       "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
+    unsubscribe_stale:
+      "Este enlace ya no sirve: cambiaste los avisos después de recibirlo. Gestiónalos en Cuenta y privacidad.",
+    push_unavailable:
+      "Este ayuntamiento no tiene activados los avisos en el dispositivo.",
   },
 };
 @Catch(HttpException)

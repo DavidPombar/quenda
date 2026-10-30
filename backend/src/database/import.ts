@@ -200,6 +200,7 @@ const tables = {
     kind: "kind",
     created_at: "createdAt",
     details: "details",
+    dedupe_key: "dedupeKey",
   },
   audit_events: {
     tenant_id: "tenantId",

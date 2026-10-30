@@ -55,6 +55,7 @@ export class ExportAccount {
       bookings: await this.accounts.listBookingsAll(tenantId, userId),
       notifications: await this.accounts.listNotificationsAll(tenantId, userId),
       preferences: await this.accounts.findPreferences(tenantId, userId),
+      pushDevices: await this.accounts.listPushDevicesAll(tenantId, userId),
       messages: await this.accounts.listMessagesAll(tenantId, userId),
       blocks: await this.accounts.listBlocksAll(tenantId, userId),
       auditEvents: await this.accounts.listAuditByActor(tenantId, userId),

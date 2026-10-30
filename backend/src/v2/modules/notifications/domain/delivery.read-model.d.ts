@@ -29,10 +29,29 @@ export interface Delivery {
   webhook: { url: string; secretSealed: string } | null;
   facilityId: string;
   openingCalendar: string;
+  /** The person's stored choice for this notice and channel; NULL means the default. */
+  preference: boolean | null;
+  /** When that choice last changed, in epoch milliseconds ("0" if never); signs unsubscribe links. */
+  preferenceVersion: string;
+  /** Penalty standing shown with no-show and block notices, as recorded in the in-app notice. */
+  standing: PenaltyStanding | null;
   /** Reason given by the municipality when it cancelled the reservation. */
   cancellationReason: string | null;
   start: Temporal.Instant;
   end: Temporal.Instant;
+}
+export interface PenaltyStanding {
+  count: number;
+  limit: number;
+  remaining: number;
+  blockedUntil: string | null;
+}
+/** A browser that accepted push notices from the person. */
+export interface PushDevice {
+  id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
 }
 export interface DueReminder {
   bookingId: string;

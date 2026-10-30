@@ -4,7 +4,6 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useGetAccountQuery } from "@/queries/account/get-account.query";
 import { useExportAccountMutation } from "@/queries/account/export-account.mutation";
 import { useDeleteAccountMutation } from "@/queries/account/delete-account.mutation";
-import { useUpdatePreferencesMutation } from "@/queries/account/update-preferences.mutation";
 import { ROUTES, routeFor } from "@/constants/routes";
 import type { AppContext } from "@/types/app-context";
 import type { AccountExport } from "@/types/models";
@@ -31,7 +30,6 @@ export function useAccountController() {
   const query = useGetAccountQuery(context.session?.userId);
   const exportData = useExportAccountMutation();
   const remove = useDeleteAccountMutation();
-  const preferences = useUpdatePreferencesMutation();
   const [deleting, setDeleting] = useState(false);
   const latestConsent = query.data?.consents.reduce<
     (typeof query.data.consents)[number] | null
@@ -59,16 +57,8 @@ export function useAccountController() {
       /* Mutation state presents the error. */
     }
   }
-  function setReminderEmails(reminderEmails: boolean) {
-    preferences.mutate({ reminderEmails });
-  }
   return {
     ...context,
-    preferences,
-    setReminderEmails,
-    reminderHint: context
-      .t("reminderHint")
-      .replace("{hours}", String(context.municipality.reminderHours)),
     query,
     account: query.data,
     latestConsent: latestConsent ?? null,

@@ -174,52 +174,6 @@ describe("Account and privacy page", () => {
       .toHaveTextContent("Solicitude enviada. O concello revisaraa.");
     expect(spy.mock.calls.at(-1)![0].body).toEqual({ category: "resident" });
   });
-  test("should save the reminder preference when the person unticks email reminders", async () => {
-    stubShell(true);
-    stubAccount();
-    const { spy } = stubJsonResponse({
-      path: "*/v2/citizen/me/notification-preferences",
-      method: "PUT",
-      response: {},
-    });
-    await commands.navigate("/app/vilaverde/conta");
-    await render(<App />);
-    await expect
-      .element(page.getByText(account.email ?? "", { exact: true }))
-      .toBeVisible();
-    const reminders = page.getByRole("checkbox", {
-      name: "Recibir unha lembranza por correo antes de cada reserva",
-    });
-    await expect.element(reminders).toBeChecked();
-    await expect
-      .element(page.getByText("Chega 24 horas antes do inicio."))
-      .toBeVisible();
-    await page
-      .getByText("Recibir unha lembranza por correo antes de cada reserva")
-      .click();
-    await expect
-      .element(page.getByRole("status"))
-      .toMatchTextContent("Preferencia gardada.");
-    expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { reminderEmails: false } }),
-    );
-  });
-  test("should explain that notices stay in the app when the account has no email", async () => {
-    stubShell(true);
-    stubAccount({ email: null });
-    await commands.navigate("/app/vilaverde/conta");
-    await render(<App />);
-    await expect
-      .element(
-        page.getByText(
-          "Esta conta non ten correo, así que só verás os avisos aquí.",
-        ),
-      )
-      .toBeVisible();
-    await expect
-      .element(page.getByRole("checkbox", { name: /lembranza/ }))
-      .not.toBeInTheDocument();
-  });
   test("should show the represented club and its upcoming season slots", async () => {
     stubShell(true);
     stubAccount();

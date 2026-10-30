@@ -126,7 +126,6 @@ export class ManageBooking {
       kind: "cancelled_by_municipality",
       notificationId: notificationId,
       createdAt: now,
-      email: true,
     });
     await this.audit.record(
       principal,
@@ -184,7 +183,7 @@ export class ManageBooking {
       createdAt: now,
       details: { standing: snapshot(standing) },
     });
-    // The person is not emailed about it, but the door must stop accepting the reservation.
+    // Email and push only when the person asked for penalty notices; the door always learns it.
     await queueBookingChange(this.outbox, {
       newId: () => this.ids.next(),
       tenantId: existing.tenantId,
@@ -193,7 +192,6 @@ export class ManageBooking {
       kind: "no_show",
       notificationId,
       createdAt: now,
-      email: false,
     });
     await this.audit.record(principal, "booking.no_show", existing.id, {
       facilityId: existing.facilityId,
@@ -202,14 +200,24 @@ export class ManageBooking {
       limit: standing.limit,
     });
     if (blocked && standing.blockedUntil) {
+      const blockedId = this.ids.next();
       await this.notifications.add({
-        id: this.ids.next(),
+        id: blockedId,
         tenantId: existing.tenantId,
         userId: existing.userId,
         bookingId: existing.id,
         kind: "blocked",
         createdAt: now,
         details: { standing: snapshot(standing) },
+      });
+      await queueBookingChange(this.outbox, {
+        newId: () => this.ids.next(),
+        tenantId: existing.tenantId,
+        userId: existing.userId,
+        bookingId: existing.id,
+        kind: "blocked",
+        notificationId: blockedId,
+        createdAt: now,
       });
       await this.audit.record(principal, "user.blocked", existing.userId, {
         bookingId: existing.id,
@@ -251,14 +259,24 @@ export class ManageBooking {
     ) {
       await this.blocks.lift(existing.tenantId, block.id, now);
       const standing = await this.standing(existing.userId, settings, now);
+      const unblockedId = this.ids.next();
       await this.notifications.add({
-        id: this.ids.next(),
+        id: unblockedId,
         tenantId: existing.tenantId,
         userId: existing.userId,
         bookingId: existing.id,
         kind: "unblocked",
         createdAt: now,
         details: { standing: snapshot(standing) },
+      });
+      await queueBookingChange(this.outbox, {
+        newId: () => this.ids.next(),
+        tenantId: existing.tenantId,
+        userId: existing.userId,
+        bookingId: existing.id,
+        kind: "unblocked",
+        notificationId: unblockedId,
+        createdAt: now,
       });
       await this.audit.record(principal, "user.unblocked", existing.userId, {
         bookingId: existing.id,

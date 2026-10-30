@@ -6,14 +6,28 @@ export type MessageKind =
   | "cancelled"
   | "cancelled_by_municipality"
   | "reminder"
-  | "no_show";
-/** Email to the person; webhook to the council's access-control system when it has one. */
-export type MessageChannel = "email" | "webhook";
+  | "no_show"
+  | "blocked"
+  | "unblocked";
+/**
+ * Email and Web Push to the person, as they chose; webhook to the council's access-control
+ * system when it has one.
+ */
+export type MessageChannel = "email" | "push" | "webhook";
+/** Kinds that change whether a reservation opens the door. */
+const doorKinds: MessageKind[] = [
+  "confirmed",
+  "rescheduled",
+  "cancelled",
+  "cancelled_by_municipality",
+  "no_show",
+];
 /** Messages for delivery outside the transaction; they commit or roll back with the caller. */
 export abstract class Outbox {
   /**
-   * Returns false when a message with the same dedupe key already exists, or for a webhook when
-   * the municipality has no access-control connector configured.
+   * Returns false when a message with the same dedupe key already exists, when the person
+   * switched this notice off for the channel (or, for push, has no device), or for a webhook
+   * when the municipality has no access-control connector configured.
    */
   abstract enqueue(args: {
     id: string;
@@ -27,8 +41,8 @@ export abstract class Outbox {
   }): Promise<boolean>;
 }
 /**
- * Queues the external effects of a booking change next to its in-app notice: the email (unless
- * the change is not one people are emailed about) and the access-control webhook.
+ * Queues the external effects of a booking change next to its in-app notice: email and push as
+ * the person chose, and the access-control webhook when the change affects the door.
  */
 export async function queueBookingChange(
   outbox: Outbox,
@@ -40,12 +54,11 @@ export async function queueBookingChange(
     kind: MessageKind;
     notificationId: string;
     createdAt: Temporal.Instant;
-    email: boolean;
   },
 ) {
-  const channels: MessageChannel[] = args.email
-    ? ["email", "webhook"]
-    : ["webhook"];
+  const channels: MessageChannel[] = doorKinds.includes(args.kind)
+    ? ["email", "push", "webhook"]
+    : ["email", "push"];
   for (const channel of channels)
     await outbox.enqueue({
       id: args.newId(),
@@ -54,10 +67,11 @@ export async function queueBookingChange(
       bookingId: args.bookingId,
       kind: args.kind,
       channel,
+      // The email key predates the other channels and stays as it was.
       dedupeKey:
         channel === "email"
           ? `${args.kind}:${args.notificationId}`
-          : `${args.kind}:webhook:${args.notificationId}`,
+          : `${args.kind}:${channel}:${args.notificationId}`,
       createdAt: args.createdAt,
     });
 }

@@ -278,6 +278,8 @@ try {
   );
   await page.getByRole("link", { name: "A miña conta", exact: true }).click();
   await page.getByRole("heading", { name: "Conta e privacidade" }).waitFor();
+  // The notice preferences load separately; scan them too.
+  await page.getByRole("button", { name: "Gardar avisos" }).waitFor();
   await audit("account");
   await page.screenshot({ path: ".dev-logs/account.png", fullPage: true });
   await page.getByRole("button", { name: "Eliminar a conta" }).click();

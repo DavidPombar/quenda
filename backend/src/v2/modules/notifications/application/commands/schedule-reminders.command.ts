@@ -3,12 +3,18 @@ import { Injectable } from "@nestjs/common";
 import { DeliveryRepository } from "../../domain/delivery.repository";
 import { NotificationRepository } from "../../../bookings/domain/notification.repository";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
-import { Outbox } from "../../../../shared/application/outbox";
+import {
+  Outbox,
+  queueBookingChange,
+} from "../../../../shared/application/outbox";
 import { Clock } from "../../../../shared/application/clock";
 import { IdGenerator } from "../../../../shared/application/id-generator";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
-/** Queues the single reminder of each upcoming reservation. Invoked by the worker, not over HTTP. */
+/**
+ * Adds the single in-app reminder of each upcoming reservation and queues its email and push as
+ * the person chose. Invoked by the worker, not over HTTP.
+ */
 @Injectable()
 export class ScheduleReminders {
   constructor(
@@ -31,24 +37,25 @@ export class ScheduleReminders {
       now,
       settings.reminderHours,
     )) {
-      // The dedupe key makes a concurrent or repeated run queue nothing twice.
-      const inserted = await this.outbox.enqueue({
-        id: this.ids.next(),
+      // The dedupe key makes a concurrent or repeated run add nothing twice.
+      const notificationId = this.ids.next();
+      const added = await this.notifications.add({
+        id: notificationId,
         tenantId: settings.id,
         userId: due.userId,
         bookingId: due.bookingId,
         kind: "reminder",
-        channel: "email",
-        dedupeKey: due.dedupeKey,
         createdAt: now,
+        dedupeKey: due.dedupeKey,
       });
-      if (!inserted) continue;
-      await this.notifications.add({
-        id: this.ids.next(),
+      if (!added) continue;
+      await queueBookingChange(this.outbox, {
+        newId: () => this.ids.next(),
         tenantId: settings.id,
         userId: due.userId,
         bookingId: due.bookingId,
         kind: "reminder",
+        notificationId,
         createdAt: now,
       });
       queued += 1;

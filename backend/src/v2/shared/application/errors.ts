@@ -30,7 +30,9 @@ export type ErrorCode =
   | "category_already_requested"
   | "booking_blocked"
   | "attendance_window"
-  | "rate_limited";
+  | "rate_limited"
+  | "unsubscribe_stale"
+  | "push_unavailable";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

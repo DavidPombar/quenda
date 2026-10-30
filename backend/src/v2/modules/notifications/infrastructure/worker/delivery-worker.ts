@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { createHmac } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { Injectable, Logger } from "@nestjs/common";
 import { Commands } from "../../../../shared/infrastructure/commands.locator";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { UnsubscribeTokens } from "../../../../shared/application/unsubscribe-tokens";
 import { SecretBox } from "../../../../shared/application/secret-box";
+import { PushSender } from "../../../../shared/application/push-sender";
+import { noticeKindOf } from "../../../../shared/application/notice-preferences";
+import { DeliveryRepository } from "../../domain/delivery.repository";
 import { AccessWindow } from "../../../access/application/access-window";
 import { WebhookSender } from "../../application/webhook-sender";
 import { ScheduleReminders } from "../../application/commands/schedule-reminders.command";
@@ -12,8 +15,11 @@ import { ClaimDeliveries } from "../../application/commands/claim-deliveries.com
 import { CompleteDelivery } from "../../application/commands/complete-delivery.command";
 import { Mailer } from "../../application/mailer";
 import { Delivery } from "../../domain/delivery.read-model";
-import { EmailKind, renderMail } from "../mail/templates";
+import { renderMail } from "../mail/templates";
+import { pushPayload } from "../push/push-texts";
 const BATCH_SIZE = 50;
+/** A push notice older than a day is no longer useful; the history keeps it. */
+const PUSH_TTL_SECONDS = 24 * 60 * 60;
 /**
  * One pass of the delivery loop: queue due reminders, lease pending messages, send each one
  * outside any transaction and record the outcome. Delivery is at-least-once; the Message-ID
@@ -33,6 +39,8 @@ export class DeliveryWorker {
     private readonly webhooks: WebhookSender,
     private readonly secrets: SecretBox,
     private readonly window: AccessWindow,
+    private readonly push: PushSender,
+    private readonly devices: DeliveryRepository,
   ) {}
   async runOnce() {
     let reminders = 0;
@@ -68,8 +76,8 @@ export class DeliveryWorker {
   private async deliver(delivery: Delivery): Promise<string | undefined> {
     try {
       if (delivery.channel === "webhook") await this.callWebhook(delivery);
-      else
-        await this.sendMail({ ...delivery, kind: delivery.kind as EmailKind });
+      else if (delivery.channel === "push") await this.sendPush(delivery);
+      else await this.sendMail(delivery);
       return undefined;
     } catch (error) {
       this.logger.warn(`delivery ${delivery.id} failed`);
@@ -112,17 +120,54 @@ export class DeliveryWorker {
         .digest("hex"),
     });
   }
-  private async sendMail(delivery: Delivery & { kind: EmailKind }) {
+  /**
+   * Sends to every device of the person. Devices the push service no longer knows are forgotten;
+   * the message fails, to be retried, only when no device got it and one failed for another
+   * reason. A retry reuses the topic, so a device that already has the notice is not shown it
+   * twice while it is pending.
+   */
+  private async sendPush(delivery: Delivery) {
     const slug = encodeURIComponent(delivery.municipality.slug);
-    const unsubscribe =
-      delivery.kind === "reminder"
-        ? `${this.baseUrl}/app/${slug}/baixa?token=${this.tokens.sign({
-            tenantId: delivery.tenantId,
-            userId: delivery.userId,
-            kind: "reminder",
-            channel: "email",
-          })}`
-        : null;
+    const payload = JSON.stringify(
+      pushPayload(delivery, `/app/${slug}/reservas`),
+    );
+    const topic = createHash("sha256")
+      .update(delivery.id)
+      .digest("base64url")
+      .slice(0, 32);
+    let delivered = false;
+    let failure: unknown;
+    for (const device of await this.devices.pushDevices(
+      delivery.tenantId,
+      delivery.userId,
+    )) {
+      try {
+        const outcome = await this.push.send({
+          target: device,
+          payload,
+          topic,
+          ttlSeconds: PUSH_TTL_SECONDS,
+        });
+        if (outcome === "gone")
+          await this.devices.forgetPushDevice(delivery.tenantId, device.id);
+        else delivered = true;
+      } catch (error) {
+        failure = error;
+      }
+    }
+    if (!delivered && failure) throw failure;
+  }
+  private async sendMail(delivery: Delivery) {
+    const slug = encodeURIComponent(delivery.municipality.slug);
+    const unsubscribe = `${this.baseUrl}/app/${slug}/baixa?token=${this.tokens.sign(
+      {
+        tenantId: delivery.tenantId,
+        userId: delivery.userId,
+        kind: noticeKindOf(delivery.kind),
+        channel: "email",
+        version: delivery.preferenceVersion,
+      },
+    )}`;
     const mail = renderMail(delivery, {
       bookings: `${this.baseUrl}/app/${slug}/reservas`,
       unsubscribe,
@@ -133,7 +178,7 @@ export class DeliveryWorker {
       fromName: delivery.municipality.senderName,
       replyTo: delivery.municipality.replyTo,
       ...mail,
-      headers: unsubscribe ? { "List-Unsubscribe": `<${unsubscribe}>` } : {},
+      headers: { "List-Unsubscribe": `<${unsubscribe}>` },
     });
   }
 }

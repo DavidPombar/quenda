@@ -32,7 +32,7 @@ export class UpdateNotificationPreferencesController {
   ): Promise<void> {
     const result = await this.operation.execute({
       principal,
-      reminderEmails: body.reminderEmails,
+      preferences: body,
     });
     return result.fold(() => undefined, this.handleError);
   }

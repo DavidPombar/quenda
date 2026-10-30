@@ -157,7 +157,6 @@ export class CreateBooking {
           userId,
           bookingId: booking.id,
           kind: "confirmed",
-          email: true,
           notificationId,
           createdAt: now,
         });

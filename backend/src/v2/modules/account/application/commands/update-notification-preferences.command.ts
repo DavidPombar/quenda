@@ -6,9 +6,17 @@ import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
+import {
+  NoticePreferences,
+  noticeChannels,
+  noticeKinds,
+} from "../../../../shared/application/notice-preferences";
 export type UpdateNotificationPreferencesError =
   AppError<"forbidden"> | AppError<"not_found">;
-/** Confirmations, changes and cancellations are part of the service; only reminders are optional. */
+/**
+ * Stores the person's choice for every notice and channel. Only the choices that change are
+ * written and audited, so an unchanged choice keeps the version its unsubscribe links carry.
+ */
 @Injectable()
 export class UpdateNotificationPreferences {
   constructor(
@@ -18,7 +26,7 @@ export class UpdateNotificationPreferences {
   ) {}
   async execute(args: {
     principal: Principal;
-    reminderEmails: boolean;
+    preferences: NoticePreferences;
   }): Promise<Result<void, UpdateNotificationPreferencesError>> {
     if (!can(args.principal, "account:own"))
       return Result.err(failure("forbidden"));
@@ -27,19 +35,27 @@ export class UpdateNotificationPreferences {
     if (!(await this.accounts.find(tenantId, userId)))
       return Result.err(failure("not_found"));
     const current = await this.accounts.findPreferences(tenantId, userId);
-    if (current.reminderEmails === args.reminderEmails) return Result.ok();
-    await this.accounts.setReminderEmails(
-      tenantId,
-      userId,
-      args.reminderEmails,
-      this.clock.now(),
-    );
-    await this.audit.record(
-      args.principal,
-      "notification_preferences.updated",
-      userId,
-      { reminderEmails: args.reminderEmails },
-    );
+    const now = this.clock.now();
+    const changed: Record<string, boolean> = {};
+    for (const kind of noticeKinds)
+      for (const channel of noticeChannels) {
+        const enabled = args.preferences[kind][channel];
+        if (current[kind][channel] === enabled) continue;
+        await this.accounts.setPreference(
+          tenantId,
+          userId,
+          { kind, channel, enabled },
+          now,
+        );
+        changed[`${kind}.${channel}`] = enabled;
+      }
+    if (Object.keys(changed).length)
+      await this.audit.record(
+        args.principal,
+        "notification_preferences.updated",
+        userId,
+        changed,
+      );
     return Result.ok();
   }
 }

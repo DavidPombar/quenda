@@ -11,6 +11,7 @@ import { Municipalities } from "./application/municipality-settings";
 import { Outbox } from "./application/outbox";
 import { SecretBox } from "./application/secret-box";
 import { UnsubscribeTokens } from "./application/unsubscribe-tokens";
+import { PushSender } from "./application/push-sender";
 import { Database } from "./infrastructure/database";
 import { Commands } from "./infrastructure/commands.locator";
 import { Queries } from "./infrastructure/queries.locator";
@@ -21,6 +22,7 @@ import { PostgresMunicipalities } from "./infrastructure/postgres-municipalities
 import { PostgresOutbox } from "./infrastructure/postgres-outbox";
 import { AesSecretBox } from "./infrastructure/aes-secret-box";
 import { HmacUnsubscribeTokens } from "./infrastructure/hmac-unsubscribe-tokens";
+import { WebPushSender } from "./infrastructure/web-push-sender";
 import { PrincipalGuard } from "./infrastructure/api/principal.guard";
 import { OperatorGuard } from "./infrastructure/api/operator.guard";
 import { OperatorAudit } from "./application/operator-audit";
@@ -37,6 +39,7 @@ const bindings = [
   { provide: Outbox, useClass: PostgresOutbox },
   { provide: SecretBox, useClass: AesSecretBox },
   { provide: UnsubscribeTokens, useClass: HmacUnsubscribeTokens },
+  { provide: PushSender, useClass: WebPushSender },
   { provide: SessionRepository, useClass: PostgresSessionRepository },
   { provide: OperatorAudit, useClass: PostgresOperatorAudit },
   {
