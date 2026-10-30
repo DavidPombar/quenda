@@ -4,7 +4,8 @@ export interface Facility {
   id: string;
   tenantId: string;
   name: string;
-  sport: "padel" | "tennis" | "futsal" | "swimming";
+  /** Code from the municipality's sports catalogue (#26). */
+  sport: string;
   address: string;
   description: string;
   accessible: boolean;

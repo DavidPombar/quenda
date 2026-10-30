@@ -1,30 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import {
-  IsIn,
-  IsString,
-  Matches,
-  MaxLength,
-  ValidateIf,
-} from "class-validator";
+import { Matches, ValidateIf } from "class-validator";
+import { FacilityFiltersRequestDTO } from "./list-facilities.request.dto";
 const defined = (_object: unknown, value: unknown) => value !== undefined;
-export class ListCatalogRequestDTO {
-  @ApiPropertyOptional({ description: "Text found in name or address" })
-  @ValidateIf(defined)
-  @IsString()
-  @MaxLength(80)
-  q?: string;
-  @ApiPropertyOptional({ enum: ["padel", "tennis", "futsal", "swimming"] })
-  @ValidateIf(defined)
-  @IsIn(["padel", "tennis", "futsal", "swimming"])
-  sport?: "padel" | "tennis" | "futsal" | "swimming";
-  @ApiPropertyOptional({
-    enum: ["true", "false"],
-    description: "Only step-free (true) or only not (false)",
-  })
-  @ValidateIf(defined)
-  @IsIn(["true", "false"])
-  accessible?: "true" | "false";
+export class ListCatalogRequestDTO extends FacilityFiltersRequestDTO {
   @ApiPropertyOptional({
     description: "Comma-separated municipality slugs; all when omitted",
   })

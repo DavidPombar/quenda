@@ -28,7 +28,10 @@ export function useBookingsController() {
   const date = isPlainDate(params.get("date") ?? "")
     ? (params.get("date") ?? "")
     : today(timezone);
-  const facilities = useListFacilitiesQuery(context.municipality.slug);
+  const facilities = useListFacilitiesQuery(
+    context.municipality.slug,
+    context.session?.role === "manager",
+  );
   const facilityId = facilities.data?.some(
     (item) => item.id === params.get("facility"),
   )

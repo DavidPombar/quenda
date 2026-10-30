@@ -43,7 +43,12 @@ export function Seasons() {
         <Feedback message={t("loading")} />
       ) : (
         <div className="settings-sections">
-          <Organizations organizations={c.organizations.data} t={t} />
+          <Organizations
+            organizations={c.organizations.data}
+            sports={c.sports}
+            locale={c.locale}
+            t={t}
+          />
           <Campaigns
             campaigns={c.campaigns.data}
             facilities={c.facilities.data}

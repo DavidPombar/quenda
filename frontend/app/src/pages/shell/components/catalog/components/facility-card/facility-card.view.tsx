@@ -5,6 +5,7 @@ import { CourtArt } from "@/components/court-art/court-art.view";
 import { SportTag } from "@/components/sport-tag/sport-tag.view";
 import { FacilityStatus } from "@/components/facility-status/facility-status.view";
 import { money } from "@/services/date.service";
+import { localized } from "@/services/catalog.service";
 import { ROUTES, routeFor } from "@/constants/routes";
 import type { Facility, Locale } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
@@ -20,13 +21,27 @@ export function FacilityCard({
   t: (key: TextKey) => string;
 }) {
   return (
-    <article className={`facility-card sport-${facility.sport}`}>
+    <article
+      className={`facility-card sport-${facility.sport} facility-${facility.status}`}
+    >
       <div className="facility-cover">
-        <CourtArt sport={facility.sport} status={facility.status} />
+        {facility.photos[0] ? (
+          <img
+            className="facility-photo"
+            src={facility.photos[0].url}
+            alt={localized(facility.photos[0].alt, locale)}
+            loading="lazy"
+          />
+        ) : (
+          <CourtArt sport={facility.sport} status={facility.status} />
+        )}
       </div>
       <div className="facility-content">
         <div className="facility-tags">
-          <SportTag sport={facility.sport} label={t(facility.sport)} />
+          <SportTag
+            sport={facility.sport}
+            label={localized(facility.sportName, locale)}
+          />
           <FacilityStatus
             status={facility.status}
             label={t(

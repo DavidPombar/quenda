@@ -419,4 +419,14 @@ export class PostgresSeasonRepository extends SeasonRepository {
       end: instant(row.end),
     }));
   }
+  async sportExists(tenantId: string, code: string) {
+    return Boolean(
+      (
+        await this.db.query(
+          "SELECT 1 FROM sports WHERE tenant_id=$1 AND code=$2",
+          [tenantId, code],
+        )
+      ).rowCount,
+    );
+  }
 }

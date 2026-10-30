@@ -30,7 +30,11 @@ export type ErrorCode =
   | "category_already_requested"
   | "booking_blocked"
   | "attendance_window"
-  | "rate_limited";
+  | "rate_limited"
+  | "sport_exists"
+  | "unsupported_photo"
+  | "photo_too_large"
+  | "photo_limit";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

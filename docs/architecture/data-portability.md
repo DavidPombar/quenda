@@ -32,6 +32,7 @@ manager can only export their own. The file is named
 | `notificationPreferences` | Reminder opt-outs and their update time |
 | `messages` | Transactional email outbox, including delivery state, attempts and deduplication keys |
 | `organizations`, `seasonCampaigns`, `seasonAllocations`, `seasonOccurrences` | Season allocation to clubs (#17): clubs, campaigns with their facilities and published criteria, weekly slots with an informative RFC 5545 `rrule`, and every dated occurrence with its status (active, conflict or cancelled). Active occurrences occupy their court units again on import. Optional in older packages |
+| `sports`, `facilityPhotos` | Sports catalogue (#26): codes, names in Galician and Spanish, CNID and schema.org classification, hidden flag and order; and facility photos as base64 with their alternative texts. Packages without a catalogue get the initial one. Optional in older packages |
 
 Sessions and calendar subscription credentials are deliberately excluded. People
 sign in again and create new subscription links on the destination. Deleted

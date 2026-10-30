@@ -1923,3 +1923,67 @@ main {
   color: var(--ink-2);
   font-size: var(--t-small);
 }
+
+/* Sports catalogue and facility photos (#26) */
+.sports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sports-table th,
+.sports-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.sports-table thead th {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+}
+.facility-photos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.photo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.photo-list li {
+  display: grid;
+  grid-template-columns: 112px 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+.photo-list img {
+  width: 112px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.photo-fields {
+  display: grid;
+  gap: 8px;
+}
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.photo-upload {
+  display: grid;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .photo-list li {
+    grid-template-columns: 1fr;
+  }
+}

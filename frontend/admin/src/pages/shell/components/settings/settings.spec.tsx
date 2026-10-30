@@ -277,4 +277,60 @@ describe("municipal settings", () => {
       dir3Code: "L01360000",
     });
   });
+  test("should rename, hide and add sports in the municipality's catalogue", async () => {
+    stubManager();
+    const updated = stubJsonResponse({
+      path: "*/v2/manager/sports/:code",
+      method: "PATCH",
+      response: ({ body }: { body: unknown }) => body,
+    });
+    const created = stubJsonResponse({
+      path: "*/v2/manager/sports",
+      method: "POST",
+      status: 201,
+      response: ({ body }: { body: unknown }) => body,
+    });
+    await open();
+    const section = page.getByRole("region", { name: "Deportes" });
+    await section
+      .getByRole("textbox", { name: "Nome en galego: futsal" })
+      .fill("Fútbol sala e balonmán");
+    await section
+      .getByRole("checkbox", { name: "Oculto: Fútbol sala e balonmán" })
+      .click();
+    await section
+      .getByRole("button", { name: "Gardar cambios: Fútbol sala e balonmán" })
+      .click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Deporte gardado.");
+    expect(updated.spy.mock.calls[0][0]).toMatchObject({
+      url: expect.stringContaining("/manager/sports/futsal"),
+      body: {
+        name: { gl: "Fútbol sala e balonmán", es: "Fútbol sala" },
+        hidden: true,
+      },
+    });
+    const form = section.getByRole("form", { name: "Engadir deporte" });
+    await form.getByRole("button", { name: "Engadir deporte" }).click();
+    await expect
+      .element(section.getByRole("alert"))
+      .toHaveTextContent("Escribe o nome do deporte (polo menos dúas letras).");
+    expect(created.spy).not.toHaveBeenCalled();
+    await form
+      .getByRole("textbox", { name: "Nome en galego" })
+      .fill("Balonmán praia");
+    await expect
+      .element(form.getByText("Código: balonman-praia"))
+      .toBeVisible();
+    await form.getByRole("button", { name: "Engadir deporte" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Deporte engadido.");
+    expect(created.spy.mock.calls[0][0].body).toMatchObject({
+      code: "balonman-praia",
+      name: { gl: "Balonmán praia", es: "Balonmán praia" },
+      hidden: false,
+    });
+  });
 });

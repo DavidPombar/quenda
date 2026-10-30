@@ -41,7 +41,7 @@ function stubManager(facilities: Facility[]) {
       byFacility: [],
     },
   });
-  stubJsonResponse({ path: "*/v2/public/facilities", response: facilities });
+  stubJsonResponse({ path: "*/v2/manager/facilities", response: facilities });
 }
 async function open() {
   await commands.navigate("/admin/vilaverde/xestion");

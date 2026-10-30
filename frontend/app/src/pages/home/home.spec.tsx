@@ -7,7 +7,7 @@ import {
   type ResponseContext,
 } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
-import { municipality } from "@/test/fixtures";
+import { municipality, sports } from "@/test/fixtures";
 import type { CatalogEntry } from "@/types/models";
 const neighbour = {
   ...municipality,
@@ -19,6 +19,8 @@ const pool: CatalogEntry = {
   id: "pool",
   name: "Piscina de Riotorto",
   sport: "swimming",
+  sportName: { gl: "Natación", es: "Natación" },
+  photo: null,
   address: "Rúa do Río, 1",
   description: "Piscina cuberta.",
   accessible: true,
@@ -31,6 +33,7 @@ const court: CatalogEntry = {
   id: "court",
   name: "Pistas de pádel da Carballeira",
   sport: "padel",
+  sportName: { gl: "Pádel", es: "Pádel" },
   municipality: { slug: "vilaverde", name: "Concello de Vilaverde" },
 };
 function stubCatalog() {
@@ -38,11 +41,12 @@ function stubCatalog() {
     path: "*/v2/public/municipalities",
     response: [municipality, neighbour],
   });
+  stubJsonResponse({ path: "*/v2/public/sports", response: sports });
   return stubJsonResponse({
     path: "*/v2/public/catalog",
     response: ({ url }: ResponseContext) => {
       const params = new URL(url).searchParams;
-      return [pool, court].filter(
+      const items = [pool, court].filter(
         (item) =>
           (!params.get("municipality") ||
             params
@@ -51,6 +55,7 @@ function stubCatalog() {
               .includes(item.municipality.slug)) &&
           (!params.get("sport") || params.get("sport") === item.sport),
       );
+      return { items, total: items.length, page: 1, pageSize: 12 };
     },
   });
 }

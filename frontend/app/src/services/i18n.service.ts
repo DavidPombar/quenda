@@ -387,6 +387,25 @@ const gl = {
   seasonCampaigns: "Temporada de clubs",
   seasonPeriod: "Do {from} ao {to}",
   seasonCriteria: "Criterios de prioridade publicados",
+  onlyStepFree: "Só acceso sen barreiras",
+  hideClosed: "Ocultar as pechadas",
+  pagination: "Páxinas de resultados",
+  previousPage: "Anterior",
+  nextPage: "Seguinte",
+  pageOf: "Páxina {page} de {pages}",
+  photos: "Fotos da instalación",
+  showPhoto: "Ver a foto {n}: {alt}",
+  openingHours: "Horario dos próximos sete días",
+  hours: "Horario",
+  closedDay: "Pechado",
+  holidayClosed: "Pechado (festivo)",
+  location: "Onde está",
+  mapOf: "Mapa da localización de",
+  openInOsm: "Abrir no OpenStreetMap",
+  facilityClosedTitle: "Instalación pechada",
+  facilityMaintenanceTitle: "Instalación en mantemento",
+  facilityUnavailableBody:
+    "Agora mesmo non se pode reservar. Consulta o horario e volve máis adiante, ou escolle outra instalación.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -755,6 +774,25 @@ const es: Record<TextKey, string> = {
   seasonCampaigns: "Temporada de clubes",
   seasonPeriod: "Del {from} al {to}",
   seasonCriteria: "Criterios de prioridad publicados",
+  onlyStepFree: "Solo acceso sin barreras",
+  hideClosed: "Ocultar las cerradas",
+  pagination: "Páginas de resultados",
+  previousPage: "Anterior",
+  nextPage: "Siguiente",
+  pageOf: "Página {page} de {pages}",
+  photos: "Fotos de la instalación",
+  showPhoto: "Ver la foto {n}: {alt}",
+  openingHours: "Horario de los próximos siete días",
+  hours: "Horario",
+  closedDay: "Cerrado",
+  holidayClosed: "Cerrado (festivo)",
+  location: "Dónde está",
+  mapOf: "Mapa de la ubicación de",
+  openInOsm: "Abrir en OpenStreetMap",
+  facilityClosedTitle: "Instalación cerrada",
+  facilityMaintenanceTitle: "Instalación en mantenimiento",
+  facilityUnavailableBody:
+    "Ahora mismo no se puede reservar. Consulta el horario y vuelve más adelante, o elige otra instalación.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

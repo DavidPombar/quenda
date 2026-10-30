@@ -264,7 +264,8 @@ describe("User categories and tariffs through HTTP and PostgreSQL", () => {
       .get(`/v2/public/facilities?slug=${context.slug}`)
       .expect(200);
     expect(
-      catalog.body.find((item: { id: string }) => item.id === court.id).prices,
+      catalog.body.items.find((item: { id: string }) => item.id === court.id)
+        .prices,
     ).toEqual([
       { category: "resident", priceCents: 300 },
       { category: "family", priceCents: 800 },

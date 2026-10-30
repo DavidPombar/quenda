@@ -31,6 +31,12 @@ for (const path of ["/", "/app/", "/app/reservas", "/admin/", "/admin/x"]) {
     `${path} scanner worker policy`,
   );
   assert.doesNotMatch(csp, /script-src[^;]*unsafe-inline/, `${path} CSP`);
+  // The facility map loads tiles from the configured server and nothing else (#26).
+  assert.match(
+    csp,
+    /img-src 'self' data: blob: https:\/\/[^\s;]+;/,
+    `${path} map tiles`,
+  );
   assert.equal(response.headers.get("x-frame-options"), "DENY", path);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.ok(

@@ -11,7 +11,6 @@ export class OrganizationResponseDTO {
   @ApiProperty() name!: string;
   @ApiProperty({ type: String, nullable: true }) taxId!: string | null;
   @ApiProperty({
-    enum: ["padel", "tennis", "futsal", "swimming"],
     nullable: true,
   })
   sport!: Sport | null;

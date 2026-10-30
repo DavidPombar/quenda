@@ -5,7 +5,6 @@ import type {
   OpenFacility,
   OpenPublication,
 } from "../../domain/open-facility.read-model";
-import { sportTaxonomy } from "../../domain/sport-taxonomy";
 export const licenses: Record<DataLicense, { name: string; url: string }> = {
   "CC-BY-4.0": {
     name: "Creative Commons Attribution 4.0 International",
@@ -63,7 +62,7 @@ export function facilityRecord(
   facility: OpenFacility,
   publication: Publication,
 ) {
-  const classification = sportTaxonomy[facility.sport];
+  const classification = facility.classification;
   return {
     id: facility.id,
     name: facility.name,

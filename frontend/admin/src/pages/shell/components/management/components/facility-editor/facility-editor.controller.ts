@@ -6,11 +6,20 @@ import { useGetFacilityImpactQuery } from "@/queries/facilities/get-facility-imp
 import { dayTimes, weeklyCalendar } from "@/services/calendar.service";
 import { today } from "@/services/date.service";
 import { centsFromInput } from "@/services/tariff.service";
-import type { Category, Facility, Municipality } from "@/types/models";
+import { sportOptions } from "@/services/sports.service";
+import type {
+  Category,
+  Facility,
+  Locale,
+  Municipality,
+  SportInfo,
+} from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
 export function useFacilityEditorController(args: {
   facility?: Facility;
   municipality: Municipality;
+  sports: SportInfo[];
+  locale: Locale;
   t: (key: TextKey) => string;
   onClose: (saved?: boolean) => void;
 }) {
@@ -210,6 +219,7 @@ export function useFacilityEditorController(args: {
     }
   }
   return {
+    sportOptions: sportOptions(args.sports, args.locale, draft.sport),
     draft,
     setField,
     coordinates,

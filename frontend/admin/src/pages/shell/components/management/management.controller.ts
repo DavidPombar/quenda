@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
+import { useListSportsQuery } from "@/queries/sports/list-sports.query";
+import { sportLabel } from "@/services/sports.service";
 import { useGetInsightsQuery } from "@/queries/insights/get-insights.query";
 import { useExportMunicipalityMutation } from "@/queries/portability/export-municipality.mutation";
 import { saveJsonFile } from "@/services/download.service";
@@ -10,8 +12,12 @@ import { periodLabel, money } from "@/services/date.service";
 import type { Facility } from "@/types/models";
 export function useManagementController() {
   const context = useOutletContext<AppContext>();
-  const facilities = useListFacilitiesQuery(context.municipality.slug);
+  const facilities = useListFacilitiesQuery(
+    context.municipality.slug,
+    context.session?.role === "manager",
+  );
   const isManager = context.session?.role === "manager";
+  const sports = useListSportsQuery(isManager);
   const insights = useGetInsightsQuery(
     isManager ? context.session?.userId : undefined,
   );
@@ -50,6 +56,9 @@ export function useManagementController() {
     cents === 0 ? context.t("free") : money(cents, context.locale);
   return {
     ...context,
+    sports: sports.data ?? [],
+    sportLabel: (code: string) =>
+      sportLabel(code, sports.data ?? [], context.locale),
     activityTitle,
     sportOf,
     maxBookings,

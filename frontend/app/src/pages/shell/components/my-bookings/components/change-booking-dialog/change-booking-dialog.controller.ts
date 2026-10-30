@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useState } from "react";
 import { Temporal } from "@js-temporal/polyfill";
-import { useListFacilitiesQuery } from "@/queries/facilities/list-facilities.query";
+import { useGetFacilityQuery } from "@/queries/facilities/get-facility.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
 import { useUpdateBookingMutation } from "@/queries/bookings/update-booking.mutation";
 import { today } from "@/services/date.service";
@@ -26,10 +26,10 @@ export function useChangeBookingDialogController(args: {
   const [selected, setSelected] = useState("");
   const [chosenResource, setChosenResource] = useState("");
   const update = useUpdateBookingMutation();
-  const facilities = useListFacilitiesQuery(args.context.municipality.slug);
-  const facility = facilities.data?.find(
-    (item) => item.id === args.booking.facilityId,
-  );
+  const { data: facility } = useGetFacilityQuery({
+    slug: args.context.municipality.slug,
+    id: args.booking.facilityId,
+  });
   const resources = orderResources(facility?.resources ?? []);
   const activeResources = resources.filter((resource) => resource.active);
   // Courts of the same facility; the current one is preselected.

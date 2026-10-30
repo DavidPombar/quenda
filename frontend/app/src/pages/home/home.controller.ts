@@ -3,8 +3,15 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useListCatalogQuery } from "@/queries/catalog/list-catalog.query";
+import { useListSportsQuery } from "@/queries/facilities/list-sports.query";
 import { ROUTES, routeFor } from "@/constants/routes";
-import { filtersFrom, paramsFrom } from "@/services/catalog.service";
+import {
+  PAGE_SIZE,
+  filtersFrom,
+  localized,
+  pageNumbers,
+  paramsFrom,
+} from "@/services/catalog.service";
 import { translate, type TextKey } from "@/services/i18n.service";
 import type { CatalogFilters, Locale } from "@/types/models";
 /** Shared catalogue across municipalities; each booking still happens inside one (#18). */
@@ -23,10 +30,15 @@ export function useHomeController() {
   const filters = filtersFrom(params);
   const municipalities = useListMunicipalitiesQuery();
   const catalog = useListCatalogQuery(filters);
+  const sports = useListSportsQuery(filters.municipalities);
   function update(patch: Partial<CatalogFilters>) {
-    setParams(paramsFrom({ ...filters, ...patch }), { replace: true });
+    // A new filter starts again from the first page.
+    setParams(paramsFrom({ ...filters, page: 1, ...patch }), {
+      replace: true,
+    });
   }
-  const count = catalog.data?.length ?? 0;
+  const count = catalog.data?.total ?? 0;
+  const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
   const t = (key: TextKey) => translate(locale, key);
   return {
     t,
@@ -44,6 +56,18 @@ export function useHomeController() {
     hasFilters: params.toString() !== "",
     municipalities,
     catalog,
+    sports: (sports.data ?? []).map((sport) => ({
+      code: sport.code,
+      label: localized(sport.name, locale),
+    })),
+    sportLabel: (name: { gl: string; es: string }) => localized(name, locale),
+    pageNumbers: pageNumbers(filters.page, pages),
+    hrefFor: (page: number) =>
+      `?${paramsFrom({ ...filters, page }).toString()}`,
+    pageLabel: (page: number) =>
+      t("pageOf")
+        .replace("{page}", String(page))
+        .replace("{pages}", String(pages)),
     countLabel: `${count} ${t(count === 1 ? "result" : "spaces")}`,
     detailUrl: (slug: string, id: string) =>
       routeFor(slug, ROUTES.detail.replace(":id", id)),

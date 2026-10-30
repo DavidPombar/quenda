@@ -68,7 +68,7 @@ describe("Courts and divisible spaces (M1, C1, C2) through HTTP and PostgreSQL",
       .get("/v2/public/facilities")
       .query({ slug: context.slug })
       .expect(200);
-    expect(catalog.body[0].resources).toEqual([
+    expect(catalog.body.items[0].resources).toEqual([
       {
         id: court.id,
         name: court.name,

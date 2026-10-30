@@ -4,8 +4,9 @@ import { ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { V2Controller } from "../../../../../shared/infrastructure/api/v2-controller.decorator";
 import { Queries } from "../../../../../shared/infrastructure/queries.locator";
 import { ListCatalog } from "../../../application/queries/list-catalog.query";
+import { DEFAULT_PAGE_SIZE } from "../../../domain/facility.repository";
 import { ListCatalogRequestDTO } from "../dto/list-catalog.request.dto";
-import { CatalogEntryResponseDTO } from "../dto/catalog-entry.response.dto";
+import { CatalogPageResponseDTO } from "../dto/catalog-entry.response.dto";
 @V2Controller("public/catalog")
 export class ListCatalogController {
   private readonly operation;
@@ -15,9 +16,9 @@ export class ListCatalogController {
   @Get()
   @ApiOperation({
     summary:
-      "Active facilities across municipalities, filtered by municipality, sport, access and text",
+      "One page of active facilities across municipalities, filtered by municipality, sport, access and text",
   })
-  @ApiOkResponse({ type: CatalogEntryResponseDTO, isArray: true })
+  @ApiOkResponse({ type: CatalogPageResponseDTO })
   async handle(@Query() query: ListCatalogRequestDTO) {
     return (
       await this.operation.execute({
@@ -28,10 +29,11 @@ export class ListCatalogController {
             ? undefined
             : query.accessible === "true",
         municipalities: query.municipality?.split(",") ?? [],
+        page: {
+          page: query.page ?? 1,
+          size: query.pageSize ?? DEFAULT_PAGE_SIZE,
+        },
       })
-    ).fold(
-      (values) => values.map(CatalogEntryResponseDTO.from),
-      (error: never) => error,
-    );
+    ).fold(CatalogPageResponseDTO.from, (error: never) => error);
   }
 }

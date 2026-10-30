@@ -9,7 +9,6 @@ import {
 import logoMark from "@/assets/illustrations/logo-mark.svg";
 import { ROUTES } from "@/constants/routes";
 import { useSearchController } from "./search.controller";
-const SPORTS = ["padel", "tennis", "futsal", "swimming"] as const;
 /** Facilities across every municipality of the deployment (#18). */
 export function Search() {
   const c = useSearchController();
@@ -70,20 +69,12 @@ export function Search() {
               <NativeSelect.Root>
                 <NativeSelect.Field
                   value={c.filters.sport}
-                  onChange={(event) =>
-                    c.update({
-                      sport: (SPORTS as readonly string[]).includes(
-                        event.target.value,
-                      )
-                        ? (event.target.value as (typeof SPORTS)[number])
-                        : "",
-                    })
-                  }
+                  onChange={(event) => c.update({ sport: event.target.value })}
                 >
                   <option value="">{t.searchAllSports}</option>
-                  {SPORTS.map((sport) => (
-                    <option key={sport} value={sport}>
-                      {t.sports[sport]}
+                  {c.sports.map((sport) => (
+                    <option key={sport.code} value={sport.code}>
+                      {sport.label}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -139,7 +130,7 @@ export function Search() {
                   {t.searchRetry}
                 </Button>
               </div>
-            ) : c.catalog.data && c.catalog.data.length === 0 ? (
+            ) : c.catalog.data && c.catalog.data.items.length === 0 ? (
               <div className="search-empty">
                 <p>
                   <strong>{t.searchEmpty}</strong>
@@ -148,14 +139,14 @@ export function Search() {
               </div>
             ) : (
               <ul className="search-list">
-                {c.catalog.data?.map((facility) => (
+                {c.catalog.data?.items.map((facility) => (
                   <li key={facility.id}>
                     <article
                       className="search-card"
                       aria-labelledby={`facility-${facility.id}`}
                     >
                       <p className={`sport-tag sport-${facility.sport}`}>
-                        {t.sports[facility.sport]}
+                        {c.sportLabel(facility.sportName)}
                       </p>
                       <h2 id={`facility-${facility.id}`}>{facility.name}</h2>
                       <p className="search-meta">
@@ -182,6 +173,21 @@ export function Search() {
                   </li>
                 ))}
               </ul>
+            )}
+            {c.pages > 1 && (
+              <nav className="search-pages" aria-label={t.searchPages}>
+                {c.previousHref ? (
+                  <a href={c.previousHref} rel="prev">
+                    {t.searchPrevious}
+                  </a>
+                ) : null}
+                <span aria-current="page">{c.pageLabel}</span>
+                {c.nextHref ? (
+                  <a href={c.nextHref} rel="next">
+                    {t.searchNext}
+                  </a>
+                ) : null}
+              </nav>
             )}
           </section>
         </div>
