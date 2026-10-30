@@ -5,20 +5,20 @@ import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { stubShell } from "@/test/fixtures";
-describe("Unsubscribe from email reminders", () => {
-  test("should switch reminders off only after the person confirms", async () => {
+describe("Unsubscribe from one kind of email notice", () => {
+  test("should switch the notice off only after the person confirms, and name it", async () => {
     stubShell();
     const { spy } = stubJsonResponse({
       path: "*/v2/public/unsubscribe",
       method: "POST",
-      response: {},
+      response: { kind: "reminder" },
     });
     await commands.navigate("/app/vilaverde/baixa?token=signed-token");
     await render(<App />);
     await expect
       .element(
         page.getByRole("heading", {
-          name: "Baixa das lembranzas por correo",
+          name: "Baixa dun aviso por correo",
         }),
       )
       .toBeVisible();
@@ -26,7 +26,9 @@ describe("Unsubscribe from email reminders", () => {
     await page.getByRole("button", { name: "Confirmar a baixa" }).click();
     await expect
       .element(page.getByRole("status"))
-      .toMatchTextContent(/Xa non che enviaremos lembranzas por correo/);
+      .toMatchTextContent(
+        "Feito. Xa non che enviaremos por correo: lembranza antes da reserva. Seguirás véndoo no historial da app.",
+      );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ body: { token: "signed-token" } }),
     );
@@ -48,5 +50,20 @@ describe("Unsubscribe from email reminders", () => {
     await expect
       .element(page.getByRole("link", { name: "Ir á miña conta" }))
       .toHaveAttribute("href", "/app/vilaverde/conta");
+  });
+  test("should explain that a link stops working once the person changes that notice", async () => {
+    stubShell();
+    stubJsonResponse({
+      path: "*/v2/public/unsubscribe",
+      method: "POST",
+      status: 410,
+      response: { code: "unsubscribe_stale", detail: "" },
+    });
+    await commands.navigate("/app/vilaverde/baixa?token=old");
+    await render(<App />);
+    await page.getByRole("button", { name: "Confirmar a baixa" }).click();
+    await expect
+      .element(page.getByRole("alert"))
+      .toMatchTextContent(/cambiaches os avisos despois de recibila/);
   });
 });

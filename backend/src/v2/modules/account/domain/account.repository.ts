@@ -10,8 +10,13 @@ import type {
   ExportedIdentity,
   ExportedMessage,
   ExportedNotification,
-  NotificationPreferences,
+  ExportedPushDevice,
 } from "./account.read-model";
+import type {
+  NoticeChannel,
+  NoticeKind,
+  NoticePreferences,
+} from "../../../shared/application/notice-preferences";
 export abstract class AccountRepository {
   abstract lockUser(tenantId: string, userId: string): Promise<void>;
   abstract find(
@@ -52,23 +57,53 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<{ categories: ExportedCategory[]; prefersFamilyTariff: boolean }>;
-  /** Removes queued and delivered messages and notice preferences. */
+  /** Removes queued and delivered messages, notice preferences and push devices. */
   abstract deleteMessaging(tenantId: string, userId: string): Promise<void>;
   abstract setLocale(
     tenantId: string,
     userId: string,
     locale: "gl" | "es",
   ): Promise<void>;
+  /** Stored choices over the defaults. */
   abstract findPreferences(
     tenantId: string,
     userId: string,
-  ): Promise<NotificationPreferences>;
-  abstract setReminderEmails(
+  ): Promise<NoticePreferences>;
+  /** When one choice last changed, in epoch milliseconds; "0" when it was never stored. */
+  abstract preferenceVersion(
     tenantId: string,
     userId: string,
-    enabled: boolean,
+    kind: NoticeKind,
+    channel: NoticeChannel,
+  ): Promise<string>;
+  abstract setPreference(
+    tenantId: string,
+    userId: string,
+    preference: { kind: NoticeKind; channel: NoticeChannel; enabled: boolean },
     now: Temporal.Instant,
   ): Promise<void>;
+  /** Adds the device, or moves it to this person when the browser was used by someone else. */
+  abstract savePushDevice(args: {
+    id: string;
+    tenantId: string;
+    userId: string;
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+    userAgent: string;
+    createdAt: Temporal.Instant;
+  }): Promise<void>;
+  /** Returns false when the person had no such device. */
+  abstract removePushDevice(
+    tenantId: string,
+    userId: string,
+    endpoint: string,
+  ): Promise<boolean>;
+  abstract countPushDevices(tenantId: string, userId: string): Promise<number>;
+  abstract listPushDevicesAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedPushDevice[]>;
   abstract listMessagesAll(
     tenantId: string,
     userId: string,

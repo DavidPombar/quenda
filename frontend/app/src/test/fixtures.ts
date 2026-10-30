@@ -14,6 +14,7 @@ import type {
   Slot,
   SportInfo,
   MyCategories,
+  NotificationSettings,
 } from "@/types/models";
 export const municipality: Municipality = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -257,8 +258,27 @@ export const account: Account = {
   notifications: 3,
   email: "alex@vilaverde.example",
   locale: "gl",
-  reminderEmails: true,
 };
+export const notificationSettings: NotificationSettings = {
+  preferences: {
+    confirmation: { email: true, push: true },
+    change: { email: true, push: true },
+    cancellation: { email: true, push: true },
+    reminder: { email: true, push: true },
+    penalty: { email: false, push: false },
+  },
+  push: { available: true, publicKey: "BPublicKeyForTests", devices: 0 },
+};
+export function stubNotificationSettings(
+  overrides: Partial<NotificationSettings> = {},
+) {
+  const response = { ...notificationSettings, ...overrides };
+  stubJsonResponse({
+    path: "*/v2/citizen/me/notification-preferences",
+    response,
+  });
+  return response;
+}
 export function stubAccount(
   overrides: Partial<Account> = {},
   categories: MyCategories = { categories: [], prefersFamilyTariff: false },
@@ -270,5 +290,6 @@ export function stubAccount(
     path: "*/v2/citizen/me/club",
     response: { organization: null, occurrences: [] },
   });
+  stubNotificationSettings();
   return response;
 }

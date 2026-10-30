@@ -188,7 +188,6 @@ export class SaveFacility {
           kind: "cancelled_by_municipality",
           notificationId: booking.notificationId,
           createdAt: now,
-          email: true,
         });
       for (const booking of upcoming)
         await this.audit.record(

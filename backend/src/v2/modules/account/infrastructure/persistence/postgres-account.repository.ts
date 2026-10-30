@@ -11,9 +11,16 @@ import {
   ExportedCategory,
   ExportedIdentity,
   ExportedMessage,
+  ExportedPushDevice,
   ExportedNotification,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
+import {
+  NoticeChannel,
+  NoticeKind,
+  StoredPreference,
+  resolvePreferences,
+} from "../../../../shared/application/notice-preferences";
 interface BookingRow {
   id: string;
   facilityId: string;
@@ -169,6 +176,10 @@ export class PostgresAccountRepository extends AccountRepository {
       "DELETE FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2",
       [tenantId, userId],
     );
+    await this.db.query(
+      "DELETE FROM push_subscriptions WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
   }
   async setLocale(tenantId: string, userId: string, locale: "gl" | "es") {
     await this.db.query(
@@ -177,22 +188,91 @@ export class PostgresAccountRepository extends AccountRepository {
     );
   }
   async findPreferences(tenantId: string, userId: string) {
-    const { rows } = await this.db.query<{ enabled: boolean }>(
-      "SELECT enabled FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2 AND kind='reminder' AND channel='email'",
+    const { rows } = await this.db.query<StoredPreference>(
+      "SELECT kind, channel, enabled FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2",
       [tenantId, userId],
     );
-    return { reminderEmails: rows[0]?.enabled ?? true };
+    return resolvePreferences(rows);
   }
-  async setReminderEmails(
+  async preferenceVersion(
     tenantId: string,
     userId: string,
-    enabled: boolean,
+    kind: NoticeKind,
+    channel: NoticeChannel,
+  ) {
+    // Same expression as the delivery query that signs the unsubscribe links.
+    const { rows } = await this.db.query<{ version: string }>(
+      "SELECT floor(extract(epoch FROM updated_at) * 1000)::bigint::text AS version FROM notification_preferences WHERE tenant_id=$1 AND user_id=$2 AND kind=$3 AND channel=$4",
+      [tenantId, userId, kind, channel],
+    );
+    return rows[0]?.version ?? "0";
+  }
+  async setPreference(
+    tenantId: string,
+    userId: string,
+    preference: { kind: NoticeKind; channel: NoticeChannel; enabled: boolean },
     now: Temporal.Instant,
   ) {
     await this.db.query(
-      "INSERT INTO notification_preferences (tenant_id,user_id,kind,channel,enabled,updated_at) VALUES ($1,$2,'reminder','email',$3,$4) ON CONFLICT (tenant_id,user_id,kind,channel) DO UPDATE SET enabled=EXCLUDED.enabled, updated_at=EXCLUDED.updated_at",
-      [tenantId, userId, enabled, now.toString()],
+      "INSERT INTO notification_preferences (tenant_id,user_id,kind,channel,enabled,updated_at) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (tenant_id,user_id,kind,channel) DO UPDATE SET enabled=EXCLUDED.enabled, updated_at=EXCLUDED.updated_at",
+      [
+        tenantId,
+        userId,
+        preference.kind,
+        preference.channel,
+        preference.enabled,
+        now.toString(),
+      ],
     );
+  }
+  async savePushDevice(
+    args: Parameters<AccountRepository["savePushDevice"]>[0],
+  ) {
+    await this.db.query(
+      `INSERT INTO push_subscriptions (id,tenant_id,user_id,endpoint,p256dh,auth,user_agent,created_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        ON CONFLICT (tenant_id,endpoint) DO UPDATE SET user_id=EXCLUDED.user_id, p256dh=EXCLUDED.p256dh,
+          auth=EXCLUDED.auth, user_agent=EXCLUDED.user_agent, created_at=EXCLUDED.created_at`,
+      [
+        args.id,
+        args.tenantId,
+        args.userId,
+        args.endpoint,
+        args.p256dh,
+        args.auth,
+        args.userAgent,
+        args.createdAt.toString(),
+      ],
+    );
+  }
+  async removePushDevice(tenantId: string, userId: string, endpoint: string) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM push_subscriptions WHERE tenant_id=$1 AND user_id=$2 AND endpoint=$3",
+      [tenantId, userId, endpoint],
+    );
+    return (rowCount ?? 0) > 0;
+  }
+  async countPushDevices(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{ count: number }>(
+      "SELECT count(*)::int AS count FROM push_subscriptions WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+    return rows[0]?.count ?? 0;
+  }
+  async listPushDevicesAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      endpoint: string;
+      userAgent: string;
+      createdAt: string;
+    }>(
+      'SELECT endpoint, user_agent AS "userAgent", created_at AS "createdAt" FROM push_subscriptions WHERE tenant_id=$1 AND user_id=$2 ORDER BY created_at',
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedPushDevice => ({
+      service: new URL(row.endpoint).origin,
+      userAgent: row.userAgent,
+      createdAt: Temporal.Instant.from(row.createdAt),
+    }));
   }
   async listMessagesAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<MessageRow>(

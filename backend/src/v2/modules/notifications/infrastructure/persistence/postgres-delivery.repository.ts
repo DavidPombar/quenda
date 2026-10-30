@@ -3,7 +3,31 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { Database } from "../../../../shared/infrastructure/database";
 import { DeliveryRepository } from "../../domain/delivery.repository";
-import { Delivery, DueReminder } from "../../domain/delivery.read-model";
+import {
+  Delivery,
+  DueReminder,
+  PenaltyStanding,
+  PushDevice,
+} from "../../domain/delivery.read-model";
+import { noticeKindOf } from "../../../../shared/application/notice-preferences";
+import { MessageKind } from "../../../../shared/application/outbox";
+// Message kind → notice kind, as a JSON object the claim query looks the preference up with.
+const noticeKinds = JSON.stringify(
+  Object.fromEntries(
+    (
+      [
+        "confirmed",
+        "rescheduled",
+        "cancelled",
+        "cancelled_by_municipality",
+        "reminder",
+        "no_show",
+        "blocked",
+        "unblocked",
+      ] satisfies MessageKind[]
+    ).map((kind) => [kind, noticeKindOf(kind)]),
+  ),
+);
 interface DeliveryRow {
   id: string;
   kind: Delivery["kind"];
@@ -23,6 +47,9 @@ interface DeliveryRow {
   facilityName: string;
   facilityAddress: string;
   cancellationReason: string | null;
+  preference: boolean | null;
+  preferenceVersion: string;
+  standing: PenaltyStanding | null;
   webhookUrl: string;
   webhookSecretSealed: string | null;
   facilityId: string;
@@ -51,12 +78,11 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
           AND b.starts_at > $2::timestamptz
           AND b.starts_at <= $2::timestamptz + make_interval(hours => $3)
           AND b.created_at <= b.starts_at - make_interval(hours => $3)
-          AND u.deleted_at IS NULL AND u.email IS NOT NULL
-          AND NOT EXISTS (
-            SELECT 1 FROM notification_preferences p
-            WHERE p.tenant_id=b.tenant_id AND p.user_id=b.user_id
-              AND p.kind='reminder' AND p.channel='email' AND NOT p.enabled))
-      SELECT * FROM due d WHERE NOT EXISTS (SELECT 1 FROM outbox o WHERE o.dedupe_key=d."dedupeKey")`,
+          AND u.deleted_at IS NULL)
+      -- Reminders queued before the in-app marker existed used the same key in the outbox.
+      SELECT * FROM due d
+      WHERE NOT EXISTS (SELECT 1 FROM notifications n WHERE n.dedupe_key=d."dedupeKey")
+        AND NOT EXISTS (SELECT 1 FROM outbox o WHERE o.dedupe_key=d."dedupeKey")`,
       [tenantId, now.toString(), reminderHours],
     );
     return rows;
@@ -81,6 +107,11 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         COALESCE(NULLIF(m.mail_reply_to, ''), m.contact) AS "replyTo",
         f.name AS "facilityName", f.address AS "facilityAddress",
         b.cancellation_reason AS "cancellationReason",
+        p.enabled AS preference,
+        COALESCE(floor(extract(epoch FROM p.updated_at) * 1000)::bigint::text, '0') AS "preferenceVersion",
+        (SELECT n.details->'standing' FROM notifications n
+          WHERE n.tenant_id=c.tenant_id AND n.booking_id=c.booking_id AND n.kind=c.kind
+          ORDER BY n.created_at DESC LIMIT 1) AS standing,
         m.access_webhook_url AS "webhookUrl", m.access_webhook_secret_sealed AS "webhookSecretSealed",
         b.facility_id AS "facilityId", f.opening_calendar AS "openingCalendar",
         b.starts_at AS start, b.ends_at AS "end"
@@ -88,12 +119,15 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       JOIN users u ON u.tenant_id=c.tenant_id AND u.id=c.user_id
       JOIN municipalities m ON m.id=c.tenant_id
       JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id
-      JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id`,
+      JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id
+      LEFT JOIN notification_preferences p ON p.tenant_id=c.tenant_id AND p.user_id=c.user_id
+        AND p.channel=c.channel AND p.kind=($5::jsonb ->> c.kind)`,
       [
         args.now.toString(),
         args.leaseUntil.toString(),
         args.maxAttempts,
         args.limit,
+        noticeKinds,
       ],
     );
     return rows.map((row): Delivery => ({
@@ -116,6 +150,9 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       },
       facility: { name: row.facilityName, address: row.facilityAddress },
       cancellationReason: row.cancellationReason,
+      preference: row.preference,
+      preferenceVersion: row.preferenceVersion,
+      standing: row.standing,
       webhook:
         row.webhookUrl && row.webhookSecretSealed
           ? { url: row.webhookUrl, secretSealed: row.webhookSecretSealed }
@@ -136,6 +173,19 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
     await this.db.query(
       "UPDATE outbox SET locked_until=NULL, last_error=$2, available_at=$3 WHERE id=$1",
       [id, error, retryAt.toString()],
+    );
+  }
+  async pushDevices(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<PushDevice>(
+      "SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE tenant_id=$1 AND user_id=$2 ORDER BY created_at",
+      [tenantId, userId],
+    );
+    return rows;
+  }
+  async forgetPushDevice(tenantId: string, id: string) {
+    await this.db.query(
+      "DELETE FROM push_subscriptions WHERE tenant_id=$1 AND id=$2",
+      [tenantId, id],
     );
   }
 }

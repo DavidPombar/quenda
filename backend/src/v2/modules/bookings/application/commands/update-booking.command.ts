@@ -213,7 +213,6 @@ export class UpdateBooking {
       userId: booking.userId,
       bookingId: booking.id,
       kind,
-      email: true,
       notificationId,
       createdAt: now,
     });

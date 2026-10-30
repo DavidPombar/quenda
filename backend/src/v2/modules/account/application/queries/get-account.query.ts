@@ -33,7 +33,6 @@ export class GetAccount {
       consents,
       bookings: activity.bookings,
       notifications: activity.notifications,
-      preferences: await this.accounts.findPreferences(tenantId, userId),
     });
   }
 }

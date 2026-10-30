@@ -339,23 +339,46 @@ const gl = {
   authErrorGeneric: "Non puidemos completar a entrada. Volve tentalo.",
   dismiss: "Pechar aviso",
   noticeReminder: "Lembranza da reserva",
-  noticesTitle: "Avisos por correo",
+  noticesTitle: "Avisos",
+  noticesIntro:
+    "Todos os avisos quedan no historial da app. Escolle tamén como queres recibir cada tipo.",
   noticesEmail: "Enderezo de correo",
-  noticesNoEmail: "Esta conta non ten correo, así que só verás os avisos aquí.",
-  noticesAlways:
-    "Sempre che enviamos a confirmación, os cambios e as cancelacións das túas reservas.",
-  reminderLabel: "Recibir unha lembranza por correo antes de cada reserva",
+  noticesNoEmail:
+    "Esta conta non ten correo, así que os avisos por correo non se poden activar.",
+  noticeKindConfirmation: "Confirmación da reserva",
+  noticeKindChange: "Cambio de horario",
+  noticeKindCancellation: "Cancelación, túa ou do concello",
+  noticeKindReminder: "Lembranza antes da reserva",
+  noticeKindPenalty: "Ausencias e bloqueos",
+  channelEmail: "Por correo",
+  channelPush: "No dispositivo",
   reminderHint: "Chega {hours} horas antes do inicio.",
-  reminderSaved: "Preferencia gardada.",
-  reminderError: "Non puidemos gardar a preferencia. Volve tentalo.",
-  unsubscribeTitle: "Baixa das lembranzas por correo",
+  noticesSave: "Gardar avisos",
+  noticesSaved: "Avisos gardados.",
+  noticesError: "Non puidemos gardar os avisos. Volve tentalo.",
+  pushTitle: "Avisos neste dispositivo",
+  pushIntro:
+    "O aviso no dispositivo só di que hai unha novidade, sen nomes nin lugares; o detalle vese ao abrir a app. Pasa cifrado polo servizo de avisos do teu navegador.",
+  pushEnable: "Activar avisos neste dispositivo",
+  pushDisable: "Desactivar neste dispositivo",
+  pushActive: "Este dispositivo recibe avisos.",
+  pushUnsupported: "Este navegador non permite avisos no dispositivo.",
+  pushIos:
+    "No iPhone e no iPad (iOS 16.4 ou posterior), engade primeiro Quenda á pantalla de inicio desde Compartir e ábrea desde alí.",
+  pushDenied:
+    "Os avisos están bloqueados para este sitio. Podes permitilos na configuración do navegador.",
+  pushUnavailable: "Este concello aínda non ofrece avisos no dispositivo.",
+  pushError: "Non puidemos cambiar os avisos deste dispositivo. Volve tentalo.",
+  unsubscribeTitle: "Baixa dun aviso por correo",
   unsubscribeBody:
-    "Confirma que queres deixar de recibir as lembranzas das túas reservas por correo.",
+    "Confirma que queres deixar de recibir este tipo de aviso por correo.",
   unsubscribeConfirm: "Confirmar a baixa",
   unsubscribeDone:
-    "Feito. Xa non che enviaremos lembranzas por correo. Seguirás recibindo as confirmacións e as cancelacións.",
+    "Feito. Xa non che enviaremos por correo: {kind}. Seguirás véndoo no historial da app.",
   unsubscribeError:
-    "A ligazón non é válida ou caducou. Podes desactivar as lembranzas desde a túa conta.",
+    "A ligazón non é válida ou caducou. Podes cambiar os avisos desde a túa conta.",
+  unsubscribeStale:
+    "Esta ligazón xa non serve porque cambiaches os avisos despois de recibila. Revísaos na túa conta.",
   unsubscribeAccount: "Ir á miña conta",
   attended: "Asistida",
   noShow: "Non presentada",
@@ -725,24 +748,47 @@ const es: Record<TextKey, string> = {
   authErrorGeneric: "No pudimos completar el acceso. Vuelve a intentarlo.",
   dismiss: "Cerrar aviso",
   noticeReminder: "Recordatorio de la reserva",
-  noticesTitle: "Avisos por correo",
+  noticesTitle: "Avisos",
+  noticesIntro:
+    "Todos los avisos quedan en el historial de la app. Elige también cómo quieres recibir cada tipo.",
   noticesEmail: "Dirección de correo",
   noticesNoEmail:
-    "Esta cuenta no tiene correo, así que solo verás los avisos aquí.",
-  noticesAlways:
-    "Siempre te enviamos la confirmación, los cambios y las cancelaciones de tus reservas.",
-  reminderLabel: "Recibir un recordatorio por correo antes de cada reserva",
+    "Esta cuenta no tiene correo, así que los avisos por correo no se pueden activar.",
+  noticeKindConfirmation: "Confirmación de la reserva",
+  noticeKindChange: "Cambio de horario",
+  noticeKindCancellation: "Cancelación, tuya o del ayuntamiento",
+  noticeKindReminder: "Recordatorio antes de la reserva",
+  noticeKindPenalty: "Ausencias y bloqueos",
+  channelEmail: "Por correo",
+  channelPush: "En el dispositivo",
   reminderHint: "Llega {hours} horas antes del inicio.",
-  reminderSaved: "Preferencia guardada.",
-  reminderError: "No pudimos guardar la preferencia. Vuelve a intentarlo.",
-  unsubscribeTitle: "Baja de los recordatorios por correo",
+  noticesSave: "Guardar avisos",
+  noticesSaved: "Avisos guardados.",
+  noticesError: "No pudimos guardar los avisos. Vuelve a intentarlo.",
+  pushTitle: "Avisos en este dispositivo",
+  pushIntro:
+    "El aviso en el dispositivo solo dice que hay una novedad, sin nombres ni lugares; el detalle se ve al abrir la app. Pasa cifrado por el servicio de avisos de tu navegador.",
+  pushEnable: "Activar avisos en este dispositivo",
+  pushDisable: "Desactivar en este dispositivo",
+  pushActive: "Este dispositivo recibe avisos.",
+  pushUnsupported: "Este navegador no permite avisos en el dispositivo.",
+  pushIos:
+    "En iPhone y iPad (iOS 16.4 o posterior), añade primero Quenda a la pantalla de inicio desde Compartir y ábrela desde allí.",
+  pushDenied:
+    "Los avisos están bloqueados para este sitio. Puedes permitirlos en la configuración del navegador.",
+  pushUnavailable: "Este ayuntamiento aún no ofrece avisos en el dispositivo.",
+  pushError:
+    "No pudimos cambiar los avisos de este dispositivo. Vuelve a intentarlo.",
+  unsubscribeTitle: "Baja de un aviso por correo",
   unsubscribeBody:
-    "Confirma que quieres dejar de recibir los recordatorios de tus reservas por correo.",
+    "Confirma que quieres dejar de recibir este tipo de aviso por correo.",
   unsubscribeConfirm: "Confirmar la baja",
   unsubscribeDone:
-    "Hecho. Ya no te enviaremos recordatorios por correo. Seguirás recibiendo las confirmaciones y las cancelaciones.",
+    "Hecho. Ya no te lo enviaremos por correo: {kind}. Seguirás viéndolo en el historial de la app.",
   unsubscribeError:
-    "El enlace no es válido o ha caducado. Puedes desactivar los recordatorios desde tu cuenta.",
+    "El enlace no es válido o ha caducado. Puedes cambiar los avisos desde tu cuenta.",
+  unsubscribeStale:
+    "Este enlace ya no sirve porque cambiaste los avisos después de recibirlo. Revísalos en tu cuenta.",
   unsubscribeAccount: "Ir a mi cuenta",
   attended: "Asistida",
   noShow: "No presentada",

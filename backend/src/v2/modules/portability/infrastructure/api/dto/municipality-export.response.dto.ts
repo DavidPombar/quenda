@@ -129,6 +129,7 @@ class ExportedNotificationDTO {
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
   @ApiProperty({ type: Object, additionalProperties: true, nullable: true })
   details!: Record<string, unknown> | null;
+  @ApiProperty({ type: String, nullable: true }) dedupeKey!: string | null;
 }
 class ExportedAuditEventDTO {
   @ApiProperty() id!: string;

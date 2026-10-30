@@ -5,6 +5,7 @@ export function useUnsubscribeMutation() {
   const cache = useQueryClient();
   return useMutation({
     mutationFn: accountRepository.unsubscribe,
-    onSuccess: () => cache.invalidateQueries({ queryKey: ["account"] }),
+    onSuccess: () =>
+      cache.invalidateQueries({ queryKey: ["notification-settings"] }),
   });
 }

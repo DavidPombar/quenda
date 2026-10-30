@@ -10,6 +10,8 @@ export abstract class NotificationRepository {
     kind: Notification["kind"];
     createdAt: Temporal.Instant;
     details?: NotificationDetails;
-  }): Promise<void>;
+    /** Makes the notice unique; returns false when one with the same key already exists. */
+    dedupeKey?: string;
+  }): Promise<boolean>;
   abstract list(tenantId: string, userId: string): Promise<Notification[]>;
 }

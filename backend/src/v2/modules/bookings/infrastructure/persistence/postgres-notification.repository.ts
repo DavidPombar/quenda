@@ -10,8 +10,8 @@ export class PostgresNotificationRepository extends NotificationRepository {
     super();
   }
   async add(args: Parameters<NotificationRepository["add"]>[0]) {
-    await this.db.query(
-      "INSERT INTO notifications (id,tenant_id,user_id,booking_id,kind,created_at,details) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+    const { rowCount } = await this.db.query(
+      "INSERT INTO notifications (id,tenant_id,user_id,booking_id,kind,created_at,details,dedupe_key) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING",
       [
         args.id,
         args.tenantId,
@@ -20,8 +20,10 @@ export class PostgresNotificationRepository extends NotificationRepository {
         args.kind,
         args.createdAt.toString(),
         args.details ?? null,
+        args.dedupeKey ?? null,
       ],
     );
+    return (rowCount ?? 0) > 0;
   }
   async list(tenantId: string, userId: string) {
     const { rows } = await this.db.query<

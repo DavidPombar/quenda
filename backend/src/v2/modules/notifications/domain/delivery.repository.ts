@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Temporal } from "@js-temporal/polyfill";
-import type { Delivery, DueReminder } from "./delivery.read-model";
+import type { Delivery, DueReminder, PushDevice } from "./delivery.read-model";
 export abstract class DeliveryRepository {
   /**
    * Confirmed reservations starting within the reminder window that were booked before the
-   * window opened, whose person has an address, has not switched reminders off and has not
-   * been reminded of this start time yet.
+   * window opened and whose person has not been reminded of this start time yet.
    */
   abstract dueReminders(
     tenantId: string,
@@ -29,4 +28,7 @@ export abstract class DeliveryRepository {
     error: string,
     retryAt: Temporal.Instant,
   ): Promise<void>;
+  abstract pushDevices(tenantId: string, userId: string): Promise<PushDevice[]>;
+  /** Forgets a device whose push service answered that the subscription no longer exists. */
+  abstract forgetPushDevice(tenantId: string, id: string): Promise<void>;
 }

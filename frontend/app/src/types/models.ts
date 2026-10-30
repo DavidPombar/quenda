@@ -246,7 +246,28 @@ export interface Account {
   notifications: number;
   email: string | null;
   locale: Locale | null;
-  reminderEmails: boolean;
+}
+export const NOTICE_KINDS = [
+  "confirmation",
+  "change",
+  "cancellation",
+  "reminder",
+  "penalty",
+] as const;
+export type NoticeKind = (typeof NOTICE_KINDS)[number];
+export type NoticeChannel = "email" | "push";
+export type NoticePreferences = Record<
+  NoticeKind,
+  Record<NoticeChannel, boolean>
+>;
+export interface NotificationSettings {
+  preferences: NoticePreferences;
+  push: { available: boolean; publicKey: string | null; devices: number };
+}
+/** The PushSubscription JSON a browser returns. */
+export interface PushDevice {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
 }
 export interface AccountExport {
   generatedAt: string;

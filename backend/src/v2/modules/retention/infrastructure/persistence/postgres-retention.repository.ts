@@ -89,7 +89,8 @@ export class PostgresRetentionRepository extends RetentionRepository {
         AND NOT EXISTS (SELECT 1 FROM consents c WHERE c.tenant_id=u.tenant_id AND c.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM identities i WHERE i.tenant_id=u.tenant_id AND i.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM outbox o WHERE o.tenant_id=u.tenant_id AND o.user_id=u.id)
-        AND NOT EXISTS (SELECT 1 FROM notification_preferences p WHERE p.tenant_id=u.tenant_id AND p.user_id=u.id)`,
+        AND NOT EXISTS (SELECT 1 FROM notification_preferences p WHERE p.tenant_id=u.tenant_id AND p.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM push_subscriptions d WHERE d.tenant_id=u.tenant_id AND d.user_id=u.id)`,
       tenantId,
       cutoff,
     );
