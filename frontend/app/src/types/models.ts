@@ -388,3 +388,6 @@ export interface SeasonCampaign {
   criteria: Record<Locale, string>;
   facilityIds: string[];
 }
+/** Fixed events of the citizen app (#57); they carry no properties. */
+export type AnalyticsEvent =
+  "search" | "slot-open" | "booking-confirmed" | "suggestion-picked";

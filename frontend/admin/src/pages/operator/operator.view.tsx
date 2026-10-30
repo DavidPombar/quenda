@@ -4,6 +4,7 @@ import { Button } from "@chakra-ui/react";
 import {
   PiBuildings,
   PiChartBar,
+  PiChartLine,
   PiSignOut,
   PiArrowLeft,
 } from "react-icons/pi";
@@ -41,6 +42,10 @@ export function Operator() {
             <NavLink to={operatorRouteFor(ROUTES.deploymentInsights)}>
               <PiChartBar size={20} aria-hidden="true" />
               {t("insights")}
+            </NavLink>
+            <NavLink to={operatorRouteFor(ROUTES.deploymentWebAnalytics)}>
+              <PiChartLine size={20} aria-hidden="true" />
+              {t("webAnalytics")}
             </NavLink>
           </nav>
         )}

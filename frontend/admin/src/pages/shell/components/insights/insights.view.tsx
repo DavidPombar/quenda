@@ -3,6 +3,7 @@ import { Button, Field, Input, NativeSelect } from "@chakra-ui/react";
 import { PiDownloadSimple } from "react-icons/pi";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
+import { WebVisits } from "./components/web-visits/web-visits.view";
 import { useInsightsController } from "./insights.controller";
 import { InsightTotals } from "./components/insight-totals/insight-totals.view";
 import { OccupancyHeatmap } from "./components/occupancy-heatmap/occupancy-heatmap.view";
@@ -220,6 +221,14 @@ export function Insights() {
                 t={t}
                 locale={c.locale}
               />
+              {c.tenantId && (
+                <WebVisits
+                  tenantId={c.tenantId}
+                  period={c.period}
+                  t={t}
+                  locale={c.locale}
+                />
+              )}
             </div>
           )}
         </>

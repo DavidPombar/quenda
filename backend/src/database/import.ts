@@ -104,8 +104,7 @@ const tables = {
     accessibility_exceptions_es: "accessibilityExceptionsEs",
     data_license: "dataLicense",
     dir3_code: "dir3Code",
-    analytics_url: "analyticsUrl",
-    analytics_website_id: "analyticsWebsiteId",
+    analytics_enabled: "analyticsEnabled",
     access_webhook_url: "accessWebhookUrl",
     access_webhook_secret_sealed: "accessWebhookSecretSealed",
   },
@@ -412,7 +411,19 @@ export async function importMunicipality(
         );
       }
     }
-    await insert("municipalities", [{ ...data.municipality, slug }]);
+    // Exports from before #57 named the council's own Umami; having one means analytics was on.
+    const municipality = data.municipality as Row & {
+      analyticsEnabled?: boolean;
+      analyticsUrl?: string;
+    };
+    await insert("municipalities", [
+      {
+        ...municipality,
+        slug,
+        analyticsEnabled:
+          municipality.analyticsEnabled ?? !!municipality.analyticsUrl,
+      },
+    ]);
     // The new municipality starts with the initial sports catalogue; a package that carries its
     // own catalogue replaces it before any facility or club refers to a sport.
     if (data.sports) {

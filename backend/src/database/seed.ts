@@ -69,8 +69,8 @@ export async function seed(url = databaseUrl) {
         [
           tenant,
           "2026-10",
-          "Demostración con datos ficticios. Non introduzas datos persoais. As reservas son de proba.",
-          "Demostración con datos ficticios. No introduzcas datos personales. Las reservas son de prueba.",
+          "Demostración con datos ficticios. Non introduzas datos persoais. As reservas son de proba. Se o concello activa a analítica web, as visitas á app cóntanse no Umami propio do despregamento, sen cookies: a páxina, o idioma, o tamaño de pantalla, o navegador e o enderezo IP, que se converten nunha suma diaria. Non se conta a quen pide non ser seguido (Do Not Track).",
+          "Demostración con datos ficticios. No introduzcas datos personales. Las reservas son de prueba. Si el ayuntamiento activa la analítica web, las visitas a la app se cuentan en el Umami propio del despliegue, sin cookies: la página, el idioma, el tamaño de pantalla, el navegador y la dirección IP, que se convierten en una suma diaria. No se cuenta a quien pide no ser seguido (Do Not Track).",
           "2026-10-01T00:00:00Z",
         ],
       );

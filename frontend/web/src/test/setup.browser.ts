@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import "@frontend-testing/vitest-browser-navigate";
-import { serverManager } from "@frontend-testing/server-stubs";
+import {
+  serverManager,
+  stubJsonResponse,
+} from "@frontend-testing/server-stubs";
 import { setupWorker } from "msw/browser";
-import { afterAll, afterEach, beforeAll, expect } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, expect } from "vitest";
 import { cleanup } from "vitest-browser-react";
 import { queryClient } from "@/client/query-client";
 import "@/styles.css";
@@ -18,6 +21,13 @@ beforeAll(async () => {
       }
     },
     quiet: true,
+  });
+});
+// Web analytics is off unless a test turns it on (#57).
+beforeEach(() => {
+  stubJsonResponse({
+    path: "*/v2/public/analytics/web",
+    response: { enabled: false },
   });
 });
 afterEach(async () => {

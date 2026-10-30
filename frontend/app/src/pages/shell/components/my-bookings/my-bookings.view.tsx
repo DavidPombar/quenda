@@ -294,6 +294,7 @@ export function MyBookings() {
             t: c.t,
             signIn: c.signIn,
             showPrivacy: c.showPrivacy,
+            track: c.track,
           }}
         />
       )}
@@ -308,6 +309,7 @@ export function MyBookings() {
             t: c.t,
             signIn: c.signIn,
             showPrivacy: c.showPrivacy,
+            track: c.track,
           }}
         />
       )}

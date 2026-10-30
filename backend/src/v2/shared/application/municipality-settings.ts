@@ -54,10 +54,8 @@ export interface MunicipalitySettings {
   dataLicense: DataLicense;
   /** DIR3 code of the council, the DCAT publisher; null when not configured. */
   dir3Code: string | null;
-  /** Base URL of the council's own Umami; empty when web analytics is off (#25). */
-  analyticsUrl: string;
-  /** Umami website id; null exactly when `analyticsUrl` is empty. */
-  analyticsWebsiteId: string | null;
+  /** Whether the citizen app counts page views in the deployment's Umami (#25, #57). */
+  analyticsEnabled: boolean;
 }
 export const dataLicenses = [
   "CC-BY-4.0",

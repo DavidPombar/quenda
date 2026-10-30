@@ -38,7 +38,7 @@ export type ErrorCode =
   | "photo_limit"
   | "unsubscribe_stale"
   | "push_unavailable"
-  | "invalid_analytics";
+  | "analytics_unavailable";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

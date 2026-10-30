@@ -129,13 +129,17 @@
           "type": ["string", "null"],
           "description": "DIR3 code of the council, the open data publisher. Optional."
         },
+        "analyticsEnabled": {
+          "type": "boolean",
+          "description": "Whether the citizen app counts page views in the deployment's Umami. Optional: defaults to false."
+        },
         "analyticsUrl": {
           "type": "string",
-          "description": "Base URL of the council's Umami; empty when web analytics is off. Optional."
+          "description": "Exports from before #57 only: the council's own Umami. On import, a non-empty value switches analytics on."
         },
         "analyticsWebsiteId": {
           "type": ["string", "null"],
-          "description": "Umami website id. Optional."
+          "description": "Exports from before #57 only. Ignored on import."
         },
         "accessibilityUnit": {
           "type": "string"

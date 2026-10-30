@@ -10,10 +10,10 @@ import type { Category } from "../../../../../shared/application/categories";
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsString,
-  IsUUID,
   Matches,
   Max,
   MaxLength,
@@ -142,18 +142,9 @@ export class UpdateMunicipalitySettingsRequestDTO {
   dir3Code?: string | null;
   @ApiPropertyOptional({
     description:
-      "Base URL of the council's own Umami (https); empty switches web analytics off (#25)",
+      "Count citizen app page views in the deployment's Umami (#57); off by default",
   })
   @ValidateIf(defined)
-  @IsString()
-  @MaxLength(300)
-  analyticsUrl?: string;
-  @ApiPropertyOptional({
-    type: String,
-    nullable: true,
-    description: "Umami website id; null or empty when analytics is off",
-  })
-  @ValidateIf((_object: unknown, value: unknown) => !!value)
-  @IsUUID()
-  analyticsWebsiteId?: string | null;
+  @IsBoolean()
+  analyticsEnabled?: boolean;
 }

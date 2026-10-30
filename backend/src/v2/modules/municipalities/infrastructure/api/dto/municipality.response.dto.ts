@@ -132,7 +132,11 @@ export class MunicipalityResponseDTO {
       "Whether page views are counted in the council's Umami; the server address is not exposed",
   })
   analytics!: boolean;
-  static from(value: MunicipalitySettings): MunicipalityResponseDTO {
+  /** `collects`: whether the deployment's Umami counts the citizen app (#57). */
+  static from(
+    value: MunicipalitySettings,
+    collects = false,
+  ): MunicipalityResponseDTO {
     return {
       id: value.id,
       slug: value.slug,
@@ -158,7 +162,7 @@ export class MunicipalityResponseDTO {
       accessibility: AccessibilityResponseDTO.from(value.accessibility),
       dataLicense: value.dataLicense,
       dir3Code: value.dir3Code,
-      analytics: !!value.analyticsUrl,
+      analytics: collects && value.analyticsEnabled,
     };
   }
 }

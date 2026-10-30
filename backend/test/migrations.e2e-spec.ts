@@ -107,4 +107,46 @@ describe("Versioned database migrations", () => {
       /changed after it was applied/,
     );
   });
+  it("should keep web analytics on for councils that had their own Umami (#57)", async () => {
+    const name = `${databaseName}_umami`;
+    const url = new URL(baseUrl);
+    url.pathname = `/${name}`;
+    await admin.query(`CREATE DATABASE "${name}"`);
+    const legacy = new Pool({ connectionString: url.toString() });
+    try {
+      const all = await migrations();
+      for (const migration of all.filter((item) => item.version < "0018"))
+        await legacy.query(migration.sql);
+      const [on, off] = [randomUUID(), randomUUID()];
+      for (const id of [on, off])
+        await legacy.query(
+          "INSERT INTO municipalities VALUES ($1,$2,'Umami','Europe/Madrid','gl',14,2,5,'u@example.invalid','U')",
+          [id, `umami-${id}`],
+        );
+      await legacy.query(
+        "UPDATE municipalities SET analytics_url='https://umami.example.org', analytics_website_id=$2 WHERE id=$1",
+        [on, randomUUID()],
+      );
+      await legacy.query(all.find((item) => item.version === "0018")!.sql);
+      const rows = await legacy.query<{
+        id: string;
+        analytics_enabled: boolean;
+      }>(
+        "SELECT id, analytics_enabled FROM municipalities WHERE id = ANY($1)",
+        [[on, off]],
+      );
+      expect(
+        Object.fromEntries(
+          rows.rows.map((row) => [row.id, row.analytics_enabled]),
+        ),
+      ).toEqual({ [on]: true, [off]: false });
+      const columns = await legacy.query(
+        "SELECT column_name FROM information_schema.columns WHERE table_name='municipalities' AND column_name LIKE 'analytics_%'",
+      );
+      expect(columns.rows).toEqual([{ column_name: "analytics_enabled" }]);
+    } finally {
+      await legacy.end();
+      await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
+    }
+  });
 });

@@ -47,32 +47,31 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 30
-  # Umami (MIT) de referencia para a analítica web opcional (#25). Só arranca con
-  # `npm run analytics:up` (perfil `analytics`). Panel en http://127.0.0.1:8095 (admin / umami);
-  # crea alí un sitio e pon o seu identificador e http://127.0.0.1:8095 en Axustes → Analítica web.
+  # Umami (MIT), a analítica web opcional do despregamento (#25, #57). Só arranca con
+  # `npm run analytics:up` (perfil `analytics`), cunha base `umami` propia no Postgres de `db`.
+  # Panel en http://127.0.0.1:8095 (admin / umami). `npm run analytics:setup` crea os sitios e o
+  # usuario de só lectura e imprime as variables UMAMI_* para o .env.
   umami:
     image: ghcr.io/umami-software/umami:postgresql-v2.20.2
     profiles: ["analytics"]
     environment:
-      DATABASE_URL: postgresql://umami:umami_local@umami-db:5432/umami
+      DATABASE_URL: postgresql://quenda:quenda_local@db:5432/umami
       APP_SECRET: umami-local-secret-NO-PRODUCCION
     ports: ["127.0.0.1:8095:3000"]
     depends_on:
-      umami-db:
+      db:
         condition: service_healthy
-  umami-db:
-    image: postgres:17-alpine
-    profiles: ["analytics"]
-    environment:
-      POSTGRES_USER: umami
-      POSTGRES_PASSWORD: umami_local
-      POSTGRES_DB: umami
-    volumes: ["umami-data:/var/lib/postgresql/data"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
-      interval: 2s
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/heartbeat').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
       timeout: 5s
-      retries: 20
+      start_period: 30s
+      retries: 30
 volumes:
   quenda-data:
-  umami-data:

@@ -7,10 +7,20 @@ import {
   type ResponseContext,
 } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
-import { stubShell, municipality, insightsFor } from "@/test/fixtures";
+import {
+  stubShell,
+  municipality,
+  insightsFor,
+  webAnalyticsFor,
+} from "@/test/fixtures";
 
 function stubManager() {
   stubShell();
+  // Without an Umami in the deployment the visits section stays hidden.
+  stubJsonResponse({
+    path: "*/v2/manager/web-analytics",
+    response: webAnalyticsFor({ available: false, app: null }),
+  });
   stubJsonResponse({
     path: "*/v2/public/session",
     response: {
@@ -172,5 +182,51 @@ describe("indicators", () => {
       .element(page.getByText("O período non pode superar os 16 meses."))
       .toBeVisible();
     expect(spy).not.toHaveBeenCalled();
+  });
+  test("should show the council's app visits for the same period when analytics is on", async () => {
+    stubManager();
+    const { spy } = stubJsonResponse({
+      path: "*/v2/manager/web-analytics",
+      response: webAnalyticsFor(),
+    });
+    await commands.navigate(
+      "/admin/vilaverde/indicadores?from=2026-10-01&to=2026-10-31",
+    );
+    await render(<App />);
+    const section = page.getByRole("region", { name: "Visitas á app" });
+    await expect
+      .element(section.getByRole("definition").filter({ hasText: "120" }))
+      .toBeVisible();
+    await expect.element(section.getByText("2 min 05 s")).toBeVisible();
+    const events = section.getByRole("table", { name: "Eventos" });
+    await expect
+      .element(events.getByRole("rowheader", { name: "Reservas confirmadas" }))
+      .toBeVisible();
+    await expect
+      .element(
+        section
+          .getByRole("table", { name: "Dispositivos" })
+          .getByRole("rowheader", { name: "Móbil" }),
+      )
+      .toBeVisible();
+    const url = new URL(spy.mock.calls.at(-1)![0].url);
+    expect(url.searchParams.get("from")).toBe("2026-10-01");
+    expect(url.searchParams.get("to")).toBe("2026-10-31");
+  });
+  test("should invite the manager to switch analytics on in the settings", async () => {
+    stubManager();
+    stubJsonResponse({
+      path: "*/v2/manager/web-analytics",
+      response: webAnalyticsFor({ enabled: false, app: null }),
+    });
+    await commands.navigate(
+      "/admin/vilaverde/indicadores?from=2026-10-01&to=2026-10-31",
+    );
+    await render(<App />);
+    await expect
+      .element(
+        page.getByText(/A analítica web está desactivada. Podes activala/),
+      )
+      .toBeVisible();
   });
 });

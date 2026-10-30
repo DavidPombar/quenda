@@ -13,6 +13,7 @@ export const ROUTES = {
   operator: "/operador",
   deployment: "concellos",
   deploymentInsights: "indicadores",
+  deploymentWebAnalytics: "analitica",
   categories: "categorias",
   bookings: "reservas",
   access: "acceso",

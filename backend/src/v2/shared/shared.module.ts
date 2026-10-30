@@ -13,6 +13,7 @@ import { SecretBox } from "./application/secret-box";
 import { UnsubscribeTokens } from "./application/unsubscribe-tokens";
 import { PushSender } from "./application/push-sender";
 import { AnalyticsForwarder } from "./application/analytics-forwarder";
+import { AnalyticsConfig } from "./application/analytics-config";
 import { Database } from "./infrastructure/database";
 import { Commands } from "./infrastructure/commands.locator";
 import { Queries } from "./infrastructure/queries.locator";
@@ -25,6 +26,7 @@ import { AesSecretBox } from "./infrastructure/aes-secret-box";
 import { HmacUnsubscribeTokens } from "./infrastructure/hmac-unsubscribe-tokens";
 import { WebPushSender } from "./infrastructure/web-push-sender";
 import { FetchAnalyticsForwarder } from "./infrastructure/fetch-analytics-forwarder";
+import { EnvAnalyticsConfig } from "./infrastructure/env-analytics-config";
 import { PrincipalGuard } from "./infrastructure/api/principal.guard";
 import { OperatorGuard } from "./infrastructure/api/operator.guard";
 import { OperatorAudit } from "./application/operator-audit";
@@ -42,6 +44,7 @@ const bindings = [
   { provide: SecretBox, useClass: AesSecretBox },
   { provide: UnsubscribeTokens, useClass: HmacUnsubscribeTokens },
   { provide: PushSender, useClass: WebPushSender },
+  { provide: AnalyticsConfig, useClass: EnvAnalyticsConfig },
   { provide: AnalyticsForwarder, useClass: FetchAnalyticsForwarder },
   { provide: SessionRepository, useClass: PostgresSessionRepository },
   { provide: OperatorAudit, useClass: PostgresOperatorAudit },

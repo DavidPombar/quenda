@@ -759,15 +759,47 @@ const gl = {
   dir3Error: "O código DIR3 ten nove letras ou números.",
   analyticsSection: "Analítica web",
   analyticsHint:
-    "Conta as visitas á app no Umami do concello, sen cookies. Quenda pásalle a páxina vista (sen parámetros nin identificadores), o idioma, o tamaño de pantalla, o navegador e o enderezo IP, que Umami converte nunha suma diaria para contar visitantes únicos. Indícao no aviso de privacidade antes de activalo.",
-  analyticsUrlLabel: "Enderezo do Umami",
-  analyticsUrlHint:
-    "Por exemplo, https://analitica.concello.gal. Baleiro desactiva a analítica.",
-  analyticsWebsiteLabel: "Identificador do sitio en Umami",
-  analyticsWebsiteHint: "Aparece en Umami, en Configuración → Sitios web.",
-  analyticsError:
-    "Indica un enderezo https e o identificador do sitio, ou deixa os dous baleiros.",
+    "Conta as visitas á app cidadá deste concello no Umami do despregamento, sen cookies. Quenda pásalle a páxina vista (sen parámetros nin identificadores), o idioma, o tamaño de pantalla, o navegador e o enderezo IP, que Umami converte nunha suma diaria para contar visitantes únicos. Non se conta a quen pide non ser seguido (Do Not Track). Indícao no aviso de privacidade antes de activalo.",
+  analyticsToggle: "Contar as visitas á app neste concello",
   analyticsOff: "A analítica web está desactivada.",
+  analyticsUnavailable:
+    "O despregamento non ten Umami, así que a analítica non se pode activar.",
+  webAnalytics: "Analítica web",
+  webAnalyticsSubtitle:
+    "Visitas á app cidadá e á web pública contadas no Umami do despregamento, sen cookies nin datos persoais.",
+  webAnalyticsSection: "Visitas á app",
+  webAnalyticsSectionHint:
+    "Datos do Umami do despregamento para este concello: só agregados, sen persoas nin reservas.",
+  webAnalyticsDisabled:
+    "A analítica web está desactivada. Podes activala en Axustes → Analítica web.",
+  webAnalyticsUnavailable:
+    "O despregamento non ten Umami configurado. Mira docs/architecture/analytics.md.",
+  webAnalyticsError:
+    "Non foi posible ler as estatísticas do Umami agora mesmo.",
+  webApp: "App cidadá",
+  webSite: "Web pública",
+  webVisitors: "Visitantes",
+  webVisits: "Visitas",
+  webPageviews: "Páxinas vistas",
+  webBounce: "Rebote",
+  webDuration: "Duración media",
+  webPages: "Páxinas máis vistas",
+  webReferrers: "Procedencia",
+  webDevices: "Dispositivos",
+  webLanguages: "Idiomas",
+  webEvents: "Eventos",
+  webCount: "Total",
+  webNoData: "Sen datos neste período.",
+  webByMunicipality: "Visitas á app por concello",
+  webDirect: "Directo",
+  eventSearch: "Buscas",
+  eventSlotOpen: "Quendas abertas",
+  eventBookingConfirmed: "Reservas confirmadas",
+  eventSuggestionPicked: "Alternativas escollidas",
+  deviceDesktop: "Ordenador",
+  deviceLaptop: "Portátil",
+  deviceMobile: "Móbil",
+  deviceTablet: "Tableta",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -1511,15 +1543,47 @@ const es: Record<TextKey, string> = {
   dir3Error: "El código DIR3 tiene nueve letras o números.",
   analyticsSection: "Analítica web",
   analyticsHint:
-    "Cuenta las visitas a la app en el Umami del ayuntamiento, sin cookies. Quenda le pasa la página vista (sin parámetros ni identificadores), el idioma, el tamaño de pantalla, el navegador y la dirección IP, que Umami convierte en una suma diaria para contar visitantes únicos. Indícalo en el aviso de privacidad antes de activarlo.",
-  analyticsUrlLabel: "Dirección del Umami",
-  analyticsUrlHint:
-    "Por ejemplo, https://analitica.concello.gal. Vacío desactiva la analítica.",
-  analyticsWebsiteLabel: "Identificador del sitio en Umami",
-  analyticsWebsiteHint: "Aparece en Umami, en Configuración → Sitios web.",
-  analyticsError:
-    "Indica una dirección https y el identificador del sitio, o deja los dos vacíos.",
+    "Cuenta las visitas a la app ciudadana de este ayuntamiento en el Umami del despliegue, sin cookies. Quenda le pasa la página vista (sin parámetros ni identificadores), el idioma, el tamaño de pantalla, el navegador y la dirección IP, que Umami convierte en una suma diaria para contar visitantes únicos. No se cuenta a quien pide no ser seguido (Do Not Track). Indícalo en el aviso de privacidad antes de activarlo.",
+  analyticsToggle: "Contar las visitas a la app en este ayuntamiento",
   analyticsOff: "La analítica web está desactivada.",
+  analyticsUnavailable:
+    "El despliegue no tiene Umami, así que la analítica no se puede activar.",
+  webAnalytics: "Analítica web",
+  webAnalyticsSubtitle:
+    "Visitas a la app ciudadana y a la web pública contadas en el Umami del despliegue, sin cookies ni datos personales.",
+  webAnalyticsSection: "Visitas a la app",
+  webAnalyticsSectionHint:
+    "Datos del Umami del despliegue para este ayuntamiento: solo agregados, sin personas ni reservas.",
+  webAnalyticsDisabled:
+    "La analítica web está desactivada. Puedes activarla en Ajustes → Analítica web.",
+  webAnalyticsUnavailable:
+    "El despliegue no tiene Umami configurado. Consulta docs/architecture/analytics.md.",
+  webAnalyticsError:
+    "No se pudieron leer las estadísticas del Umami ahora mismo.",
+  webApp: "App ciudadana",
+  webSite: "Web pública",
+  webVisitors: "Visitantes",
+  webVisits: "Visitas",
+  webPageviews: "Páginas vistas",
+  webBounce: "Rebote",
+  webDuration: "Duración media",
+  webPages: "Páginas más vistas",
+  webReferrers: "Procedencia",
+  webDevices: "Dispositivos",
+  webLanguages: "Idiomas",
+  webEvents: "Eventos",
+  webCount: "Total",
+  webNoData: "Sin datos en este periodo.",
+  webByMunicipality: "Visitas a la app por ayuntamiento",
+  webDirect: "Directo",
+  eventSearch: "Búsquedas",
+  eventSlotOpen: "Turnos abiertos",
+  eventBookingConfirmed: "Reservas confirmadas",
+  eventSuggestionPicked: "Alternativas elegidas",
+  deviceDesktop: "Ordenador",
+  deviceLaptop: "Portátil",
+  deviceMobile: "Móvil",
+  deviceTablet: "Tableta",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

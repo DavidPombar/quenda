@@ -24,6 +24,13 @@ services:
       OIDC_IDP_HINT: clave
       # Map tiles (#26): OpenStreetMap for the demo; a deployment may point to its own server.
       MAP_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      # Web analytics (#57), optional: start the `analytics` profile, run `npm run analytics:setup`
+      # against http://127.0.0.1:8095 and paste the values it prints here.
+      UMAMI_URL: ${UMAMI_URL:-}
+      UMAMI_APP_WEBSITE_ID: ${UMAMI_APP_WEBSITE_ID:-}
+      UMAMI_WEB_WEBSITE_ID: ${UMAMI_WEB_WEBSITE_ID:-}
+      UMAMI_USERNAME: ${UMAMI_USERNAME:-}
+      UMAMI_PASSWORD: ${UMAMI_PASSWORD:-}
     depends_on:
       db:
         condition: service_healthy

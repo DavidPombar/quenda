@@ -89,9 +89,10 @@ export interface LegalTexts {
 export interface MunicipalitySettings extends Municipality {
   /** RFC 5545 VCALENDAR of all-day municipal holidays. */
   holidaysCalendar: string;
-  /** Base URL of the council's Umami; empty when web analytics is off. */
-  analyticsUrl: string;
-  analyticsWebsiteId: string | null;
+  /** Whether the council counts citizen app visits in the deployment's Umami. */
+  analyticsEnabled: boolean;
+  /** Whether the deployment has an Umami at all. */
+  analyticsAvailable: boolean;
 }
 export type SettingsPatch = Partial<
   Pick<
@@ -110,8 +111,7 @@ export type SettingsPatch = Partial<
     | "noShowBlockDays"
     | "dataLicense"
     | "dir3Code"
-    | "analyticsUrl"
-    | "analyticsWebsiteId"
+    | "analyticsEnabled"
   >
 >;
 export interface SettingsUpdate {
@@ -459,4 +459,36 @@ export interface SeasonAssignment {
   allocation: SeasonAllocation;
   created: number;
   conflicts: SeasonConflict[];
+}
+export interface Ranked {
+  value: string;
+  count: number;
+}
+/** Visits to one site from the deployment's Umami (#57). */
+export interface SiteReport {
+  visitors: number;
+  visits: number;
+  pageviews: number;
+  bounceRate: number | null;
+  averageVisitSeconds: number | null;
+  pages: Ranked[];
+  referrers: Ranked[];
+  devices: Ranked[];
+  languages: Ranked[];
+  events: Ranked[];
+}
+export interface WebAnalytics {
+  available: boolean;
+  enabled: boolean;
+  from: string;
+  to: string;
+  app: SiteReport | null;
+  web: SiteReport | null;
+  municipalities: {
+    slug: string;
+    name: string;
+    visitors: number;
+    visits: number;
+    pageviews: number;
+  }[];
 }
