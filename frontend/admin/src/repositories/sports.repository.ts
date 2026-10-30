@@ -2,7 +2,7 @@
 import { apiClient } from "@/client/api-client";
 import type { SportInfo } from "@/types/models";
 export type SportDraft = Pick<SportInfo, "code" | "name" | "hidden"> &
-  Partial<Pick<SportInfo, "cnidClass" | "cnidType" | "position">>;
+  Partial<Pick<SportInfo, "cnidClass" | "cnidType" | "position" | "art">>;
 export const sportsRepository = {
   list: () => apiClient.request<SportInfo[]>("manager/sports"),
   create: (sport: SportDraft) =>
@@ -20,6 +20,11 @@ export const sportsRepository = {
         name: changes.name,
         hidden: changes.hidden,
         position: changes.position,
+        art: changes.art,
       }),
+    }),
+  remove: (code: string) =>
+    apiClient.request<void>(`manager/sports/${encodeURIComponent(code)}`, {
+      method: "DELETE",
     }),
 };

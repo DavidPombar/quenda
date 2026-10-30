@@ -7,8 +7,6 @@ import { useListNotificationsQuery } from "@/queries/bookings/list-notifications
 import { useUpdateBookingMutation } from "@/queries/bookings/update-booking.mutation";
 import { useGetPenaltyStandingQuery } from "@/queries/bookings/get-penalty-standing.query";
 import { dateLabel } from "@/services/date.service";
-import { sportLabel } from "@/services/catalog.service";
-import { useListSportsQuery } from "@/queries/facilities/list-sports.query";
 import { fill, type TextKey } from "@/services/i18n.service";
 import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
 import type { AppContext } from "@/types/app-context";
@@ -30,7 +28,6 @@ const BOOKING_PAGE = 10;
 export function useMyBookingsController() {
   const context = useOutletContext<AppContext>();
   const query = useListBookingsQuery(context.session?.userId);
-  const sports = useListSportsQuery([context.municipality.slug]);
   const notices = useListNotificationsQuery(context.session?.userId);
   const penalty = useGetPenaltyStandingQuery(context.session?.userId);
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
@@ -104,8 +101,6 @@ export function useMyBookingsController() {
   }
   const standing = penalty.data;
   return {
-    sportLabel: (code: string) =>
-      sportLabel(code, sports.data ?? [], context.locale),
     ...context,
     query,
     notices,

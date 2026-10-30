@@ -279,6 +279,7 @@ const tables = {
     cnid_class: "cnidClass",
     cnid_type: "cnidType",
     schema_type: "schemaType",
+    art: "art",
     hidden: "hidden",
     position: "position",
   },

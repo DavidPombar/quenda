@@ -22,7 +22,7 @@ export function FacilityCard({
 }) {
   return (
     <article
-      className={`facility-card sport-${facility.sport} facility-${facility.status}`}
+      className={`facility-card sport-${facility.sportArt} facility-${facility.status}`}
     >
       <div className="facility-cover">
         {facility.photos[0] ? (
@@ -33,13 +33,13 @@ export function FacilityCard({
             loading="lazy"
           />
         ) : (
-          <CourtArt sport={facility.sport} status={facility.status} />
+          <CourtArt sport={facility.sportArt} status={facility.status} />
         )}
       </div>
       <div className="facility-content">
         <div className="facility-tags">
           <SportTag
-            sport={facility.sport}
+            sport={facility.sportArt}
             label={localized(facility.sportName, locale)}
           />
           <FacilityStatus

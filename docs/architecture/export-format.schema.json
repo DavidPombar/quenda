@@ -1085,6 +1085,10 @@
           },
           "position": {
             "type": "integer"
+          },
+          "art": {
+            "enum": ["padel", "tennis", "futsal", "swimming", "generic"],
+            "description": "Illustration and colour of its facilities; generic when absent"
           }
         },
         "required": [

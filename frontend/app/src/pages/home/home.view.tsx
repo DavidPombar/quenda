@@ -131,7 +131,7 @@ export function Home() {
                     aria-labelledby={`facility-${facility.id}`}
                   >
                     <SportTag
-                      sport={facility.sport}
+                      sport={facility.sportArt}
                       label={c.sportLabel(facility.sportName)}
                     />
                     <h2 id={`facility-${facility.id}`}>{facility.name}</h2>

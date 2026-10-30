@@ -2,12 +2,15 @@
 import type { Facility } from "./facility.entity";
 import type { Resource } from "./resource.entity";
 import type { FacilityPhoto } from "./facility-photo.entity";
+import type { SportArt } from "./sport.entity";
 import type { OpeningDay } from "./opening-week";
 export interface FacilityDetails extends Facility {
   /** Ordered by position, then name. */
   resources: Resource[];
   /** Name of the sport in the municipality's catalogue (#26). */
   sportName: { gl: string; es: string };
+  /** Illustration and colour of the sport. */
+  sportArt: SportArt;
   /** Ordered by position. */
   photos: FacilityPhoto[];
 }

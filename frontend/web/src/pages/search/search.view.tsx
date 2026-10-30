@@ -145,7 +145,7 @@ export function Search() {
                       className="search-card"
                       aria-labelledby={`facility-${facility.id}`}
                     >
-                      <p className={`sport-tag sport-${facility.sport}`}>
+                      <p className={`sport-tag sport-${facility.sportArt}`}>
                         {c.sportLabel(facility.sportName)}
                       </p>
                       <h2 id={`facility-${facility.id}`}>{facility.name}</h2>

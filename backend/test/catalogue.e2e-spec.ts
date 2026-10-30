@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
+import { randomUUID } from "node:crypto";
 import { Temporal } from "@js-temporal/polyfill";
 import {
   type Tenant,
@@ -9,6 +10,7 @@ import {
   patch,
   post,
   setup,
+  start,
   teardown,
   tenant,
 } from "./harness";
@@ -109,7 +111,11 @@ describe("Facility catalogue with server filters, pagination, photos and sports 
     const context = await tenant();
     const other = await tenant();
     const sports = await context.manager.get("/v2/manager/sports").expect(200);
-    expect(sports.body).toHaveLength(12);
+    expect(sports.body).toHaveLength(15);
+    expect(sports.body[0]).toMatchObject({ code: "padel", art: "padel" });
+    expect(
+      sports.body.find((sport: { code: string }) => sport.code === "badminton"),
+    ).toMatchObject({ art: "generic", hidden: true });
     expect(
       sports.body.filter((sport: { hidden: boolean }) => !sport.hidden),
     ).toHaveLength(4);
@@ -124,7 +130,13 @@ describe("Facility catalogue with server filters, pagination, photos and sports 
       name: { gl: "Boccia" },
       hidden: false,
       schemaType: "SportsActivityLocation",
+      art: "generic",
     });
+    // Names are unique in each language.
+    await post(context.manager, "manager/sports", {
+      code: "tenis-2",
+      name: { gl: "tenis", es: "Tenis de mesa" },
+    }).expect(409);
     await post(context.manager, "manager/sports", {
       code: "boccia",
       name: { gl: "Boccia", es: "Boccia" },
@@ -149,27 +161,65 @@ describe("Facility catalogue with server filters, pagination, photos and sports 
     await patch(other.manager, `manager/facilities/${elsewhere.id}`, {
       sport: "boccia",
     }).expect(400);
+    // Filters only offer visible sports that some facility has.
+    const offered = await api()
+      .get("/v2/public/sports")
+      .query({ municipality: context.slug })
+      .expect(200);
+    expect(offered.body.map((sport: { code: string }) => sport.code)).toEqual([
+      "boccia",
+    ]);
     await patch(context.manager, "manager/sports/boccia", {
       name: { gl: "Boccia adaptada", es: "Boccia adaptada" },
+      art: "futsal",
       hidden: true,
     }).expect(200);
     const visible = await api()
       .get("/v2/public/sports")
       .query({ municipality: context.slug })
       .expect(200);
-    expect(visible.body.map((sport: { code: string }) => sport.code)).toEqual([
-      "padel",
-      "tennis",
-      "futsal",
-      "swimming",
-    ]);
+    expect(visible.body).toEqual([]);
+    // A hidden sport is refused for a new or changed facility; the one that has it keeps it.
+    const next = await facility(context);
+    await patch(context.manager, `manager/facilities/${next.id}`, {
+      sport: "boccia",
+    }).expect(400);
+    await patch(context.manager, `manager/facilities/${court.id}`, {
+      name: "Sala de boccia",
+    }).expect(204);
     // Hiding takes the sport out of filters; the facility that uses it keeps it.
     const listed = await list(context, { sport: "boccia" }).expect(200);
     expect(listed.body.items[0]).toMatchObject({
       id: court.id,
       sport: "boccia",
       sportName: { gl: "Boccia adaptada" },
+      sportArt: "futsal",
     });
+    // Only a sport nobody uses can be removed; one in use can only be hidden.
+    await context.manager
+      .delete("/v2/manager/sports/boccia")
+      .set("X-Quenda-Request", "1")
+      .expect(409);
+    await context.manager
+      .delete("/v2/manager/sports/squash")
+      .set("X-Quenda-Request", "1")
+      .expect(204);
+    await context.manager
+      .delete("/v2/manager/sports/squash")
+      .set("X-Quenda-Request", "1")
+      .expect(404);
+    await context.citizen
+      .delete("/v2/manager/sports/fronton")
+      .set("X-Quenda-Request", "1")
+      .expect(403);
+    // At least one sport stays visible.
+    for (const code of ["tennis", "futsal", "swimming"])
+      await patch(context.manager, `manager/sports/${code}`, {
+        hidden: true,
+      }).expect(200);
+    await patch(context.manager, "manager/sports/padel", {
+      hidden: true,
+    }).expect(400);
     await patch(context.manager, "manager/sports/missing", {
       hidden: true,
     }).expect(404);
@@ -179,6 +229,10 @@ describe("Facility catalogue with server filters, pagination, photos and sports 
     );
     expect(audit.rows.map((row) => row.action)).toEqual([
       "sport.created",
+      "sport.updated",
+      "sport.removed",
+      "sport.updated",
+      "sport.updated",
       "sport.updated",
     ]);
   });
@@ -341,6 +395,26 @@ describe("Facility catalogue with server filters, pagination, photos and sports 
     expect(map.body).toEqual({
       tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       attribution: "© OpenStreetMap contributors",
+    });
+  });
+  it("should name the catalogue's sport in the booking history", async () => {
+    const context = await tenant();
+    const court = await facility(context);
+    await patch(context.manager, "manager/sports/padel", {
+      name: { gl: "Pádel cuberto", es: "Pádel cubierto" },
+    }).expect(200);
+    await post(context.citizen, "citizen/bookings", {
+      id: randomUUID(),
+      facilityId: court.id,
+      start: start(2, 10),
+    }).expect(201);
+    const history = await context.citizen
+      .get("/v2/citizen/bookings")
+      .expect(200);
+    expect(history.body[0]).toMatchObject({
+      sport: "padel",
+      sportName: { gl: "Pádel cuberto", es: "Pádel cubierto" },
+      sportArt: "padel",
     });
   });
 });

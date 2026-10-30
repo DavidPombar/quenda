@@ -51,7 +51,7 @@ export class PostgresFacilityRepository extends FacilityRepository {
       `SELECT f.id, f.name, f.sport, f.address, f.description, f.accessible, f.status,
         f.slot_minutes AS "slotMinutes", f.price_cents AS "priceCents", f.latitude, f.longitude,
         m.slug AS "municipalitySlug", m.name AS "municipalityName",
-        json_build_object('gl', s.name_gl, 'es', s.name_es) AS "sportName",
+        json_build_object('gl', s.name_gl, 'es', s.name_es) AS "sportName", s.art AS "sportArt",
         ${firstPhoto("f")} AS photo, count(*) OVER() AS total
       FROM facilities f JOIN municipalities m ON m.id=f.tenant_id
         JOIN sports s ON s.tenant_id=f.tenant_id AND s.code=f.sport
