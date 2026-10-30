@@ -41,14 +41,14 @@ Open http://127.0.0.1:8080 for the website, http://127.0.0.1:8080/app/ for citiz
 
 ## Demo vs production
 
-The container images are the same for both; the difference is configuration and what sits in front of them (T4, R1).
+The container images are the same for both; the difference is configuration and what sits in front of them (T4, R1). `deploy/compose.prod.yml` runs a production instance with Caddy for TLS, nightly encrypted backups and the daily retention job; the [operations guide](docs/operacion/README.md) (in Spanish, for council and deputación technicians) covers deployment with Compose or Coolify, onboarding a council, backups, upgrades, support, a 12-week rollout plan and a draft ENS kit.
 
-|                | Demo (`compose.demo.yml`)                                  | Production                                                                                |
-| -------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); citizens use OIDC or an email code, staff local accounts |
-| Transport      | Plain HTTP on `127.0.0.1:8080`                             | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS   |
-| Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false` |
-| Seed data      | Synthetic municipalities and accounts                      | No seed; municipalities are configured explicitly                                         |
+|                | Demo (`compose.demo.yml`)                                  | Production                                                                                                     |
+| -------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); citizens use OIDC or an email code, staff local accounts                    |
+| Transport      | Plain HTTP on `127.0.0.1:8080`                             | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS                        |
+| Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false`                      |
+| Seed data      | Synthetic municipalities and accounts                      | No seed; the operator creates municipalities in the backoffice ([onboarding](docs/operacion/alta-concello.md)) |
 
 The `web` container (nginx) sends a Content Security Policy, `X-Frame-Options`, `Permissions-Policy` and `nosniff` for the three SPAs; the API sends its own headers. Only the TLS proxy may reach the `web` container, because the API trusts `X-Forwarded-For` from private-network proxies (`TRUST_PROXY`, default `loopback, uniquelocal`) to identify clients.
 
@@ -58,7 +58,8 @@ The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) 
 
 Staff (the deployment's operators, municipal managers and door staff) sign in with a login, a
 password and an authenticator app; this needs `QUENDA_DATA_KEY`. The first accounts are created on
-the server, and the command prints a temporary password once:
+the server, and the command prints a temporary password once. In the production containers the
+same command is `node backend/dist/database/staff.js create …` ([onboarding](docs/operacion/alta-concello.md)):
 
 ```bash
 npm run staff -- create --operator --login operacion --name "Deputación · operación"
@@ -104,7 +105,7 @@ HTTP tests create and destroy their own uniquely named database, never the devel
 
 ## V0 boundaries
 
-This is a functional prototype with synthetic accounts, not a service ready to process residents' personal data. Citizens accept the municipality's versioned privacy notice when opening a demo session, can download their data as JSON from **A miña conta** and can delete their account: future reservations are cancelled, sessions are revoked and the account row is anonymised while past reservations stay in the aggregate history. Managers can review the municipality's audit log, with the detail of each change, under **Auditoría** in the backoffice. A retention job (`npm run db:retention`) detaches reservations, notices and audit actors older than each municipality's `retention_months`, purges expired sessions and removes accounts deleted before that cutoff; it has no built-in scheduler and must be run by cron or a systemd timer (see [architecture](docs/architecture/implementation.md)). Production onboarding/OIDC (Cl@ve/Chave365), real identities, SMS delivery, distributed rate limiting across API replicas, operational backups and an independent accessibility/security review remain future work. No GDPR/ENS compliance or WCAG certification is claimed.
+This is a functional prototype with synthetic accounts, not a service ready to process residents' personal data. Citizens accept the municipality's versioned privacy notice when opening a demo session, can download their data as JSON from **A miña conta** and can delete their account: future reservations are cancelled, sessions are revoked and the account row is anonymised while past reservations stay in the aggregate history. Managers can review the municipality's audit log, with the detail of each change, under **Auditoría** in the backoffice. A retention job (`npm run db:retention`) detaches reservations, notices and audit actors older than each municipality's `retention_months`, purges expired sessions and removes accounts deleted before that cutoff; the production Compose file runs it daily (see [operations](docs/operacion/README.md)). Real Cl@ve/Chave365 onboarding, SMS delivery, distributed rate limiting across API replicas and an independent accessibility/security review remain future work. No GDPR/ENS compliance or WCAG certification is claimed.
 
 Open data has no OpenActive feed (roadmap) and no validation against the official DCAT-AP shapes, and the demo coordinates are fictitious. Facilities are closed or put into maintenance rather than deleted; historical bookings remain intact. Photos, shared capacity (several people in one lane), residency-dependent rules, payments and QR entry are outside this V0. The manager UI edits municipal settings and facilities. Schedule changes with future reservations are rejected; facility closures require an explicit reason and cancel affected bookings with notices. The API returns at most 200 history entries and 50 notices; the citizen app shows them ten at a time. Production needs server-side pagination.
 
