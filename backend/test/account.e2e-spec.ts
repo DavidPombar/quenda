@@ -220,7 +220,8 @@ describe("Sign-in methods without an identity provider", () => {
     const methods = await request(harness.app.getHttpServer())
       .get("/v2/public/auth/methods")
       .expect(200);
-    expect(methods.body).toEqual({ demo: true, oidc: null, email: false });
+    // The demo sends sign-in codes to the local mail catcher, so email sign-in is offered.
+    expect(methods.body).toEqual({ demo: true, oidc: null, email: true });
   });
   it("should send the citizen back with oidc_unavailable when OIDC is not configured", async () => {
     const context = await tenant();

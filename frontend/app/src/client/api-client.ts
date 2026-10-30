@@ -31,8 +31,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     };
     throw new ApiError(problem.code, problem.detail, response.status);
   }
-  return response.status === 204
-    ? (undefined as T)
-    : (response.json() as Promise<T>);
+  // 204 and an accepted request with no body (202) carry nothing to parse.
+  const text = response.status === 204 ? "" : await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 export const apiClient = { request };

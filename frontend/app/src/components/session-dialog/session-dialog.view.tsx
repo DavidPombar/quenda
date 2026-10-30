@@ -2,6 +2,8 @@
 import { Button, Checkbox, Dialog, Portal, Text } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import type { TextKey } from "@/services/i18n.service";
+import type { Locale } from "@/types/models";
+import { EmailSignIn } from "./components/email-sign-in/email-sign-in.view";
 export function SessionDialog(props: {
   open: boolean;
   onClose: () => void;
@@ -9,6 +11,9 @@ export function SessionDialog(props: {
   onEid: () => void;
   eidLabel: string | null;
   demo: boolean;
+  /** Sign-in with a mailed code, when the deployment offers it. */
+  email: { slug: string; legalVersion: string; locale: Locale } | null;
+  onSignedIn: () => void;
   methodsStatus: "pending" | "error" | "success";
   onRetryMethods: () => void;
   pending: boolean;
@@ -81,7 +86,7 @@ export function SessionDialog(props: {
                 </div>
               )}
               {props.methodsStatus === "success" &&
-                (props.eidLabel || props.demo ? (
+                (props.eidLabel || props.demo || props.email ? (
                   <div className="login-options">
                     {props.eidLabel && (
                       <>
@@ -114,6 +119,14 @@ export function SessionDialog(props: {
                           {props.t("signInDemoHint")}
                         </p>
                       </>
+                    )}
+                    {props.email && (
+                      <EmailSignIn
+                        {...props.email}
+                        consent={props.consent}
+                        t={props.t}
+                        onSignedIn={props.onSignedIn}
+                      />
                     )}
                     {!props.consent && (
                       <p className="muted small">
