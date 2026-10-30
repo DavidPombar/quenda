@@ -297,6 +297,11 @@ export class PostgresAccountRepository extends AccountRepository {
     return rowCount ?? 0;
   }
   async deleteIdentities(tenantId: string, userId: string) {
+    // Sign-in codes of an account opened by email are found through its email identity.
+    await this.db.query(
+      "DELETE FROM login_codes WHERE tenant_id=$1 AND email_hash IN (SELECT subject FROM identities WHERE tenant_id=$1 AND user_id=$2 AND issuer='email')",
+      [tenantId, userId],
+    );
     const { rowCount } = await this.db.query(
       "DELETE FROM identities WHERE tenant_id=$1 AND user_id=$2",
       [tenantId, userId],

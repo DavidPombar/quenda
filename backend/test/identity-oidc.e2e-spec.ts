@@ -92,7 +92,7 @@ describe("Electronic identification (T3, T4) through a generic OIDC provider", (
     expect(methods.body).toEqual({
       demo: true,
       oidc: { label: "Cl@ve" },
-      email: false,
+      email: true,
     });
   });
   it("should create an eID citizen with a working session when a person signs in for the first time", async () => {

@@ -26,6 +26,18 @@ export function authErrorMessageKey(code: string): TextKey {
     ? AUTH_ERRORS[code]
     : "authErrorGeneric";
 }
+const EMAIL_CODE_ERRORS: Record<string, TextKey> = {
+  code_invalid: "emailCodeInvalid",
+  code_expired: "emailCodeExpired",
+  consent_required: "authErrorConsent",
+  validation: "emailInvalid",
+};
+/** Message for a failed email-code request or check; never says whether an account exists. */
+export function emailCodeErrorKey(code: string | undefined): TextKey {
+  return code && Object.hasOwn(EMAIL_CODE_ERRORS, code)
+    ? EMAIL_CODE_ERRORS[code]
+    : "authErrorGeneric";
+}
 export function withProvider(template: string, label: string): string {
   return template.replace("{provider}", label);
 }

@@ -13,10 +13,11 @@ import { WebhookSender } from "../../application/webhook-sender";
 import { ScheduleReminders } from "../../application/commands/schedule-reminders.command";
 import { ClaimDeliveries } from "../../application/commands/claim-deliveries.command";
 import { CompleteDelivery } from "../../application/commands/complete-delivery.command";
-import { Mailer } from "../../application/mailer";
+import { Mailer } from "../../../../shared/application/mailer";
 import { Delivery } from "../../domain/delivery.read-model";
 import { renderMail } from "../mail/templates";
 import { pushPayload } from "../push/push-texts";
+import { LoginCodeSender } from "../../../identity/infrastructure/mail/login-code-sender";
 const BATCH_SIZE = 50;
 /** A push notice older than a day is no longer useful; the history keeps it. */
 const PUSH_TTL_SECONDS = 24 * 60 * 60;
@@ -41,6 +42,7 @@ export class DeliveryWorker {
     private readonly window: AccessWindow,
     private readonly push: PushSender,
     private readonly devices: DeliveryRepository,
+    private readonly loginCodes: LoginCodeSender,
   ) {}
   async runOnce() {
     let reminders = 0;
@@ -67,9 +69,11 @@ export class DeliveryWorker {
         .get(CompleteDelivery)
         .execute({ id: delivery.id, attempts: delivery.attempts, error });
     }
-    if (reminders || deliveries.length)
+    // Sign-in codes left unsent by a mail server failure (#8).
+    const codes = await this.loginCodes.send();
+    if (reminders || deliveries.length || codes)
       this.logger.log(
-        `reminders queued ${reminders}, sent ${sent}/${deliveries.length}`,
+        `reminders queued ${reminders}, sent ${sent}/${deliveries.length}, sign-in codes ${codes}`,
       );
     return { reminders, sent, failed: deliveries.length - sent };
   }
