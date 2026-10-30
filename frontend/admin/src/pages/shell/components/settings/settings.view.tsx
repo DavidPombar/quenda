@@ -12,6 +12,7 @@ import { UserCategories } from "./components/user-categories/user-categories.vie
 import { NoShowPenalty } from "./components/no-show-penalty/no-show-penalty.view";
 import { AccessQr } from "./components/access-qr/access-qr.view";
 import { OpenData } from "./components/open-data/open-data.view";
+import { WebAnalytics } from "./components/web-analytics/web-analytics.view";
 import { Sports } from "./components/sports/sports.view";
 export function Settings() {
   const c = useSettingsController();
@@ -61,6 +62,7 @@ export function Settings() {
           <UserCategories settings={c.settings.data} t={c.t} />
           <Sports t={c.t} />
           <OpenData settings={c.settings.data} t={c.t} />
+          <WebAnalytics settings={c.settings.data} t={c.t} />
         </div>
       )}
     </div>

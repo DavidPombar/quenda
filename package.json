@@ -17,6 +17,8 @@
     "db:up": "docker compose up -d --wait db mailpit",
     "identity:up": "docker compose --profile identity up -d --wait keycloak",
     "identity:down": "docker compose --profile identity rm --stop --force keycloak",
+    "analytics:up": "docker compose --profile analytics up -d umami",
+    "analytics:down": "docker compose --profile analytics rm --stop --force umami umami-db",
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:retention": "npm run db:retention -w backend",

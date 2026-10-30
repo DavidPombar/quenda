@@ -47,5 +47,32 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 30
+  # Umami (MIT) de referencia para a analítica web opcional (#25). Só arranca con
+  # `npm run analytics:up` (perfil `analytics`). Panel en http://127.0.0.1:8095 (admin / umami);
+  # crea alí un sitio e pon o seu identificador e http://127.0.0.1:8095 en Axustes → Analítica web.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v2.20.2
+    profiles: ["analytics"]
+    environment:
+      DATABASE_URL: postgresql://umami:umami_local@umami-db:5432/umami
+      APP_SECRET: umami-local-secret-NO-PRODUCCION
+    ports: ["127.0.0.1:8095:3000"]
+    depends_on:
+      umami-db:
+        condition: service_healthy
+  umami-db:
+    image: postgres:17-alpine
+    profiles: ["analytics"]
+    environment:
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: umami_local
+      POSTGRES_DB: umami
+    volumes: ["umami-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
 volumes:
   quenda-data:
+  umami-data:

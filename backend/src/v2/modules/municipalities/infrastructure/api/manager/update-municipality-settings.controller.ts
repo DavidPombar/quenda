@@ -60,6 +60,7 @@ export class UpdateMunicipalitySettingsController {
         throw new ProblemException(404, error);
       case "insufficient_contrast":
       case "invalid_holidays":
+      case "invalid_analytics":
         throw new ProblemException(422, error);
       default:
         return assertNever(error);

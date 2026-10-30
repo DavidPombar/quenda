@@ -13,6 +13,7 @@ import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.muta
 import { useGetAuthMethodsQuery } from "@/queries/auth/get-auth-methods.query";
 import { APP_BASE_PATH, ROUTES, routeFor } from "@/constants/routes";
 import { useUpdateLocaleMutation } from "@/queries/account/update-locale.mutation";
+import { useRecordPageViewMutation } from "@/queries/analytics/record-page-view.mutation";
 import { translate, type TextKey } from "@/services/i18n.service";
 import {
   AUTH_ERROR_PARAM,
@@ -57,6 +58,19 @@ export function useShellController() {
   }, [searchParams, setSearchParams]);
   const municipality = municipalities.data?.find((item) => item.slug === slug);
   const locale: Locale = chosenLocale ?? municipality?.locale ?? "gl";
+  // Councils with web analytics on count each page shown, through our own API (#25).
+  const pageView = useRecordPageViewMutation();
+  const record = pageView.mutate;
+  const counted = municipality?.analytics ? municipality.slug : null;
+  useEffect(() => {
+    if (!counted) return;
+    record({
+      slug: counted,
+      path: `${APP_BASE_PATH}${location.pathname}`,
+      language: locale,
+      screen: `${window.screen.width}x${window.screen.height}`,
+    });
+  }, [counted, location.pathname, locale, record]);
   function setLocale(next: Locale) {
     localStorage.setItem("quenda.locale", next);
     setChosenLocale(next);

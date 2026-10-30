@@ -18,6 +18,7 @@ import { SeasonsModule } from "./v2/modules/seasons/seasons.module";
 import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
 import { PortabilityModule } from "./v2/modules/portability/portability.module";
 import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
+import { AnalyticsModule } from "./v2/modules/analytics/analytics.module";
 @Module({
   imports: [
     SharedModule,
@@ -38,6 +39,7 @@ import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
     CalendarsModule,
     PortabilityModule,
     OpenDataModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

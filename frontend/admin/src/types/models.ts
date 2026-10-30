@@ -72,6 +72,8 @@ export interface Municipality {
   dataLicense: DataLicense;
   /** DIR3 code, publisher of the DCAT catalogue; null when not set. */
   dir3Code: string | null;
+  /** Whether page views go to the council's Umami. */
+  analytics: boolean;
 }
 export const DATA_LICENSES = [
   "CC-BY-4.0",
@@ -87,6 +89,9 @@ export interface LegalTexts {
 export interface MunicipalitySettings extends Municipality {
   /** RFC 5545 VCALENDAR of all-day municipal holidays. */
   holidaysCalendar: string;
+  /** Base URL of the council's Umami; empty when web analytics is off. */
+  analyticsUrl: string;
+  analyticsWebsiteId: string | null;
 }
 export type SettingsPatch = Partial<
   Pick<
@@ -105,6 +110,8 @@ export type SettingsPatch = Partial<
     | "noShowBlockDays"
     | "dataLicense"
     | "dir3Code"
+    | "analyticsUrl"
+    | "analyticsWebsiteId"
   >
 >;
 export interface SettingsUpdate {

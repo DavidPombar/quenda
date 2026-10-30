@@ -62,6 +62,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Este enlace xa non serve: cambiaches os avisos despois de recibilo. Xestiónaos en Conta e privacidade.",
     push_unavailable:
       "Este concello non ten activados os avisos no dispositivo.",
+    invalid_analytics:
+      "Indica o enderezo https do teu Umami e o identificador do sitio, ou deixa os dous baleiros.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -117,6 +119,8 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Este enlace ya no sirve: cambiaste los avisos después de recibirlo. Gestiónalos en Cuenta y privacidad.",
     push_unavailable:
       "Este ayuntamiento no tiene activados los avisos en el dispositivo.",
+    invalid_analytics:
+      "Indica la dirección https de tu Umami y el identificador del sitio, o deja los dos vacíos.",
   },
 };
 @Catch(HttpException)

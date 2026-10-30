@@ -22,6 +22,7 @@ import {
 } from "@/services/date.service";
 import { categoryLabel } from "@/services/tariff.service";
 import { BookingDialog } from "./components/booking-dialog/booking-dialog.view";
+import { SlotSuggestions } from "./components/slot-suggestions/slot-suggestions.view";
 import { ResourceGrid } from "./components/resource-grid/resource-grid.view";
 import { useFacilityDetailsController } from "./facility-details.controller";
 import { SeasonCampaigns } from "./components/season-campaigns/season-campaigns.view";
@@ -273,6 +274,16 @@ export function FacilityDetails() {
                 <p>{c.t(c.pastCount ? "noSlotsLeft" : "noSlots")}</p>
               </div>
             )}
+            {c.dayFull && !c.taken && (
+              <SlotSuggestions
+                municipality={c.municipality}
+                facilityId={f.id}
+                date={c.date}
+                around={null}
+                t={c.t}
+                onPick={c.pick}
+              />
+            )}
             {c.pastCount > 0 && !c.availability.isPending && (
               <button
                 type="button"
@@ -317,7 +328,18 @@ export function FacilityDetails() {
         error={c.create.error?.message ?? ""}
         onClose={c.close}
         onConfirm={c.reserve}
-      />
+      >
+        {c.taken && (
+          <SlotSuggestions
+            municipality={c.municipality}
+            facilityId={f.id}
+            date={c.date}
+            around={c.takenStart}
+            t={c.t}
+            onPick={c.pick}
+          />
+        )}
+      </BookingDialog>
     </div>
   );
 }

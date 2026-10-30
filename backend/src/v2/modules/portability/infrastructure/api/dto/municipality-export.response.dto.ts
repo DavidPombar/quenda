@@ -39,6 +39,9 @@ class ExportedMunicipalityDTO {
   @ApiProperty({ description: "SPDX licence of the open data" })
   dataLicense!: string;
   @ApiProperty({ type: String, nullable: true }) dir3Code!: string | null;
+  @ApiProperty() analyticsUrl!: string;
+  @ApiProperty({ type: String, nullable: true })
+  analyticsWebsiteId!: string | null;
 }
 class ExportedFacilityDTO {
   @ApiProperty() id!: string;

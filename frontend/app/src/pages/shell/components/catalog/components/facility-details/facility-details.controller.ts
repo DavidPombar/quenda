@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import {
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { Temporal } from "@js-temporal/polyfill";
 import { useGetFacilityQuery } from "@/queries/facilities/get-facility.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
@@ -11,19 +16,30 @@ import { today, timeLabel, longDayLabel } from "@/services/date.service";
 import { localized } from "@/services/catalog.service";
 import { orderResources, resourceLabel } from "@/services/resources.service";
 import type { AppContext } from "@/types/app-context";
-import type { Resource, Slot } from "@/types/models";
+import { ROUTES, routeFor } from "@/constants/routes";
+import type { Resource, Slot, SlotSuggestion } from "@/types/models";
 /** Value of the court selector that shows every court in one table. */
 const ALL_RESOURCES = "all";
 export function useFacilityDetailsController() {
   const context = useOutletContext<AppContext>();
   const { id = "" } = useParams();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const facilities = useGetFacilityQuery({
     slug: context.municipality.slug,
     id,
   });
   const facility = facilities.data;
   const firstDay = today(context.municipality.timezone);
-  const [date, setDate] = useState(firstDay);
+  const dateOptions = Array.from(
+    { length: context.municipality.advanceDays + 1 },
+    (_, i) => Temporal.PlainDate.from(firstDay).add({ days: i }).toString(),
+  );
+  // An alternative in another facility opens it on the same day (`?data=`).
+  const requested = params.get("data") ?? "";
+  const [date, setDate] = useState(
+    dateOptions.includes(requested) ? requested : firstDay,
+  );
   const [selected, setSelected] = useState<{
     slot: Slot;
     resource: Resource | null;
@@ -89,10 +105,6 @@ export function useFacilityDetailsController() {
           : {}),
       });
   }
-  const dateOptions = Array.from(
-    { length: context.municipality.advanceDays + 1 },
-    (_, i) => Temporal.PlainDate.from(firstDay).add({ days: i }).toString(),
-  );
   const days = dateOptions.slice(0, 7);
   const slots = currentResource
     ? (availabilityById.get(currentResource.id)?.slots ?? [])
@@ -151,6 +163,30 @@ export function useFacilityDetailsController() {
       }),
     };
   });
+  // No free court that day, or the chosen slot was taken meanwhile: offer alternatives (#25).
+  const dayFull =
+    !!availability.data &&
+    !availability.data.resources.some((item) =>
+      item.slots.some((slot) => slot.status === "available"),
+    );
+  const taken =
+    (create.error as { code?: string } | null)?.code === "slot_taken";
+  function pick(suggestion: SlotSuggestion) {
+    if (!suggestion.sameFacility) {
+      close();
+      void navigate(
+        `${routeFor(context.municipality.slug, ROUTES.detail.replace(":id", suggestion.facilityId))}?data=${date}`,
+      );
+      return;
+    }
+    const resource =
+      resources.find((item) => item.id === suggestion.resourceId) ?? null;
+    if (resource && multiple && !grid) setChosenView(resource.id);
+    select(
+      { start: suggestion.start, end: suggestion.end, status: "available" },
+      resource,
+    );
+  }
   function changeDate(value: string) {
     setDate(value);
     setShowPast(false);
@@ -213,6 +249,10 @@ export function useFacilityDetailsController() {
     close,
     reserve,
     create,
+    dayFull,
+    taken,
+    takenStart: taken ? (selected?.slot.start ?? null) : null,
+    pick,
     tariff: tariff.data ?? null,
     prices,
   };

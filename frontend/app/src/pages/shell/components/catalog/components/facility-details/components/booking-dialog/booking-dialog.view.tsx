@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import {
@@ -35,6 +36,8 @@ export function BookingDialog(p: {
   pending: boolean;
   success: boolean;
   error: string;
+  /** Shown under the error, e.g. alternatives when the slot was taken. */
+  children?: ReactNode;
   onClose: () => void;
   onConfirm: () => void;
 }) {
@@ -108,6 +111,7 @@ export function BookingDialog(p: {
                   {p.error}
                 </p>
               )}
+              {p.children}
             </Dialog.Body>
             <Dialog.Footer>
               {p.success ? (

@@ -104,6 +104,8 @@ const tables = {
     accessibility_exceptions_es: "accessibilityExceptionsEs",
     data_license: "dataLicense",
     dir3_code: "dir3Code",
+    analytics_url: "analyticsUrl",
+    analytics_website_id: "analyticsWebsiteId",
     access_webhook_url: "accessWebhookUrl",
     access_webhook_secret_sealed: "accessWebhookSecretSealed",
   },

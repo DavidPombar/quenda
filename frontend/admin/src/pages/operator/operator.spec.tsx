@@ -16,6 +16,8 @@ import type {
 const settings: MunicipalitySettings = {
   ...municipality,
   holidaysCalendar: "",
+  analyticsUrl: "",
+  analyticsWebsiteId: null,
 };
 const deployment: DeploymentMunicipality[] = [
   {

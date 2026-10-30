@@ -757,6 +757,17 @@ const gl = {
   dir3Hint:
     "Nove letras ou números, por exemplo L01360000. Déixao baleiro se non o sabes.",
   dir3Error: "O código DIR3 ten nove letras ou números.",
+  analyticsSection: "Analítica web",
+  analyticsHint:
+    "Conta as visitas á app no Umami do concello, sen cookies. Quenda pásalle a páxina vista (sen parámetros nin identificadores), o idioma, o tamaño de pantalla, o navegador e o enderezo IP, que Umami converte nunha suma diaria para contar visitantes únicos. Indícao no aviso de privacidade antes de activalo.",
+  analyticsUrlLabel: "Enderezo do Umami",
+  analyticsUrlHint:
+    "Por exemplo, https://analitica.concello.gal. Baleiro desactiva a analítica.",
+  analyticsWebsiteLabel: "Identificador do sitio en Umami",
+  analyticsWebsiteHint: "Aparece en Umami, en Configuración → Sitios web.",
+  analyticsError:
+    "Indica un enderezo https e o identificador do sitio, ou deixa os dous baleiros.",
+  analyticsOff: "A analítica web está desactivada.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -1498,6 +1509,17 @@ const es: Record<TextKey, string> = {
   dir3Hint:
     "Nueve letras o números, por ejemplo L01360000. Déjalo vacío si no lo sabes.",
   dir3Error: "El código DIR3 tiene nueve letras o números.",
+  analyticsSection: "Analítica web",
+  analyticsHint:
+    "Cuenta las visitas a la app en el Umami del ayuntamiento, sin cookies. Quenda le pasa la página vista (sin parámetros ni identificadores), el idioma, el tamaño de pantalla, el navegador y la dirección IP, que Umami convierte en una suma diaria para contar visitantes únicos. Indícalo en el aviso de privacidad antes de activarlo.",
+  analyticsUrlLabel: "Dirección del Umami",
+  analyticsUrlHint:
+    "Por ejemplo, https://analitica.concello.gal. Vacío desactiva la analítica.",
+  analyticsWebsiteLabel: "Identificador del sitio en Umami",
+  analyticsWebsiteHint: "Aparece en Umami, en Configuración → Sitios web.",
+  analyticsError:
+    "Indica una dirección https y el identificador del sitio, o deja los dos vacíos.",
+  analyticsOff: "La analítica web está desactivada.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];
