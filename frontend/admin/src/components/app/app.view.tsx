@@ -11,6 +11,8 @@ export function App() {
       <PersistQueryClientProvider
         client={queryClient}
         persistOptions={offlineCache}
+        // Kept answers show at once and are refreshed when there is a network.
+        onSuccess={() => queryClient.invalidateQueries()}
       >
         <RouterProvider router={router} />
       </PersistQueryClientProvider>

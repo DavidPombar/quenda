@@ -8,6 +8,9 @@ export function useVerifyEmailCodeMutation() {
     onSuccess: (session) => {
       cache.removeQueries({ queryKey: ["bookings"] });
       cache.removeQueries({ queryKey: ["notifications"] });
+      // Passes and penalties are personal and also kept for offline use (#24).
+      cache.removeQueries({ queryKey: ["access-pass"] });
+      cache.removeQueries({ queryKey: ["penalty"] });
       cache.setQueryData(["session"], session);
     },
   });

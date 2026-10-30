@@ -31,8 +31,8 @@ export const offlineCache: Omit<PersistQueryClientOptions, "queryClient"> = {
     storage: window.localStorage,
     // The app and the backoffice share the origin, so each keeps its own copy.
     key: "quenda.app.offline",
-    // Tests clear the storage between cases; a delayed write would leak into the next one.
-    throttleTime: import.meta.env.MODE === "test" ? 0 : 1000,
+    // Written at once: a reload right after signing in must not bring back the old session.
+    throttleTime: 0,
   }),
   maxAge: MAX_AGE,
   buster: OFFLINE_FORMAT,
