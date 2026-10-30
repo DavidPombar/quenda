@@ -39,7 +39,7 @@ export class GetOpenFacilitiesCsvController {
         sendOpenData(
           response,
           "text/csv; charset=utf-8; header=present",
-          "${data.municipality.slug}-facilities.csv",
+          `${data.municipality.slug}-facilities.csv`,
           facilitiesCsv(publication(request, data)),
         ),
       this.handleError,

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Module } from "@nestjs/common";
+import { InsightsModule } from "../insights/insights.module";
 import { OpenDataRepository } from "./domain/open-data.repository";
 import { PostgresOpenDataRepository } from "./infrastructure/persistence/postgres-open-data.repository";
 import { ListOpenFacilities } from "./application/queries/list-open-facilities.query";
@@ -9,9 +10,14 @@ import { GetOpenFacilitiesGeoJsonController } from "./infrastructure/api/public/
 import { GetOpenDataCatalogJsonLdController } from "./infrastructure/api/public/get-catalog-jsonld.controller";
 import { GetOpenDataCatalogRdfController } from "./infrastructure/api/public/get-catalog-rdf.controller";
 import { GetOpenDataSchemaController } from "./infrastructure/api/public/get-open-data-schema.controller";
+import { GetOpenOccupancy } from "./application/queries/get-open-occupancy.query";
+import { GetOpenOccupancyJsonController } from "./infrastructure/api/public/get-occupancy-json.controller";
+import { GetOpenOccupancyCsvController } from "./infrastructure/api/public/get-occupancy-csv.controller";
 @Module({
+  imports: [InsightsModule],
   providers: [
     ListOpenFacilities,
+    GetOpenOccupancy,
     { provide: OpenDataRepository, useClass: PostgresOpenDataRepository },
   ],
   controllers: [
@@ -21,6 +27,8 @@ import { GetOpenDataSchemaController } from "./infrastructure/api/public/get-ope
     GetOpenDataCatalogJsonLdController,
     GetOpenDataCatalogRdfController,
     GetOpenDataSchemaController,
+    GetOpenOccupancyJsonController,
+    GetOpenOccupancyCsvController,
   ],
 })
 export class OpenDataModule {}

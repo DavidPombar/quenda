@@ -63,6 +63,19 @@ export interface HeatmapCell extends Figures {
   /** Local hour, 0–23. */
   hour: number;
 }
+/** One facility, ISO week, weekday and local hour with open time (open data, #21). */
+export interface WeeklyCell extends Figures {
+  facilityId: string;
+  /** ISO 8601 week-numbering year and week. */
+  isoYear: number;
+  isoWeek: number;
+  /** ISO weekday, 1 = Monday. */
+  weekday: number;
+  /** Local hour, 0–23. */
+  hour: number;
+  /** Open time held by no-shows: booked but not used. */
+  noShowMinutes: number;
+}
 export interface OccupancyReport extends Figures {
   confirmed: number;
   cancelled: number;
@@ -126,7 +139,7 @@ const minutes = (spans: Span[]) =>
 function byLocalHour(
   span: Span,
   timezone: string,
-  add: (weekday: number, hour: number, minutes: number) => void,
+  add: (local: Temporal.ZonedDateTime, minutes: number) => void,
 ) {
   let cursor = span.start;
   while (compare(cursor, span.end) < 0) {
@@ -136,7 +149,7 @@ function byLocalHour(
       .add({ hours: 1 })
       .toInstant();
     const end = earlier(boundary, span.end);
-    add(local.dayOfWeek, local.hour, end.since(cursor).total("minutes"));
+    add(local, end.since(cursor).total("minutes"));
     cursor = end;
   }
 }
@@ -149,6 +162,130 @@ export function figures(bookedMinutes: number, openMinutes: number): Figures {
       : null,
   };
 }
+function localRange(
+  timezone: string,
+  from: Temporal.PlainDate,
+  to: Temporal.PlainDate,
+): Span {
+  return {
+    start: from.toZonedDateTime(timezone).toInstant(),
+    end: to.add({ days: 1 }).toZonedDateTime(timezone).toInstant(),
+  };
+}
+/**
+ * Open time of one facility within the range (calendar while active, minus holidays), and the
+ * parts of it held by bookings of some statuses (club season slots count as held). Overlaps are merged within each unit only, so
+ * simultaneous independent courts count separately; open time counts once per unit.
+ */
+function facilityTime(facility: FacilityActivity, range: Span) {
+  const open = subtract(
+    intersect(intersect(facility.open, facility.active), [range]),
+    facility.closed,
+  );
+  const unitIds = facility.unitIds ?? [facility.id];
+  const held = (
+    statuses: readonly FacilityActivity["bookings"][number]["status"][],
+    units: readonly string[] = unitIds,
+  ) =>
+    units.flatMap((unitId) =>
+      intersect(
+        facility.bookings.filter(
+          (booking) =>
+            statuses.includes(booking.status) &&
+            (booking.unitIds ?? [facility.id]).includes(unitId),
+        ),
+        open,
+      ),
+    );
+  return {
+    open,
+    units: unitIds.length,
+    booked: held(["confirmed", "season"]),
+    noShows: held(["no_show"]),
+    /** Held time on some of the units, for the per-court report. */
+    bookedIn: (units: readonly string[]) =>
+      held(["confirmed", "season"], units),
+  };
+}
+/**
+ * Occupancy of each facility by ISO week, weekday and local hour for the local dates from–to
+ * (inclusive). Only cells with open time are returned, so 0 % differs from "closed". Figures
+ * are aggregated minutes with no booking or person identifiers.
+ */
+export function weeklyOccupancy(args: {
+  timezone: string;
+  from: Temporal.PlainDate;
+  to: Temporal.PlainDate;
+  facilities: FacilityActivity[];
+}): WeeklyCell[] {
+  const range = localRange(args.timezone, args.from, args.to);
+  const cells = new Map<
+    string,
+    Omit<WeeklyCell, keyof Figures | "noShowMinutes"> & {
+      booked: number;
+      open: number;
+      noShow: number;
+    }
+  >();
+  for (const facility of args.facilities) {
+    const time = facilityTime(facility, range);
+    const cell = (local: Temporal.ZonedDateTime) => {
+      const key = [
+        facility.id,
+        local.yearOfWeek,
+        local.weekOfYear,
+        local.dayOfWeek,
+        local.hour,
+      ].join("|");
+      let value = cells.get(key);
+      if (!value)
+        cells.set(
+          key,
+          (value = {
+            facilityId: facility.id,
+            isoYear: local.yearOfWeek ?? local.year,
+            isoWeek: local.weekOfYear ?? 1,
+            weekday: local.dayOfWeek,
+            hour: local.hour,
+            booked: 0,
+            open: 0,
+            noShow: 0,
+          }),
+        );
+      return value;
+    };
+    for (const span of time.open)
+      byLocalHour(span, args.timezone, (local, value) => {
+        cell(local).open += value * time.units;
+      });
+    for (const span of time.booked)
+      byLocalHour(span, args.timezone, (local, value) => {
+        cell(local).booked += value;
+      });
+    for (const span of time.noShows)
+      byLocalHour(span, args.timezone, (local, value) => {
+        cell(local).noShow += value;
+      });
+  }
+  const order = new Map(
+    args.facilities.map((facility, index) => [facility.id, index]),
+  );
+  return [...cells.values()]
+    .filter((value) => value.open > 0)
+    .map(({ booked, open, noShow, ...key }) => ({
+      ...key,
+      ...figures(booked, open),
+      noShowMinutes: Math.round(noShow),
+    }))
+    .sort(
+      (a, b) =>
+        (order.get(a.facilityId) ?? 0) - (order.get(b.facilityId) ?? 0) ||
+        a.isoYear - b.isoYear ||
+        a.isoWeek - b.isoWeek ||
+        a.weekday - b.weekday ||
+        a.hour - b.hour,
+    );
+}
 /**
  * Booked against open time for the local dates from–to (inclusive). Open time is the calendar
  * while the facility was active, minus municipal holidays; only bookings inside it count towards
@@ -160,10 +297,7 @@ export function occupancyReport(args: {
   to: Temporal.PlainDate;
   facilities: FacilityActivity[];
 }): OccupancyReport {
-  const range: Span = {
-    start: args.from.toZonedDateTime(args.timezone).toInstant(),
-    end: args.to.add({ days: 1 }).toZonedDateTime(args.timezone).toInstant(),
-  };
+  const range = localRange(args.timezone, args.from, args.to);
   const cells = new Map<string, { booked: number; open: number }>();
   const cell = (weekday: number, hour: number) => {
     const key = `${weekday}-${hour}`;
@@ -172,31 +306,14 @@ export function occupancyReport(args: {
     return value;
   };
   const byFacility = args.facilities.map((facility): FacilityReport => {
-    const open = subtract(
-      intersect(intersect(facility.open, facility.active), [range]),
-      facility.closed,
-    );
-    const unitIds = facility.unitIds ?? [facility.id];
-    // Union overlaps within each unit only; simultaneous independent courts count separately.
-    const bookedIn = (units: readonly string[]) =>
-      units.flatMap((unitId) =>
-        intersect(
-          facility.bookings.filter(
-            (booking) =>
-              (booking.status === "confirmed" || booking.status === "season") &&
-              (booking.unitIds ?? [facility.id]).includes(unitId),
-          ),
-          open,
-        ),
-      );
-    const booked = bookedIn(unitIds);
+    const { open, units, booked, bookedIn } = facilityTime(facility, range);
     for (const span of open)
-      byLocalHour(span, args.timezone, (weekday, hour, value) => {
-        cell(weekday, hour).open += value * unitIds.length;
+      byLocalHour(span, args.timezone, (local, value) => {
+        cell(local.dayOfWeek, local.hour).open += value * units;
       });
     for (const span of booked)
-      byLocalHour(span, args.timezone, (weekday, hour, value) => {
-        cell(weekday, hour).booked += value;
+      byLocalHour(span, args.timezone, (local, value) => {
+        cell(local.dayOfWeek, local.hour).booked += value;
       });
     const starting = facility.bookings.filter(
       (booking) =>
@@ -230,7 +347,7 @@ export function occupancyReport(args: {
       name: facility.name,
       sport: facility.sport,
       ...counts(starting),
-      ...figures(minutes(booked), minutes(open) * unitIds.length),
+      ...figures(minutes(booked), minutes(open) * units),
       byResource,
     };
   });

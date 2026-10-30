@@ -11,6 +11,7 @@ import { Holidays } from "./components/holidays/holidays.view";
 import { UserCategories } from "./components/user-categories/user-categories.view";
 import { NoShowPenalty } from "./components/no-show-penalty/no-show-penalty.view";
 import { AccessQr } from "./components/access-qr/access-qr.view";
+import { OpenData } from "./components/open-data/open-data.view";
 export function Settings() {
   const c = useSettingsController();
   return (
@@ -57,6 +58,7 @@ export function Settings() {
             t={c.t}
           />
           <UserCategories settings={c.settings.data} t={c.t} />
+          <OpenData settings={c.settings.data} t={c.t} />
         </div>
       )}
     </div>

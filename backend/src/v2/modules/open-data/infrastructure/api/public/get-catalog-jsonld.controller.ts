@@ -39,7 +39,7 @@ export class GetOpenDataCatalogJsonLdController {
         sendOpenData(
           response,
           "application/ld+json; charset=utf-8",
-          "${data.municipality.slug}-catalog.jsonld",
+          `${data.municipality.slug}-catalog.jsonld`,
           JSON.stringify(catalogJsonLd(catalog(publication(request, data)))),
         ),
       this.handleError,

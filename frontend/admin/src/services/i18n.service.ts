@@ -689,6 +689,20 @@ const gl = {
   auditAllocationCreated: "Franxa de temporada asignada",
   auditAllocationCancelled: "Franxa de temporada retirada",
   auditOccurrenceCancelled: "Data de temporada liberada",
+  openDataSection: "Datos abertos",
+  openDataHint:
+    "O catálogo de instalacións e a ocupación agregada publícanse con esta licenza. O código DIR3 identifica o concello como editor no catálogo DCAT de datos.gob.es e abertos.xunta.gal.",
+  dataLicenseLabel: "Licenza dos datos",
+  dataLicenseHint:
+    "Por defecto, CC BY 4.0: reutilización libre citando a fonte.",
+  licenseCcBy: "CC BY 4.0 (recoñecemento)",
+  licenseCcBySa: "CC BY-SA 4.0 (recoñecemento e compartir igual)",
+  licenseCc0: "CC0 1.0 (dominio público)",
+  licenseOdbl: "ODbL 1.0 (base de datos aberta)",
+  dir3Label: "Código DIR3 do concello",
+  dir3Hint:
+    "Nove letras ou números, por exemplo L01360000. Déixao baleiro se non o sabes.",
+  dir3Error: "O código DIR3 ten nove letras ou números.",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -1362,6 +1376,20 @@ const es: Record<TextKey, string> = {
   auditAllocationCreated: "Franja de temporada asignada",
   auditAllocationCancelled: "Franja de temporada retirada",
   auditOccurrenceCancelled: "Fecha de temporada liberada",
+  openDataSection: "Datos abiertos",
+  openDataHint:
+    "El catálogo de instalaciones y la ocupación agregada se publican con esta licencia. El código DIR3 identifica al ayuntamiento como editor en el catálogo DCAT de datos.gob.es y abertos.xunta.gal.",
+  dataLicenseLabel: "Licencia de los datos",
+  dataLicenseHint:
+    "Por defecto, CC BY 4.0: reutilización libre citando la fuente.",
+  licenseCcBy: "CC BY 4.0 (reconocimiento)",
+  licenseCcBySa: "CC BY-SA 4.0 (reconocimiento y compartir igual)",
+  licenseCc0: "CC0 1.0 (dominio público)",
+  licenseOdbl: "ODbL 1.0 (base de datos abierta)",
+  dir3Label: "Código DIR3 del ayuntamiento",
+  dir3Hint:
+    "Nueve letras o números, por ejemplo L01360000. Déjalo vacío si no lo sabes.",
+  dir3Error: "El código DIR3 tiene nueve letras o números.",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];
