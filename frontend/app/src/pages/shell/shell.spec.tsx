@@ -152,7 +152,7 @@ describe("Municipal settings in the citizen app", () => {
       primaryColor: "#1a4d8f",
       logoUrl: "/v2/public/municipalities/vilaverde/logo?v=abc",
     });
-    stubJsonResponse({
+    const logo = stubJsonResponse({
       path: "*/v2/public/municipalities/vilaverde/logo",
       response: "",
     });
@@ -168,6 +168,8 @@ describe("Municipal settings in the citizen app", () => {
     expect(document.documentElement.style.getPropertyValue("--court")).toBe(
       "#1a4d8f",
     );
+    // Wait for the image request, so it does not reach the next test's handlers.
+    await expect.poll(() => logo.spy.mock.calls.length).toBeGreaterThan(0);
   });
 });
 describe("Web analytics", () => {

@@ -465,9 +465,13 @@ describe("Alternatives with less occupancy", () => {
         }),
       )
       .toBeVisible();
-    expect(
-      new URL(spy.mock.calls.at(-1)![0].url).searchParams.get("around"),
-    ).toBe(slot.start);
+    // The heading shows while the request is still on its way.
+    await expect
+      .poll(() => {
+        const call = spy.mock.calls.at(-1);
+        return call && new URL(call[0].url).searchParams.get("around");
+      })
+      .toBe(slot.start);
     await dialog
       .getByRole("button", { name: /Reservar Pistas do Castro/ })
       .click();
