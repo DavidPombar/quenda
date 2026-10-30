@@ -97,7 +97,8 @@ export interface Resource {
 export interface Slot {
   start: string;
   end: string;
-  status: "available" | "booked" | "past";
+  /** `season`: held by a club's season slot (#17). */
+  status: "available" | "booked" | "season" | "past";
 }
 export interface ResourceAvailability {
   id: string;
@@ -266,4 +267,24 @@ export interface AuthMethods {
   demo: boolean;
   oidc: { label: string } | null;
   email: boolean;
+}
+/** The club a person represents and its upcoming season slots (#17). */
+export interface MyClub {
+  organization: { id: string; name: string; sport: Sport | null } | null;
+  occurrences: {
+    id: string;
+    facilityName: string;
+    resourceName: string;
+    start: string;
+    end: string;
+  }[];
+}
+/** An open season campaign with its published priority criteria (#17). */
+export interface SeasonCampaign {
+  id: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  criteria: Record<Locale, string>;
+  facilityIds: string[];
 }

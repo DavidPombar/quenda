@@ -30,7 +30,8 @@ export interface BookingSpan {
   facilityId: string;
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "confirmed" | "cancelled" | "no_show";
+  /** `season`: an active occurrence of a club's season slot (#17). */
+  status: "confirmed" | "cancelled" | "no_show" | "season";
 }
 export abstract class InsightsRepository {
   abstract facilities(tenantId: string): Promise<InsightsFacility[]>;

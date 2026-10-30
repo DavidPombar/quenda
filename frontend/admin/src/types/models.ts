@@ -150,7 +150,7 @@ export type ResourceDraft = Omit<Resource, "position">;
 export interface Slot {
   start: string;
   end: string;
-  status: "available" | "booked" | "past";
+  status: "available" | "booked" | "season" | "past";
 }
 export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
 /** One person's reservation as the municipality sees it on the bookings page. */
@@ -343,4 +343,76 @@ export interface MunicipalityExport {
   version: number;
   exportedAt: string;
   municipality: { slug: string };
+}
+/** Season allocation to clubs (#17). */
+export interface Organization {
+  id: string;
+  name: string;
+  taxId: string | null;
+  sport: Sport | null;
+  contactEmail: string | null;
+  createdAt: string;
+  archivedAt: string | null;
+  representatives: {
+    userId: string;
+    displayName: string;
+    email: string | null;
+  }[];
+}
+export interface OrganizationInput {
+  name: string;
+  taxId: string | null;
+  sport: Sport | null;
+  contactEmail: string | null;
+}
+export interface Campaign {
+  id: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  criteria: { gl: string; es: string };
+  facilityIds: string[];
+}
+export type CampaignInput = Omit<Campaign, "id">;
+export interface SeasonConflict {
+  occurrenceId: string;
+  start: string;
+  end: string;
+  bookingId: string | null;
+}
+export interface SeasonAllocation {
+  id: string;
+  campaignId: string;
+  organizationId: string;
+  organizationName: string;
+  facilityId: string;
+  facilityName: string;
+  resourceId: string;
+  resourceName: string;
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  reason: string;
+  createdAt: string;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  active: number;
+  cancelled: number;
+  conflicts: SeasonConflict[];
+  dates: { id: string; start: string; end: string }[];
+}
+export interface SeasonSlotInput {
+  campaignId: string;
+  organizationId: string;
+  facilityId: string;
+  resourceId: string;
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  reason: string;
+}
+export interface SeasonAssignment {
+  allocation: SeasonAllocation;
+  created: number;
+  conflicts: SeasonConflict[];
 }

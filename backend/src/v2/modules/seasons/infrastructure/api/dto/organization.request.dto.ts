@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateIf,
+} from "class-validator";
+import type { Sport } from "../../../domain/season.read-model";
+export class OrganizationRequestDTO {
+  @ApiProperty({ description: "Club, school or association name" })
+  @IsString()
+  @MaxLength(120)
+  name!: string;
+  @ApiPropertyOptional({ description: "Tax id (CIF)", nullable: true })
+  @IsOptional()
+  @ValidateIf((_object: unknown, value: unknown) => value !== null)
+  @IsString()
+  @MaxLength(20)
+  taxId?: string | null;
+  @ApiPropertyOptional({
+    enum: ["padel", "tennis", "futsal", "swimming"],
+    nullable: true,
+  })
+  @IsOptional()
+  @ValidateIf((_object: unknown, value: unknown) => value !== null)
+  @IsIn(["padel", "tennis", "futsal", "swimming"])
+  sport?: Sport | null;
+  @ApiPropertyOptional({ description: "Contact address", nullable: true })
+  @IsOptional()
+  @ValidateIf((_object: unknown, value: unknown) => value !== null)
+  @IsString()
+  @MaxLength(254)
+  contactEmail?: string | null;
+}
+export class UpdateOrganizationRequestDTO extends OrganizationRequestDTO {
+  @ApiPropertyOptional({ description: "Archive (true) or restore (false)" })
+  @IsOptional()
+  @IsBoolean()
+  archived?: boolean;
+}

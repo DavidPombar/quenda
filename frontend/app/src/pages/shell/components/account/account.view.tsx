@@ -5,6 +5,7 @@ import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
 import { dateLabel } from "@/services/date.service";
 import { UserCategories } from "./components/user-categories/user-categories.view";
+import { MyClub } from "./components/my-club/my-club.view";
 import { DeleteAccountDialog } from "./components/delete-account-dialog/delete-account-dialog.view";
 import { useAccountController } from "./account.controller";
 export function Account() {
@@ -56,6 +57,12 @@ export function Account() {
               </div>
             </dl>
           </section>
+          <MyClub
+            userId={c.account.userId}
+            municipality={c.municipality}
+            locale={c.locale}
+            t={c.t}
+          />
           <UserCategories
             userId={c.account.userId}
             municipality={c.municipality}

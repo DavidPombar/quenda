@@ -14,7 +14,8 @@ import { AppError, failure } from "../../../../shared/application/errors";
 export interface AvailabilitySlot {
   start: Temporal.Instant;
   end: Temporal.Instant;
-  status: "available" | "booked" | "past";
+  /** `season`: held by a club's season slot (#17). */
+  status: "available" | "booked" | "season" | "past";
 }
 export interface ResourceAvailability {
   resource: Resource;
@@ -114,21 +115,25 @@ export class GetAvailability {
         const occupied = new Set(units(resource, resources));
         return {
           resource,
-          slots: grid.map(({ start: from, end: to }) => ({
-            start: from,
-            end: to,
-            status:
-              Temporal.Instant.compare(from, now) <= 0
-                ? "past"
-                : busy.some(
-                      (value) =>
-                        occupied.has(value.unitId) &&
-                        Temporal.Instant.compare(value.start, to) < 0 &&
-                        Temporal.Instant.compare(value.end, from) > 0,
-                    )
-                  ? "booked"
-                  : "available",
-          })),
+          slots: grid.map(({ start: from, end: to }): AvailabilitySlot => {
+            if (Temporal.Instant.compare(from, now) <= 0)
+              return { start: from, end: to, status: "past" };
+            const taken = busy.filter(
+              (value) =>
+                occupied.has(value.unitId) &&
+                Temporal.Instant.compare(value.start, to) < 0 &&
+                Temporal.Instant.compare(value.end, from) > 0,
+            );
+            return {
+              start: from,
+              end: to,
+              status: !taken.length
+                ? "available"
+                : taken.every((value) => value.season)
+                  ? "season"
+                  : "booked",
+            };
+          }),
         };
       }),
     });

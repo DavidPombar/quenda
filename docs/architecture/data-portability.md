@@ -19,7 +19,7 @@ manager can only export their own. The file is named
 | `municipality` | All persisted settings, including branding, holidays, retention, no-show rules, email configuration, enabled categories, identity and accessibility statement settings, and the open data licence and DIR3 code |
 | `facilities` | Every facility, including closed ones, with its RFC 5545 opening calendar verbatim and its optional coordinates |
 | `resources` | Courts and spaces of each facility, parents before their parts, including out-of-service ones. Optional: a package without them gets one resource per facility, with the facility's id |
-| `users` | Id, display name, role, deletion state, email, preferred language and identity assurance; the NIF only where residency is verified, still encrypted, plus the family-tariff preference, so the destination needs the same `QUENDA_DATA_KEY` to read it |
+| `users` | Id, display name, role, the club the person represents, deletion state, email, preferred language and identity assurance; the NIF only where residency is verified, still encrypted, plus the family-tariff preference, so the destination needs the same `QUENDA_DATA_KEY` to read it |
 | `identities` | Identity provider issuer and subject of each account, so people sign in to the same account after the move |
 | `facilityStatusPeriods` | Facility status history for reproducible range indicators. Optional in older packages, which fall back to the current status. |
 | `facilityPrices`, `userCategories` | Category prices and verification/request records, including nullable decision times. Optional for older packages. |
@@ -31,6 +31,7 @@ manager can only export their own. The file is named
 | `bookingBlocks` | No-show penalties and their lifting history |
 | `notificationPreferences` | Reminder opt-outs and their update time |
 | `messages` | Transactional email outbox, including delivery state, attempts and deduplication keys |
+| `organizations`, `seasonCampaigns`, `seasonAllocations`, `seasonOccurrences` | Season allocation to clubs (#17): clubs, campaigns with their facilities and published criteria, weekly slots with an informative RFC 5545 `rrule`, and every dated occurrence with its status (active, conflict or cancelled). Active occurrences occupy their court units again on import. Optional in older packages |
 
 Sessions and calendar subscription credentials are deliberately excluded. People
 sign in again and create new subscription links on the destination. Deleted

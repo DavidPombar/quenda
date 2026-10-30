@@ -23,9 +23,12 @@ export interface FacilityActivity {
   active: Span[];
   /** Municipal holidays the facility follows, as whole local days. */
   closed: Span[];
-  /** A no-show held the slot but was not used, so it counts apart and not as booked time. */
+  /**
+   * A no-show held the slot but was not used, so it counts apart and not as booked time. A club's
+   * season slot (#17) is occupied time but not a booking, so it adds minutes and no count.
+   */
   bookings: (Span & {
-    status: "confirmed" | "cancelled" | "no_show";
+    status: "confirmed" | "cancelled" | "no_show" | "season";
     unitIds?: readonly string[];
     /** The court booked; counts go to it, booked time to every unit it occupies. */
     resourceId?: string;
@@ -171,7 +174,7 @@ function localRange(
 }
 /**
  * Open time of one facility within the range (calendar while active, minus holidays), and the
- * parts of it held by bookings of one status. Overlaps are merged within each unit only, so
+ * parts of it held by bookings of some statuses (club season slots count as held). Overlaps are merged within each unit only, so
  * simultaneous independent courts count separately; open time counts once per unit.
  */
 function facilityTime(facility: FacilityActivity, range: Span) {
@@ -181,14 +184,14 @@ function facilityTime(facility: FacilityActivity, range: Span) {
   );
   const unitIds = facility.unitIds ?? [facility.id];
   const held = (
-    status: "confirmed" | "no_show",
+    statuses: readonly FacilityActivity["bookings"][number]["status"][],
     units: readonly string[] = unitIds,
   ) =>
     units.flatMap((unitId) =>
       intersect(
         facility.bookings.filter(
           (booking) =>
-            booking.status === status &&
+            statuses.includes(booking.status) &&
             (booking.unitIds ?? [facility.id]).includes(unitId),
         ),
         open,
@@ -197,10 +200,11 @@ function facilityTime(facility: FacilityActivity, range: Span) {
   return {
     open,
     units: unitIds.length,
-    booked: held("confirmed"),
-    noShows: held("no_show"),
-    /** Confirmed time on some of the units, for the per-court report. */
-    bookedIn: (units: readonly string[]) => held("confirmed", units),
+    booked: held(["confirmed", "season"]),
+    noShows: held(["no_show"]),
+    /** Held time on some of the units, for the per-court report. */
+    bookedIn: (units: readonly string[]) =>
+      held(["confirmed", "season"], units),
   };
 }
 /**

@@ -348,6 +348,12 @@ try {
   await page.getByRole("heading", { level: 1, name: "Auditoría" }).waitFor();
   await audit("audit-log");
   await page.screenshot({ path: ".dev-logs/audit-log.png", fullPage: true });
+  await page.getByRole("link", { name: "Temporadas", exact: true }).click();
+  await page.waitForURL(/\/admin\/[^/]+\/temporadas$/);
+  await page.getByRole("heading", { level: 1, name: "Temporadas" }).waitFor();
+  await page.getByRole("heading", { name: /Asignación de franxas/ }).waitFor();
+  await audit("seasons");
+  await page.screenshot({ path: ".dev-logs/seasons.png", fullPage: true });
   await page
     .getByRole("link", { name: "Accesibilidade", exact: true })
     .first()
@@ -407,7 +413,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-two accessibility scans, including the three accessibility statements passed.",
+    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-three accessibility scans, including the three accessibility statements and the season schedule, passed.",
   );
 } finally {
   await browser.close();

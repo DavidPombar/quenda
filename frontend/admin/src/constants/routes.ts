@@ -16,6 +16,7 @@ export const ROUTES = {
   categories: "categorias",
   bookings: "reservas",
   access: "acceso",
+  seasons: "temporadas",
 } as const;
 export function operatorRouteFor(child: string) {
   return `${ROUTES.operator}/${child}`;

@@ -220,4 +220,38 @@ describe("Account and privacy page", () => {
       .element(page.getByRole("checkbox", { name: /lembranza/ }))
       .not.toBeInTheDocument();
   });
+  test("should show the represented club and its upcoming season slots", async () => {
+    stubShell(true);
+    stubAccount();
+    stubJsonResponse({
+      path: "*/v2/citizen/me/club",
+      response: {
+        organization: {
+          id: "club",
+          name: "Club Pádel Vilaverde",
+          sport: "padel",
+        },
+        occurrences: [
+          {
+            id: "slot",
+            facilityName: "Pistas de pádel da Carballeira",
+            resourceName: "Pista 1",
+            start: "2026-11-03T18:00:00Z",
+            end: "2026-11-03T20:00:00Z",
+          },
+        ],
+      },
+    });
+    await commands.navigate("/app/vilaverde/conta");
+    await render(<App />);
+    await expect
+      .element(
+        page.getByRole("heading", { name: "O meu club: Club Pádel Vilaverde" }),
+      )
+      .toBeVisible();
+    await expect.element(page.getByText(/19:00–21:00/)).toBeVisible();
+    await expect
+      .element(page.getByText("Pistas de pádel da Carballeira · Pista 1"))
+      .toBeVisible();
+  });
 });
