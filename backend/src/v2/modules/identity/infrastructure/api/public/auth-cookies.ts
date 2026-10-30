@@ -4,6 +4,7 @@ import type { Request, Response } from "express";
 import { publicUrl } from "../../oidc/oidc-config";
 import { citizenHome } from "../../../domain/sign-in-target";
 import { ErrorCode } from "../../../../../shared/application/errors";
+import { OPERATOR_COOKIE } from "../../../../../shared/infrastructure/api/operator.guard";
 // Secure by default in production; only the loopback HTTP demo opts out (COOKIE_SECURE=false).
 const secure = () =>
   process.env.COOKIE_SECURE
@@ -12,6 +13,16 @@ const secure = () =>
 /** The 8-hour API session; SameSite=Strict, so it never travels on cross-site navigations. */
 export function setSessionCookie(response: Response, token: string) {
   response.cookie("quenda_session", token, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: secure(),
+    maxAge: 8 * 60 * 60 * 1000,
+    path: "/",
+  });
+}
+/** The operator's 8-hour session (#18), with the same flags as the municipal one. */
+export function setOperatorCookie(response: Response, token: string) {
+  response.cookie(OPERATOR_COOKIE, token, {
     httpOnly: true,
     sameSite: "strict",
     secure: secure(),

@@ -93,6 +93,7 @@ describe("Electronic identification (T3, T4) through a generic OIDC provider", (
       demo: true,
       oidc: { label: "Cl@ve" },
       email: true,
+      local: true,
     });
   });
   it("should create an eID citizen with a working session when a person signs in for the first time", async () => {

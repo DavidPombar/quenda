@@ -1998,3 +1998,67 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+/* Staff accounts and sign-in (#8) */
+.staff-sign-in form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.staff-qr {
+  width: 200px;
+  height: 200px;
+  align-self: center;
+  border: 1px solid var(--line);
+}
+.staff-secret {
+  display: block;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--court-tint, #e6efe9);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  word-break: break-all;
+}
+.login-divider {
+  margin: 20px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-small);
+  color: var(--ink-2);
+}
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.staff-table th,
+.staff-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.staff-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.staff-managers {
+  margin: 0;
+  padding-left: 20px;
+}
+.manager-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.manager-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.temporary-password code {
+  font-size: 1rem;
+  word-break: break-all;
+}
