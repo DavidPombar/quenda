@@ -30,6 +30,26 @@ import { CompleteLoginCode } from "./application/commands/complete-login-code.co
 import { LoginCodeRepository } from "./domain/login-code.repository";
 import { PostgresLoginCodeRepository } from "./infrastructure/persistence/postgres-login-code.repository";
 import { LoginCodeSender } from "./infrastructure/mail/login-code-sender";
+import { CredentialRepository } from "./domain/credential.repository";
+import { PostgresCredentialRepository } from "./infrastructure/persistence/postgres-credential.repository";
+import { CredentialIssuer } from "./application/credential-issuer";
+import { StaffLogin } from "./application/staff-login";
+import { StaffAudit } from "./application/staff-audit";
+import { StartPasswordLogin } from "./application/commands/start-password-login.command";
+import { ChangeTemporaryPassword } from "./application/commands/change-temporary-password.command";
+import { CompleteTotpLogin } from "./application/commands/complete-totp-login.command";
+import { StaffPasswordLoginController } from "./infrastructure/api/public/staff-password-login.controller";
+import { OperatorPasswordLoginController } from "./infrastructure/api/public/operator-password-login.controller";
+import { ChangeTemporaryPasswordController } from "./infrastructure/api/public/change-temporary-password.controller";
+import { CompleteTotpLoginController } from "./infrastructure/api/public/complete-totp-login.controller";
+import { ListStaff } from "./application/queries/list-staff.query";
+import { ProvisionLocalAccount } from "./application/commands/provision-local-account.command";
+import { ResetLocalAccount } from "./application/commands/reset-local-account.command";
+import { CreateDoorStaff } from "./application/commands/create-door-staff.command";
+import { UpdateDoorStaff } from "./application/commands/update-door-staff.command";
+import { ListStaffController } from "./infrastructure/api/manager/list-staff.controller";
+import { CreateDoorStaffController } from "./infrastructure/api/manager/create-door-staff.controller";
+import { UpdateDoorStaffController } from "./infrastructure/api/manager/update-door-staff.controller";
 import { RequestEmailCodeController } from "./infrastructure/api/public/request-email-code.controller";
 import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-email-code.controller";
 @Module({
@@ -60,6 +80,18 @@ import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-em
     CompleteLoginCode,
     LoginCodeSender,
     { provide: LoginCodeRepository, useClass: PostgresLoginCodeRepository },
+    { provide: CredentialRepository, useClass: PostgresCredentialRepository },
+    CredentialIssuer,
+    StaffLogin,
+    StaffAudit,
+    StartPasswordLogin,
+    ChangeTemporaryPassword,
+    CompleteTotpLogin,
+    ListStaff,
+    ProvisionLocalAccount,
+    ResetLocalAccount,
+    CreateDoorStaff,
+    UpdateDoorStaff,
   ],
   controllers: [
     CreateSessionController,
@@ -70,7 +102,14 @@ import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-em
     CompleteOidcLoginController,
     RequestEmailCodeController,
     VerifyEmailCodeController,
+    StaffPasswordLoginController,
+    OperatorPasswordLoginController,
+    ChangeTemporaryPasswordController,
+    CompleteTotpLoginController,
+    ListStaffController,
+    CreateDoorStaffController,
+    UpdateDoorStaffController,
   ],
-  exports: [LoginCodeSender],
+  exports: [LoginCodeSender, CredentialIssuer, CredentialRepository],
 })
 export class IdentityModule {}

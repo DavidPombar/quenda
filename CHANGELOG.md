@@ -10,8 +10,7 @@ All notable changes to Quenda are documented here. The format follows
 
 - Production deployment and operations (#27, R1, T4): `deploy/compose.prod.yml` with Caddy
   TLS, nightly encrypted restic backups with pruning and checks, a daily retention job and
-  migrations on start; console commands to create a municipality and its managers
-  (`create-municipality.js`, `add-manager.js`); and an operations guide in `docs/operacion/`
+  migrations on start; and an operations guide in `docs/operacion/`
   covering deployment with Compose or Coolify, onboarding, backup and restore, upgrades,
   support, a 12-week rollout plan and a draft basic-category ENS kit.
 - Versioned database migrations with a `schema_migrations` record, checksums and an

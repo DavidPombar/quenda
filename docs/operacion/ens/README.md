@@ -58,8 +58,9 @@ Las medidas que el software cubre por sí mismo, con su referencia en el reposit
   `npm run test:headers`.
 - **Control de acceso por roles y aislamiento por concello:** el ámbito sale de la sesión
   autenticada, nunca de la petición ([arquitectura](../../architecture/implementation.md)).
-- **Autenticación:** por un proveedor de identidad (Cl@ve vía OIDC) o por código de un
-  solo uso por correo, con límite de intentos ([identidad](../../architecture/identity.md)).
+- **Autenticación:** la ciudadanía, por un proveedor de identidad (Cl@ve vía OIDC) o por
+  código de un solo uso por correo; el personal, con cuenta local, contraseña y segundo
+  factor TOTP, con límite de intentos y bloqueo ([identidad](../../architecture/identity.md)).
 - **Límites de peticiones** por IP en las entradas y en la API.
 - **Registro de auditoría** de los cambios de gestión y de operación, consultable en el
   backoffice.
@@ -72,4 +73,4 @@ Las medidas que el software cubre por sí mismo, con su referencia en el reposit
 
 Lo que **no** cubre y debe aportar la organización: política de seguridad, roles y
 nombramientos, formación, gestión de incidentes, seguridad física del CPD, bastionado del
-servidor, segundo factor de autenticación del personal técnico y revisión periódica.
+servidor, segundo factor para el acceso al servidor y revisión periódica.

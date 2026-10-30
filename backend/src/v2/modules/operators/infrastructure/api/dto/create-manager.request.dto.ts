@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import {
+  IsOptional,
+  Matches,
   IsEmail,
   IsString,
   IsUUID,
@@ -23,6 +26,13 @@ export class CreateManagerRequestDTO {
   @IsEmail()
   @MaxLength(254)
   email!: string;
+  @ApiPropertyOptional({
+    description:
+      "Login for a local account with password and second factor; a temporary password is returned once",
+  })
+  @IsOptional()
+  @Matches(/^[A-Za-z0-9._-]{3,64}$/)
+  login?: string;
 }
 export class MunicipalityPathRequestDTO {
   @ApiProperty({ description: "Municipality UUID" })

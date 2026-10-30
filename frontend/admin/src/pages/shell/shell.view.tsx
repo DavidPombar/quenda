@@ -12,6 +12,7 @@ import {
   PiQrCode,
   PiSignOut,
   PiUsersThree,
+  PiIdentificationBadge,
   PiX,
 } from "react-icons/pi";
 import {
@@ -86,6 +87,12 @@ export function Shell() {
             <NavLink to={routeFor(municipality.slug, ROUTES.seasons)}>
               <PiUsersThree size={20} aria-hidden="true" />
               {t("seasons")}
+            </NavLink>
+          )}
+          {c.isManager && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.staff)}>
+              <PiIdentificationBadge size={20} aria-hidden="true" />
+              {t("staff")}
             </NavLink>
           )}
           {c.isManager && (
@@ -253,6 +260,10 @@ export function Shell() {
         error={c.create.error?.message ?? ""}
         t={t}
         municipality={municipality.name}
+        slug={municipality.slug}
+        local={c.authMethods.data?.local ?? false}
+        demo={c.authMethods.data?.demo ?? false}
+        onSignedIn={() => c.setLoginOpen(false)}
       />
       <Dialog.Root
         open={c.privacyOpen}

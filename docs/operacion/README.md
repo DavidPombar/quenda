@@ -60,7 +60,8 @@ Si se pierde el servidor, con esto se reconstruye todo:
 2. **Los secretos de la aplicación** de `deploy/quenda.env`:
    - `ACCESS_KEY_SECRET`: sin él, cada gestor tiene que rotar la clave de acceso QR y
      el secreto del webhook;
-   - `QUENDA_DATA_KEY`: sin él, los NIF guardados no se pueden leer;
+   - `QUENDA_DATA_KEY`: sin él, los NIF guardados no se pueden leer y todo el personal
+     tiene que restablecer su cuenta para volver a activar el segundo factor;
    - el par VAPID: sin él, cada dispositivo tiene que volver a activar los avisos.
 3. **`deploy/.env`** y **`deploy/quenda.env`** completos.
 

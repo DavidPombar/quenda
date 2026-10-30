@@ -221,7 +221,12 @@ describe("Sign-in methods without an identity provider", () => {
       .get("/v2/public/auth/methods")
       .expect(200);
     // The demo sends sign-in codes to the local mail catcher, so email sign-in is offered.
-    expect(methods.body).toEqual({ demo: true, oidc: null, email: true });
+    expect(methods.body).toEqual({
+      demo: true,
+      oidc: null,
+      email: true,
+      local: false,
+    });
   });
   it("should send the citizen back with oidc_unavailable when OIDC is not configured", async () => {
     const context = await tenant();

@@ -17,6 +17,13 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     email_login_disabled: "Este despregamento non ofrece a entrada co correo.",
     code_invalid: "O código non é correcto. Revísao ou pide outro.",
     code_expired: "O código caducou ou xa non é válido. Pide outro.",
+    local_accounts_unavailable:
+      "As contas do persoal necesitan a clave de datos (QUENDA_DATA_KEY) neste despregamento.",
+    account_locked:
+      "Demasiados intentos fallidos. Agarda 15 minutos ou pide que restablezan a conta.",
+    password_weak:
+      "O contrasinal debe ter polo menos 12 caracteres e non pode ser o nome de usuario.",
+    login_taken: "Xa hai unha conta con ese nome de usuario.",
     slot_taken: "Esta quenda xa está reservada. Escolle outra hora.",
     outside_opening: "A instalación non está aberta nesa quenda.",
     booking_limit: "Acadaches o límite de reservas activas.",
@@ -80,6 +87,13 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     email_login_disabled: "Este despliegue no ofrece la entrada con el correo.",
     code_invalid: "El código no es correcto. Revísalo o pide otro.",
     code_expired: "El código ha caducado o ya no es válido. Pide otro.",
+    local_accounts_unavailable:
+      "Las cuentas del personal necesitan la clave de datos (QUENDA_DATA_KEY) en este despliegue.",
+    account_locked:
+      "Demasiados intentos fallidos. Espera 15 minutos o pide que restablezcan la cuenta.",
+    password_weak:
+      "La contraseña debe tener al menos 12 caracteres y no puede ser el nombre de usuario.",
+    login_taken: "Ya hay una cuenta con ese nombre de usuario.",
     slot_taken: "Este turno ya está reservado. Elige otra hora.",
     outside_opening: "La instalación no está abierta en ese turno.",
     booking_limit: "Has alcanzado el límite de reservas activas.",

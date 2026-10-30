@@ -53,6 +53,79 @@ const gl = {
   signIn: "Entrar",
   signOut: "Saír",
   demo: "Demostración con datos ficticios.",
+  temporaryPasswordTitle: "Contrasinal temporal",
+  temporaryPasswordBody:
+    "Dálle estes datos á persoa por unha vía segura. Só se mostran agora: ao entrar por primeira vez cambiará o contrasinal e activará a verificación en dous pasos.",
+  temporaryPasswordLabel: "Contrasinal temporal",
+  temporaryPasswordCopy: "Copiar o contrasinal",
+  temporaryPasswordCopied: "Contrasinal copiado.",
+  temporaryPasswordDone: "Feito",
+  operatorLoginHint:
+    "Letras, números, puntos ou guións; por exemplo antia.souto.",
+  operatorLoginError:
+    "Escribe un usuario de 3 a 64 letras, números, puntos ou guións.",
+  operatorResetManager: "Restablecer a conta",
+  staff: "Persoal",
+  staffSubtitle:
+    "Contas do persoal que xestiona o servizo. Cada persoa entra co seu usuario, un contrasinal e un código da súa app de autenticación.",
+  staffDoor: "Control de accesos",
+  staffDoorHint:
+    "Persoal da porta: só ve as reservas do día e rexistra as entradas. Ao crear a conta verás un contrasinal temporal unha soa vez.",
+  staffDoorEmpty: "Aínda non hai contas de control de accesos.",
+  staffName: "Nome",
+  staffState: "Estado",
+  staffActions: "Accións",
+  staffStateActive: "Activa",
+  staffStatePending: "Pendente da primeira entrada",
+  staffStateDisabled: "Desactivada",
+  staffStateNoAccount: "Sen conta local",
+  staffReset: "Restablecer",
+  staffDisable: "Desactivar",
+  staffEnable: "Activar",
+  staffAddDoor: "Crear conta de control de accesos",
+  staffManagers: "Xestión municipal",
+  staffManagersHint:
+    "As contas de xestión créaas e restablécea a deputación (área de operación) ou o servizo técnico desde a liña de ordes.",
+  staffNameError: "Escribe o nome da persoa.",
+  staffLoginTaken: "Xa hai unha conta con ese usuario neste concello.",
+  staffSaveError: "Non puidemos gardar o cambio. Volve tentalo.",
+  staffDisabledNotice: "Conta desactivada:",
+  staffEnabledNotice: "Conta activada:",
+  staffTitle: "Entrar como persoal do concello",
+  staffSignIn: "Entrar",
+  staffLogin: "Usuario",
+  staffPassword: "Contrasinal",
+  staffContinue: "Continuar",
+  staffNewPasswordTitle: "Novo contrasinal",
+  staffNewPasswordBody:
+    "É a túa primeira entrada: cambia o contrasinal temporal por un que só saibas ti.",
+  staffNewPassword: "Novo contrasinal",
+  staffRepeatPassword: "Repite o contrasinal",
+  staffPasswordHint:
+    "Polo menos 12 caracteres. Unha frase de varias palabras é fácil de lembrar.",
+  staffEnrollTitle: "Activar a verificación en dous pasos",
+  staffEnrollBody:
+    "Escanea o código QR cunha app de autenticación (por exemplo FreeOTP, Aegis ou a do teu móbil) e escribe o código de 6 cifras que mostra.",
+  staffEnrollQr: "Código QR para a app de autenticación",
+  staffEnrollManual: "Se non podes escanealo, escribe esta clave na app:",
+  staffCodeTitle: "Código de verificación",
+  staffCodeBody: "Escribe o código de 6 cifras da túa app de autenticación.",
+  staffCode: "Código de 6 cifras",
+  staffCodeFormat: "O código ten 6 cifras.",
+  staffLoginRejected: "O usuario ou o contrasinal non son correctos.",
+  staffLocked:
+    "Demasiados intentos fallidos. Agarda 15 minutos ou pide que restablezan a túa conta.",
+  staffPasswordWeak:
+    "O contrasinal debe ter polo menos 12 caracteres e non pode ser o teu usuario.",
+  staffPasswordMismatch: "Os dous contrasinais non coinciden.",
+  staffCodeInvalid:
+    "O código non é correcto. Espera ao seguinte e volve tentalo.",
+  staffExpired:
+    "Pasou demasiado tempo. Volve escribir o usuario e o contrasinal.",
+  staffUnavailable:
+    "Este despregamento aínda non ten activadas as contas do persoal (falta a clave de datos).",
+  staffError: "Non puidemos completar a entrada. Volve tentalo.",
+  staffDemoDivider: "Demostración",
   demoTitle: "Entrar na xestión municipal",
   demoBody:
     "Entra cunha conta de proba de xestión municipal. Os datos desta demostración son ficticios.",
@@ -854,6 +927,79 @@ const es: Record<TextKey, string> = {
   done: "Ver mis reservas",
   signOut: "Salir",
   demo: "Demostración con datos ficticios.",
+  temporaryPasswordTitle: "Contraseña temporal",
+  temporaryPasswordBody:
+    "Dale estos datos a la persona por una vía segura. Solo se muestran ahora: al entrar por primera vez cambiará la contraseña y activará la verificación en dos pasos.",
+  temporaryPasswordLabel: "Contraseña temporal",
+  temporaryPasswordCopy: "Copiar la contraseña",
+  temporaryPasswordCopied: "Contraseña copiada.",
+  temporaryPasswordDone: "Hecho",
+  operatorLoginHint:
+    "Letras, números, puntos o guiones; por ejemplo antia.souto.",
+  operatorLoginError:
+    "Escribe un usuario de 3 a 64 letras, números, puntos o guiones.",
+  operatorResetManager: "Restablecer la cuenta",
+  staff: "Personal",
+  staffSubtitle:
+    "Cuentas del personal que gestiona el servicio. Cada persona entra con su usuario, una contraseña y un código de su app de autenticación.",
+  staffDoor: "Control de accesos",
+  staffDoorHint:
+    "Personal de la puerta: solo ve las reservas del día y registra las entradas. Al crear la cuenta verás una contraseña temporal una sola vez.",
+  staffDoorEmpty: "Aún no hay cuentas de control de accesos.",
+  staffName: "Nombre",
+  staffActions: "Acciones",
+  staffState: "Estado",
+  staffStateActive: "Activa",
+  staffStatePending: "Pendiente de la primera entrada",
+  staffStateNoAccount: "Sin cuenta local",
+  staffStateDisabled: "Desactivada",
+  staffReset: "Restablecer",
+  staffDisable: "Desactivar",
+  staffEnable: "Activar",
+  staffAddDoor: "Crear cuenta de control de accesos",
+  staffManagers: "Gestión municipal",
+  staffManagersHint:
+    "Las cuentas de gestión las crea y restablece la diputación (área de operación) o el servicio técnico desde la línea de órdenes.",
+  staffNameError: "Escribe el nombre de la persona.",
+  staffLoginTaken: "Ya hay una cuenta con ese usuario en este ayuntamiento.",
+  staffSaveError: "No pudimos guardar el cambio. Vuelve a intentarlo.",
+  staffDisabledNotice: "Cuenta desactivada:",
+  staffEnabledNotice: "Cuenta activada:",
+  staffTitle: "Entrar como personal del ayuntamiento",
+  staffSignIn: "Entrar",
+  staffLogin: "Usuario",
+  staffPassword: "Contraseña",
+  staffContinue: "Continuar",
+  staffNewPasswordTitle: "Nueva contraseña",
+  staffNewPasswordBody:
+    "Es tu primera entrada: cambia la contraseña temporal por una que solo sepas tú.",
+  staffNewPassword: "Nueva contraseña",
+  staffRepeatPassword: "Repite la contraseña",
+  staffPasswordHint:
+    "Al menos 12 caracteres. Una frase de varias palabras es fácil de recordar.",
+  staffEnrollTitle: "Activar la verificación en dos pasos",
+  staffEnrollBody:
+    "Escanea el código QR con una app de autenticación (por ejemplo FreeOTP, Aegis o la de tu móvil) y escribe el código de 6 cifras que muestra.",
+  staffEnrollQr: "Código QR para la app de autenticación",
+  staffEnrollManual: "Si no puedes escanearlo, escribe esta clave en la app:",
+  staffCodeTitle: "Código de verificación",
+  staffCodeBody: "Escribe el código de 6 cifras de tu app de autenticación.",
+  staffCode: "Código de 6 cifras",
+  staffCodeFormat: "El código tiene 6 cifras.",
+  staffLoginRejected: "El usuario o la contraseña no son correctos.",
+  staffLocked:
+    "Demasiados intentos fallidos. Espera 15 minutos o pide que restablezcan tu cuenta.",
+  staffPasswordWeak:
+    "La contraseña debe tener al menos 12 caracteres y no puede ser tu usuario.",
+  staffPasswordMismatch: "Las dos contraseñas no coinciden.",
+  staffCodeInvalid:
+    "El código no es correcto. Espera al siguiente y vuelve a intentarlo.",
+  staffExpired:
+    "Ha pasado demasiado tiempo. Vuelve a escribir el usuario y la contraseña.",
+  staffUnavailable:
+    "Este despliegue aún no tiene activadas las cuentas del personal (falta la clave de datos).",
+  staffError: "No pudimos completar la entrada. Vuelve a intentarlo.",
+  staffDemoDivider: "Demostración",
   demoTitle: "Entrar en la gestión municipal",
   demoBody:
     "Entra con una cuenta de prueba de gestión municipal. Los datos de esta demostración son ficticios.",

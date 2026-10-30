@@ -10,6 +10,7 @@ import { settingsRoute } from "./components/settings/settings.route";
 import { categoriesRoute } from "./components/categories/categories.route";
 import { bookingsRoute } from "./components/bookings/bookings.route";
 import { seasonsRoute } from "./components/seasons/seasons.route";
+import { staffRoute } from "./components/staff/staff.route";
 import { accessControlRoute } from "./components/access-control/access-control.route";
 export const shellRoute = {
   path: ROUTES.shell,
@@ -19,6 +20,7 @@ export const shellRoute = {
     managementRoute,
     bookingsRoute,
     seasonsRoute,
+    staffRoute,
     accessControlRoute,
     auditRoute,
     insightsRoute,

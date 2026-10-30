@@ -9,8 +9,9 @@ plataformas compartidas ([investigación](../investigacion/00-resumen-ejecutivo.
   `reservas.dacoruna.gal`. Cada concello vive en `/app/<concello>/` y
   `/admin/<concello>/`.
 - **Una base de datos**, una copia y una actualización para todos.
-- **El personal de la deputación** da de alta cada concello y su primer gestor
-  ([alta de un concello](alta-concello.md)). Desde ahí, cada concello se gestiona solo.
+- **El personal de la deputación**, con su cuenta de operación, da de alta cada concello y
+  sus gestores en `/admin/operador` ([alta de un concello](alta-concello.md)). Desde ahí,
+  cada concello se gestiona solo.
 
 Recomendamos **Coolify**. Si la deputación ya trabaja con Kubernetes, ver
 [k3s](#alternativa-k3s).

@@ -154,11 +154,21 @@ describe("supramunicipal operator area", () => {
       .fill("antia@vilaverde.example");
     await dialog.getByRole("button", { name: "Engadir xestor/a" }).click();
     await expect
+      .element(
+        dialog.getByText(
+          "Escribe un usuario de 3 a 64 letras, números, puntos ou guións.",
+        ),
+      )
+      .toBeVisible();
+    await dialog.getByRole("textbox", { name: "Usuario" }).fill("antia.souto");
+    await dialog.getByRole("button", { name: "Engadir xestor/a" }).click();
+    await expect
       .element(page.getByRole("status"))
       .toHaveTextContent("Xestor/a engadido/a: Antía Souto");
     expect(spy.mock.calls.at(-1)![0].body).toMatchObject({
       displayName: "Antía Souto",
       email: "antia@vilaverde.example",
+      login: "antia.souto",
     });
   });
 

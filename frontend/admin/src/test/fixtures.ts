@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import type {
+  AuthMethods,
   SportInfo,
   Facility,
   Insights,
@@ -81,7 +82,21 @@ export const sports: SportInfo[] = [
   hidden: hidden as boolean,
   position: index + 1,
 }));
+/** Sign-in methods: the demo by default, staff accounts when asked (#8). */
+export function stubAuthMethods(overrides: Partial<AuthMethods> = {}) {
+  stubJsonResponse({
+    path: "*/v2/public/auth/methods",
+    response: {
+      demo: true,
+      oidc: null,
+      email: false,
+      local: false,
+      ...overrides,
+    },
+  });
+}
 export function stubShell(authenticated = false) {
+  stubAuthMethods();
   stubJsonResponse({ path: "*/v2/manager/sports", response: sports });
   stubJsonResponse({
     path: "*/v2/public/municipalities",

@@ -65,7 +65,7 @@ Genere cada secreto con `openssl rand -base64 32` y rellene:
 | `quenda.env` | `UNSUBSCRIBE_SECRET`              | Un secreto nuevo                                                                                                 |
 | `quenda.env` | `SMTP_URL`, `MAIL_FROM`           | El servidor de correo del concello o de la deputación                                                            |
 | `quenda.env` | `VAPID_*`                         | Opcional: avisos push. Se generan una vez con `npx web-push generate-vapid-keys` en cualquier equipo con Node.js |
-| `quenda.env` | `QUENDA_DATA_KEY`                 | Opcional: solo si el concello comprobará el empadronamiento                                                      |
+| `quenda.env` | `QUENDA_DATA_KEY`                 | Un secreto nuevo: cifra el segundo factor del personal y, si se usa, el NIF                                      |
 
 Deje comentado lo que no use: una variable vacía no es lo mismo que una variable sin
 definir.

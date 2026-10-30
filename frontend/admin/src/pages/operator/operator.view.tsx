@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { StaffSignIn } from "@/components/staff-sign-in/staff-sign-in.view";
 import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "@chakra-ui/react";
 import {
@@ -114,13 +115,17 @@ export function Operator() {
                 <SpotArt kind="access" />
                 <h1>{t("operatorSignInTitle")}</h1>
                 <p>{t("operatorSignInBody")}</p>
-                <Button
-                  colorPalette="court"
-                  onClick={c.signIn}
-                  loading={c.create.isPending}
-                >
-                  {t("operatorSignIn")}
-                </Button>
+                {c.local && <StaffSignIn t={t} onSignedIn={() => undefined} />}
+                {c.demo && (
+                  <Button
+                    colorPalette="court"
+                    variant={c.local ? "outline" : "solid"}
+                    onClick={c.signIn}
+                    loading={c.create.isPending}
+                  >
+                    {t("operatorSignIn")}
+                  </Button>
+                )}
                 {c.create.error && (
                   <p role="alert" className="error-text">
                     {c.create.error.message}
