@@ -53,6 +53,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "O calendario de festivos non é un iCalendar válido de días completos.",
     unsupported_logo: "O logotipo debe ser unha imaxe PNG, JPEG ou WebP.",
     logo_too_large: "O logotipo non pode superar os 2 MB.",
+    unsupported_icon:
+      "A icona da app debe ser un PNG cadrado de 512 px e de 512 kB como máximo.",
+    logo_required:
+      "Sube primeiro o logotipo: a icona da app fórmase a partir del.",
     sport_exists: "Xa hai un deporte con ese código ou nome.",
     sport_in_use:
       "Hai instalacións ou clubs con este deporte: non se pode eliminar, pero si ocultar.",
@@ -119,6 +123,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "El calendario de festivos no es un iCalendar válido de días completos.",
     unsupported_logo: "El logotipo debe ser una imagen PNG, JPEG o WebP.",
     logo_too_large: "El logotipo no puede superar los 2 MB.",
+    unsupported_icon:
+      "El icono de la app debe ser un PNG cuadrado de 512 px y de 512 kB como máximo.",
+    logo_required:
+      "Sube primero el logotipo: el icono de la app se forma a partir de él.",
     sport_exists: "Ya hay un deporte con ese código o nombre.",
     sport_in_use:
       "Hay instalaciones o clubes con este deporte: no se puede eliminar, pero sí ocultar.",

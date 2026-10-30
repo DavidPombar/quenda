@@ -80,6 +80,18 @@ devices store the current day's list with each holder's first name, needed to gr
 people, and nothing else; it is replaced on every sync. Staff with the `access` role see no other
 personal data. The access-control webhook sends no personal data at all.
 
+### Data kept on the device (#24)
+
+The installed citizen app keeps a copy of the person's own bookings, notices, penalty standing and
+access passes in the browser's storage, so they can be read without a network. The copy expires
+after 7 days. It is deleted on sign-out and on account deletion.
+
+The backoffice keeps only the session and the list of councils, besides the door day described
+above, which is deleted on sign-out.
+
+The service workers store the application's own files and never API answers. See
+[installable app](pwa.md).
+
 ### Email and push notices
 
 Confirmations, changes and cancellations are part of providing the reservation (art. 6.1.b GDPR):

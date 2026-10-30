@@ -32,6 +32,7 @@ const AUDIT_ACTIONS = [
   ["municipality.updated", "auditMunicipalityUpdated"],
   ["municipality.logo_updated", "auditLogoUpdated"],
   ["municipality.logo_deleted", "auditLogoDeleted"],
+  ["municipality.icon_updated", "auditIconUpdated"],
   ["access_key.rotated", "auditAccessKeyRotated"],
   ["access_webhook.updated", "auditAccessWebhookUpdated"],
   ["notification_preferences.updated", "auditPreferencesUpdated"],

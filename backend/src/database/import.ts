@@ -236,6 +236,8 @@ const tables = {
     data: "data",
     sha256: "sha256",
     updated_at: "updatedAt",
+    icon: "icon",
+    icon_sha256: "iconSha256",
   },
   booking_blocks: {
     tenant_id: "tenantId",
@@ -404,7 +406,8 @@ export async function importMunicipality(
               ? tenantId
               : (table === "municipality_logos" ||
                     table === "facility_photos") &&
-                  field === "data"
+                  (field === "data" || field === "icon") &&
+                  row[field] != null
                 ? Buffer.from(String(row[field]), "base64")
                 : (row[field] ?? null),
           ),

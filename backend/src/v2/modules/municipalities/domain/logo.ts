@@ -20,3 +20,15 @@ export function detectLogoType(data: Uint8Array): LogoType | null {
     return "image/webp";
   return null;
 }
+/** The installed app's icon: a square PNG the backoffice draws from the logo (#24). */
+export const ICON_SIZE = 512;
+export const MAX_ICON_BYTES = 512 * 1024;
+export interface Icon {
+  data: Uint8Array;
+}
+/** Width and height from the PNG header, or null when it is not a PNG. */
+export function pngSize(data: Uint8Array) {
+  if (detectLogoType(data) !== "image/png" || data.byteLength < 24) return null;
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return { width: view.getUint32(16), height: view.getUint32(20) };
+}

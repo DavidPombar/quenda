@@ -30,3 +30,15 @@ export function pendingCheckIns(slug: string) {
 export function storePendingCheckIns(slug: string, items: CheckIn[]) {
   write(queueKey(slug), items);
 }
+/**
+ * Drops the synced days on sign-out: they list bookings, so they do not stay on a shared
+ * device. Unsent entries stay and go out with the next staff session.
+ */
+export function forgetDays() {
+  try {
+    for (const key of Object.keys(localStorage))
+      if (/^quenda\.access\..+\.day$/.test(key)) localStorage.removeItem(key);
+  } catch {
+    /* Storage disabled: nothing was kept. */
+  }
+}

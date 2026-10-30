@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, test, expect } from "vitest";
+import { onlineManager } from "@tanstack/react-query";
 import { page, commands } from "vitest/browser";
 import { render } from "vitest-browser-react";
 import { Temporal } from "@js-temporal/polyfill";
@@ -480,4 +481,82 @@ test("should show a scannable pass with a code to read out for an upcoming reser
     .element(dialog.getByText("Válido o Luns, 1 de xuño de 09:00 a 11:00."))
     .toBeVisible();
   expect(spy).toHaveBeenCalledTimes(1);
+});
+
+describe("Installed app without a network (#24)", () => {
+  const soon: Booking = {
+    ...padelBooking,
+    id: "30000000-0000-4000-8000-0000000000bb",
+    start: Temporal.Now.instant().add({ hours: 2 }).toString(),
+    end: Temporal.Now.instant().add({ hours: 3 }).toString(),
+  };
+  function stubSoon() {
+    stubShell(true);
+    stubJsonResponse({ path: "*/v2/citizen/bookings", response: [soon] });
+    stubJsonResponse({
+      path: "*/v2/citizen/calendar-feed",
+      response: { active: false, createdAt: null },
+    });
+    stubJsonResponse({ path: "*/v2/citizen/notifications", response: [] });
+    stubJsonResponse({
+      path: "*/v2/citizen/penalty",
+      response: { ...standing, count: 0, remaining: 3, blockedUntil: null },
+    });
+    return stubJsonResponse({
+      path: `*/v2/citizen/bookings/${soon.id}/access-pass`,
+      method: "POST",
+      response: {
+        token: "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ5In0.c2lnbmF0dXJl",
+        code: "300000BB",
+        validFrom: soon.start,
+        validUntil: soon.end,
+      },
+    }).spy;
+  }
+  test("should fetch the next pass ahead and show the kept bookings and QR offline", async () => {
+    const pass = stubSoon();
+    await commands.navigate("/app/vilaverde/reservas");
+    await render(<App />);
+    await expect.poll(() => pass.mock.calls.length).toBe(1);
+    await expect
+      .poll(() => localStorage.getItem("quenda.app.offline") ?? "")
+      .toContain("300000BB");
+    try {
+      onlineManager.setOnline(false);
+      await expect
+        .element(page.getByRole("status").filter({ hasText: "Sen conexión" }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole("heading", { name: facility.name }))
+        .toBeVisible();
+      // Changes need the server, so they are not offered.
+      await expect
+        .element(page.getByRole("button", { name: "Cancelar reserva" }))
+        .not.toBeInTheDocument();
+      await page.getByRole("button", { name: "Mostrar QR" }).click();
+      const dialog = page.getByRole("dialog", { name: "Pase de acceso" });
+      await expect.element(dialog.getByText("300000BB")).toBeVisible();
+      expect(pass).toHaveBeenCalledTimes(1);
+    } finally {
+      onlineManager.setOnline(true);
+    }
+  });
+  test("should drop the kept bookings and passes on sign-out", async () => {
+    stubSoon();
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      method: "DELETE",
+      response: {},
+    });
+    await commands.navigate("/app/vilaverde/reservas");
+    await render(<App />);
+    await expect
+      .poll(() => localStorage.getItem("quenda.app.offline") ?? "")
+      .toContain("300000BB");
+    await page.getByRole("button", { name: "Saír" }).click();
+    await expect
+      .poll(() => localStorage.getItem("quenda.app.offline") ?? "")
+      .not.toContain("300000BB");
+    expect(localStorage.getItem("quenda.app.offline")).not.toContain(soon.id);
+  });
 });

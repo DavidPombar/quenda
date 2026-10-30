@@ -18,6 +18,12 @@ export const municipalitySettingsRepository = {
       headers: { "Content-Type": file.type },
       body: file,
     }),
+  uploadIcon: (icon: Blob) =>
+    apiClient.request<void>("manager/municipality/icon", {
+      method: "PUT",
+      headers: { "Content-Type": "image/png" },
+      body: icon,
+    }),
   deleteLogo: () =>
     apiClient.request<void>("manager/municipality/logo", {
       method: "DELETE",

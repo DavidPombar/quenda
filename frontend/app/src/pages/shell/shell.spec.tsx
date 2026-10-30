@@ -300,3 +300,32 @@ describe("Web analytics", () => {
     vi.restoreAllMocks();
   });
 });
+describe("Installable app (#24)", () => {
+  test("should install with the council's own manifest, name, colour and icon", async () => {
+    stubShell(false);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [
+        {
+          ...municipality,
+          primaryColor: "#7a1f3d",
+          iconUrl: "/v2/public/municipalities/vilaverde/icon?v=abc",
+        },
+      ],
+    });
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    const head = (selector: string, attribute: string) =>
+      document.head.querySelector(selector)?.getAttribute(attribute);
+    await expect
+      .poll(() => head('link[rel="apple-touch-icon"]', "href"))
+      .toBe("/v2/public/municipalities/vilaverde/icon?v=abc");
+    expect(head('link[rel="manifest"]', "href")).toBe(
+      "/v2/public/municipalities/vilaverde/manifest",
+    );
+    expect(head('meta[name="apple-mobile-web-app-title"]', "content")).toBe(
+      municipality.name,
+    );
+    expect(head('meta[name="theme-color"]', "content")).toBe("#7a1f3d");
+  });
+});
