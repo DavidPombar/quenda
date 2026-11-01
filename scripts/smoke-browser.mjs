@@ -12,6 +12,32 @@ const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
 await fs.mkdir(".dev-logs", { recursive: true });
+// Each audit() name is one row of the screen list in docs/architecture/accessibility.md (T5).
+// Known violations, by scan and axe rule, each tracked in its own issue; any other fails.
+const knownViolations = {};
+const scans = [];
+/** WCAG 1.4.10: no page-level horizontal scroll at 320 px (and the usual 390 px phone). */
+async function assertReflow(label) {
+  const size = page.viewportSize();
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+      false,
+      `${label} overflows at ${width} px`,
+    );
+  }
+  await page.setViewportSize(size);
+}
+/** Opens a route of the current session and scans it once its main heading is shown. */
+async function auditRoute(name, path) {
+  await page.goto(new URL(path, base).toString());
+  await page.locator("main h1").first().waitFor();
+  await page.waitForLoadState("networkidle");
+  await audit(name);
+}
 async function audit(name) {
   await page.evaluate(async () => {
     await Promise.all(
@@ -25,8 +51,10 @@ async function audit(name) {
     );
   });
   const result = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
+  const known = knownViolations[name] ?? {};
+  scans.push(name);
   const violations = result.violations.map((value) => ({
     id: value.id,
     nodes: value.nodes.map((node) => ({
@@ -38,7 +66,11 @@ async function audit(name) {
     `.dev-logs/axe-${name}.json`,
     JSON.stringify(violations, null, 2),
   );
-  assert.deepEqual(violations, [], `Accessibility failures on ${name}`);
+  assert.deepEqual(
+    violations.filter((violation) => !known[violation.id]),
+    [],
+    `Accessibility failures on ${name}`,
+  );
 }
 try {
   await page.goto(base);
@@ -53,13 +85,7 @@ try {
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
-  assert.equal(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > innerWidth,
-    ),
-    false,
-    "Website mobile overflow",
-  );
+  await assertReflow("Website");
   await audit("website-mobile");
   await page.screenshot({
     path: ".dev-logs/website-mobile.png",
@@ -72,14 +98,9 @@ try {
   await page
     .getByRole("heading", { level: 1, name: "Declaración de accesibilidade" })
     .waitFor();
-  assert.equal(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > innerWidth,
-    ),
-    false,
-    "Website statement mobile overflow",
-  );
+  await assertReflow("Website statement");
   await audit("accessibility-website");
+  await auditRoute("website-search", "/instalacions");
   await page.goto(base);
   await page
     .getByRole("link", { name: "Abrir a aplicación", exact: true })
@@ -95,6 +116,8 @@ try {
     .first()
     .waitFor();
   await audit("shared-catalog");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await audit("shared-catalog-desktop");
   await page
     .getByRole("link", { name: "Concello de Portomar", exact: true })
     .first()
@@ -126,21 +149,43 @@ try {
   await page.goBack();
   await page.getByRole("heading", { name: "Pavillón municipal" }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
-  assert.equal(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > innerWidth,
-    ),
-    false,
-    "Mobile overflow",
-  );
+  await assertReflow("Catalogue");
   await audit("mobile");
   await page.screenshot({
     path: ".dev-logs/catalog-mobile.png",
     fullPage: true,
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // Signed-out states of the personal pages and the e-mail unsubscribe page.
+  await auditRoute("bookings-signed-out", "/app/portomar/reservas");
+  await auditRoute("account-signed-out", "/app/portomar/conta");
+  await auditRoute("unsubscribe", "/app/portomar/baixa");
+  await page.goto(new URL("/app/portomar/instalacions", base).toString());
+  await page.getByRole("heading", { name: "Pavillón municipal" }).waitFor();
+  // Sign-in choices, the e-mail code steps (#8) and the privacy notice.
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.getByText("Lin e acepto o aviso de privacidade").click();
+  await page.getByRole("textbox", { name: "Correo electrónico" }).waitFor();
+  await audit("session-dialog");
+  await page
+    .getByRole("textbox", { name: "Correo electrónico" })
+    .fill("smoke@example.org");
+  await page.getByRole("button", { name: "Enviar código" }).click();
+  // The request answers once the code has been handed to the mail server.
+  await page
+    .getByRole("textbox", { name: "Código de 6 cifras" })
+    .waitFor({ timeout: 60_000 });
+  await audit("email-code");
+  await page
+    .getByRole("button", { name: "Ler o aviso de privacidade" })
+    .click();
+  const privacy = page.getByRole("dialog", {
+    name: "Privacidade nesta demostración",
+  });
+  await privacy.waitFor();
+  await audit("privacy-notice");
+  await page.keyboard.press("Escape");
+  await privacy.waitFor({ state: "hidden" });
   await page.getByRole("button", { name: "Entrar como cidadanía" }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   await page
@@ -162,7 +207,10 @@ try {
   await page
     .getByRole("heading", { name: "A túa quenda está confirmada!" })
     .waitFor();
+  await audit("booking-success");
   await page.getByRole("link", { name: "Ver as miñas reservas" }).click();
+  await page.getByRole("button", { name: "Mostrar QR" }).first().waitFor();
+  await audit("bookings-upcoming");
   await page.getByRole("button", { name: "Mostrar QR" }).first().click();
   await page
     .getByRole("img", { name: /Código QR do pase de acceso/ })
@@ -196,6 +244,12 @@ try {
     .getByRole("dialog")
     .getByRole("button", { name: /^\d{2}:\d{2}\s*Libre$/ })
     .first()
+    .waitFor();
+  await audit("change-booking");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /^\d{2}:\d{2}\s*Libre$/ })
+    .first()
     .click();
   await page.getByRole("button", { name: "Confirmar cambio" }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
@@ -203,19 +257,15 @@ try {
     .getByRole("button", { name: "Cancelar reserva", exact: true })
     .first()
     .click();
+  await page.getByRole("button", { name: "Si, cancelar reserva" }).waitFor();
+  await audit("cancel-booking");
   await page.getByRole("button", { name: "Si, cancelar reserva" }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   await page.getByRole("button", { name: "Historial", exact: true }).click();
   await page.getByText("Cancelada", { exact: true }).first().waitFor();
   await audit("history");
   await page.setViewportSize({ width: 390, height: 844 });
-  assert.equal(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > innerWidth,
-    ),
-    false,
-    "Calendar feed mobile overflow",
-  );
+  await assertReflow("Calendar feed");
   await audit("history-mobile");
   await page.screenshot({
     path: ".dev-logs/calendar-mobile.png",
@@ -261,13 +311,7 @@ try {
     .waitFor();
   await audit("resources-grid");
   await page.setViewportSize({ width: 390, height: 844 });
-  assert.equal(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > innerWidth,
-    ),
-    false,
-    "Resources grid mobile overflow",
-  );
+  await assertReflow("Resources grid");
   await page.screenshot({
     path: ".dev-logs/resources-grid-mobile.png",
     fullPage: true,
@@ -332,6 +376,7 @@ try {
     await page.getByRole("button", { name: "Nova instalación" }).count(),
     0,
   );
+  await audit("admin-gate");
   await page
     .getByRole("button", { name: "Entrar", exact: true })
     .first()
@@ -378,6 +423,34 @@ try {
     .waitFor();
   await audit("staff");
   await page.screenshot({ path: ".dev-logs/seasons.png", fullPage: true });
+  // The rest of the manager's pages, two of them also at phone widths.
+  await auditRoute("admin-bookings", "/admin/portomar/reservas");
+  const municipalCancel = page.getByRole("button", {
+    name: "Cancelar",
+    exact: true,
+  });
+  if (await municipalCancel.count()) {
+    await municipalCancel.first().click();
+    await page
+      .getByRole("dialog", { name: "Cancelar a reserva en nome do concello" })
+      .waitFor();
+    await audit("admin-cancel-booking");
+    await page.keyboard.press("Escape");
+    await page.getByRole("dialog").waitFor({ state: "hidden" });
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await assertReflow("Day bookings");
+  await audit("admin-bookings-mobile");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await auditRoute("admin-insights", "/admin/portomar/indicadores");
+  await auditRoute("admin-categories", "/admin/portomar/categorias");
+  await auditRoute("admin-settings", "/admin/portomar/axustes");
+  await page.goto(new URL("/admin/portomar/xestion", base).toString());
+  await page.getByRole("button", { name: "Nova instalación" }).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await assertReflow("Management");
+  await audit("management-mobile");
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("link", { name: "Accesibilidade", exact: true })
     .first()
@@ -435,9 +508,30 @@ try {
       name: "Reserva as pistas e piscinas do teu concello.",
     })
     .waitFor();
+  // The deployment operator's area (#18): sign-in, municipalities and their forms, indicators.
+  await auditRoute("operator-signed-out", "/admin/operador/concellos");
+  await page.getByRole("button", { name: "Entrar como operador/a" }).click();
+  await page.getByRole("button", { name: "Novo concello" }).waitFor();
+  await page.waitForLoadState("networkidle");
+  await audit("operator-municipalities");
+  await page.getByRole("button", { name: "Novo concello" }).click();
+  await page.getByRole("dialog", { name: "Novo concello" }).waitFor();
+  await audit("operator-municipality-form");
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.getByRole("button", { name: "Engadir xestor/a" }).first().click();
+  await page.getByRole("dialog", { name: "Engadir xestor/a" }).waitFor();
+  await audit("operator-manager-form");
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await auditRoute("operator-insights", "/admin/operador/indicadores");
+  await auditRoute("operator-web-analytics", "/admin/operador/analitica");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await assertReflow("Operator web analytics");
+  await page.setViewportSize({ width: 1440, height: 1000 });
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    "Website → citizen app → admin → website navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export and twenty-five accessibility scans, including the three accessibility statements, the season schedule, the facility page with photo and map and the staff accounts page, passed.",
+    `Website → citizen app → admin → operator navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export, reflow at 320 and 390 px and ${scans.length} WCAG 2.1 A/AA scans passed${Object.keys(knownViolations).length ? " (known violations: see docs/architecture/accessibility.md)" : ""}.`,
   );
 } finally {
   await browser.close();

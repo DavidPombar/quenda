@@ -9,7 +9,8 @@ padel to retirees booking the pool.
 
 The same language applies to `frontend/web`, `frontend/app` and
 `frontend/admin`; each workspace keeps its own copy of the tokens (no
-cross-workspace imports). Accessibility target: WCAG 2.1 AA (T5).
+cross-workspace imports). Accessibility target: WCAG 2.1 AA (T5); the
+criteria, their status and the known gaps are in [accessibility.md](accessibility.md).
 
 ## The one bold idea: sport surfaces as the colour system
 
