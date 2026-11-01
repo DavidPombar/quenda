@@ -13,6 +13,7 @@ import { ROUTES, operatorRouteFor } from "@/constants/routes";
 import logoMark from "@/assets/illustrations/logo-mark.svg";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SpotArt } from "@/components/spot-art/spot-art.view";
+import { SessionTimeout } from "@/components/session-timeout/session-timeout.view";
 import { useOperatorController } from "./operator.controller";
 export function Operator() {
   const c = useOperatorController();
@@ -135,6 +136,13 @@ export function Operator() {
             </div>
           )}
         </main>
+        <SessionTimeout
+          expiresAt={c.session.data?.expiresAt}
+          locale={c.locale}
+          t={t}
+          onEnded={c.sessionEnded}
+          onSignOut={c.signOut}
+        />
         <footer className="footer">
           <span>{t("demo")}</span>
           <span>{t("operatorPrivacy")}</span>

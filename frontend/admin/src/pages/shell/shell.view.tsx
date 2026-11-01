@@ -24,6 +24,7 @@ import {
 import logoMark from "@/assets/illustrations/logo-mark.svg";
 import { Feedback } from "@/components/feedback/feedback.view";
 import { SessionDialog } from "@/components/session-dialog/session-dialog.view";
+import { SessionTimeout } from "@/components/session-timeout/session-timeout.view";
 import { useShellController } from "./shell.controller";
 export function Shell() {
   const c = useShellController();
@@ -259,6 +260,14 @@ export function Shell() {
           </NavLink>
         </footer>
       </div>
+      <SessionTimeout
+        expiresAt={c.session?.expiresAt}
+        locale={c.locale}
+        t={t}
+        onEnded={c.sessionEnded}
+        onSignOut={c.signOut}
+        onSignIn={() => c.setLoginOpen(true)}
+      />
       <SessionDialog
         open={c.loginOpen}
         onClose={() => c.setLoginOpen(false)}

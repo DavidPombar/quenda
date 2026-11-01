@@ -38,3 +38,9 @@ export class TotpLoginRequestDTO {
   @MaxLength(16)
   code!: string;
 }
+export class TicketExtensionRequestDTO {
+  @ApiProperty({ description: "Ticket of the current step" })
+  @IsString()
+  @MaxLength(128)
+  ticket!: string;
+}

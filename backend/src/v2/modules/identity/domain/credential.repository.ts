@@ -101,6 +101,12 @@ export abstract class CredentialRepository {
     step: TicketStep;
     expiresAt: Temporal.Instant;
   } | null>;
+  /** Gives a live ticket until `until` (WCAG 2.2.1); false when it has already expired. */
+  abstract extendTicket(
+    ticketHash: string,
+    now: Temporal.Instant,
+    until: Temporal.Instant,
+  ): Promise<boolean>;
   abstract dropTickets(credentialId: string): Promise<void>;
   /** The person a tenant credential signs in as; null when deleted. */
   abstract tenantPrincipal(

@@ -15,6 +15,8 @@ import { Municipalities } from "../../../shared/application/municipality-setting
 export interface NextStep {
   ticket: string;
   step: TicketStep;
+  /** When the ticket expires, so the page can warn and offer more time (WCAG 2.2.1). */
+  expiresAt: string;
   /** Only when setting up the second factor: what the authenticator app needs. */
   enrollment?: { secret: string; otpauthUri: string };
 }
@@ -36,13 +38,15 @@ export class StaffLogin {
         ? "totp"
         : "enroll";
     const ticket = this.secrets.randomToken(32);
+    const expiresAt = now.add({ minutes: TICKET_MINUTES });
     await this.credentials.saveTicket({
       ticketHash: ticketHash(ticket),
       credentialId: credential.id,
       step,
-      expiresAt: now.add({ minutes: TICKET_MINUTES }),
+      expiresAt,
     });
-    if (step !== "enroll") return { ticket, step };
+    if (step !== "enroll")
+      return { ticket, step, expiresAt: expiresAt.toString() };
     // A fresh secret each time until the person confirms one with a code.
     const secret = base32(
       Buffer.from(this.secrets.randomToken(20), "base64url").subarray(0, 20),
@@ -58,6 +62,7 @@ export class StaffLogin {
     return {
       ticket,
       step,
+      expiresAt: expiresAt.toString(),
       enrollment: {
         secret,
         otpauthUri: otpauthUri({

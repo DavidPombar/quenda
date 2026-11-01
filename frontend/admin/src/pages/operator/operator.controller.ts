@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useGetOperatorSessionQuery } from "@/queries/operator/get-operator-session.query";
 import { useCreateOperatorSessionMutation } from "@/queries/operator/create-operator-session.mutation";
@@ -13,6 +13,10 @@ export function useOperatorController() {
   const session = useGetOperatorSessionQuery();
   const create = useCreateOperatorSessionMutation();
   const remove = useDeleteOperatorSessionMutation();
+  const { refetch: refetchSession } = session;
+  const sessionEnded = useCallback(() => {
+    void refetchSession();
+  }, [refetchSession]);
   const methods = useGetAuthMethodsQuery();
   // The deployment has no default language of its own; Galician unless the person chose.
   const [locale, setLocaleState] = useState<Locale>(() =>
@@ -50,5 +54,6 @@ export function useOperatorController() {
     demo: methods.data?.demo ?? false,
     signIn: () => create.mutate(),
     signOut: () => remove.mutate(),
+    sessionEnded,
   };
 }

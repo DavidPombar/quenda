@@ -14,6 +14,7 @@ import { useGetTariffQuery } from "@/queries/categories/get-tariff.query";
 import { offeredPrices } from "@/services/tariff.service";
 import { today, timeLabel, longDayLabel } from "@/services/date.service";
 import { localized } from "@/services/catalog.service";
+import { fill } from "@/services/i18n.service";
 import { orderResources, resourceLabel } from "@/services/resources.service";
 import type { AppContext } from "@/types/app-context";
 import { ROUTES, routeFor } from "@/constants/routes";
@@ -122,6 +123,14 @@ export function useFacilityDetailsController() {
     a.start.localeCompare(b.start),
   );
   const timeline = grid ? columns : slots;
+  // Announced when the day or the court changes (WCAG 4.1.3), since the grid redraws silently.
+  const freeCount = (
+    grid
+      ? activeResources.flatMap(
+          (resource) => availabilityById.get(resource.id)?.slots ?? [],
+        )
+      : slots
+  ).filter((slot) => slot.status === "available").length;
   const pastCount = timeline.filter((slot) => slot.status === "past").length;
   const visibleSlots = showPast
     ? slots
@@ -211,6 +220,12 @@ export function useFacilityDetailsController() {
         : context.t("closedDay"),
   }));
   return {
+    slotsSummary: availability.isSuccess
+      ? fill(context.t("slotsSummary"), {
+          day: longDayLabel(date, context.locale),
+          count: freeCount,
+        })
+      : "",
     ...context,
     facilities,
     facility,

@@ -14,12 +14,15 @@ export class NextStepResponseDTO {
   ticket!: string;
   @ApiProperty({ enum: ["password_change", "enroll", "totp"] })
   step!: NextStep["step"];
+  @ApiProperty({ description: "When the ticket expires (ISO 8601 instant)" })
+  expiresAt!: string;
   @ApiPropertyOptional({ type: EnrollmentResponseDTO })
   enrollment?: EnrollmentResponseDTO;
   static from(value: NextStep): NextStepResponseDTO {
     return {
       ticket: value.ticket,
       step: value.step,
+      expiresAt: value.expiresAt,
       ...(value.enrollment
         ? {
             enrollment: {

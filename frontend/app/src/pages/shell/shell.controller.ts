@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { onlineManager } from "@tanstack/react-query";
 import {
   useLocation,
@@ -52,6 +58,10 @@ export function useShellController() {
   const sessionQuery = useGetSessionQuery();
   const create = useCreateSessionMutation();
   const remove = useDeleteSessionMutation();
+  const { refetch: refetchSession } = sessionQuery;
+  const sessionEnded = useCallback(() => {
+    void refetchSession();
+  }, [refetchSession]);
   const saveLocale = useUpdateLocaleMutation();
   // Only an explicit choice is stored; until then the municipality's default language applies.
   const [chosenLocale, setChosenLocale] = useState<Locale | null>(() => {
@@ -253,6 +263,7 @@ export function useShellController() {
     create,
     remove,
     signOut: () => remove.mutate(),
+    sessionEnded,
     context: municipality
       ? {
           municipality,

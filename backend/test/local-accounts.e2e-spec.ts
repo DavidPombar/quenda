@@ -88,6 +88,7 @@ async function firstSignIn(
   expect(first.body).toEqual({
     ticket: expect.any(String),
     step: "password_change",
+    expiresAt: expect.any(String),
   });
   const changed = await post(browser, "public/auth/local/password-change", {
     ticket: first.body.ticket,
@@ -261,6 +262,72 @@ describe("Local staff accounts with password and second factor (#8, part C)", ()
       ticket: step.body.ticket,
       code: totp(secret, 1),
     }).expect(401);
+  });
+  it("should give a sign-in step and an open session more time when asked (WCAG 2.2.1)", async () => {
+    const context = await tenant();
+    const manager = await createManager(context, "breixo");
+    const { secret } = await firstSignIn(
+      agent(),
+      context,
+      "breixo",
+      manager.temporaryPassword,
+    );
+    const browser = agent();
+    const step = await password(
+      browser,
+      context,
+      "breixo",
+      "a long new password",
+    ).expect(200);
+    expect(Date.parse(step.body.expiresAt)).toBeGreaterThan(Date.now());
+    // A minute left: the same ticket gets ten more minutes and still opens the session.
+    await harness.db.query(
+      "UPDATE login_tickets SET expires_at=now() + interval '1 minute'",
+    );
+    const longer = await post(browser, "public/auth/local/ticket-extension", {
+      ticket: step.body.ticket,
+    }).expect(200);
+    expect(Date.parse(longer.body.expiresAt) - Date.now()).toBeGreaterThan(
+      9 * 60_000,
+    );
+    await post(browser, "public/auth/local/totp", {
+      ticket: step.body.ticket,
+      code: totp(secret, 1),
+    }).expect(200);
+    await post(browser, "public/auth/local/ticket-extension", {
+      ticket: step.body.ticket,
+    }).expect(401);
+    const current = await browser.get("/v2/public/session").expect(200);
+    expect(Date.parse(current.body.expiresAt)).toBeGreaterThan(
+      Date.now() + 7 * 3_600_000,
+    );
+    await harness.db.query(
+      "UPDATE sessions SET expires_at=now() + interval '1 minute' WHERE tenant_id=$1",
+      [context.id],
+    );
+    const extended = await post(browser, "public/session/extension", {}).expect(
+      200,
+    );
+    expect(Date.parse(extended.body.expiresAt)).toBeGreaterThan(
+      Date.now() + 7 * 3_600_000,
+    );
+    expect(
+      Date.parse(
+        (await browser.get("/v2/public/session").expect(200)).body.expiresAt,
+      ),
+    ).toBe(Date.parse(extended.body.expiresAt));
+    // Without a session there is nothing to extend.
+    await post(agent(), "public/session/extension", {}).expect(401);
+    const operatorSession = await manager.operator
+      .get("/v2/public/operator-session")
+      .expect(200);
+    expect(operatorSession.body.expiresAt).toEqual(expect.any(String));
+    await post(
+      manager.operator,
+      "public/operator-session/extension",
+      {},
+    ).expect(200);
+    await post(agent(), "public/operator-session/extension", {}).expect(401);
   });
   it("should let a manager open, reset and disable door staff accounts", async () => {
     const context = await tenant();

@@ -22,6 +22,17 @@ export abstract class SessionRepository {
     token: string,
     now: Temporal.Instant,
   ): Promise<Principal | null>;
+  /** When a live session ends; null when it has ended or does not exist. */
+  abstract expiry(
+    token: string,
+    now: Temporal.Instant,
+  ): Promise<Temporal.Instant | null>;
+  /** Moves a live session's end to `until` (WCAG 2.2.1); false when it has already ended. */
+  abstract extend(
+    token: string,
+    now: Temporal.Instant,
+    until: Temporal.Instant,
+  ): Promise<boolean>;
   abstract remove(token: string): Promise<void>;
   /** Deletes sessions that expired at or before `now`; returns how many. */
   abstract removeExpired(now: Temporal.Instant): Promise<number>;

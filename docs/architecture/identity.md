@@ -112,6 +112,17 @@ when one provider serves a whole province.
 | `quenda_login` | Binds the browser that started the login to the callback | HttpOnly, `SameSite=Lax` (it must travel on the redirect back from the provider), `Path=/v2/public/auth`, ten minutes, Secure in production |
 | `quenda_session` | The session | HttpOnly, `SameSite=Strict`, eight hours, Secure in production |
 
+### Time limits (WCAG 2.2.1)
+
+`GET /v2/public/session` and `/v2/public/operator-session` return `expiresAt`. Two minutes before
+it, the app and the backoffice ask whether to keep the session open. `POST
+/v2/public/session/extension` (or `/operator-session/extension`) moves its end eight hours on and
+renews the cookie. A 401 from a protected endpoint shows that the session has ended. Each staff
+sign-in step returns its ticket's `expiresAt`, and `POST /v2/public/auth/local/ticket-extension
+{ticket}` gives the same ticket ten more minutes, keeping the authenticator secret being set up.
+The email code still lasts ten minutes; the form says so and warns a minute before, and asking for
+another code is the extension.
+
 ### Personal data from the provider
 
 Quenda keeps the provider's subject identifier, a display name built from the given name and

@@ -58,6 +58,20 @@ export class PostgresSessionRepository extends SessionRepository {
     );
     return rows[0] ? toPrincipal(rows[0]) : null;
   }
+  async expiry(token: string, now: Temporal.Instant) {
+    const { rows } = await this.db.query<{ expiresAt: string }>(
+      'SELECT expires_at AS "expiresAt" FROM sessions WHERE token_hash=$1 AND expires_at>$2',
+      [hash(token), now.toString()],
+    );
+    return rows[0] ? Temporal.Instant.from(rows[0].expiresAt) : null;
+  }
+  async extend(token: string, now: Temporal.Instant, until: Temporal.Instant) {
+    const { rowCount } = await this.db.query(
+      "UPDATE sessions SET expires_at=$3 WHERE token_hash=$1 AND expires_at>$2",
+      [hash(token), now.toString(), until.toString()],
+    );
+    return (rowCount ?? 0) > 0;
+  }
   async remove(token: string) {
     await this.db.query("DELETE FROM sessions WHERE token_hash=$1", [
       hash(token),

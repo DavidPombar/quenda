@@ -74,7 +74,7 @@ Paths are relative to the repository. FD is
 | 1.2.3 Audio description or media alternative | A | 9.1.2.3 | — | N/A | No video |
 | 1.2.4 Captions (live) | AA | 9.1.2.4 | — | N/A | No live media |
 | 1.2.5 Audio description (prerecorded) | AA | 9.1.2.5 | — | N/A | No video |
-| 1.3.1 Info and relationships | A | 9.1.3.1 | Auto + manual | Gap | **What meets:** landmarks; one `h1` per page; labelled fields; the slot grid is a `<table>` with an `sr-only` caption and `th scope` for times and courts (`FD/components/resource-grid/resource-grid.view.tsx`); `role="group"` with `aria-pressed` for days. **Gaps:** form errors not tied to their field (#72), and information only in `title` (#73) |
+| 1.3.1 Info and relationships | A | 9.1.3.1 | Auto + manual | Gap | **What meets:** landmarks; one `h1` per page; labelled fields; errors tied to their field (#72); the slot grid is a `<table>` with an `sr-only` caption and `th scope` for times and courts (`FD/components/resource-grid/resource-grid.view.tsx`); `role="group"` with `aria-pressed` for days. **Gap:** information only in `title` (#73) |
 | 1.3.2 Meaningful sequence | A | 9.1.3.2 | Manual | Partial | The DOM order follows the visual order on the facility page (keyboard walk, 2026-11-01). Other screens not reviewed (#77) |
 | 1.3.3 Sensory characteristics | A | 9.1.3.3 | Manual | Partial | No instruction found that relies on shape, colour or position. The texts were reviewed in `i18n.service.ts`, but not on every screen |
 | 1.3.4 Orientation | AA | 9.1.3.4 | Code | Meets | No `orientation` in the manifests and no CSS or JS lock |
@@ -96,12 +96,12 @@ Paths are relative to the repository. FD is
 | 2.1.1 Keyboard | A | 9.2.1.1 | Manual | Partial | Native buttons, links and selects throughout. Leaflet `keyboard: true`. The grid region is focusable so it can scroll. A keyboard walk of the facility page and booking dialog works. Door page and backoffice: #77 |
 | 2.1.2 No keyboard trap | A | 9.2.1.2 | Manual | Partial | Tab leaves the map and the grid. Chakra dialogs keep focus only while open: Esc closes them and focus returns to the opening control (booking dialog, 2026-11-01) |
 | 2.1.4 Character key shortcuts | A | 9.2.1.4 | Code | Meets | No single-key shortcuts. Leaflet's keys work only while the map has focus |
-| 2.2.1 Timing adjustable | A | 9.2.2.1 | Code | Gap | The email code (10 min), the staff sign-in ticket (10 min) and the session (8 h) give no warning and can't be extended (#71) |
+| 2.2.1 Timing adjustable | A | 9.2.2.1 | Code + test | Meets | Every limit is warned and can be extended with one action: the session (8 h) opens an `alertdialog` two minutes before its end with «Seguir conectado/a», which starts focused (`components/session-timeout`, `POST public/session/extension` and `public/operator-session/extension`). A 401 says the session has ended. The staff sign-in step (10 min) offers «Necesito máis tempo» a minute before (`public/auth/local/ticket-extension`), and the email code states its 10 minutes and warns a minute before, with «Enviar outro código» (#71) |
 | 2.2.2 Pause, stop, hide | A | 9.2.2.2 | Manual | Meets | No carousels, autoplay or moving content. Transitions last 150 ms and respect `prefers-reduced-motion` |
 | 2.3.1 Three flashes | A | 9.2.3.1 | Manual | Meets | No flashing content |
 | 2.4.1 Bypass blocks | A | 9.2.4.1 | Auto + manual | Meets | «Saltar ao contido» to `main#main` on every page of the website, the app, the backoffice (its home too, #75) and the operator area. Landmarks on every page |
 | 2.4.2 Page titled | A | 9.2.4.2 | Code + test | Meets | The website sets a title per page. The app and the backoffice name each page after its `h1`, then the municipality and «Quenda» (`frontend/*/src/services/page.service.ts`, `shell.spec.tsx`) (#69) |
-| 2.4.3 Focus order | A | 9.2.4.3 | Manual | Gap | The order is logical on the facility page. After an in-app navigation focus moves to the new page's `h1` (`page.service.ts`, #70). Focus is still lost after confirming a booking and between sign-in steps (#70) |
+| 2.4.3 Focus order | A | 9.2.4.3 | Manual + test | Meets | Logical order on the facility page. Focus moves to the new page's `h1` after an in-app navigation, to the field of each new sign-in step, and to «Ver as miñas reservas» once a booking is confirmed (`shell.spec.tsx`, `staff.spec.tsx`, `facility-details.spec.tsx`, #70) |
 | 2.4.4 Link purpose (in context) | A | 9.2.4.4 | Auto + manual | Meets | axe `link-name` passes. Links are descriptive («Ver as miñas reservas», «Abrir no OpenStreetMap»). External links don't say they open a new tab (#74, advisory) |
 | 2.4.5 Multiple ways | AA | 9.2.4.5 | Manual | Meets | Navigation, the catalogue search and sport filters, the municipality selector, and footer links. The backoffice has its main navigation |
 | 2.4.6 Headings and labels | AA | 9.2.4.6 | Manual | Gap | Headings and labels describe their content. Leaflet's zoom controls are named in English (#74) |
@@ -121,7 +121,7 @@ Paths are relative to the repository. FD is
 | 3.2.2 On input | A | 9.3.2.2 | Manual + test | Meets | The «Concello» selector only records the choice; a «Cambiar» button confirms it (#79, `shell.spec.tsx` in both apps). The day and court selects only update the grid on the same page |
 | 3.2.3 Consistent navigation | AA | 9.3.2.3 | Manual | Meets | One shell for each app with the same navigation and footer on every page |
 | 3.2.4 Consistent identification | AA | 9.3.2.4 | Manual | Partial | Shared components (Feedback, dialogs, slot buttons) and one i18n dictionary for each app. Not reviewed screen by screen |
-| 3.3.1 Error identification | A | 9.3.3.1 | Manual | Gap | Errors are announced in `role="alert"` with specific texts. The sign-in forms don't tie the error to the field (#72) |
+| 3.3.1 Error identification | A | 9.3.3.1 | Manual + test | Meets | Errors are announced in `role="alert"` with specific texts, mark their field `aria-invalid` and are part of its description (`aria-describedby`) in both sign-in forms (#72) |
 | 3.3.2 Labels or instructions | A | 9.3.3.2 | Auto + manual | Meets | Visible labels above fields, helper texts for format (code of 6 digits, login). axe `label` passes on 50 scans |
 | 3.3.3 Error suggestion | AA | 9.3.3.3 | Manual | Meets | Messages say what happened and what to do («O código caducou… Pide outro», «Escribe un usuario de 3 a 64 letras…») |
 | 3.3.4 Error prevention (legal, financial, data) | AA | 9.3.3.4 | Manual | Meets | Bookings show a confirmation step and can be changed or cancelled. Deleting the account, municipal cancellations and closures ask for confirmation in an `alertdialog` |
@@ -131,25 +131,25 @@ Paths are relative to the repository. FD is
 | WCAG 2.1 | Lvl | EN 301 549 | Method | Status | Evidence and notes |
 |---|---|---|---|---|---|
 | 4.1.1 Parsing | A | 9.4.1.1 | — | Meets | React output. WCAG 2.2 marks this criterion obsolete, and axe `duplicate-id-aria` passes |
-| 4.1.2 Name, role, value | A | 9.4.1.2 | Auto + manual | Gap | Native controls and Chakra components with ARIA. axe passes on 50 scans. The Leaflet marker takes focus without a name (#74). The sign-in fields don't expose `aria-invalid` (#72) |
-| 4.1.3 Status messages | AA | 9.4.1.3 | Manual | Gap | `Feedback` uses `role="status"` or `alert`. The door page announces each scan with `aria-live="assertive"`. A confirmed booking and a change of day or court are not announced (#70) |
+| 4.1.2 Name, role, value | A | 9.4.1.2 | Auto + manual | Gap | Native controls and Chakra components with ARIA. axe passes on 50 scans. Sign-in fields expose `aria-invalid` (#72). The Leaflet marker takes focus without a name (#74) |
+| 4.1.3 Status messages | AA | 9.4.1.3 | Manual + test | Meets | `Feedback` uses `role="status"` or `alert`. The door page announces each scan with `aria-live="assertive"`. A confirmed booking is announced in a persistent status region, and so is the number of free slots when the day or court changes (#70) |
 
 **Summary**:
-- **Meets:** 23 criteria.
+- **Meets:** 27 criteria.
 - **Partial:** 10 criteria.
-- **Gap:** 10 criteria.
+- **Gap:** 6 criteria.
 - **N/A:** 7 criteria.
 
-The 10 gaps are tracked in #70–#74, #76 and #80; #69, #75 and #79 are fixed. #77 is the pending manual review, and #78 is the slow sign-in code request (not a WCAG criterion).
+The 6 gaps are tracked in #73, #74, #76 and #80; #69–#72, #75 and #79 are fixed. #77 is the pending manual review, and #78 is the slow sign-in code request (not a WCAG criterion).
 
 ## Points of special care
 
 | Area | Finding |
 |---|---|
-| Slot grid and booking calendar | **Meets:** a real table, status as text, native buttons, and the booking dialog manages focus correctly. **Gaps:** booking success and grid changes are not announced (#70); cell names (#80) |
+| Slot grid and booking calendar | **Meets:** a real table, status as text, native buttons, the booking dialog manages focus, and the confirmation and each day's free slots are announced (#70). **Gap:** cell names (#80) |
 | Facility map | **Meets:** a keyboard-operable region with a name and a text alternative (the address and the OpenStreetMap link). **Gaps:** English zoom controls, a focusable marker without a name, the tooltip only on hover (#73, #74) |
 | QR codes and the door page | **Meets:** the pass QR and the TOTP QR have a text alternative and the code is also given as text. The door page works without a camera (search and a check-in button for each booking) and announces results. **Not reviewed:** typing the printed code by hand |
-| Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`. **Gaps:** time limits (#71), focus between steps (#70), errors tied to fields (#72). Separately, the code request waits for the mail server (#78) |
+| Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`, time limits warned and extendable (#71), focus on each step (#70), errors tied to their field (#72). Separately, the code request waits for the mail server (#78) |
 | Reflow and text spacing | Checked at 320 and 390 px on seven screens, and at 320 px with the spacing stylesheet on the facility page. Risks: #75 |
 | Dark mode | Not supported. WCAG doesn't require it; the theme respects the system's reduced motion setting |
 

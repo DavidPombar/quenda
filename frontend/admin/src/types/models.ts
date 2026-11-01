@@ -125,6 +125,8 @@ export interface Session {
   tenantId: string;
   displayName: string;
   role: "citizen" | "manager" | "access";
+  /** When the session ends; only on the current session (WCAG 2.2.1). */
+  expiresAt?: string | null;
 }
 /** Code from the municipality's sports catalogue (#26). */
 export type Sport = string;
@@ -338,6 +340,7 @@ export interface AccessSettings {
 export interface OperatorSession {
   operatorId: string;
   displayName: string;
+  expiresAt?: string | null;
 }
 export interface StaffMember {
   id: string;
@@ -509,6 +512,8 @@ export interface AuthMethods {
 export interface SignInStep {
   ticket: string;
   step: "password_change" | "enroll" | "totp";
+  /** When the step's ticket expires; it can be extended (WCAG 2.2.1). */
+  expiresAt?: string;
   enrollment?: { secret: string; otpauthUri: string };
 }
 /** Managers and door staff of the municipality (#8). */

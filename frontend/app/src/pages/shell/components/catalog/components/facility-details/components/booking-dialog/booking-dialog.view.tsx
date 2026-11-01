@@ -61,12 +61,15 @@ export function BookingDialog(p: {
               </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              {p.success && (
-                <p className="success-body">
-                  <PiCheckCircle size={22} aria-hidden="true" />
-                  {p.t("bookingSuccessBody")}
-                </p>
-              )}
+              {/* Present from the start so the confirmation is announced (WCAG 4.1.3). */}
+              <div role="status">
+                {p.success && (
+                  <p className="success-body">
+                    <PiCheckCircle size={22} aria-hidden="true" />
+                    {p.t("bookingSuccessBody")}
+                  </p>
+                )}
+              </div>
               <h3>{p.facility.name}</h3>
               {p.slot && (
                 <div className="booking-summary">
@@ -116,7 +119,11 @@ export function BookingDialog(p: {
             <Dialog.Footer>
               {p.success ? (
                 <Button asChild colorPalette="court" size="lg" width="full">
-                  <Link to={routeFor(p.municipality.slug, ROUTES.bookings)}>
+                  {/* The confirm button is gone: focus moves to the next step (WCAG 2.4.3). */}
+                  <Link
+                    to={routeFor(p.municipality.slug, ROUTES.bookings)}
+                    autoFocus
+                  >
                     {p.t("done")}
                   </Link>
                 </Button>

@@ -20,6 +20,9 @@ export const authRepository = {
     ),
   changePassword: (args: { ticket: string; newPassword: string }) =>
     post<SignInStep>("public/auth/local/password-change", args),
+  /** Ten more minutes for the current step (WCAG 2.2.1). */
+  extendTicket: (args: { ticket: string }) =>
+    post<{ expiresAt: string }>("public/auth/local/ticket-extension", args),
   totp: (args: { ticket: string; code: string }) =>
     post<Session | OperatorSession>("public/auth/local/totp", args),
 };

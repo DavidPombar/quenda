@@ -221,6 +221,9 @@ export function FacilityDetails() {
               </label>
             )}
             <p className="muted small">{c.t("localTimes")}</p>
+            <p role="status" className="sr-only">
+              {c.slotsSummary}
+            </p>
             {c.availability.isPending ? (
               <Feedback message={c.t("loading")} />
             ) : c.availability.isError ? (

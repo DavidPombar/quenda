@@ -54,6 +54,15 @@ describe("Staff accounts (#8)", () => {
     await expect
       .element(dialog.getByRole("alert"))
       .toHaveTextContent("O usuario ou o contrasinal non son correctos.");
+    // The error is read with the fields it concerns (WCAG 3.3.1).
+    await expect
+      .element(dialog.getByLabelText("Contrasinal"))
+      .toHaveAccessibleDescription(
+        "O usuario ou o contrasinal non son correctos.",
+      );
+    await expect
+      .element(dialog.getByLabelText("Contrasinal"))
+      .toHaveAttribute("aria-invalid", "true");
     expect(password.spy.mock.calls[0][0].body).toEqual({
       slug: "vilaverde",
       login: "uxia.xestion",
@@ -62,7 +71,11 @@ describe("Staff accounts (#8)", () => {
     stubJsonResponse({
       path: "*/v2/public/auth/staff/password",
       method: "POST",
-      response: { ticket: "t1", step: "password_change" },
+      response: {
+        ticket: "t1",
+        step: "password_change",
+        expiresAt: new Date(Date.now() + 600_000).toISOString(),
+      },
     });
     const change = stubJsonResponse({
       path: "*/v2/public/auth/local/password-change",
@@ -70,6 +83,8 @@ describe("Staff accounts (#8)", () => {
       response: {
         ticket: "t2",
         step: "enroll",
+        // Under a minute left: the step offers more time at once (WCAG 2.2.1).
+        expiresAt: new Date(Date.now() + 30_000).toISOString(),
         enrollment: {
           secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
           otpauthUri: "otpauth://totp/Quenda%3Auxia?secret=JBSWY3DPEHPK3PXP",
@@ -84,6 +99,14 @@ describe("Staff accounts (#8)", () => {
     stubJsonResponse({ path: "*/v2/manager/staff", response: [door] });
     await dialog.getByLabelText("Contrasinal").fill("TemporaryPass1");
     await dialog.getByRole("button", { name: "Continuar" }).click();
+    // Each step starts on its first field (WCAG 2.4.3).
+    await expect
+      .element(
+        dialog
+          .getByRole("form", { name: "Novo contrasinal" })
+          .getByLabelText("Novo contrasinal"),
+      )
+      .toHaveFocus();
     await dialog
       .getByRole("form", { name: "Novo contrasinal" })
       .getByLabelText("Novo contrasinal")
@@ -95,6 +118,9 @@ describe("Staff accounts (#8)", () => {
     await expect
       .element(dialog.getByRole("alert"))
       .toHaveTextContent("Os dous contrasinais non coinciden.");
+    await expect
+      .element(dialog.getByLabelText("Repite o contrasinal"))
+      .toHaveAccessibleDescription("Os dous contrasinais non coinciden.");
     expect(change.spy).not.toHaveBeenCalled();
     await dialog
       .getByLabelText("Repite o contrasinal")
@@ -110,6 +136,23 @@ describe("Staff accounts (#8)", () => {
     await expect
       .element(dialog.getByText("JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP"))
       .toBeVisible();
+    const code = dialog.getByRole("textbox", { name: "Código de 6 cifras" });
+    await expect.element(code).toHaveFocus();
+    const extension = stubJsonResponse({
+      path: "*/v2/public/auth/local/ticket-extension",
+      method: "POST",
+      response: { expiresAt: new Date(Date.now() + 600_000).toISOString() },
+    });
+    await expect
+      .element(
+        dialog.getByRole("status").filter({ hasText: "Queda un minuto" }),
+      )
+      .toBeVisible();
+    await dialog.getByRole("button", { name: "Necesito máis tempo" }).click();
+    await expect
+      .element(dialog.getByRole("button", { name: "Necesito máis tempo" }))
+      .not.toBeInTheDocument();
+    expect(extension.spy.mock.calls[0][0].body).toEqual({ ticket: "t2" });
     await dialog
       .getByRole("textbox", { name: "Código de 6 cifras" })
       .fill("123456");
