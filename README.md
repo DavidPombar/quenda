@@ -1,116 +1,349 @@
 # Quenda
 
-A working V0 of a municipal sports reservation service for the GOBTEC proposal. React 19 + Chakra UI 3 + Vite, NestJS 12 and PostgreSQL 17. Galician by default, Spanish available. AGPL-3.0-or-later.
+**Online booking of municipal sports facilities for small councils.** Residents find a court or a
+pool, see real availability and book, change or cancel in a few taps; the council manages its
+facilities, timetables, rules and indicators; a provincial council (*deputación*) can run one
+instance for many councils. Free software (AGPL-3.0-or-later), self-hostable, Galician by default
+and Spanish available.
 
-## Run locally
+Quenda is the proposal for the I Certame GOBTEC de Software Libre (AGASOL, 2026). Its requirements
+are traced throughout the code and documentation with the contest's IDs: citizens **C1–C4**,
+council **M1–M3**, public reuse **R1–R3** and mandatory technical conditions **T1–T5**
+([scope](docs/contexto/01-alcance-funcional.md), [technical requirements](docs/contexto/02-requisitos-tecnicos.md)).
+
+- **Public demo:** https://91-99-68-27.sslip.io/ (synthetic data; **Entrar** opens demo accounts)
+- **Stack:** React 19, Chakra UI 3 and Vite · NestJS and Node 24 · PostgreSQL 17 · Docker Compose
+
+## Contents
+
+1. [What it does](#what-it-does)
+2. [Try it on your computer](#try-it-on-your-computer)
+3. [Install it on a server](#install-it-on-a-server)
+4. [How it is built](#how-it-is-built)
+5. [Develop and test](#develop-and-test)
+6. [Developing with AI agents](#developing-with-ai-agents)
+7. [Limits of this version](#limits-of-this-version)
+8. [Documentation](#documentation)
+9. [Contributing and licence](#contributing-and-licence)
+
+## What it does
+
+### For residents (citizen app, `/app/`)
+
+- **Find a facility (C1):** a catalogue shared by every council of the instance, with search, sport
+  filters, step-free access, photos, map, rules, prices by category and the week's opening hours.
+- **Book online (C2):** real availability by day and court, including courts split into parts that
+  block each other; overlap protection, per-person limits and booking windows are enforced by the
+  server. When a day is full, Quenda suggests three free slots from aggregated history (no AI).
+- **Change and cancel (C3)** within the council's notice period.
+- **History and notices (C4):** upcoming bookings and history, in-app notices, email and Web Push
+  for confirmations, changes, cancellations and reminders.
+- **Personal calendars:** each booking as `.ics`, or a revocable `webcal://` subscription.
+- **QR pass** for the door, also offline.
+- **Installable app (PWA)** with each council's name, colour and icon.
+- **Privacy:** versioned privacy notice per council, data download and account deletion.
+
+### For the council (backoffice, `/admin/`)
+
+- **Facilities (M1):** create and edit facilities and their courts or lanes, photos with
+  alternative text, active, maintenance and closed states, closures with a reason (affected
+  bookings are cancelled and notified).
+- **Timetables and rules (M2):** opening hours as iCalendar (RFC 5545) with exceptions and `.ics`
+  import, municipal holidays, slot duration, booking window, cancellation deadline, per-person
+  limits, prices by user category, no-show penalties and season allocation to clubs.
+- **Indicators (M3):** bookings, cancellations, occupancy by facility, court, weekday and hour,
+  attendance and no-shows, and optional cookieless web analytics in the deployment's own Umami.
+- **Day bookings** with municipal cancellation, the **door page** for access staff (QR scanning or a
+  searchable list, works offline), **staff accounts**, the **audit log**, settings for branding,
+  language, legal texts and the **accessibility statement**, and **data export**.
+
+### For the provincial council or operator (`/admin/operador`)
+
+- One instance serves many councils, with strict data isolation between them (R3).
+- The operator creates councils and their managers and reads aggregated indicators.
+
+### Standards and conditions (T1–T5)
+
+| ID | Requirement | How Quenda meets it |
+|---|---|---|
+| T1 | Free software | AGPL-3.0-or-later; every dependency checked by `npm run licenses` against an allowlist |
+| T2 | Open, responsive and modular web | Three independent frontends and a modular REST API (OpenAPI 3); works from 320 px to desktop |
+| T3 | Public authentication and open standards | OpenID Connect for Cl@ve/Chave365 (Keycloak as reference provider), sign-in by email code, local staff accounts with TOTP; iCalendar, OpenAPI, CSV/JSON, schema.org JSON-LD, GeoJSON, DCAT-AP-ES open data, full municipal data export and import |
+| T4 | GDPR and secure user management | Data minimisation, consent and versioned notices, retention job, audit log, encrypted personal data, scrypt passwords and TOTP, rate limits, CSP and security headers |
+| T5 | WCAG 2.1 AA (RD 1112/2018, EN 301 549) | Self-assessed matrix of all 50 criteria in [accessibility.md](docs/architecture/accessibility.md), 50 axe scans on every change, per-council accessibility statement. No certification is claimed |
+
+## Try it on your computer
 
 Requires Node 24, npm and Docker with Compose.
 
-```sh
+```bash
 npm ci
+```
+
+```bash
 npm run setup
+```
+
+```bash
 npm run dev
 ```
 
-- Public website: http://127.0.0.1:5173
-- Citizen application: http://127.0.0.1:5173/app/
-- Municipal backoffice: http://127.0.0.1:5173/admin/
-- Email sent by the demo (Mailpit): http://127.0.0.1:8025
-- Door mode (QR access): http://127.0.0.1:5173/admin/ → **Entrar como control de accesos**; `npm run access:simulator` stands in for a lock controller
-- Season allocation to clubs: http://127.0.0.1:5173/admin/vilaverde/temporadas as the manager; the demo club «Club Pádel Vilaverde» holds Tuesdays and Thursdays 19:00–21:00 on Pista 1, shown as «Uso de club» in the citizen app
-- Swagger: http://127.0.0.1:3001/api/docs
-- OpenAPI: http://127.0.0.1:3001/api/openapi.json
+`npm run setup` starts PostgreSQL and Mailpit in Docker, applies the migrations and loads two
+synthetic councils, **Portomar** and **Vilaverde**. It can be run again without overwriting data.
+`npm run dev` starts the API, the notice worker and the three frontends with demo sign-in enabled.
 
-The database persists in the `quenda_quenda-data` Docker volume. Setup is repeatable and does not overwrite existing facilities or reservations. Ports: website 5173, citizen development server 5174, admin development server 5175, API 3001, PostgreSQL 55432, Mailpit SMTP 1025 and web 8025. `npm run dev` also starts the notice worker, which sends confirmations, changes, cancellations and reminders to Mailpit. The website development server proxies `/app/` and `/admin/` to their respective frontends and `/v2/` to the API, keeping navigation and session cookies on one origin. `Ctrl+C` stops development servers; `docker compose stop` stops the database while preserving data.
+| What | Where |
+|---|---|
+| Public website | http://127.0.0.1:5173 |
+| Citizen app | http://127.0.0.1:5173/app/ |
+| Council backoffice | http://127.0.0.1:5173/admin/ |
+| Operator area | http://127.0.0.1:5173/admin/operador |
+| Email sent by the demo (Mailpit) | http://127.0.0.1:8025 |
+| API documentation (Swagger, OpenAPI) | http://127.0.0.1:3001/api/docs, `/api/openapi.json` |
 
-The three frontends are independent npm workspaces: `frontend/web` is the public presentation website; `frontend/app` owns the citizen catalog and reservations; `frontend/admin` owns municipal facility management, calendars and indicators. Each has its own router, styles, build and browser tests. They communicate through ordinary links and share no source imports. Build each with `npm run build -w frontend/web`, `npm run build -w frontend/app` or `npm run build -w frontend/admin`. All select fields use Chakra `NativeSelect`. The shared visual language (Atkinson Hyperlegible Next, Phosphor icons via `react-icons`, a Chakra theme per workspace, breakpoints and responsive rules) is described in the [design guidelines](docs/architecture/design-guidelines.md).
+**Demo accounts:** **Entrar** offers *Entrar como cidadanía* in the app and *Entrar como xestor/a*
+or *Entrar como control de accesos* in the backoffice. Switching council signs out. Nothing in the
+demo makes a real booking or charges money.
 
-The **Entrar** button opens a synthetic citizen account in `/app/` and a synthetic municipal-manager account in `/admin/`. The citizen app has no manager menus or login choice, and the backoffice requires a manager session. Use the municipality selector to explore **Portomar** and **Vilaverde**, which have independent accounts and reservations. Switching municipality signs out the previous session. The demo has one same-origin session: signing into a different audience replaces the active role; each frontend only accepts its own role. Nothing in this demonstration makes a real sports reservation or charges money.
+**Optional services:**
 
-`npm run dev` explicitly enables demo login. The API otherwise rejects demo login unless `DEMO_MODE=true`. Environment settings are listed in `.env.example`; the API reads process environment variables. No password or third-party account is required; demo citizens carry a synthetic `alex@<concello>.example` address whose email lands in Mailpit.
+- `npm run identity:up` starts Keycloak with a **simulated Cl@ve** at http://127.0.0.1:8081; set
+  the OIDC variables from [`.env.example`](.env.example) and restart `npm run dev` to see
+  *Entrar con Cl@ve* ([public identity](docs/architecture/identity.md)).
+- `npm run analytics:up` and `npm run analytics:setup` start a local Umami
+  ([analytics](docs/architecture/analytics.md)).
+- `npm run access:simulator` stands in for a door lock controller ([access control](docs/architecture/access-control.md)).
 
-To try public identity locally, run `npm run identity:up` to start Keycloak with a **simulated Cl@ve** at http://127.0.0.1:8081, set the OIDC variables from `.env.example` and restart `npm run dev`: the sign-in dialog then offers **Entrar con Cl@ve**. The backend is a generic OpenID Connect client; Keycloak is a reference provider, not a requirement. See [public identity](docs/architecture/identity.md).
+Ports: website 5173, app 5174, backoffice 5175 (the website proxies both and the API, so one
+origin serves everything), API 3001, PostgreSQL 55432, Mailpit 1025/8025. Data persists in the
+`quenda_quenda-data` volume; `docker compose stop` stops the database without losing it.
 
-## Container demonstration
+### Everything in containers
 
-```sh
+```bash
 docker compose -f compose.yml -f compose.demo.yml up --build --wait
 ```
 
-Open http://127.0.0.1:8080 for the website, http://127.0.0.1:8080/app/ for citizens or http://127.0.0.1:8080/admin/ for municipal management. This starts all three independent frontend builds, API, notice worker, migrations and synthetic seed data; email sent by the demo appears in Mailpit at http://127.0.0.1:8025. Nginx serves the website at `/`, the citizen app at `/app/` and the backoffice at `/admin/`, including reloads of nested routes. All host ports bind to loopback. The demo Compose file intentionally enables demo accounts; it is not a production deployment configuration. The base images and services are self-hostable and do not require a proprietary cloud.
+Builds the production images and serves the demo at http://127.0.0.1:8080 (`/`, `/app/`,
+`/admin/`), with migrations, seed data, the worker and Mailpit. Ports bind to loopback only.
 
-## Demo vs production
+## Install it on a server
 
-The container images are the same for both; the difference is configuration and what sits in front of them (T4, R1). `deploy/compose.prod.yml` is the one deployment: `QUENDA_DOMAIN=… sh deploy/install.sh` prepares a Linux server and starts it with Caddy for TLS, nightly encrypted backups and the daily retention job, and `DEMO_MODE=true` turns the same setup into a public demo; the [operations guide](docs/operacion/README.md) (in Spanish, for council and deputación technicians) covers deployment with Compose or Coolify, onboarding a council, backups, upgrades, support, a 12-week rollout plan and a draft ENS kit.
+One Linux server with Docker runs a whole instance: PostgreSQL, the API, the notice worker, the
+web container, Caddy with automatic HTTPS, the daily retention job and nightly encrypted backups.
+Nothing depends on a particular provider. The full guide, for council and *deputación*
+technicians, is in Spanish: [operations guide](docs/operacion/README.md).
 
-|                | Demo (`compose.demo.yml`)                                  | Production                                                                                                     |
-| -------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Demo accounts  | `DEMO_MODE=true`                                           | `DEMO_MODE=false` (image default); citizens use OIDC or an email code, staff local accounts                    |
-| Transport      | Plain HTTP on `127.0.0.1:8080`                             | TLS proxy in front, e.g. [Caddy](deploy/Caddyfile) with automatic certificates and HSTS                        |
-| Session cookie | `COOKIE_SECURE=false`, only because the demo is plain HTTP | `Secure` by default (`NODE_ENV=production` in the image); never set `COOKIE_SECURE=false`                      |
-| Seed data      | Synthetic municipalities and accounts                      | No seed; the operator creates municipalities in the backoffice ([onboarding](docs/operacion/alta-concello.md)) |
-
-The `web` container (nginx) sends a Content Security Policy, `X-Frame-Options`, `Permissions-Policy` and `nosniff` for the three SPAs; the API sends its own headers. Only the TLS proxy may reach the `web` container, because the API trusts `X-Forwarded-For` from private-network proxies (`TRUST_PROXY`, default `loopback, uniquelocal`) to identify clients.
-
-The API limits each client IP to `RATE_LIMIT_PER_MINUTE` requests (default 600) and `SESSION_RATE_LIMIT_PER_MINUTE` sign-ins (default 30) per minute and answers `429` with an RFC 7807 problem and `Retry-After`. Limits are in memory per API process. Expired sessions are deleted at start-up and every `SESSION_PURGE_MINUTES` (default 60; `0` disables it).
-
-### First accounts in production
-
-Staff (the deployment's operators, municipal managers and door staff) sign in with a login, a
-password and an authenticator app; this needs `QUENDA_DATA_KEY`. The first accounts are created on
-the server, and the command prints a temporary password once. In the production containers the
-same command is `node backend/dist/database/staff.js create …` ([onboarding](docs/operacion/alta-concello.md)):
+**Requirements:** 2 vCPU, 4 GB RAM and 40 GB SSD for a small council (2 GB is enough for a demo or
+small pilot); Debian 12 or Ubuntu 24.04 with Docker Engine and Compose v2; a domain pointing at the
+server; ports 80 and 443 open; an SMTP provider for notices and sign-in codes.
 
 ```bash
-npm run staff -- create --operator --login operacion --name "Deputación · operación"
+sudo git clone https://github.com/DavidPombar/quenda.git /opt/quenda
 ```
 
 ```bash
-npm run staff -- create --slug vilaverde --login uxia.xestion --name "Uxía Pereira"
+cd /opt/quenda && sudo QUENDA_DOMAIN=reservas.concello.gal SMTP_URL=smtp://user:pass@smtp.example:587 MAIL_FROM=reservas@concello.gal sh deploy/install.sh
 ```
 
-`npm run staff -- reset …` gives a new temporary password. Afterwards the operator creates and
-resets managers in its area, and each manager does the same for door staff under **Persoal**. See
-[public identity](docs/architecture/identity.md).
+[`deploy/install.sh`](deploy/install.sh):
 
-`HEADERS_URL=https://reservas.example EXPECT_SECURE_COOKIE=true npm run test:headers` checks a running instance's headers and session cookie.
+- adds swap on small servers, turns on automatic security updates and limits SSH to keys;
+- writes `deploy/.env` (domain, database, backups) and `deploy/quenda.env` (application secrets)
+  with fresh secrets, readable only by root. **Keep a copy of both outside the server**: without
+  `QUENDA_DATA_KEY` the encrypted data cannot be read, and without `RESTIC_PASSWORD` no backup can;
+- builds the images and starts [`deploy/compose.prod.yml`](deploy/compose.prod.yml).
 
-## Included
+It can be run again: it keeps existing settings and rebuilds and restarts the containers. That is
+also how to **update**: `git pull` (or check out a release tag) and run it again; migrations run
+when the API starts ([upgrades](docs/operacion/actualizacion.md)).
 
-- **C1:** public facility catalog, search and sport filters, details, rules, accessible-access information and real availability.
-- **C2:** online reservation with server-side validation, client UUID retries, atomic overlap protection and per-person quotas.
-- **C3:** rescheduling and idempotent citizen cancellation within the municipality's notice period; municipal cancellations with a reason and notices.
-- **C4:** personal upcoming/history views, persistent in-app notices, and transactional email delivery and reminders.
-- **M1–M2:** facilities with several courts or lanes, including a full court split into parts that block each other, and courts taken out of service individually; citizens pick a court or view every court in one grid. Managers add, rename, reorder, split and take courts out of service under **Pistas** in the backoffice, and the indicators break each facility down by court. Manager-only facility editing, active/maintenance/closed states, slot duration, indicative prices, rules, `.ics` import, weekly calendars and municipal settings, branding, holidays and legal texts.
-- **M3:** seven-day reservation, cancellation and scheduled-occupancy indicators, plus attendance, no-show tracking and configurable booking penalties.
-- **Slot suggestions and web analytics (optional, #25):** when a day is full, the app offers three free slots that day, here or in another facility of the same sport, least usually occupied first, from aggregated history and without AI. The deployment can count visits to the app and the website in its own Umami, without cookies and with Do Not Track honoured; each council switches the app on (off by default), and the operator and managers read the figures in the backoffice ([details](docs/architecture/analytics.md)).
-- **Personal calendars (optional, point 1.3):** each confirmed reservation downloads as `.ics`, and a revocable `webcal://` subscription keeps the person's calendar app in sync with changes and cancellations.
-- **Installable app (#24):** the citizen app and the backoffice install from the browser on Android, iOS and desktop, each council with its own name, colour and icon. They open without a network: residents see their bookings and the QR for the door, and access staff the door page. Notices arrive by Web Push ([details](docs/architecture/pwa.md)).
-- **T3, open data:** each municipality publishes its facility catalogue as schema.org JSON-LD, CSV and GeoJSON with published schemas, its aggregated occupancy by facility, ISO week, weekday and hour (JSON and CSV), and a DCAT-AP-ES catalogue (RDF/XML and JSON-LD) for datos.gob.es and abertos.xunta.gal. The licence (CC BY 4.0 by default) and the DIR3 publisher code are set per municipality in the backoffice settings, and the files are linked from **Datos abertos** in the citizen app. See [open data](docs/architecture/open-data.md).
-- **R1–R3:** repeatable setup and container images; data-driven municipal identity, language, time zone, booking limits and legal/contact text; protected operations derive their municipality from the session.
-- **Data portability (criterion 4, T3):** a manager exports all of the municipality's data as one versioned, documented JSON package (`GET /v2/manager/export`, **Exportar datos** in the backoffice); `npm run db:import -- <file> [--slug new-slug]` loads it into another instance. See [data portability](docs/architecture/data-portability.md).
+**A public demo** uses the same script with `DEMO_MODE=true`: synthetic councils and accounts, and
+sign-in by email off. Without a domain of your own, `<ip-with-dashes>.sslip.io` works with Let's
+Encrypt. The reference demo runs on a Hetzner CPX12 created with the `hcloud` CLI
+([example](docs/operacion/despliegue-concello.md#ejemplo-servidor-en-hetzner-cloud)).
 
-Calendars are stored as RFC 5545 `VCALENDAR` text with `VEVENT`, `RRULE`, `EXDATE`, `RDATE` and individual `RECURRENCE-ID` exceptions. Temporal handles local dates, IANA zones, instants and daylight-saving transitions. See [calendar semantics](docs/architecture/calendars.md).
+**First accounts.** Staff sign in with a login, a password and an authenticator app. Create the
+operator, and if needed a council's first manager, on the server, inside `/opt/quenda`; the command
+prints a temporary password once:
 
-## Verification
+```bash
+sudo docker compose -f deploy/compose.prod.yml exec api node backend/dist/database/staff.js create --operator --login operacion --name "Deputación · operación"
+```
 
-```sh
+The operator then creates councils and their managers in the backoffice, and each manager creates
+door staff under **Persoal** ([onboarding a council](docs/operacion/alta-concello.md)). Residents
+sign in with Cl@ve/Chave365 through OpenID Connect, or with a one-time code by email.
+
+**Check the instance:**
+
+```bash
+HEADERS_URL=https://reservas.concello.gal EXPECT_SECURE_COOKIE=true npm run test:headers
+```
+
+| | Demo | Production |
+|---|---|---|
+| Accounts | `DEMO_MODE=true`: one-click synthetic accounts | Cl@ve/Chave365 or email code for residents, local accounts with TOTP for staff |
+| Data | Synthetic councils | None; the operator creates councils |
+| Transport | HTTPS through Caddy (plain HTTP only on loopback with `compose.demo.yml`) | HTTPS with HSTS; `Secure` cookies |
+| Operation | Same images and Compose file | Plus off-server backups ([backups](docs/operacion/copias-de-seguridad.md)), [support](docs/operacion/soporte.md) and the [rollout plan](docs/operacion/plan-implantacion.md) |
+
+All settings are listed in [`.env.example`](.env.example) (development) and
+[`deploy/prod.env.example`](deploy/prod.env.example) / [`deploy/quenda.env.example`](deploy/quenda.env.example) (production).
+
+## How it is built
+
+```
+frontend/web     public website (/)                  React + Chakra UI + Vite
+frontend/app     citizen app (/app/), installable    React + Chakra UI + Vite + service worker
+frontend/admin   backoffice and operator (/admin/)   React + Chakra UI + Vite
+backend          REST API (/v2) and notice worker    NestJS, PostgreSQL 17
+deploy           production Compose, installer, Caddy, nginx, Keycloak realm
+docs             architecture, operations, legal templates, contest context
+scripts          architecture check, licences, smoke test with axe, headers, tools
+```
+
+- **Three independent frontends.** Each has its own router, styles, build and tests; they share no
+  source and link to each other with ordinary links. Inside each: route → view → controller →
+  query or mutation (TanStack Query) → repository → API client. One component per homonymous
+  folder, views without data access, Chakra `NativeSelect` for every select.
+- **Backend in modules** (`backend/src/v2/modules`: bookings, facilities, identity, notifications,
+  insights, seasons, access, open data, portability, retention…), each with `domain`,
+  `application` and `infrastructure`. One endpoint per controller; commands and queries return
+  typed `Result`s; commands own the transaction and never perform external effects; time comes from
+  an injected `Clock` and ids from an `IdGenerator`; the municipality always comes from the
+  session.
+- **Data.** PostgreSQL with numbered, checksummed migrations
+  ([migrations](docs/architecture/migrations.md)); opening hours and calendars are iCalendar text;
+  all time arithmetic uses Temporal ([calendars](docs/architecture/calendars.md)). Notices and audit
+  events commit with the booking (outbox) and the worker delivers them.
+
+More in [implementation](docs/architecture/implementation.md) and the
+[design guidelines](docs/architecture/design-guidelines.md).
+
+## Develop and test
+
+```bash
 npx playwright install chromium
-npm run check          # architecture, lint, types, unit/browser/HTTP tests, builds
-npm run licenses       # free-software license allowlist, including legacy manifests
-npm run test:smoke     # requires npm run dev; real browser → API → PostgreSQL + axe
 ```
 
-HTTP tests create and destroy their own uniquely named database, never the development database. The configured PostgreSQL account needs `CREATEDB`; `TEST_DATABASE_URL` can point to another local test cluster. Browser component tests use network stubs and do not need the API. The smoke flow creates, moves and cancels a synthetic reservation in the demo database and leaves its history for inspection. Screenshots and axe reports are written to `.dev-logs/`.
+```bash
+npm run check
+```
 
-## V0 boundaries
+```bash
+npm run licenses
+```
 
-This is a functional prototype with synthetic accounts, not a service ready to process residents' personal data. Citizens accept the municipality's versioned privacy notice when opening a demo session, can download their data as JSON from **A miña conta** and can delete their account: future reservations are cancelled, sessions are revoked and the account row is anonymised while past reservations stay in the aggregate history. Managers can review the municipality's audit log, with the detail of each change, under **Auditoría** in the backoffice. A retention job (`npm run db:retention`) detaches reservations, notices and audit actors older than each municipality's `retention_months`, purges expired sessions and removes accounts deleted before that cutoff; the production Compose file runs it daily (see [operations](docs/operacion/README.md)). Real Cl@ve/Chave365 onboarding, SMS delivery, distributed rate limiting across API replicas and an independent accessibility/security review remain future work. No GDPR/ENS compliance or WCAG certification is claimed.
+```bash
+npm run test:smoke
+```
 
-Open data has no OpenActive feed (roadmap) and no validation against the official DCAT-AP shapes, and the demo coordinates are fictitious. Facilities are closed or put into maintenance rather than deleted; historical bookings remain intact. Photos, shared capacity (several people in one lane), residency-dependent rules, payments and QR entry are outside this V0. The manager UI edits municipal settings and facilities. Schedule changes with future reservations are rejected; facility closures require an explicit reason and cancel affected bookings with notices. The API returns at most 200 history entries and 50 notices; the citizen app shows them ten at a time. Production needs server-side pagination.
+- `npm run check` runs the architecture check, lint, types, unit tests, browser tests (Vitest
+  Browser Mode with real providers and accessible selectors), HTTP tests against disposable
+  PostgreSQL databases, and all builds. CI runs the same on every pull request.
+- `npm run licenses` checks every installed dependency against the free-software allowlist.
+- `npm run test:smoke` needs `npm run dev`: a real browser goes website → app → backoffice →
+  operator, makes, moves and cancels a booking, checks reflow at 320 and 390 px and runs 50 axe
+  scans (WCAG 2.1 A/AA). Screenshots and reports go to `.dev-logs/`.
 
-See [architecture](docs/architecture/implementation.md), [operations guide](docs/operacion/README.md), [accessibility (WCAG 2.1 AA matrix)](docs/architecture/accessibility.md), [database migrations](docs/architecture/migrations.md), [open data](docs/architecture/open-data.md), [data portability](docs/architecture/data-portability.md), [installable app](docs/architecture/pwa.md), [data protection lifecycle](docs/architecture/data-protection.md), [design guidelines](docs/architecture/design-guidelines.md), [calendar semantics](docs/architecture/calendars.md), and the original [scope](docs/contexto/01-alcance-funcional.md). Councils adopting Quenda can start from the Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md) and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md); both must be reviewed by the council's data protection officer.
+HTTP tests never touch the development database; the PostgreSQL account needs `CREATEDB`
+(`TEST_DATABASE_URL` points elsewhere if needed). Other useful commands: `npm run db:migrate`,
+`npm run db:seed`, `npm run db:retention`, `npm run db:import -- <file> [--slug new]`,
+`npm run staff -- create|reset …` and `npm run format`.
 
-## Contributing and reuse
+## Developing with AI agents
 
-Quenda is published as a reusable public asset. See [CONTRIBUTING.md](CONTRIBUTING.md), the [security policy](SECURITY.md), the [code of conduct](CODE_OF_CONDUCT.md), the [changelog](CHANGELOG.md) and the [publiccode.yml](publiccode.yml) catalog metadata.
+Quenda is written to be extended by coding agents (Claude Code, Codex, Cursor and similar) as well
+as by people. The project gives an agent the context it needs, rules it cannot break silently and
+checks that tell it, and the reviewer, when something is wrong.
+
+### Context the agent reads first
+
+- **[`AGENTS.md`](AGENTS.md)**, the standard instructions file most agents read on their own. It
+  imports the contest context (scope, technical requirements, evaluation and the official template),
+  states the rules that cannot be broken (free software only, WCAG 2.1 AA, everything municipal is
+  configuration, think of a small council, cite requirement IDs) and summarises the engineering
+  conventions of the frontends and the backend.
+- **[`CLAUDE.md`](CLAUDE.md)** imports `AGENTS.md` for Claude Code and adds what is specific to it:
+  how to start the development stack in its built-in browser and when to check accessibility.
+- **Architecture documents** in [`docs/architecture`](docs/architecture), one per area (identity,
+  notifications, calendars, open data, data protection, accessibility…), written so an agent can
+  load just the one it needs.
+
+### Guardrails that fail loudly
+
+- **`scripts/check-architecture.mjs`** (part of `npm run check`) turns the conventions into errors
+  with a plain message: views cannot reach the data layer, controllers must use query or mutation
+  hooks, frontends cannot import each other, the domain cannot depend on frameworks, application
+  code cannot depend on infrastructure, commands must use `Clock` and `IdGenerator`, one endpoint
+  per controller, no barrel files, `NativeSelect` for selects. An agent that drifts gets told
+  exactly what to change.
+- **Tests that check behaviour, not implementation.** Browser tests drive the real app through
+  accessible roles and names, so they also catch accessibility regressions; HTTP tests run the real
+  Nest app against a real, disposable PostgreSQL. Internal business logic is never mocked, so
+  passing tests mean the feature works.
+- **The smoke test with axe** catches any new WCAG violation on 50 screens; known violations must
+  be listed against an issue.
+- **`npm run licenses`** blocks a dependency with a non-free licence, which agents add easily.
+- **CI** runs all of the above on every pull request; work goes through a branch and a pull
+  request, never straight to `main`.
+
+### Tools for Claude Code
+
+- **[`.claude/launch.json`](.claude/launch.json)** starts the whole stack (`quenda-dev`) for the
+  built-in browser, so the agent can open the app, sign in with the demo buttons and check its own
+  change instead of asking a person to.
+- **The `accesibilidade` skill** ([`.claude/skills/accesibilidade/SKILL.md`](.claude/skills/accesibilidade/SKILL.md)):
+  after a significant frontend change (a new screen or dialog, a shared component, the theme, the
+  booking or a sign-in flow) the agent runs it without being asked. It injects axe into the page,
+  walks the screen with the keyboard, reads the accessibility tree, checks 320 px reflow, 200 %
+  zoom and text spacing, reports against the WCAG matrix and proposes an issue for each new problem.
+  `node scripts/axe-page.mjs <url>` is the headless fallback.
+
+### A typical change
+
+1. Start from an issue that cites its requirement IDs (for example *C3* or *T5 · 2.4.3*).
+2. The agent reads `AGENTS.md`, the relevant architecture document and the code, and proposes a
+   plan; non-trivial changes are agreed before coding.
+3. It works on a branch, following the layering; a migration gets the next number and its note in
+   [migrations](docs/architecture/migrations.md).
+4. It adds or updates browser and HTTP tests, runs `npm run check`, `npm run licenses` and, with
+   `npm run dev`, `npm run test:smoke`, and checks the change in the browser.
+5. It updates the documents the change affects: the WCAG matrix for an accessibility criterion,
+   the architecture page of the area, the operations guide for anything a technician runs.
+6. It opens a pull request describing what changed and how it was verified; a person reviews and
+   merges.
+
+To teach agents a new recurring procedure, add a skill under `.claude/skills/<name>/SKILL.md` (a
+short description of when to use it and the steps) and mention it in `CLAUDE.md`; rules that apply
+to every agent belong in `AGENTS.md`.
+
+## Limits of this version
+
+Quenda is a working V0 with synthetic data, not yet a service processing residents' personal data.
+Still to do before a real pilot: production onboarding with Cl@ve/Chave365, an independent security
+review and an external accessibility review with assistive technology
+([#77](https://github.com/DavidPombar/quenda/issues/77)), SMS notices, rate limiting shared across
+API replicas, server-side pagination of long histories, payments and shared capacity (several
+people in one lane). No GDPR, ENS or WCAG certification is claimed; councils can start from the
+Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md)
+and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md), to be reviewed by
+their data protection officer.
+
+## Documentation
+
+| Area | Documents |
+|---|---|
+| Operations (Spanish) | [Guide](docs/operacion/README.md) · [council deployment](docs/operacion/despliegue-concello.md) · [deputación deployment](docs/operacion/despliegue-deputacion.md) · [onboarding](docs/operacion/alta-concello.md) · [backups](docs/operacion/copias-de-seguridad.md) · [upgrades](docs/operacion/actualizacion.md) · [support](docs/operacion/soporte.md) · [rollout plan](docs/operacion/plan-implantacion.md) · [ENS kit](docs/operacion/ens) |
+| Architecture | [Implementation](docs/architecture/implementation.md) · [identity](docs/architecture/identity.md) · [notifications](docs/architecture/notifications.md) · [calendars](docs/architecture/calendars.md) · [catalogue](docs/architecture/catalogue.md) · [seasons](docs/architecture/seasons.md) · [access control](docs/architecture/access-control.md) · [installable app](docs/architecture/pwa.md) · [analytics](docs/architecture/analytics.md) · [migrations](docs/architecture/migrations.md) |
+| Data and rights | [Open data](docs/architecture/open-data.md) · [data portability](docs/architecture/data-portability.md) · [data protection](docs/architecture/data-protection.md) · [legal templates](docs/legal) |
+| Accessibility and design | [WCAG 2.1 AA matrix](docs/architecture/accessibility.md) · [design guidelines](docs/architecture/design-guidelines.md) |
+| Contest | [Scope](docs/contexto/01-alcance-funcional.md) · [technical requirements](docs/contexto/02-requisitos-tecnicos.md) · [evaluation](docs/contexto/03-concurso-presentacion-valoracion.md) · [roadmap](docs/memoria/roadmap.md) · [research](docs/investigacion/00-resumen-ejecutivo.md) |
+
+## Contributing and licence
+
+Quenda is published as a reusable public asset under the
+[GNU Affero General Public License v3.0 or later](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md),
+the [security policy](SECURITY.md), the [code of conduct](CODE_OF_CONDUCT.md), the
+[changelog](CHANGELOG.md) and the [publiccode.yml](publiccode.yml) catalogue metadata.
