@@ -33,9 +33,36 @@ En producción use una versión etiquetada (`vX.Y.Z`, ver el
 
 Los comandos que siguen se ejecutan dentro de `/opt/quenda`.
 
-## 3. Configurar
+## 3. Instalar
 
-Hay dos ficheros, los dos en `deploy/` y fuera del control de versiones:
+```bash
+sudo QUENDA_DOMAIN=reservas.concello.gal SMTP_URL=smtp://usuario:contrasinal@smtp.concello.gal:587 MAIL_FROM=reservas@concello.gal sh deploy/install.sh
+```
+
+`deploy/install.sh`:
+
+- añade 4 GB de swap si el servidor tiene menos de 4 GB de RAM, porque construir las
+  imágenes lo necesita;
+- instala las actualizaciones automáticas de seguridad (`unattended-upgrades`);
+- deja el SSH solo con clave, si `root` ya tiene una clave autorizada;
+- escribe `deploy/.env` y `deploy/quenda.env` (ver abajo) con secretos nuevos y permisos
+  `600`;
+- construye las imágenes y arranca todos los servicios.
+
+Variables opcionales: `DEPLOYMENT_TIMEZONE`, y `RESTIC_REPOSITORY` o `BACKUP_DIR` para el
+destino de las copias ([copias de seguridad](copias-de-seguridad.md)). Sin ellas, las copias
+van a `deploy/backups/` en el mismo servidor: cámbielo antes de tratar datos reales.
+
+Se puede volver a ejecutar: conserva los ficheros que ya existen y solo reconstruye y
+reinicia los contenedores.
+
+**Guarde una copia de `deploy/.env` y `deploy/quenda.env` fuera del servidor** (ver
+[lo que hay que guardar](README.md#lo-que-hay-que-guardar-fuera-del-servidor)).
+
+### Configuración a mano
+
+Si prefiere no usar el script, o el servidor ya está preparado, hay dos ficheros, los dos en
+`deploy/` y fuera del control de versiones:
 
 - **`deploy/.env`**: dominio, base de datos y copias. Lo lee Docker Compose.
 - **`deploy/quenda.env`**: secretos y servicios de la aplicación. Lo leen la API y el
@@ -70,7 +97,7 @@ Genere cada secreto con `openssl rand -base64 32` y rellene:
 Deje comentado lo que no use: una variable vacía no es lo mismo que una variable sin
 definir.
 
-## 4. Arrancar
+#### Arrancar
 
 ```bash
 sudo docker compose -f deploy/compose.prod.yml up -d --build --wait
@@ -84,7 +111,7 @@ todos los servicios están `healthy`:
 sudo docker compose -f deploy/compose.prod.yml ps
 ```
 
-## 5. Comprobar
+## 4. Comprobar
 
 1. Abra `https://reservas.concello.gal/`: la web carga con candado y sin avisos.
 2. `http://reservas.concello.gal/` redirige a `https://`.
@@ -128,3 +155,46 @@ La instancia está vacía: siga con el [alta de un concello](alta-concello.md).
 | Caddy no obtiene el certificado                 | El DNS aún no apunta al servidor o el puerto 80 está cerrado                              |
 | No llegan correos                               | `SMTP_URL` incorrecto o el relé no acepta el remitente de `MAIL_FROM`; mire `logs worker` |
 | Los enlaces de los correos apuntan a otro sitio | `QUENDA_DOMAIN` no es el dominio público                                                  |
+
+## Demo pública
+
+La misma instalación sirve para una demostración con concellos y cuentas ficticios. Con
+`DEMO_MODE=true` la API carga los datos de demostración al arrancar y la entrada por correo
+queda desactivada, porque nadie podría leer los códigos:
+
+```bash
+sudo QUENDA_DOMAIN=203-0-113-10.sslip.io DEMO_MODE=true sh deploy/install.sh
+```
+
+Sin dominio propio, `<ip-con-guiones>.sslip.io` resuelve a la IP del servidor y vale para
+Let's Encrypt. No use nunca `DEMO_MODE=true` con datos reales.
+
+## Ejemplo: servidor en Hetzner Cloud
+
+La demo de referencia corre en un Hetzner CPX12 (Núremberg) con la imagen `docker-ce`, que
+ya trae Docker. Con la herramienta `hcloud`:
+
+```bash
+hcloud ssh-key create --name yo --public-key-from-file ~/.ssh/id_ed25519.pub
+```
+
+```bash
+hcloud firewall create --name quenda-web
+```
+
+```bash
+for p in 22 80 443; do hcloud firewall add-rule quenda-web --direction in --protocol tcp --port $p --source-ips 0.0.0.0/0 --source-ips ::/0; done
+```
+
+```bash
+hcloud firewall add-rule quenda-web --direction in --protocol udp --port 443 --source-ips 0.0.0.0/0 --source-ips ::/0
+```
+
+```bash
+hcloud server create --name quenda --type cpx12 --image docker-ce --location nbg1 --ssh-key yo --firewall quenda-web
+```
+
+Después, por SSH, siga desde el [paso 2](#2-descargar-quenda). Hetzner bloquea la salida por
+los puertos 25 y 465 en servidores nuevos: el correo tiene que ir por un proveedor SMTP en el
+puerto 587. Cualquier otro proveedor o un servidor propio sirven igual: nada de la
+instalación depende de Hetzner.

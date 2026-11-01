@@ -21,14 +21,15 @@ Cifras orientativas, sin pruebas de carga todavía:
 
 - **Máquina:** 2 vCPU, 4 GB de RAM y 40 GB de disco SSD para un concello pequeño (hasta
   unas 20 instalaciones y unos miles de personas usuarias). Una deputación con 20–50
-  concellos en una sola instancia: 4 vCPU, 8 GB y 100 GB.
+  concellos en una sola instancia: 4 vCPU, 8 GB y 100 GB. Una demo o un piloto pequeño
+  funcionan con 2 GB de RAM: `deploy/install.sh` añade swap para construir las imágenes.
 - **Sistema:** Linux de 64 bits (x86_64 o arm64) con Docker Engine y el plugin Compose
   v2 (`docker compose`), por ejemplo Debian 12 o Ubuntu 24.04.
 - **Red:**
   - un nombre de dominio, por ejemplo `reservas.concello.gal`, con un registro A/AAAA
     hacia el servidor;
-  - los puertos 80 y 443 abiertos desde Internet, para el certificado de Let's Encrypt y
-    el tráfico;
+  - los puertos 80 y 443 (TCP, y 443/UDP para HTTP/3) abiertos desde Internet, para el
+    certificado de Let's Encrypt y el tráfico, y el 22 solo para la administración;
   - salida SMTP hacia el servidor de correo del concello o de la deputación.
 - **Copias:** un segundo disco o, mejor, un almacenamiento externo (S3, MinIO o SFTP de
   la deputación). Ver [copias de seguridad](copias-de-seguridad.md).
