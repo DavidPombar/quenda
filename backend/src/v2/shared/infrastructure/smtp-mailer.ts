@@ -6,9 +6,9 @@ import { Mailer, MailMessage } from "../application/mailer";
 @Injectable()
 export class SmtpMailer extends Mailer {
   private readonly transport: Transporter = createTransport(
-    process.env.SMTP_URL ?? "smtp://127.0.0.1:1025",
+    process.env.SMTP_URL || "smtp://127.0.0.1:1025",
   );
-  private readonly from = process.env.MAIL_FROM ?? "quenda@localhost";
+  private readonly from = process.env.MAIL_FROM || "quenda@localhost";
   async send(message: MailMessage) {
     await this.transport.sendMail({
       messageId: `<${message.id}@quenda>`,
