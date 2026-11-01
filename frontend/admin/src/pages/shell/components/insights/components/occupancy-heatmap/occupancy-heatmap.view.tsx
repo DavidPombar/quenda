@@ -53,9 +53,12 @@ export function OccupancyHeatmap(p: {
                   <td
                     key={weekday}
                     className={`heat heat-${heatLevel(cell.occupancy)}`}
-                    title={`${hoursLabel(cell.bookedMinutes, p.locale)} / ${hoursLabel(cell.openMinutes, p.locale)}`}
                   >
                     {cell.occupancy} %
+                    {/* Booked and open hours in the cell, not only in a title (WCAG 1.3.1). */}
+                    <small className="heat-hours">
+                      {`${hoursLabel(cell.bookedMinutes, p.locale)} / ${hoursLabel(cell.openMinutes, p.locale)}`}
+                    </small>
                   </td>
                 ) : (
                   <td key={weekday} className="heat heat-closed">

@@ -10,6 +10,9 @@ export function FacilityMap(props: {
   name: string;
   label: string;
   openLabel: string;
+  newTabLabel: string;
+  zoomInLabel: string;
+  zoomOutLabel: string;
 }) {
   const c = useFacilityMapController(props);
   return (
@@ -28,6 +31,7 @@ export function FacilityMap(props: {
       >
         {props.openLabel}
         <PiArrowSquareOut size={16} aria-hidden="true" />
+        <span className="sr-only"> {props.newTabLabel}</span>
       </a>
     </div>
   );

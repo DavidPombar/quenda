@@ -1475,6 +1475,11 @@ main h1[tabindex="-1"] {
   background: var(--ground);
   color: var(--ink-2);
 }
+.heat-hours {
+  display: block;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
 .occupancy-cell {
   display: flex;
   align-items: center;
