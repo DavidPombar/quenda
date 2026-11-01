@@ -15,7 +15,7 @@ Last review: 2026-11-01 (issue #68), updated as each gap is fixed.
 |---|---|---|
 | **WCAG 2.1, levels A and AA** | 50 success criteria (30 A, 20 AA) | Matrix below |
 | **EN 301 549 v3.2.1** (UNE-EN 301549:2022), chapter 9 | Web content: clause 9.x.y.z is WCAG 2.1 criterion x.y.z, word for word. Chapter 11 (software) and 12 (documentation) apply to the PWA and the help texts in the same way | The EN clause is shown in each row |
-| **RD 1112/2018** (transposes Directive (EU) 2016/2102) | Arts. 5–6: meet EN 301 549. Art. 15: an accessibility statement for each site, with conformance status, non-accessible content, preparation date and review method. Arts. 10 and 12: a mechanism to report problems and request information, and a complaints procedure. Art. 16: review the statement at least once a year | Statement for each municipality at `/app/:slug/accesibilidade` and `/admin/:slug/accesibilidade`, plus the platform's statement at `/accesibilidade` (#9). The contact unit, email and phone come from municipal settings, but the backoffice cannot edit them yet (#76) |
+| **RD 1112/2018** (transposes Directive (EU) 2016/2102) | Arts. 5–6: meet EN 301 549. Art. 15: an accessibility statement for each site, with conformance status, non-accessible content, preparation date and review method. Arts. 10 and 12: a mechanism to report problems and request information, and a complaints procedure. Art. 16: review the statement at least once a year | Statement for each municipality at `/app/:slug/accesibilidade` and `/admin/:slug/accesibilidade`, plus the platform's statement at `/accesibilidade` (#9). Each manager edits the contact unit, email, phone, review date and method and the non-accessible content under **Axustes → Declaración de accesibilidade** (#76) |
 | **Decision (EU) 2018/1524** | The two monitoring methods: **simplified** (automated tests on a sample of pages) and **in-depth** (manual review of all requirements on a sample of pages and processes) | The Observatorio de Accesibilidad Web applies the simplified method with its *Metodología de Seguimiento Simplificado UNE-EN 301549:2022*. It notes that the automated results are estimates and that an expert manual review of all UNE-EN 301549 requirements is always needed. Its reports are not the review report required by art. 17 of RD 1112/2018 |
 
 ## How each criterion is checked
@@ -140,7 +140,7 @@ Paths are relative to the repository. FD is
 - **Gap:** none known.
 - **N/A:** 7 criteria.
 
-The gaps found in #68 (#69–#75, #79, #80) are fixed. #76 (editing the statement, RD 1112/2018) and #78 (the slow sign-in code request) are outside the WCAG criteria.
+The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each council edits its statement in the backoffice. #78 (the slow sign-in code request) is outside the WCAG criteria.
 
 ## Points of special care
 
@@ -156,7 +156,7 @@ The gaps found in #68 (#69–#75, #79, #80) are fixed. #76 (editing the statemen
 ## Review and next steps
 
 1. **Every change:** `npm run test:smoke` in CI, and the `accesibilidade` skill after significant frontend changes (CLAUDE.md, AGENTS.md).
-2. **Fix new gaps** as they are found, each in its own issue, and update its row here. The ones from #68 are fixed; #76 (editing the statement) is still open.
+2. **Fix new gaps** as they are found, each in its own issue, and update its row here. The ones from #68 are fixed, including #76 (editing the statement).
 3. **Manual review with assistive technology** (NVDA, VoiceOver and TalkBack) of the main flows, and the screens not scanned above (#77).
 4. **External review before a real pilot:** an independent in-depth review (UNE-EN 301549:2022, Decision (EU) 2018/1524) before a council publishes the service to residents. Until then each statement keeps «parcialmente conforme» and lists the open gaps.
 5. **Annual review** of this matrix and of each statement's date (RD 1112/2018, art. 16).

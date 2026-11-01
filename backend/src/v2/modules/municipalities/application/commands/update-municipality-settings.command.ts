@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Injectable } from "@nestjs/common";
+import { Temporal } from "@js-temporal/polyfill";
 import {
   EditableSettings,
   MunicipalitySettingsRepository,
@@ -21,7 +22,21 @@ export type UpdateMunicipalitySettingsError =
   | AppError<"forbidden">
   | AppError<"not_found">
   | AppError<"insufficient_contrast">
-  | AppError<"invalid_holidays">;
+  | AppError<"invalid_holidays">
+  | AppError<"validation">;
+function validReview(date: string, now: Temporal.Instant, timezone: string) {
+  try {
+    const day = Temporal.PlainDate.from(date, { overflow: "reject" });
+    return (
+      Temporal.PlainDate.compare(
+        day,
+        now.toZonedDateTimeISO(timezone).toPlainDate(),
+      ) <= 0
+    );
+  } catch {
+    return false;
+  }
+}
 export type SettingsPatch = Partial<EditableSettings> & {
   legalTexts?: LegalTexts;
 };
@@ -40,6 +55,7 @@ const editable = [
   "dataLicense",
   "dir3Code",
   "analyticsEnabled",
+  "accessibility",
 ] as const satisfies readonly (keyof EditableSettings)[];
 /**
  * New rules apply to new reservations and changes only: existing bookings keep the cancellation
@@ -88,6 +104,16 @@ export class UpdateMunicipalitySettings {
       return Result.err(failure("insufficient_contrast"));
     if (!this.holidays.validate(next.holidaysCalendar))
       return Result.err(failure("invalid_holidays"));
+    // The statement's review date must be a real date and not in the future (RD 1112/2018).
+    if (
+      patch.accessibility &&
+      !validReview(
+        patch.accessibility.reviewedOn,
+        this.clock.now(),
+        existing.timezone,
+      )
+    )
+      return Result.err(failure("validation"));
     const changed = editable.filter(
       (key) => JSON.stringify(existing[key]) !== JSON.stringify(next[key]),
     );

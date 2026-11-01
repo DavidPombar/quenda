@@ -4,6 +4,7 @@ import { Type } from "class-transformer";
 import { CATEGORIES } from "../../../../../shared/application/categories";
 import {
   dataLicenses,
+  type AccessibilityMethod,
   type DataLicense,
 } from "../../../../../shared/application/municipality-settings";
 import type { Category } from "../../../../../shared/application/categories";
@@ -11,6 +12,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsEmail,
   IsIn,
   IsInt,
   IsString,
@@ -33,6 +35,44 @@ export class LegalTextsRequestDTO {
   @MinLength(20)
   @MaxLength(20000)
   es!: string;
+}
+export class AccessibilityTextsRequestDTO {
+  @ApiProperty({ description: "Non-accessible content, in Galician" })
+  @IsString()
+  @MaxLength(4000)
+  gl!: string;
+  @ApiProperty({ description: "Non-accessible content, in Spanish" })
+  @IsString()
+  @MaxLength(4000)
+  es!: string;
+}
+/** The municipality's accessibility statement (RD 1112/2018, art. 15). */
+export class AccessibilityRequestDTO {
+  @ApiProperty({ description: "Unit responsible; empty uses the municipality" })
+  @IsString()
+  @MaxLength(200)
+  unit!: string;
+  @ApiProperty({
+    description: "Address for accessibility requests; empty uses the contact",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => !!value)
+  @IsEmail()
+  @MaxLength(254)
+  email!: string;
+  @ApiProperty({ description: "Phone for accessibility requests" })
+  @IsString()
+  @MaxLength(40)
+  phone!: string;
+  @ApiProperty({ description: "Date of the last review (YYYY-MM-DD)" })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  reviewedOn!: string;
+  @ApiProperty({ enum: ["self", "external"], description: "Review method" })
+  @IsIn(["self", "external"])
+  method!: AccessibilityMethod;
+  @ApiProperty({ type: AccessibilityTextsRequestDTO })
+  @ValidateNested()
+  @Type(() => AccessibilityTextsRequestDTO)
+  exceptions!: AccessibilityTextsRequestDTO;
 }
 const defined = (_object: unknown, value: unknown) => value !== undefined;
 export class UpdateMunicipalitySettingsRequestDTO {
@@ -147,4 +187,13 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @ValidateIf(defined)
   @IsBoolean()
   analyticsEnabled?: boolean;
+  @ApiPropertyOptional({
+    type: AccessibilityRequestDTO,
+    description:
+      "The accessibility statement: contact unit, review date and method, non-accessible content",
+  })
+  @ValidateIf(defined)
+  @ValidateNested()
+  @Type(() => AccessibilityRequestDTO)
+  accessibility?: AccessibilityRequestDTO;
 }

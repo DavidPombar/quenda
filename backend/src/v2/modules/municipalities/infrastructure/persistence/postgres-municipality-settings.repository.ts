@@ -8,7 +8,10 @@ import {
 import { Icon, Logo, LogoType } from "../../domain/logo";
 import { LegalTexts } from "../../../../shared/application/municipality-settings";
 import { Database } from "../../../../shared/infrastructure/database";
-const columns: Record<keyof EditableSettings, string> = {
+const columns: Record<
+  Exclude<keyof EditableSettings, "accessibility">,
+  string
+> = {
   locale: "locale",
   advanceDays: "advance_days",
   cancellationHours: "cancellation_hours",
@@ -36,13 +39,29 @@ export class PostgresMunicipalitySettingsRepository extends MunicipalitySettings
     );
   }
   async save(tenantId: string, changes: Partial<EditableSettings>) {
-    const keys = (Object.keys(columns) as (keyof EditableSettings)[]).filter(
+    const keys = (Object.keys(columns) as (keyof typeof columns)[]).filter(
       (key) => changes[key] !== undefined,
     );
-    if (!keys.length) return;
+    const assignments: [string, unknown][] = keys.map((key) => [
+      columns[key],
+      changes[key],
+    ]);
+    // The accessibility statement is one setting stored in its own columns (#9).
+    const statement = changes.accessibility;
+    if (statement)
+      assignments.push(
+        ["accessibility_unit", statement.unit],
+        ["accessibility_email", statement.email],
+        ["accessibility_phone", statement.phone],
+        ["accessibility_reviewed_on", statement.reviewedOn],
+        ["accessibility_method", statement.method],
+        ["accessibility_exceptions_gl", statement.exceptions.gl],
+        ["accessibility_exceptions_es", statement.exceptions.es],
+      );
+    if (!assignments.length) return;
     await this.db.query(
-      `UPDATE municipalities SET ${keys.map((key, index) => `${columns[key]}=$${index + 2}`).join(", ")} WHERE id=$1`,
-      [tenantId, ...keys.map((key) => changes[key])],
+      `UPDATE municipalities SET ${assignments.map(([column], index) => `${column}=$${index + 2}`).join(", ")} WHERE id=$1`,
+      [tenantId, ...assignments.map(([, value]) => value)],
     );
   }
   async publishLegalTexts(

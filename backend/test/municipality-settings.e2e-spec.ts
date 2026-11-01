@@ -148,6 +148,52 @@ describe("Municipal settings through HTTP and PostgreSQL", () => {
     const events = await context.manager.get("/v2/manager/audit").expect(200);
     expect(JSON.stringify(events.body)).toContain("municipality.updated");
   });
+  it("should let the manager publish the accessibility statement, audited (RD 1112/2018, #76)", async () => {
+    const context = await tenant();
+    const statement = {
+      unit: "Servizo de deportes",
+      email: "accesibilidade@example.invalid",
+      phone: "+34 986 000 000",
+      reviewedOn: "2026-10-15",
+      method: "external",
+      exceptions: {
+        gl: "O mapa de ocupación aínda non foi revisado cun lector de pantalla.",
+        es: "El mapa de ocupación aún no se ha revisado con un lector de pantalla.",
+      },
+    };
+    const saved = await patch(context.manager, "manager/municipality", {
+      accessibility: statement,
+    }).expect(200);
+    expect(saved.body.settings.accessibility).toEqual(statement);
+    const shown = await request(harness.app.getHttpServer())
+      .get("/v2/public/municipalities")
+      .expect(200);
+    expect(
+      shown.body.find((item: { id: string }) => item.id === context.id)
+        .accessibility,
+    ).toEqual(statement);
+    const audit = await harness.db.query(
+      "SELECT details FROM audit_events WHERE tenant_id=$1 AND action='municipality.updated'",
+      [context.id],
+    );
+    expect(audit.rows.at(-1)?.details.after.accessibility).toEqual(statement);
+    // A future review date, a bad address or an unknown method are refused.
+    await patch(context.manager, "manager/municipality", {
+      accessibility: { ...statement, reviewedOn: "2999-01-01" },
+    }).expect(400);
+    await patch(context.manager, "manager/municipality", {
+      accessibility: { ...statement, reviewedOn: "2026-02-30" },
+    }).expect(400);
+    await patch(context.manager, "manager/municipality", {
+      accessibility: { ...statement, email: "not-an-address" },
+    }).expect(400);
+    await patch(context.manager, "manager/municipality", {
+      accessibility: { ...statement, method: "guess" },
+    }).expect(400);
+    await patch(context.citizen, "manager/municipality", {
+      accessibility: statement,
+    }).expect(403);
+  });
   it("should reject invalid values and colours below AA contrast", async () => {
     const context = await tenant();
     await patch(context.manager, "manager/municipality", {
