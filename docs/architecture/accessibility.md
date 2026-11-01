@@ -140,7 +140,7 @@ Paths are relative to the repository. FD is
 - **Gap:** none known.
 - **N/A:** 7 criteria.
 
-The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each council edits its statement in the backoffice. #78 (the slow sign-in code request) is outside the WCAG criteria.
+The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each council edits its statement in the backoffice. #78 (the sign-in code request waiting for the mail server) is fixed too, though it is not a WCAG criterion.
 
 ## Points of special care
 
@@ -149,7 +149,7 @@ The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each counc
 | Slot grid and booking calendar | **Meets:** a real table, status as text, native buttons, names that start with the visible status (#80), focus managed in the booking dialog, and the confirmation and each day's free slots are announced (#70) |
 | Facility map | **Meets:** a keyboard-operable region with a name and a text alternative (the address and the OpenStreetMap link), zoom controls in the page's language, a marker that is only a picture, and a link that says it opens another tab (#73, #74) |
 | QR codes and the door page | **Meets:** the pass QR and the TOTP QR have a text alternative and the code is also given as text. The door page works without a camera (search and a check-in button for each booking) and announces results. **Not reviewed:** typing the printed code by hand |
-| Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`, time limits warned and extendable (#71), focus on each step (#70), errors tied to their field (#72). Separately, the code request waits for the mail server (#78) |
+| Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`, time limits warned and extendable (#71), focus on each step (#70), errors tied to their field (#72). The code request no longer waits for the mail server (#78) |
 | Reflow and text spacing | Checked at 320 and 390 px on seven screens, and at 320 px with the spacing stylesheet on the facility page and the bottom bar (#75). Other screens: #77 |
 | Dark mode | Not supported. WCAG doesn't require it; the theme respects the system's reduced motion setting |
 

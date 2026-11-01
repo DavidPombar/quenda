@@ -44,8 +44,21 @@ function verify(
     .set("X-Quenda-Request", "1")
     .send({ slug: context.slug, email, code });
 }
+/** Waits until every requested code has been handed to the mail server or has failed (#78). */
+async function settled() {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const { rows } = await harness.db.query<{ count: number }>(
+      // An expired code is never sent, so it does not count as pending.
+      "SELECT count(*)::int AS count FROM login_codes WHERE pending_code IS NOT NULL AND sent_at IS NULL AND last_error IS NULL AND expires_at > now()",
+    );
+    if (rows[0].count === 0) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error("login codes still being sent");
+}
 /** The code from the last mail sent to the address. */
-function mailedCode(email: string) {
+async function mailedCode(email: string) {
+  await settled();
   const mail = smtp.mails.filter((value) => value.to === email).at(-1);
   return /\b([0-9]{6})\b/.exec(mail?.data ?? "")?.[1] ?? "";
 }
@@ -62,7 +75,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
     const methods = await api().get("/v2/public/auth/methods").expect(200);
     expect(methods.body.email).toBe(true);
     await requestCode(context, " Ana@Example.org ").expect(202);
-    const code = mailedCode("ana@example.org");
+    const code = await mailedCode("ana@example.org");
     expect(code).toMatch(/^[0-9]{6}$/);
     // Once sent, the row keeps neither the address nor the code.
     const stored = await harness.db.query(
@@ -94,7 +107,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
       api(),
       context,
       "ana@example.org",
-      mailedCode("ana@example.org"),
+      await mailedCode("ana@example.org"),
     ).expect(201);
     expect(again.body.userId).toBe(session.body.userId);
     const audit = await harness.db.query(
@@ -129,7 +142,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
       api(),
       context,
       "eva@example.org",
-      mailedCode("eva@example.org"),
+      await mailedCode("eva@example.org"),
     ).expect(201);
     expect(session.body.userId).not.toBe(context.users.citizen);
     expect(session.body.assurance).toBe("email");
@@ -137,7 +150,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
   it("should invalidate a code after five wrong attempts and refuse an expired one", async () => {
     const context = await tenant();
     await requestCode(context, "leo@example.org").expect(202);
-    const code = mailedCode("leo@example.org");
+    const code = await mailedCode("leo@example.org");
     const wrong = code === "000000" ? "111111" : "000000";
     for (let attempt = 1; attempt < 5; attempt++)
       expect(
@@ -150,6 +163,8 @@ describe("Sign-in with an email code (#8, part B)", () => {
     ).toBe("code_expired");
     await verify(api(), context, "leo@example.org", code).expect(400);
     await requestCode(context, "leo@example.org").expect(202);
+    // The new code is mailed first, then it expires.
+    await settled();
     await harness.db.query(
       "UPDATE login_codes SET expires_at=now() - interval '1 minute' WHERE tenant_id=$1",
       [context.id],
@@ -160,7 +175,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
           api(),
           context,
           "leo@example.org",
-          mailedCode("leo@example.org"),
+          await mailedCode("leo@example.org"),
         ).expect(400)
       ).body.code,
     ).toBe("code_expired");
@@ -171,6 +186,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
     const before = smtp.mails.length;
     for (let index = 0; index < 7; index++)
       await requestCode(context, "max@example.org").expect(202);
+    await settled();
     expect(smtp.mails.length - before).toBe(5);
   });
   it("should keep each municipality's codes apart", async () => {
@@ -181,13 +197,14 @@ describe("Sign-in with an email code (#8, part B)", () => {
       api(),
       second,
       "sol@example.org",
-      mailedCode("sol@example.org"),
+      await mailedCode("sol@example.org"),
     ).expect(400);
   });
   it("should retry a code the mail server refused, from the delivery worker", async () => {
     const context = await tenant();
     smtp.failing = true;
     await requestCode(context, "rio@example.org").expect(202);
+    await settled();
     const pending = await harness.db.query(
       "SELECT pending_code, last_error FROM login_codes WHERE tenant_id=$1",
       [context.id],
@@ -196,9 +213,22 @@ describe("Sign-in with an email code (#8, part B)", () => {
     expect(pending.rows[0].last_error).toBeTruthy();
     smtp.failing = false;
     await worker().runOnce();
-    const code = mailedCode("rio@example.org");
+    const code = await mailedCode("rio@example.org");
     expect(code).toBe(pending.rows[0].pending_code);
     await verify(api(), context, "rio@example.org", code).expect(201);
+  });
+  it("should answer at once even when the mail server is slow (#78)", async () => {
+    const context = await tenant();
+    smtp.delay = 1500;
+    try {
+      const started = Date.now();
+      await requestCode(context, "lua@example.org").expect(202);
+      expect(Date.now() - started).toBeLessThan(1000);
+      // The code still arrives, once the server accepts it.
+      expect(await mailedCode("lua@example.org")).toMatch(/^[0-9]{6}$/);
+    } finally {
+      smtp.delay = 0;
+    }
   });
   it("should remove the person's codes when they delete their account", async () => {
     const context = await tenant();
@@ -208,7 +238,7 @@ describe("Sign-in with an email code (#8, part B)", () => {
       agent,
       context,
       "uxe@example.org",
-      mailedCode("uxe@example.org"),
+      await mailedCode("uxe@example.org"),
     ).expect(201);
     await requestCode(context, "uxe@example.org").expect(202);
     await agent

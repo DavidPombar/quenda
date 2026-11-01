@@ -171,10 +171,8 @@ try {
     .getByRole("textbox", { name: "Correo electrónico" })
     .fill("smoke@example.org");
   await page.getByRole("button", { name: "Enviar código" }).click();
-  // The request answers once the code has been handed to the mail server.
-  await page
-    .getByRole("textbox", { name: "Código de 6 cifras" })
-    .waitFor({ timeout: 60_000 });
+  // The request answers at once; the mail goes out in the background (#78).
+  await page.getByRole("textbox", { name: "Código de 6 cifras" }).waitFor();
   await audit("email-code");
   await page
     .getByRole("button", { name: "Ler o aviso de privacidade" })
