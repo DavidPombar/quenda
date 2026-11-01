@@ -29,7 +29,8 @@ lower assurance than an electronic identity: it proves control of a mailbox, not
    valid for ten minutes and answers **202** whether or not an account exists. The privacy notice
    must have been accepted (`consent_required` otherwise). An address gets at most five codes an
    hour; past that the request is still accepted but no mail is sent.
-2. The mail is sent right after the transaction commits, never inside it. If the mail server
+2. The mail is sent right after the transaction commits, never inside it, and the answer does not
+   wait for it, so a slow mail server never keeps the person waiting. If the mail server
    refuses it, the delivery worker retries it (up to five attempts, while the code is valid). Once
    sent, the row keeps only hashes: the address and the code in clear are cleared.
 3. `POST /v2/public/auth/email/sessions {slug, email, code}` compares the code in constant time.

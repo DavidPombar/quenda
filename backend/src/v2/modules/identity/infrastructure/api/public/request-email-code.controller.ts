@@ -38,9 +38,10 @@ export class RequestEmailCodeController {
       locale: body.locale,
     });
     const codeId = result.fold((value) => value.codeId, this.handleError);
-    // Sent after the commit; a failure is retried by the delivery worker.
+    // Sent after the commit without holding the answer: a slow mail server must not keep the
+    // person waiting (#78), and a failure is retried by the delivery worker.
     if (codeId)
-      await this.sender.send(codeId).catch((error: unknown) => {
+      void this.sender.send(codeId).catch((error: unknown) => {
         this.logger.warn(`login code left for the worker: ${String(error)}`);
       });
   }

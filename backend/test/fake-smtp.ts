@@ -11,6 +11,8 @@ export interface ReceivedMail {
 export class FakeSmtp {
   readonly mails: ReceivedMail[] = [];
   failing = false;
+  /** Milliseconds to wait before accepting each message, as a slow mail server would. */
+  delay = 0;
   private server?: Server;
   url = "";
   async start() {
@@ -41,11 +43,16 @@ export class FakeSmtp {
         if (inData) {
           if (line === ".") {
             inData = false;
-            if (this.failing) socket.write("451 try later\r\n");
-            else {
-              this.mails.push({ to, data });
-              socket.write("250 queued\r\n");
-            }
+            const accepted = { to, data };
+            const reply = () => {
+              if (this.failing) socket.write("451 try later\r\n");
+              else {
+                this.mails.push(accepted);
+                socket.write("250 queued\r\n");
+              }
+            };
+            if (this.delay) setTimeout(reply, this.delay);
+            else reply();
             data = "";
           } else data += `${line.startsWith("..") ? line.slice(1) : line}\n`;
           continue;
