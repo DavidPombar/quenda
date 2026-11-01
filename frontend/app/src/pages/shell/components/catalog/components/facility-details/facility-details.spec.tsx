@@ -47,6 +47,14 @@ describe("Facility details with a single court", () => {
     const create = stubCreate();
     await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
     await render(<App />);
+    // The day's free slots are announced, since the grid redraws without moving focus.
+    await expect
+      .poll(() =>
+        [...document.querySelectorAll("[role=status]")]
+          .map((element) => element.textContent)
+          .join(" "),
+      )
+      .toMatch(/\. Quendas libres: 1\./);
     await page.getByRole("button", { name: "10:00 Libre" }).click();
     await page.getByRole("button", { name: "Confirmar reserva" }).click();
     await expect
@@ -54,6 +62,13 @@ describe("Facility details with a single court", () => {
         page.getByRole("heading", { name: "A túa quenda está confirmada!" }),
       )
       .toBeVisible();
+    // The confirmation is announced and focus moves to the next step (WCAG 4.1.3, 2.4.3).
+    await expect
+      .element(page.getByRole("dialog").getByRole("status"))
+      .not.toBeEmptyDOMElement();
+    await expect
+      .element(page.getByRole("dialog").getByRole("link"))
+      .toHaveFocus();
     await expect
       .element(page.getByRole("combobox", { name: "Pista" }))
       .not.toBeInTheDocument();

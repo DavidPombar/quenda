@@ -37,6 +37,7 @@ const gl = {
   today: "Hoxe",
   tomorrow: "Mañá",
   selectSlot: "Escolle a túa quenda",
+  slotsSummary: "{day}. Quendas libres: {count}.",
   localTimes: "As horas móstranse en hora local do concello.",
   booked: "Reservada",
   past: "Pasada",
@@ -155,6 +156,17 @@ const gl = {
   managerOnly: "Este espazo é para o persoal municipal.",
   managerPrompt: "Entra cunha conta de xestión para continuar.",
   close: "Pechar",
+  sessionEndingTitle: "A túa sesión vai rematar",
+  sessionEndingBody:
+    "Por seguridade, a sesión remata ás {time}. Queres seguir conectado/a? O que estabas a facer non se perde.",
+  sessionKeep: "Seguir conectado/a",
+  sessionLeave: "Saír",
+  sessionKeepFailed:
+    "Non puidemos manter a sesión aberta. Garda o que esteas a facer e entra de novo.",
+  sessionEndedTitle: "A túa sesión rematou",
+  sessionEndedBody:
+    "Pasou o tempo da sesión ou pechouse noutro sitio. Entra de novo para seguir.",
+  sessionSignInAgain: "Entrar de novo",
   minutes: "min",
   notFound: "Non atopamos esta instalación.",
   selected: "Seleccionada",
@@ -346,6 +358,9 @@ const gl = {
   emailCodeSent:
     "Se {email} pode entrar, acaba de recibir un código. Mira tamén no correo non desexado.",
   emailCodeLabel: "Código de 6 cifras",
+  emailCodeHint: "Vale durante 10 minutos.",
+  emailCodeExpiring:
+    "O código caduca nun minuto. Se aínda non o tes, pide outro con «Enviar outro código».",
   emailSignIn: "Entrar",
   emailResend: "Enviar outro código",
   emailChange: "Cambiar o correo",
@@ -495,6 +510,7 @@ const es: Record<TextKey, string> = {
   today: "Hoy",
   tomorrow: "Mañana",
   selectSlot: "Elige tu turno",
+  slotsSummary: "{day}. Turnos libres: {count}.",
   localTimes: "Las horas se muestran en hora local del municipio.",
   booked: "Reservado",
   past: "Pasado",
@@ -593,6 +609,17 @@ const es: Record<TextKey, string> = {
   managerOnly: "Este espacio es para el personal municipal.",
   managerPrompt: "Entra con una cuenta de gestión para continuar.",
   close: "Cerrar",
+  sessionEndingTitle: "Tu sesión va a terminar",
+  sessionEndingBody:
+    "Por seguridad, la sesión termina a las {time}. ¿Quieres seguir conectado/a? Lo que estabas haciendo no se pierde.",
+  sessionKeep: "Seguir conectado/a",
+  sessionLeave: "Salir",
+  sessionKeepFailed:
+    "No pudimos mantener la sesión abierta. Guarda lo que estés haciendo y entra de nuevo.",
+  sessionEndedTitle: "Tu sesión ha terminado",
+  sessionEndedBody:
+    "Pasó el tiempo de la sesión o se cerró en otro sitio. Entra de nuevo para seguir.",
+  sessionSignInAgain: "Entrar de nuevo",
   notFound: "No encontramos esta instalación.",
   bookingError: "No pudimos completar la reserva.",
   genericError: "Algo salió mal. Vuelve a intentarlo.",
@@ -782,6 +809,9 @@ const es: Record<TextKey, string> = {
   emailCodeSent:
     "Si {email} puede entrar, acaba de recibir un código. Mira también en el correo no deseado.",
   emailCodeLabel: "Código de 6 cifras",
+  emailCodeHint: "Vale durante 10 minutos.",
+  emailCodeExpiring:
+    "El código caduca en un minuto. Si aún no lo tienes, pide otro con «Enviar otro código».",
   emailSignIn: "Entrar",
   emailResend: "Enviar otro código",
   emailChange: "Cambiar el correo",

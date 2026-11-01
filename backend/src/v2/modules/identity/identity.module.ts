@@ -3,6 +3,8 @@ import { Module } from "@nestjs/common";
 import { AccountModule } from "../account/account.module";
 import { CreateSession } from "./application/commands/create-session.command";
 import { DeleteSession } from "./application/commands/delete-session.command";
+import { ExtendSession } from "./application/commands/extend-session.command";
+import { ExtendLoginTicket } from "./application/commands/extend-login-ticket.command";
 import { StartOidcLogin } from "./application/commands/start-oidc-login.command";
 import { ConsumeLoginAttempt } from "./application/commands/consume-login-attempt.command";
 import { CompleteOidcLogin } from "./application/commands/complete-oidc-login.command";
@@ -19,6 +21,8 @@ import { PostgresExternalIdentityRepository } from "./infrastructure/persistence
 import { CreateSessionController } from "./infrastructure/api/public/create-session.controller";
 import { DeleteSessionController } from "./infrastructure/api/public/delete-session.controller";
 import { GetSessionController } from "./infrastructure/api/public/get-session.controller";
+import { ExtendSessionController } from "./infrastructure/api/public/extend-session.controller";
+import { ExtendLoginTicketController } from "./infrastructure/api/public/extend-login-ticket.controller";
 import { GetAuthMethodsController } from "./infrastructure/api/public/get-auth-methods.controller";
 import { StartOidcLoginController } from "./infrastructure/api/public/start-oidc-login.controller";
 import { CompleteOidcLoginController } from "./infrastructure/api/public/complete-oidc-login.controller";
@@ -57,6 +61,8 @@ import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-em
   providers: [
     CreateSession,
     DeleteSession,
+    ExtendSession,
+    ExtendLoginTicket,
     GetSession,
     GetAuthMethods,
     StartOidcLogin,
@@ -97,6 +103,8 @@ import { VerifyEmailCodeController } from "./infrastructure/api/public/verify-em
     CreateSessionController,
     DeleteSessionController,
     GetSessionController,
+    ExtendSessionController,
+    ExtendLoginTicketController,
     GetAuthMethodsController,
     StartOidcLoginController,
     CompleteOidcLoginController,

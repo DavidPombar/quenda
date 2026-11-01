@@ -96,6 +96,8 @@ const gl = {
   staffLogin: "Usuario",
   staffPassword: "Contrasinal",
   staffContinue: "Continuar",
+  staffExpiring: "Queda un minuto para completar este paso.",
+  staffMoreTime: "Necesito máis tempo",
   staffNewPasswordTitle: "Novo contrasinal",
   staffNewPasswordBody:
     "É a túa primeira entrada: cambia o contrasinal temporal por un que só saibas ti.",
@@ -261,6 +263,17 @@ const gl = {
   managerPrompt:
     "Entra cunha conta de xestión municipal para ver as instalacións e a actividade.",
   close: "Pechar",
+  sessionEndingTitle: "A túa sesión vai rematar",
+  sessionEndingBody:
+    "Por seguridade, a sesión remata ás {time}. Queres seguir conectado/a? O que estabas a facer non se perde.",
+  sessionKeep: "Seguir conectado/a",
+  sessionLeave: "Saír",
+  sessionKeepFailed:
+    "Non puidemos manter a sesión aberta. Garda o que esteas a facer e entra de novo.",
+  sessionEndedTitle: "A túa sesión rematou",
+  sessionEndedBody:
+    "Pasou o tempo da sesión ou pechouse noutro sitio. Entra de novo para seguir.",
+  sessionSignInAgain: "Entrar de novo",
   minutes: "min",
   notFound: "Non atopamos esta instalación.",
   selected: "Seleccionada",
@@ -971,6 +984,8 @@ const es: Record<TextKey, string> = {
   staffLogin: "Usuario",
   staffPassword: "Contraseña",
   staffContinue: "Continuar",
+  staffExpiring: "Queda un minuto para completar este paso.",
+  staffMoreTime: "Necesito más tiempo",
   staffNewPasswordTitle: "Nueva contraseña",
   staffNewPasswordBody:
     "Es tu primera entrada: cambia la contraseña temporal por una que solo sepas tú.",
@@ -1118,6 +1133,17 @@ const es: Record<TextKey, string> = {
   managerPrompt:
     "Entra con una cuenta de gestión municipal para ver las instalaciones y la actividad.",
   close: "Cerrar",
+  sessionEndingTitle: "Tu sesión va a terminar",
+  sessionEndingBody:
+    "Por seguridad, la sesión termina a las {time}. ¿Quieres seguir conectado/a? Lo que estabas haciendo no se pierde.",
+  sessionKeep: "Seguir conectado/a",
+  sessionLeave: "Salir",
+  sessionKeepFailed:
+    "No pudimos mantener la sesión abierta. Guarda lo que estés haciendo y entra de nuevo.",
+  sessionEndedTitle: "Tu sesión ha terminado",
+  sessionEndedBody:
+    "Pasó el tiempo de la sesión o se cerró en otro sitio. Entra de nuevo para seguir.",
+  sessionSignInAgain: "Entrar de nuevo",
   notFound: "No encontramos esta instalación.",
   bookingError: "No pudimos completar la reserva.",
   genericError: "Algo salió mal. Vuelve a intentarlo.",

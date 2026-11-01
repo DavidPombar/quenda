@@ -50,6 +50,22 @@ export class PostgresOperatorSessionRepository extends OperatorSessionRepository
     );
     return rows[0] ? principal(rows[0]) : null;
   }
+  async expiry(token: string, now: Temporal.Instant) {
+    if (!token) return null;
+    const { rows } = await this.db.query<{ expiresAt: string }>(
+      'SELECT expires_at AS "expiresAt" FROM operator_sessions WHERE token_hash=$1 AND expires_at>$2',
+      [hash(token), now.toString()],
+    );
+    return rows[0] ? Temporal.Instant.from(rows[0].expiresAt) : null;
+  }
+  async extend(token: string, now: Temporal.Instant, until: Temporal.Instant) {
+    if (!token) return false;
+    const { rowCount } = await this.db.query(
+      "UPDATE operator_sessions SET expires_at=$3 WHERE token_hash=$1 AND expires_at>$2",
+      [hash(token), now.toString(), until.toString()],
+    );
+    return (rowCount ?? 0) > 0;
+  }
   async remove(token: string) {
     await this.db.query("DELETE FROM operator_sessions WHERE token_hash=$1", [
       hash(token),

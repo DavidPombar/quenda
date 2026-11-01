@@ -10,6 +10,11 @@ export class GetOperatorSession {
     private readonly clock: Clock,
   ) {}
   async execute(args: { token: string }) {
-    return Result.ok(await this.sessions.find(args.token, this.clock.now()));
+    const now = this.clock.now();
+    const principal = await this.sessions.find(args.token, now);
+    return Result.ok({
+      principal,
+      expiresAt: principal ? await this.sessions.expiry(args.token, now) : null,
+    });
   }
 }

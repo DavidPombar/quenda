@@ -156,6 +156,17 @@ export class PostgresCredentialRepository extends CredentialRepository {
       ],
     );
   }
+  async extendTicket(
+    ticketHash: string,
+    now: Temporal.Instant,
+    until: Temporal.Instant,
+  ) {
+    const { rowCount } = await this.db.query(
+      "UPDATE login_tickets SET expires_at=$3 WHERE ticket_hash=$1 AND expires_at>$2",
+      [ticketHash, now.toString(), until.toString()],
+    );
+    return (rowCount ?? 0) > 0;
+  }
   async takeTicket(ticketHash: string, now: Temporal.Instant) {
     const { rows } = await this.db.query<{
       credentialId: string;

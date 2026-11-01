@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { SESSION_ENDED_EVENT } from "@/constants/events";
 export class ApiError extends Error {
   constructor(
     readonly code: string,
@@ -23,6 +24,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     },
   });
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("public/"))
+      window.dispatchEvent(new Event(SESSION_ENDED_EVENT));
     const problem = (await response
       .json()
       .catch(() => ({ code: "network", detail: "" }))) as {

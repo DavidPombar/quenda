@@ -73,6 +73,8 @@ export interface Session {
   tenantId: string;
   displayName: string;
   role: "citizen" | "manager";
+  /** When the session ends; only on the current session (WCAG 2.2.1). */
+  expiresAt?: string | null;
 }
 /** Code from the municipality's sports catalogue (#26). */
 export type Sport = string;

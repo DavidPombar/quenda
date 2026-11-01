@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
@@ -20,6 +20,10 @@ export function useShellController() {
   const create = useCreateSessionMutation();
   const authMethods = useGetAuthMethodsQuery();
   const remove = useDeleteSessionMutation();
+  const { refetch: refetchSession } = sessionQuery;
+  const sessionEnded = useCallback(() => {
+    void refetchSession();
+  }, [refetchSession]);
   // Only an explicit choice is stored; until then the municipality's default language applies.
   const [chosenLocale, setChosenLocale] = useState<Locale | null>(() => {
     const saved = localStorage.getItem("quenda.locale");
@@ -121,6 +125,7 @@ export function useShellController() {
     create,
     remove,
     signOut: () => remove.mutate(),
+    sessionEnded,
     context: municipality
       ? { municipality, session, locale, t, signIn: () => setLoginOpen(true) }
       : null,

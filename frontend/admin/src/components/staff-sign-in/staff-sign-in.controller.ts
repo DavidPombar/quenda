@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useStartStaffSignInMutation } from "@/queries/auth/start-staff-sign-in.mutation";
 import { useChangeTemporaryPasswordMutation } from "@/queries/auth/change-temporary-password.mutation";
 import { useCompleteStaffSignInMutation } from "@/queries/auth/complete-staff-sign-in.mutation";
+import { useExtendSignInTicketMutation } from "@/queries/auth/extend-sign-in-ticket.mutation";
 import { qrPath } from "@/services/qr.service";
 import type { TextKey } from "@/services/i18n.service";
 import type { SignInStep } from "@/types/models";
@@ -14,6 +15,8 @@ const ERRORS: Record<string, TextKey> = {
   login_expired: "staffExpired",
   local_accounts_unavailable: "staffUnavailable",
 };
+/** A minute before a step's ticket expires the form offers more time (WCAG 2.2.1). */
+const WARNING_MS = 60_000;
 /**
  * Staff sign-in (#8): login and password, then, on the first time, a new password and the
  * authenticator app; afterwards the six-digit code. Municipal staff pass the municipality's slug;
@@ -35,6 +38,27 @@ export function useStaffSignInController(args: {
   const [repeat, setRepeat] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<TextKey | null>(null);
+  const extension = useExtendSignInTicketMutation();
+  const [expiring, setExpiring] = useState(false);
+  // Each step starts on its first field, so the change is followed with keyboard or reader.
+  const current = step?.step ?? "credentials";
+  const firstField = useRef<HTMLInputElement>(null);
+  const shown = useRef(current);
+  useEffect(() => {
+    if (shown.current === current) return;
+    shown.current = current;
+    firstField.current?.focus();
+  }, [current]);
+  const expiresAt = step?.expiresAt;
+  useEffect(() => {
+    setExpiring(false);
+    if (!expiresAt) return;
+    const timer = window.setTimeout(
+      () => setExpiring(true),
+      Math.max(0, Date.parse(expiresAt) - WARNING_MS - Date.now()),
+    );
+    return () => window.clearTimeout(timer);
+  }, [expiresAt]);
   function fail(failure: unknown) {
     const code = (failure as { code?: string }).code ?? "";
     setError(ERRORS[code] ?? "staffError");
@@ -71,6 +95,18 @@ export function useStaffSignInController(args: {
     code,
     setCode: (value: string) => setCode(value.replace(/\D/g, "").slice(0, 6)),
     error,
+    firstField,
+    expiring,
+    extending: extension.isPending,
+    moreTime: () => {
+      void run(async () => {
+        if (!step) return;
+        const { expiresAt } = await extension.mutateAsync({
+          ticket: step.ticket,
+        });
+        setStep({ ...step, expiresAt });
+      });
+    },
     pending: start.isPending || change.isPending || complete.isPending,
     submitPassword: (event: FormEvent) => {
       event.preventDefault();

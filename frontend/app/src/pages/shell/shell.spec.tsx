@@ -145,6 +145,11 @@ describe("Citizen sign-in", () => {
       locale: "gl",
     });
     const code = page.getByRole("textbox", { name: "Código de 6 cifras" });
+    // The second step starts on its field and says how long the code lasts.
+    await expect.element(code).toHaveFocus();
+    await expect
+      .element(code)
+      .toHaveAccessibleDescription("Vale durante 10 minutos.");
     await code.fill("12a");
     await page
       .getByRole("button", { name: "Entrar", exact: true })
@@ -153,6 +158,13 @@ describe("Citizen sign-in", () => {
     await expect
       .element(page.getByRole("alert"))
       .toHaveTextContent("O código ten 6 cifras.");
+    // The error belongs to the field (WCAG 3.3.1).
+    await expect.element(code).toHaveAttribute("aria-invalid", "true");
+    await expect
+      .element(code)
+      .toHaveAccessibleDescription(
+        "Vale durante 10 minutos. O código ten 6 cifras.",
+      );
     await code.fill("123456");
     await page
       .getByRole("button", { name: "Entrar", exact: true })
@@ -382,5 +394,51 @@ describe("Page names, focus and the municipality selector (T5)", () => {
     await expect
       .element(page.getByRole("button", { name: "Cambiar", exact: true }))
       .not.toBeInTheDocument();
+  });
+});
+describe("Session time limit (WCAG 2.2.1)", () => {
+  test("should warn before the session ends and keep it open when asked", async () => {
+    stubShell(true);
+    const session = {
+      userId: "10000000-0000-4000-8000-000000000011",
+      tenantId: municipality.id,
+      displayName: "Alex",
+      role: "citizen",
+    };
+    // Less than two minutes left: the warning shows at once.
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      response: {
+        session,
+        expiresAt: new Date(Date.now() + 90_000).toISOString(),
+      },
+    });
+    const extension = stubJsonResponse({
+      path: "*/v2/public/session/extension",
+      method: "POST",
+      response: {
+        expiresAt: new Date(Date.now() + 8 * 3_600_000).toISOString(),
+      },
+    });
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    const warning = page.getByRole("alertdialog", {
+      name: "A túa sesión vai rematar",
+    });
+    await expect.element(warning).toBeVisible();
+    // It starts on the safe choice.
+    await expect
+      .element(warning.getByRole("button", { name: "Seguir conectado/a" }))
+      .toHaveFocus();
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      response: {
+        session,
+        expiresAt: new Date(Date.now() + 8 * 3_600_000).toISOString(),
+      },
+    });
+    await warning.getByRole("button", { name: "Seguir conectado/a" }).click();
+    await expect.element(warning).not.toBeInTheDocument();
+    expect(extension.spy).toHaveBeenCalledTimes(1);
   });
 });
