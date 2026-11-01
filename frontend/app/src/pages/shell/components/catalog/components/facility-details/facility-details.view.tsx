@@ -129,6 +129,9 @@ export function FacilityDetails() {
                   name={f.name}
                   label={`${c.t("mapOf")} ${f.name}`}
                   openLabel={c.t("openInOsm")}
+                  newTabLabel={c.t("opensNewTab")}
+                  zoomInLabel={c.t("mapZoomIn")}
+                  zoomOutLabel={c.t("mapZoomOut")}
                 />
               </>
             )}
@@ -166,7 +169,6 @@ export function FacilityDetails() {
                     type="button"
                     key={day}
                     aria-pressed={c.date === day}
-                    title={longDayLabel(day, c.locale)}
                     className={c.date === day ? "selected" : ""}
                     onClick={() => c.setDate(day)}
                   >

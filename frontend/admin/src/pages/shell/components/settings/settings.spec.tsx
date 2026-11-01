@@ -424,3 +424,55 @@ describe("municipal settings", () => {
     expect(icon.spy).toHaveBeenCalledTimes(1);
   });
 });
+describe("accessibility statement (RD 1112/2018, #76)", () => {
+  test("should save the statement and refuse a future review date on its field", async () => {
+    stubManager();
+    const { spy } = stubPatch();
+    await open();
+    const section = page.getByRole("region", {
+      name: "Declaración de accesibilidade",
+    });
+    await section
+      .getByRole("textbox", { name: "Unidade responsable" })
+      .fill("Servizo de deportes");
+    await section
+      .getByRole("textbox", {
+        name: "Correo para comunicacións de accesibilidade",
+      })
+      .fill("accesibilidade@vilaverde.example");
+    const date = section.getByLabelText("Data da última revisión");
+    await date.fill("2999-01-01");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect.element(date).toHaveFocus();
+    await expect
+      .element(date)
+      .toHaveAccessibleDescription(
+        "Non pode ser posterior a hoxe. Escribe unha data que non sexa posterior a hoxe.",
+      );
+    expect(spy).not.toHaveBeenCalled();
+    await date.fill("2026-10-15");
+    await section
+      .getByRole("combobox", { name: "Método da revisión" })
+      .selectOptions("external");
+    await section
+      .getByRole("textbox", { name: "Contido non accesible (galego)" })
+      .fill("O mapa de ocupación aínda non foi revisado.");
+    await section.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(section.getByRole("status"))
+      .toHaveTextContent("Cambios gardados.");
+    expect(spy.mock.calls[0][0].body).toEqual({
+      accessibility: {
+        unit: "Servizo de deportes",
+        email: "accesibilidade@vilaverde.example",
+        phone: settings.accessibility.phone,
+        reviewedOn: "2026-10-15",
+        method: "external",
+        exceptions: {
+          gl: "O mapa de ocupación aínda non foi revisado.",
+          es: settings.accessibility.exceptions.es,
+        },
+      },
+    });
+  });
+});

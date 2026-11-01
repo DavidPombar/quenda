@@ -114,6 +114,7 @@ export type SettingsPatch = Partial<
     | "dataLicense"
     | "dir3Code"
     | "analyticsEnabled"
+    | "accessibility"
   >
 >;
 export interface SettingsUpdate {

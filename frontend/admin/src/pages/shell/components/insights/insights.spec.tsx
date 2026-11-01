@@ -64,7 +64,7 @@ describe("indicators", () => {
       .element(table.getByRole("rowheader", { name: "18:00" }))
       .toBeVisible();
     await expect
-      .element(table.getByRole("cell", { name: "80 %" }))
+      .element(table.getByRole("cell", { name: /^80 % .+ \/ .+$/ }))
       .toBeVisible();
     await expect
       .element(table.getByRole("cell", { name: "Pechado" }).first())
@@ -169,7 +169,7 @@ describe("indicators", () => {
       )
       .toBeVisible();
     await expect
-      .element(third.getByRole("cell", { name: "75 %" }))
+      .element(third.getByRole("cell", { name: /^75 %/ }))
       .toBeVisible();
   });
   test("should explain a period longer than 16 months without calling the API", async () => {

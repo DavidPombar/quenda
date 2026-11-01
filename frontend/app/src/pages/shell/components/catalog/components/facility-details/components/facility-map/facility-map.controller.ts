@@ -7,7 +7,8 @@ const ZOOM = 16;
 export function useFacilityMapController(args: {
   latitude: number;
   longitude: number;
-  name: string;
+  zoomInLabel: string;
+  zoomOutLabel: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const settings = useGetMapSettingsQuery();
@@ -19,27 +20,42 @@ export function useFacilityMapController(args: {
       zoom: ZOOM,
       scrollWheelZoom: false,
       keyboard: true,
+      zoomControl: false,
     });
+    // Zoom buttons named in the page's language (WCAG 3.1.2), and an attribution prefix without
+    // Leaflet's English tooltip.
+    L.control
+      .zoom({ zoomInTitle: args.zoomInLabel, zoomOutTitle: args.zoomOutLabel })
+      .addTo(map);
+    map.attributionControl.setPrefix(
+      '<a href="https://leafletjs.com">Leaflet</a>',
+    );
     // An empty template (tests, offline installs) still shows the marker without tiles.
     if (tiles.tileUrl)
       L.tileLayer(tiles.tileUrl, {
         maxZoom: 19,
         attribution: tiles.attribution,
       }).addTo(map);
-    // A vector marker needs no image assets and keeps the brand colour.
+    // A vector marker needs no image assets and keeps the brand colour. It is only a picture:
+    // not focusable and with no hover-only tooltip; the page heading names the place (4.1.2).
     L.circleMarker([args.latitude, args.longitude], {
       radius: 10,
       weight: 3,
       color: "#ffffff",
       fillColor: "#1d5c9a",
       fillOpacity: 1,
-    })
-      .bindTooltip(args.name)
-      .addTo(map);
+      interactive: false,
+    }).addTo(map);
     return () => {
       map.remove();
     };
-  }, [tiles, args.latitude, args.longitude, args.name]);
+  }, [
+    tiles,
+    args.latitude,
+    args.longitude,
+    args.zoomInLabel,
+    args.zoomOutLabel,
+  ]);
   return {
     container,
     ready: !!tiles,

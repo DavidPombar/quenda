@@ -181,11 +181,11 @@ describe("Facility details with several courts", () => {
     await expect
       .element(
         table.getByRole("button", {
-          name: "10:00, Pista completa, Reservada",
+          name: "Reservada, 10:00, Pista completa",
         }),
       )
       .toBeDisabled();
-    await table.getByRole("button", { name: "10:00, Tercio A, Libre" }).click();
+    await table.getByRole("button", { name: "Libre, 10:00, Tercio A" }).click();
     await expect
       .element(page.getByRole("dialog"))
       .toMatchTextContent(/Pista completa › Tercio A/);
@@ -284,7 +284,7 @@ test("should show a club's season slot as taken and the campaign's published cri
     .selectOptions("Todas as pistas");
   await expect
     .element(
-      page.getByRole("button", { name: "10:00, Pista completa, Uso de club" }),
+      page.getByRole("button", { name: "Uso de club, 10:00, Pista completa" }),
     )
     .toBeDisabled();
   await expect
@@ -347,7 +347,11 @@ describe("Facility page details", () => {
       )
       .toBeVisible();
     await expect
-      .element(page.getByRole("link", { name: "Abrir no OpenStreetMap" }))
+      .element(
+        page.getByRole("link", {
+          name: "Abrir no OpenStreetMap (ábrese noutra pestana)",
+        }),
+      )
       .toHaveAttribute(
         "href",
         "https://www.openstreetmap.org/?mlat=42.61&mlon=-8.12#map=18/42.61/-8.12",

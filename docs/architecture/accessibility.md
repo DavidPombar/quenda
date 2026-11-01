@@ -15,7 +15,7 @@ Last review: 2026-11-01 (issue #68), updated as each gap is fixed.
 |---|---|---|
 | **WCAG 2.1, levels A and AA** | 50 success criteria (30 A, 20 AA) | Matrix below |
 | **EN 301 549 v3.2.1** (UNE-EN 301549:2022), chapter 9 | Web content: clause 9.x.y.z is WCAG 2.1 criterion x.y.z, word for word. Chapter 11 (software) and 12 (documentation) apply to the PWA and the help texts in the same way | The EN clause is shown in each row |
-| **RD 1112/2018** (transposes Directive (EU) 2016/2102) | Arts. 5–6: meet EN 301 549. Art. 15: an accessibility statement for each site, with conformance status, non-accessible content, preparation date and review method. Arts. 10 and 12: a mechanism to report problems and request information, and a complaints procedure. Art. 16: review the statement at least once a year | Statement for each municipality at `/app/:slug/accesibilidade` and `/admin/:slug/accesibilidade`, plus the platform's statement at `/accesibilidade` (#9). The contact unit, email and phone come from municipal settings, but the backoffice cannot edit them yet (#76) |
+| **RD 1112/2018** (transposes Directive (EU) 2016/2102) | Arts. 5–6: meet EN 301 549. Art. 15: an accessibility statement for each site, with conformance status, non-accessible content, preparation date and review method. Arts. 10 and 12: a mechanism to report problems and request information, and a complaints procedure. Art. 16: review the statement at least once a year | Statement for each municipality at `/app/:slug/accesibilidade` and `/admin/:slug/accesibilidade`, plus the platform's statement at `/accesibilidade` (#9). Each manager edits the contact unit, email, phone, review date and method and the non-accessible content under **Axustes → Declaración de accesibilidade** (#76) |
 | **Decision (EU) 2018/1524** | The two monitoring methods: **simplified** (automated tests on a sample of pages) and **in-depth** (manual review of all requirements on a sample of pages and processes) | The Observatorio de Accesibilidad Web applies the simplified method with its *Metodología de Seguimiento Simplificado UNE-EN 301549:2022*. It notes that the automated results are estimates and that an expert manual review of all UNE-EN 301549 requirements is always needed. Its reports are not the review report required by art. 17 of RD 1112/2018 |
 
 ## How each criterion is checked
@@ -74,7 +74,7 @@ Paths are relative to the repository. FD is
 | 1.2.3 Audio description or media alternative | A | 9.1.2.3 | — | N/A | No video |
 | 1.2.4 Captions (live) | AA | 9.1.2.4 | — | N/A | No live media |
 | 1.2.5 Audio description (prerecorded) | AA | 9.1.2.5 | — | N/A | No video |
-| 1.3.1 Info and relationships | A | 9.1.3.1 | Auto + manual | Gap | **What meets:** landmarks; one `h1` per page; labelled fields; errors tied to their field (#72); the slot grid is a `<table>` with an `sr-only` caption and `th scope` for times and courts (`FD/components/resource-grid/resource-grid.view.tsx`); `role="group"` with `aria-pressed` for days. **Gap:** information only in `title` (#73) |
+| 1.3.1 Info and relationships | A | 9.1.3.1 | Auto + manual | Meets | Landmarks; one `h1` per page; labelled fields; errors tied to their field (#72). The slot grid is a `<table>` with an `sr-only` caption and `th scope` for times and courts (`FD/components/resource-grid/resource-grid.view.tsx`), and the day strip is a `role="group"` with `aria-pressed`. The heatmap shows each cell's booked and open hours as text, not only in `title` (#73). The audit log keeps the full resource id in a `title`; it only repeats an identifier whose short form is visible |
 | 1.3.2 Meaningful sequence | A | 9.1.3.2 | Manual | Partial | The DOM order follows the visual order on the facility page (keyboard walk, 2026-11-01). Other screens not reviewed (#77) |
 | 1.3.3 Sensory characteristics | A | 9.1.3.3 | Manual | Partial | No instruction found that relies on shape, colour or position. The texts were reviewed in `i18n.service.ts`, but not on every screen |
 | 1.3.4 Orientation | AA | 9.1.3.4 | Code | Meets | No `orientation` in the manifests and no CSS or JS lock |
@@ -84,10 +84,10 @@ Paths are relative to the repository. FD is
 | 1.4.3 Contrast (minimum) | AA | 9.1.4.3 | Auto + manual | Partial | axe `color-contrast` passes on 50 scans. Sport colours are at least 4.5:1 (design guidelines). Still to review by eye: text over photos and the map, which axe marks as incomplete |
 | 1.4.4 Resize text | AA | 9.1.4.4 | Semi | Partial | No fixed font sizes in `px` for body text. A 640 px viewport (200 % zoom of 1280 px) works on the facility page. Other screens: #77 |
 | 1.4.5 Images of text | AA | 9.1.4.5 | Manual | Meets | Only municipal logos (exempt as logotypes) |
-| 1.4.10 Reflow | AA | 9.1.4.10 | Semi | Partial | No page-level horizontal scroll at 320 and 390 px on the website, its statement, the catalogue, history, the resource grid, day bookings, management and operator analytics (smoke test). Tables scroll inside their own region, which is allowed for two-dimensional content. The bottom bar has no room to spare (#75) |
+| 1.4.10 Reflow | AA | 9.1.4.10 | Semi | Partial | No page-level horizontal scroll at 320 and 390 px on the website, its statement, the catalogue, history, the resource grid, day bookings, management and operator analytics (smoke test). Tables scroll inside their own region, which is allowed for two-dimensional content. The bottom bar grows instead of clipping (#75) |
 | 1.4.11 Non-text contrast | AA | 9.1.4.11 | Manual | Partial | The focus ring is 3 px `#c25e00`. Borders of fields and slots haven't been measured |
 | 1.4.12 Text spacing | AA | 9.1.4.12 | Semi | Partial | With the 1.4.12 stylesheet at 320 px nothing is clipped on the facility page, and the bottom bar grows (`min-height`) instead of clipping its labels (#75). Other screens: #77 |
-| 1.4.13 Content on hover or focus | AA | 9.1.4.13 | Manual | Gap | Information that exists only in `title` or a Leaflet tooltip (#73). No custom tooltips or toasts |
+| 1.4.13 Content on hover or focus | AA | 9.1.4.13 | Manual | Meets | No custom tooltips or toasts. The map marker no longer has a hover-only tooltip (#73, #74). The remaining `title` attribute is shown by the browser, which this criterion doesn't cover |
 
 ### Operable
 
@@ -104,11 +104,11 @@ Paths are relative to the repository. FD is
 | 2.4.3 Focus order | A | 9.2.4.3 | Manual + test | Meets | Logical order on the facility page. Focus moves to the new page's `h1` after an in-app navigation, to the field of each new sign-in step, and to «Ver as miñas reservas» once a booking is confirmed (`shell.spec.tsx`, `staff.spec.tsx`, `facility-details.spec.tsx`, #70) |
 | 2.4.4 Link purpose (in context) | A | 9.2.4.4 | Auto + manual | Meets | axe `link-name` passes. Links are descriptive («Ver as miñas reservas», «Abrir no OpenStreetMap»). External links don't say they open a new tab (#74, advisory) |
 | 2.4.5 Multiple ways | AA | 9.2.4.5 | Manual | Meets | Navigation, the catalogue search and sport filters, the municipality selector, and footer links. The backoffice has its main navigation |
-| 2.4.6 Headings and labels | AA | 9.2.4.6 | Manual | Gap | Headings and labels describe their content. Leaflet's zoom controls are named in English (#74) |
+| 2.4.6 Headings and labels | AA | 9.2.4.6 | Manual | Meets | Headings and labels describe their content. The map's zoom controls are named «Achegar» and «Afastar» (#74) |
 | 2.4.7 Focus visible | AA | 9.2.4.7 | Manual | Meets | A 3 px `--focus` outline on all interactive elements (`frontend/*/src/styles.css`). Each `outline: none` has a replacement (`::after`, `:has`). Checked on the facility page |
 | 2.5.1 Pointer gestures | A | 9.2.5.1 | Manual | Meets | The only multipoint or path gestures are map pan and pinch. Zoom buttons, the address in text and the OpenStreetMap link are alternatives |
 | 2.5.2 Pointer cancellation | A | 9.2.5.2 | Code | Meets | Native `click` (activates on release). No `mousedown` actions |
-| 2.5.3 Label in name | A | 9.2.5.3 | Auto + manual | Gap | Resource grid cells show «09:00 Libre» but are named «09:00, Pista 1, Libre» (#80). Leaflet's «+» is named «Zoom in» (#74) |
+| 2.5.3 Label in name | A | 9.2.5.3 | Auto + manual | Meets | Grid cells show the status («Libre») and their name starts with it: «Libre, 10:00, Pista 1» (#80). The map's «+» and «−» are symbols, which the criterion doesn't treat as text (axe leaves them as incomplete) |
 | 2.5.4 Motion actuation | A | 9.2.5.4 | — | N/A | Nothing reacts to device motion |
 
 ### Understandable
@@ -116,7 +116,7 @@ Paths are relative to the repository. FD is
 | WCAG 2.1 | Lvl | EN 301 549 | Method | Status | Evidence and notes |
 |---|---|---|---|---|---|
 | 3.1.1 Language of page | A | 9.3.1.1 | Auto + code | Meets | `lang="gl"` in the three `index.html`, updated on switching language (`document.documentElement.lang` in the shell controllers). axe `html-has-lang` and `html-lang-valid` pass |
-| 3.1.2 Language of parts | AA | 9.3.1.2 | Manual | Gap | The language buttons and the legal texts carry `lang`. Leaflet's English control names have none (#74) |
+| 3.1.2 Language of parts | AA | 9.3.1.2 | Manual | Meets | The language buttons and the legal texts carry `lang`. The map's controls follow the page's language, and Leaflet's prefix has no English tooltip (#74) |
 | 3.2.1 On focus | A | 9.3.2.1 | Manual | Meets | No change of context on focus |
 | 3.2.2 On input | A | 9.3.2.2 | Manual + test | Meets | The «Concello» selector only records the choice; a «Cambiar» button confirms it (#79, `shell.spec.tsx` in both apps). The day and court selects only update the grid on the same page |
 | 3.2.3 Consistent navigation | AA | 9.3.2.3 | Manual | Meets | One shell for each app with the same navigation and footer on every page |
@@ -131,32 +131,32 @@ Paths are relative to the repository. FD is
 | WCAG 2.1 | Lvl | EN 301 549 | Method | Status | Evidence and notes |
 |---|---|---|---|---|---|
 | 4.1.1 Parsing | A | 9.4.1.1 | — | Meets | React output. WCAG 2.2 marks this criterion obsolete, and axe `duplicate-id-aria` passes |
-| 4.1.2 Name, role, value | A | 9.4.1.2 | Auto + manual | Gap | Native controls and Chakra components with ARIA. axe passes on 50 scans. Sign-in fields expose `aria-invalid` (#72). The Leaflet marker takes focus without a name (#74) |
+| 4.1.2 Name, role, value | A | 9.4.1.2 | Auto + manual | Meets | Native controls and Chakra components with ARIA. axe passes on 50 scans. Sign-in fields expose `aria-invalid` (#72). The map marker is not interactive, so nothing focusable lacks a name (#74) |
 | 4.1.3 Status messages | AA | 9.4.1.3 | Manual + test | Meets | `Feedback` uses `role="status"` or `alert`. The door page announces each scan with `aria-live="assertive"`. A confirmed booking is announced in a persistent status region, and so is the number of free slots when the day or court changes (#70) |
 
 **Summary**:
-- **Meets:** 27 criteria.
-- **Partial:** 10 criteria.
-- **Gap:** 6 criteria.
+- **Meets:** 33 criteria.
+- **Partial:** 10 criteria, pending the manual review with assistive technology (#77).
+- **Gap:** none known.
 - **N/A:** 7 criteria.
 
-The 6 gaps are tracked in #73, #74, #76 and #80; #69–#72, #75 and #79 are fixed. #77 is the pending manual review, and #78 is the slow sign-in code request (not a WCAG criterion).
+The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each council edits its statement in the backoffice. #78 (the slow sign-in code request) is outside the WCAG criteria.
 
 ## Points of special care
 
 | Area | Finding |
 |---|---|
-| Slot grid and booking calendar | **Meets:** a real table, status as text, native buttons, the booking dialog manages focus, and the confirmation and each day's free slots are announced (#70). **Gap:** cell names (#80) |
-| Facility map | **Meets:** a keyboard-operable region with a name and a text alternative (the address and the OpenStreetMap link). **Gaps:** English zoom controls, a focusable marker without a name, the tooltip only on hover (#73, #74) |
+| Slot grid and booking calendar | **Meets:** a real table, status as text, native buttons, names that start with the visible status (#80), focus managed in the booking dialog, and the confirmation and each day's free slots are announced (#70) |
+| Facility map | **Meets:** a keyboard-operable region with a name and a text alternative (the address and the OpenStreetMap link), zoom controls in the page's language, a marker that is only a picture, and a link that says it opens another tab (#73, #74) |
 | QR codes and the door page | **Meets:** the pass QR and the TOTP QR have a text alternative and the code is also given as text. The door page works without a camera (search and a check-in button for each booking) and announces results. **Not reviewed:** typing the printed code by hand |
 | Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`, time limits warned and extendable (#71), focus on each step (#70), errors tied to their field (#72). Separately, the code request waits for the mail server (#78) |
-| Reflow and text spacing | Checked at 320 and 390 px on seven screens, and at 320 px with the spacing stylesheet on the facility page. Risks: #75 |
+| Reflow and text spacing | Checked at 320 and 390 px on seven screens, and at 320 px with the spacing stylesheet on the facility page and the bottom bar (#75). Other screens: #77 |
 | Dark mode | Not supported. WCAG doesn't require it; the theme respects the system's reduced motion setting |
 
 ## Review and next steps
 
 1. **Every change:** `npm run test:smoke` in CI, and the `accesibilidade` skill after significant frontend changes (CLAUDE.md, AGENTS.md).
-2. **Fix the gaps:** #69–#76, #79, #80. Each fix updates its row here.
+2. **Fix new gaps** as they are found, each in its own issue, and update its row here. The ones from #68 are fixed, including #76 (editing the statement).
 3. **Manual review with assistive technology** (NVDA, VoiceOver and TalkBack) of the main flows, and the screens not scanned above (#77).
 4. **External review before a real pilot:** an independent in-depth review (UNE-EN 301549:2022, Decision (EU) 2018/1524) before a council publishes the service to residents. Until then each statement keeps «parcialmente conforme» and lists the open gaps.
 5. **Annual review** of this matrix and of each statement's date (RD 1112/2018, art. 16).

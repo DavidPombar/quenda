@@ -21,6 +21,7 @@ export type EditableSettings = Pick<
   | "dataLicense"
   | "dir3Code"
   | "analyticsEnabled"
+  | "accessibility"
 >;
 export abstract class MunicipalitySettingsRepository {
   /** Serialises concurrent edits of one municipality within the current transaction. */

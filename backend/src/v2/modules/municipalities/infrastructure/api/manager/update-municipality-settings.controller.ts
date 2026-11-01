@@ -43,6 +43,17 @@ export class UpdateMunicipalitySettingsController {
           gl: body.legalTexts.gl,
           es: body.legalTexts.es,
         },
+        accessibility: body.accessibility && {
+          unit: body.accessibility.unit.trim(),
+          email: body.accessibility.email.trim(),
+          phone: body.accessibility.phone.trim(),
+          reviewedOn: body.accessibility.reviewedOn,
+          method: body.accessibility.method,
+          exceptions: {
+            gl: body.accessibility.exceptions.gl.trim(),
+            es: body.accessibility.exceptions.es.trim(),
+          },
+        },
       },
     });
     return result.fold(
@@ -68,6 +79,8 @@ export class UpdateMunicipalitySettingsController {
       case "insufficient_contrast":
       case "invalid_holidays":
         throw new ProblemException(422, error);
+      case "validation":
+        throw new ProblemException(400, error);
       default:
         return assertNever(error);
     }
