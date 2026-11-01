@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { useEffect } from "react";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
+import { followPage } from "@/services/page.service";
 export function useHomeController() {
   const query = useListMunicipalitiesQuery();
   const locale = localStorage.getItem("quenda.locale") === "es" ? "es" : "gl";
+  useEffect(() => followPage("Quenda", false), []);
   return {
     query,
     t: (key: TextKey) => translate(locale, key),

@@ -488,6 +488,9 @@ try {
   await page
     .getByRole("combobox", { name: "Concello", exact: true })
     .selectOption("vilaverde");
+  // Choosing alone does not navigate (WCAG 3.2.2); the button confirms.
+  assert.match(page.url(), /\/admin\/portomar\//);
+  await page.getByRole("button", { name: "Cambiar", exact: true }).click();
   await page.waitForURL(/\/admin\/vilaverde\/xestion$/);
   await page
     .getByRole("banner")

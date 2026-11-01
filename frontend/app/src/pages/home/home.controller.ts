@@ -13,6 +13,7 @@ import {
   paramsFrom,
 } from "@/services/catalog.service";
 import { translate, type TextKey } from "@/services/i18n.service";
+import { followPage } from "@/services/page.service";
 import type { CatalogFilters, Locale } from "@/types/models";
 /** Shared catalogue across municipalities; each booking still happens inside one (#18). */
 export function useHomeController() {
@@ -25,6 +26,7 @@ export function useHomeController() {
   }
   useEffect(() => {
     document.documentElement.lang = locale;
+    return followPage("Quenda", false);
   }, [locale]);
   const [params, setParams] = useSearchParams();
   const filters = filtersFrom(params);
