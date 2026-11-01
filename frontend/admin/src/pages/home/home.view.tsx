@@ -23,34 +23,39 @@ export function Home() {
       />
     );
   return (
-    <main id="main" className="home-chooser">
-      <img className="brand-symbol" src={logoMark} alt="" />
-      <h1>{c.t("homeTitle")}</h1>
-      <section aria-labelledby="home-municipalities">
-        <h2 id="home-municipalities">{c.t("homeMunicipalities")}</h2>
-        <ul className="home-links">
-          {c.query.data.map((municipality) => (
-            <li key={municipality.id}>
-              <Link to={c.managementUrl(municipality.slug)}>
-                <PiBuildings size={20} aria-hidden="true" />
-                {municipality.name}
+    <>
+      <a href="#main" className="skip-link">
+        {c.t("skip")}
+      </a>
+      <main id="main" tabIndex={-1} className="home-chooser">
+        <img className="brand-symbol" src={logoMark} alt="" />
+        <h1>{c.t("homeTitle")}</h1>
+        <section aria-labelledby="home-municipalities">
+          <h2 id="home-municipalities">{c.t("homeMunicipalities")}</h2>
+          <ul className="home-links">
+            {c.query.data.map((municipality) => (
+              <li key={municipality.id}>
+                <Link to={c.managementUrl(municipality.slug)}>
+                  <PiBuildings size={20} aria-hidden="true" />
+                  {municipality.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section aria-labelledby="home-operator">
+          <h2 id="home-operator">{c.t("operatorArea")}</h2>
+          <p>{c.t("homeOperatorBody")}</p>
+          <ul className="home-links">
+            <li>
+              <Link to={c.operatorUrl}>
+                <PiUsersThree size={20} aria-hidden="true" />
+                {c.t("homeOperatorLink")}
               </Link>
             </li>
-          ))}
-        </ul>
-      </section>
-      <section aria-labelledby="home-operator">
-        <h2 id="home-operator">{c.t("operatorArea")}</h2>
-        <p>{c.t("homeOperatorBody")}</p>
-        <ul className="home-links">
-          <li>
-            <Link to={c.operatorUrl}>
-              <PiUsersThree size={20} aria-hidden="true" />
-              {c.t("homeOperatorLink")}
-            </Link>
-          </li>
-        </ul>
-      </section>
-    </main>
+          </ul>
+        </section>
+      </main>
+    </>
   );
 }

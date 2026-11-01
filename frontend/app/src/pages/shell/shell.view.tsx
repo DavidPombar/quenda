@@ -146,21 +146,25 @@ export function Shell() {
               quenda<span className="brand-dot">.</span>
             </span>
           </NavLink>
-          <label className="municipality-select">
+          <form
+            className="municipality-select"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void c.selectMunicipality(c.chosenMunicipality);
+            }}
+          >
             <PiMapPin size={20} aria-hidden="true" />
-            <span className="sr-only">{t("municipality")}</span>
             <NativeSelect.Root
               size="md"
               variant="plain"
               width="auto"
               maxWidth="100%"
             >
+              {/* Choosing does not navigate on its own (WCAG 3.2.2); the button confirms. */}
               <NativeSelect.Field
                 aria-label={t("municipality")}
-                value={municipality.slug}
-                onChange={(event) => {
-                  void c.selectMunicipality(event.target.value);
-                }}
+                value={c.chosenMunicipality}
+                onChange={(event) => c.chooseMunicipality(event.target.value)}
               >
                 {c.municipalities.data?.map((item) => (
                   <option key={item.id} value={item.slug}>
@@ -170,7 +174,12 @@ export function Shell() {
               </NativeSelect.Field>
               <NativeSelect.Indicator />
             </NativeSelect.Root>
-          </label>
+            {c.chosenMunicipality !== municipality.slug && (
+              <Button type="submit" size="sm" colorPalette="court">
+                {t("municipalityChange")}
+              </Button>
+            )}
+          </form>
           <div className="topbar-actions">
             <div
               className="locale-switch"

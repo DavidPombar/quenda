@@ -7,7 +7,7 @@ previstas e grao de cumprimento». This document is that degree of conformance: 
 certification, and Quenda does not claim full conformance. The accessibility statement of each
 municipality (#9) says «parcialmente conforme» until the pending reviews are done.
 
-Last review: 2026-11-01 (issue #68), on `main` after #66.
+Last review: 2026-11-01 (issue #68), updated as each gap is fixed.
 
 ## Legal frame
 
@@ -86,7 +86,7 @@ Paths are relative to the repository. FD is
 | 1.4.5 Images of text | AA | 9.1.4.5 | Manual | Meets | Only municipal logos (exempt as logotypes) |
 | 1.4.10 Reflow | AA | 9.1.4.10 | Semi | Partial | No page-level horizontal scroll at 320 and 390 px on the website, its statement, the catalogue, history, the resource grid, day bookings, management and operator analytics (smoke test). Tables scroll inside their own region, which is allowed for two-dimensional content. The bottom bar has no room to spare (#75) |
 | 1.4.11 Non-text contrast | AA | 9.1.4.11 | Manual | Partial | The focus ring is 3 px `#c25e00`. Borders of fields and slots haven't been measured |
-| 1.4.12 Text spacing | AA | 9.1.4.12 | Semi | Partial | With the 1.4.12 stylesheet at 320 px, nothing is clipped on the facility page (skill, 2026-11-01). The risks are the fixed-height bottom bar, `overflow: hidden` on `.time-slot` and `nowrap` headers (#75) |
+| 1.4.12 Text spacing | AA | 9.1.4.12 | Semi | Partial | With the 1.4.12 stylesheet at 320 px nothing is clipped on the facility page, and the bottom bar grows (`min-height`) instead of clipping its labels (#75). Other screens: #77 |
 | 1.4.13 Content on hover or focus | AA | 9.1.4.13 | Manual | Gap | Information that exists only in `title` or a Leaflet tooltip (#73). No custom tooltips or toasts |
 
 ### Operable
@@ -99,9 +99,9 @@ Paths are relative to the repository. FD is
 | 2.2.1 Timing adjustable | A | 9.2.2.1 | Code | Gap | The email code (10 min), the staff sign-in ticket (10 min) and the session (8 h) give no warning and can't be extended (#71) |
 | 2.2.2 Pause, stop, hide | A | 9.2.2.2 | Manual | Meets | No carousels, autoplay or moving content. Transitions last 150 ms and respect `prefers-reduced-motion` |
 | 2.3.1 Three flashes | A | 9.2.3.1 | Manual | Meets | No flashing content |
-| 2.4.1 Bypass blocks | A | 9.2.4.1 | Auto + manual | Gap | «Saltar ao contido» to `main#main` in the app, the backoffice, the operator area and the website. Missing on the backoffice home `/admin/` (#75) |
-| 2.4.2 Page titled | A | 9.2.4.2 | Code | Gap | The website sets a title per page. The app and the backoffice keep a single title (#69) |
-| 2.4.3 Focus order | A | 9.2.4.3 | Manual | Gap | The order is logical on the facility page. Focus is lost after a route change, after confirming a booking and between sign-in steps (#70) |
+| 2.4.1 Bypass blocks | A | 9.2.4.1 | Auto + manual | Meets | «Saltar ao contido» to `main#main` on every page of the website, the app, the backoffice (its home too, #75) and the operator area. Landmarks on every page |
+| 2.4.2 Page titled | A | 9.2.4.2 | Code + test | Meets | The website sets a title per page. The app and the backoffice name each page after its `h1`, then the municipality and «Quenda» (`frontend/*/src/services/page.service.ts`, `shell.spec.tsx`) (#69) |
+| 2.4.3 Focus order | A | 9.2.4.3 | Manual | Gap | The order is logical on the facility page. After an in-app navigation focus moves to the new page's `h1` (`page.service.ts`, #70). Focus is still lost after confirming a booking and between sign-in steps (#70) |
 | 2.4.4 Link purpose (in context) | A | 9.2.4.4 | Auto + manual | Meets | axe `link-name` passes. Links are descriptive («Ver as miñas reservas», «Abrir no OpenStreetMap»). External links don't say they open a new tab (#74, advisory) |
 | 2.4.5 Multiple ways | AA | 9.2.4.5 | Manual | Meets | Navigation, the catalogue search and sport filters, the municipality selector, and footer links. The backoffice has its main navigation |
 | 2.4.6 Headings and labels | AA | 9.2.4.6 | Manual | Gap | Headings and labels describe their content. Leaflet's zoom controls are named in English (#74) |
@@ -118,7 +118,7 @@ Paths are relative to the repository. FD is
 | 3.1.1 Language of page | A | 9.3.1.1 | Auto + code | Meets | `lang="gl"` in the three `index.html`, updated on switching language (`document.documentElement.lang` in the shell controllers). axe `html-has-lang` and `html-lang-valid` pass |
 | 3.1.2 Language of parts | AA | 9.3.1.2 | Manual | Gap | The language buttons and the legal texts carry `lang`. Leaflet's English control names have none (#74) |
 | 3.2.1 On focus | A | 9.3.2.1 | Manual | Meets | No change of context on focus |
-| 3.2.2 On input | A | 9.3.2.2 | Manual | Gap | The «Concello» selector navigates on `change` (#79). The day and court selects only update the grid on the same page, which is allowed |
+| 3.2.2 On input | A | 9.3.2.2 | Manual + test | Meets | The «Concello» selector only records the choice; a «Cambiar» button confirms it (#79, `shell.spec.tsx` in both apps). The day and court selects only update the grid on the same page |
 | 3.2.3 Consistent navigation | AA | 9.3.2.3 | Manual | Meets | One shell for each app with the same navigation and footer on every page |
 | 3.2.4 Consistent identification | AA | 9.3.2.4 | Manual | Partial | Shared components (Feedback, dialogs, slot buttons) and one i18n dictionary for each app. Not reviewed screen by screen |
 | 3.3.1 Error identification | A | 9.3.3.1 | Manual | Gap | Errors are announced in `role="alert"` with specific texts. The sign-in forms don't tie the error to the field (#72) |
@@ -135,12 +135,12 @@ Paths are relative to the repository. FD is
 | 4.1.3 Status messages | AA | 9.4.1.3 | Manual | Gap | `Feedback` uses `role="status"` or `alert`. The door page announces each scan with `aria-live="assertive"`. A confirmed booking and a change of day or court are not announced (#70) |
 
 **Summary**:
-- **Meets:** 20 criteria.
+- **Meets:** 23 criteria.
 - **Partial:** 10 criteria.
-- **Gap:** 13 criteria.
+- **Gap:** 10 criteria.
 - **N/A:** 7 criteria.
 
-The 13 gaps are tracked in #69–#76, #79 and #80. #77 is the pending manual review, and #78 is the slow sign-in code request (not a WCAG criterion).
+The 10 gaps are tracked in #70–#74, #76 and #80; #69, #75 and #79 are fixed. #77 is the pending manual review, and #78 is the slow sign-in code request (not a WCAG criterion).
 
 ## Points of special care
 

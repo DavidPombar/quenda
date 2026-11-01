@@ -417,6 +417,10 @@ main {
   flex: 1;
   outline: none !important;
 }
+/* The page heading takes focus after navigation only to announce the page; it is not a control. */
+main h1[tabindex="-1"] {
+  outline: none !important;
+}
 .page {
   width: 100%;
   max-width: 1280px;
@@ -1355,7 +1359,8 @@ main {
   .main-nav {
     flex-direction: row;
     gap: var(--space-1);
-    height: var(--bottom-nav);
+    /* Grows with larger text or spacing (WCAG 1.4.12) instead of clipping the labels. */
+    min-height: var(--bottom-nav);
     align-items: stretch;
     padding-block: var(--space-1);
   }

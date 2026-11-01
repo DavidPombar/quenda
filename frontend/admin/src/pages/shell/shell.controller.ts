@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useListMunicipalitiesQuery } from "@/queries/municipalities/list-municipalities.query";
 import { useGetSessionQuery } from "@/queries/sessions/get-session.query";
@@ -9,6 +9,7 @@ import { useDeleteSessionMutation } from "@/queries/sessions/delete-session.muta
 import { ROUTES, routeFor } from "@/constants/routes";
 import { translate, type TextKey } from "@/services/i18n.service";
 import { BRAND_VARIABLES, brandVariables } from "@/services/color.service";
+import { followPage } from "@/services/page.service";
 import type { Locale } from "@/types/models";
 export function useShellController() {
   const { slug } = useParams();
@@ -53,6 +54,18 @@ export function useShellController() {
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+  // Title from the page heading; focus moves to it only after an in-app navigation.
+  const pathname = location.pathname;
+  const municipalityName = municipality?.name;
+  const lastPath = useRef<string | null>(null);
+  useEffect(() => {
+    const focus = lastPath.current !== null && lastPath.current !== pathname;
+    lastPath.current = pathname;
+    return followPage(
+      [municipalityName, "Quenda"].filter(Boolean).join(" · "),
+      focus,
+    );
+  }, [pathname, locale, municipalityName]);
   const primaryColor = municipality?.primaryColor ?? "";
   useEffect(() => {
     const style = document.documentElement.style;
@@ -61,7 +74,15 @@ export function useShellController() {
       if (variables[name]) style.setProperty(name, variables[name]);
       else style.removeProperty(name);
   }, [primaryColor]);
+  // The selector only records a choice; selectMunicipality goes there (WCAG 3.2.2).
+  const [choice, setChoice] = useState<{ from: string; to: string } | null>(
+    null,
+  );
+  const chosenMunicipality =
+    choice && choice.from === slug ? choice.to : (slug ?? "");
   async function selectMunicipality(next: string) {
+    setChoice(null);
+    if (next === slug) return;
     if (sessionQuery.data) await remove.mutateAsync();
     await navigate(routeFor(next, ROUTES.management));
   }
@@ -89,6 +110,9 @@ export function useShellController() {
     t,
     setLocale,
     selectMunicipality,
+    chosenMunicipality,
+    chooseMunicipality: (next: string) =>
+      setChoice({ from: slug ?? "", to: next }),
     loginOpen,
     setLoginOpen,
     privacyOpen,

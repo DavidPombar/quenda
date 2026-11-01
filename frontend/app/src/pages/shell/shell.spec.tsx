@@ -329,3 +329,58 @@ describe("Installable app (#24)", () => {
     expect(head('meta[name="theme-color"]', "content")).toBe("#7a1f3d");
   });
 });
+describe("Page names, focus and the municipality selector (T5)", () => {
+  test("should name each page in the title and move focus to its heading after navigating", async () => {
+    stubShell();
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    await expect
+      .element(page.getByRole("heading", { level: 1 }))
+      .toHaveTextContent("Instalacións deportivas");
+    await expect
+      .poll(() => document.title)
+      .toBe("Instalacións deportivas · Concello de Vilaverde · Quenda");
+    // The first page keeps the browser's own focus.
+    expect(document.activeElement?.tagName).not.toBe("H1");
+    await page
+      .getByRole("navigation")
+      .getByRole("link", { name: "As miñas reservas" })
+      .first()
+      .click();
+    const heading = page.getByRole("heading", {
+      level: 1,
+      name: "As miñas reservas",
+    });
+    await expect.element(heading).toHaveFocus();
+    expect(document.title).toBe(
+      "As miñas reservas · Concello de Vilaverde · Quenda",
+    );
+  });
+  test("should change municipality only when the choice is confirmed", async () => {
+    stubShell();
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [
+        municipality,
+        {
+          ...municipality,
+          id: "00000000-0000-4000-8000-000000000099",
+          slug: "portomar",
+          name: "Concello de Portomar",
+        },
+      ],
+    });
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    const selector = page.getByRole("combobox", { name: "Concello" });
+    await selector.selectOptions("portomar");
+    expect(window.location.pathname).toBe("/app/vilaverde/instalacions");
+    await page.getByRole("button", { name: "Cambiar", exact: true }).click();
+    await expect
+      .poll(() => window.location.pathname)
+      .toBe("/app/portomar/instalacions");
+    await expect
+      .element(page.getByRole("button", { name: "Cambiar", exact: true }))
+      .not.toBeInTheDocument();
+  });
+});
