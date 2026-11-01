@@ -1,6 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Production instance (#27): PostgreSQL, API, notice worker, the three frontends behind
-# nginx, Caddy with automatic TLS and a scheduled restic backup. Guide: docs/operacion/.
+# The one deployment of Quenda (#27, #67): PostgreSQL, API, notice worker, retention job, the
+# three frontends behind nginx, Caddy with automatic TLS and a scheduled restic backup.
+# Guide: docs/operacion/. On a fresh server, deploy/install.sh writes both settings files with
+# new secrets and starts everything:
+#
+#   QUENDA_DOMAIN=reservas.concello.gal sh deploy/install.sh
+#
+# By hand:
 #
 #   cp deploy/prod.env.example deploy/.env           # domain, database and backups
 #   cp deploy/quenda.env.example deploy/quenda.env   # application secrets and features
@@ -17,7 +23,8 @@ x-api: &api
   env_file: quenda.env
   environment:
     DATABASE_URL: postgres://quenda:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/quenda
-    DEMO_MODE: "false"
+    # true only for a public demonstration with synthetic municipalities and accounts.
+    DEMO_MODE: ${DEMO_MODE:-false}
     PUBLIC_URL: https://${QUENDA_DOMAIN:?set QUENDA_DOMAIN}
     APP_BASE_URL: https://${QUENDA_DOMAIN}
 services:
@@ -43,12 +50,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Pending migrations run before the API starts; there is no seed in production.
+    # Pending migrations run before the API starts; only a demo loads the synthetic seed.
     command:
       [
         "sh",
         "-c",
-        "node backend/dist/database/migrate.js && node backend/dist/main.js",
+        'node backend/dist/database/migrate.js && if [ "$$DEMO_MODE" = true ]; then node backend/dist/database/seed.js; fi && node backend/dist/main.js',
       ]
     healthcheck:
       test:

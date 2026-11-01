@@ -40,7 +40,7 @@ despliegues desde la web, variables, registros y reinicios.
 5. **Copias:** fije `RESTIC_REPOSITORY` en el almacenamiento de objetos de la deputación
    (por ejemplo `s3:https://minio.deputacion.gal/quenda`) con sus credenciales
    `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY`.
-6. **Desplegar** y seguir con la [comprobación](despliegue-concello.md#5-comprobar) y el
+6. **Desplegar** y seguir con la [comprobación](despliegue-concello.md#4-comprobar) y el
    [alta de los concellos](alta-concello.md). Los comandos de esas guías se ejecutan
    desde el terminal de Coolify en el contenedor indicado (`api` o `backup`).
 

@@ -6,6 +6,14 @@ All notable changes to Quenda are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- One deployment (#67, R1): the one-server setup from `deploy/server` is merged into
+  `deploy/compose.prod.yml`. `deploy/install.sh` prepares the server (swap, security updates,
+  SSH by key), writes both settings files with new secrets and starts it; `DEMO_MODE=true`
+  runs the same setup as a public demo. Backups and retention stay in Compose (restic,
+  off-site), not in the host's cron.
+
 ### Added
 
 - Production deployment and operations (#27, R1, T4): `deploy/compose.prod.yml` with Caddy
