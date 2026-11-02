@@ -257,7 +257,7 @@ npm run test:smoke
   en cada pull request.
 - `npm run licenses` comproba cada dependencia instalada contra a lista de licenzas libres permitidas.
 - `npm run test:smoke` precisa `npm run dev`: un navegador real percorre web → app → xestión →
-  operadora, fai, move e cancela unha reserva, comproba o reflow a 320 e 390 px e fai 50
+  operadora, fai, move e cancela unha reserva, comproba o reflow a 320, 390 e 640 px e fai 50
   escaneos con axe (WCAG 2.1 A/AA). As capturas e os informes van a `.dev-logs/`.
 
 As probas HTTP nunca tocan a base de datos de desenvolvemento; a conta de PostgreSQL precisa
@@ -614,7 +614,7 @@ npm run test:smoke
   PostgreSQL databases, and all builds. CI runs the same on every pull request.
 - `npm run licenses` checks every installed dependency against the free-software allowlist.
 - `npm run test:smoke` needs `npm run dev`: a real browser goes website → app → backoffice →
-  operator, makes, moves and cancels a booking, checks reflow at 320 and 390 px and runs 50 axe
+  operator, makes, moves and cancels a booking, checks reflow at 320, 390 and 640 px and runs 50 axe
   scans (WCAG 2.1 A/AA). Screenshots and reports go to `.dev-logs/`.
 
 HTTP tests never touch the development database; the PostgreSQL account needs `CREATEDB`
