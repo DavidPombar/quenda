@@ -20,6 +20,7 @@ import { PortabilityModule } from "./v2/modules/portability/portability.module";
 import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
 import { AnalyticsModule } from "./v2/modules/analytics/analytics.module";
 import { WaitlistModule } from "./v2/modules/waitlist/waitlist.module";
+import { ActivitiesModule } from "./v2/modules/activities/activities.module";
 @Module({
   imports: [
     SharedModule,
@@ -38,6 +39,7 @@ import { WaitlistModule } from "./v2/modules/waitlist/waitlist.module";
     NotificationsModule,
     AccessModule,
     SeasonsModule,
+    ActivitiesModule,
     CalendarsModule,
     PortabilityModule,
     OpenDataModule,

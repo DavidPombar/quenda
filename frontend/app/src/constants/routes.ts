@@ -6,6 +6,7 @@ export const ROUTES = {
   shell: "/:slug",
   catalog: "instalacions",
   detail: "instalacions/:id",
+  activities: "actividades",
   bookings: "reservas",
   account: "conta",
   accessibility: "accesibilidade",

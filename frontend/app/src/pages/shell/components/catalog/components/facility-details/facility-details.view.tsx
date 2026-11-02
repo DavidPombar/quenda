@@ -27,6 +27,7 @@ import { SlotSuggestions } from "./components/slot-suggestions/slot-suggestions.
 import { ResourceGrid } from "./components/resource-grid/resource-grid.view";
 import { useFacilityDetailsController } from "./facility-details.controller";
 import { SeasonCampaigns } from "./components/season-campaigns/season-campaigns.view";
+import { FacilityActivities } from "./components/facility-activities/facility-activities.view";
 import { PhotoGallery } from "./components/photo-gallery/photo-gallery.view";
 import { FacilityMap } from "./components/facility-map/facility-map.view";
 import { OpeningHours } from "./components/opening-hours/opening-hours.view";
@@ -142,6 +143,12 @@ export function FacilityDetails() {
               {c.t("deadline")} {c.municipality.cancellationHours}{" "}
               {c.t("hoursBefore")}
             </p>
+            <FacilityActivities
+              slug={c.municipality.slug}
+              facilityId={f.id}
+              locale={c.locale}
+              t={c.t}
+            />
             <SeasonCampaigns
               slug={c.municipality.slug}
               facilityId={f.id}

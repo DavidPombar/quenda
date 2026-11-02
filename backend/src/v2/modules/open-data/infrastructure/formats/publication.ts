@@ -28,6 +28,10 @@ export const facilityFiles = {
   csv: { file: "facilities.csv", mediaType: "text/csv" },
   geojson: { file: "facilities.geojson", mediaType: "application/geo+json" },
 } as const;
+export const activityFiles = {
+  json: { file: "activities.json", mediaType: "application/ld+json" },
+  csv: { file: "activities.csv", mediaType: "text/csv" },
+} as const;
 export const occupancyFiles = {
   json: { file: "occupancy.json", mediaType: "application/json" },
   csv: { file: "occupancy.csv", mediaType: "text/csv" },
@@ -55,6 +59,9 @@ export class Publication<T extends OpenPublication = OpenFacilities> {
   }
   facilityPage(id: string) {
     return `${this.origin}/app/${this.slug}/instalacions/${encodeURIComponent(id)}`;
+  }
+  activityPage(id: string) {
+    return `${this.origin}/app/${this.slug}/actividades/${encodeURIComponent(id)}`;
   }
 }
 /** One flat record per facility, shared by the CSV columns and the GeoJSON properties. */

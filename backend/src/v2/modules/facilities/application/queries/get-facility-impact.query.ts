@@ -8,6 +8,8 @@ import { AppError, failure } from "../../../../shared/application/errors";
 export interface FacilityImpact {
   bookings: number;
   people: number;
+  /** Sessions of the facility's activities (#97) a closure would cancel. */
+  sessions: number;
 }
 /** What closing the facility now would cancel, for the confirmation screen. */
 @Injectable()
@@ -27,14 +29,20 @@ export class GetFacilityImpact {
     const { tenantId } = args.principal;
     if (!(await this.facilities.find(tenantId, args.id)))
       return Result.err(failure("not_found"));
+    const now = this.clock.now();
     const upcoming = await this.facilities.upcomingBookings(
       tenantId,
       args.id,
-      this.clock.now(),
+      now,
     );
     return Result.ok({
       bookings: upcoming.length,
       people: new Set(upcoming.map((booking) => booking.userId)).size,
+      sessions: await this.facilities.upcomingActivitySessions(
+        tenantId,
+        args.id,
+        now,
+      ),
     });
   }
 }

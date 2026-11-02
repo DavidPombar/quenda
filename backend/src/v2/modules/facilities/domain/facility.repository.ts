@@ -88,6 +88,19 @@ export abstract class FacilityRepository {
     now: Temporal.Instant,
   ): Promise<UpcomingBooking[]>;
   /** Cancels bookings on behalf of the municipality and adds one notice per booking. */
+  /** Active sessions of the facility's activities (#97) that have not ended. */
+  abstract upcomingActivitySessions(
+    tenantId: string,
+    id: string,
+    now: Temporal.Instant,
+  ): Promise<number>;
+  /** Cancels those sessions, freeing their units, when the facility closes. Returns how many. */
+  abstract cancelActivitySessions(args: {
+    tenantId: string;
+    id: string;
+    reason: string;
+    at: Temporal.Instant;
+  }): Promise<number>;
   abstract cancelBookings(args: {
     tenantId: string;
     bookings: readonly { id: string; userId: string; notificationId: string }[];
@@ -109,6 +122,8 @@ export abstract class FacilityRepository {
       start: Temporal.Instant;
       end: Temporal.Instant;
       season: boolean;
+      /** Held by a session of a municipal activity (#97). */
+      activity: boolean;
       /** One shared place of a resource with a capacity (#95). */
       shared: boolean;
     }[]

@@ -1907,6 +1907,71 @@ main h1[tabindex="-1"] {
   font-weight: 600;
 }
 
+/* Activities and sports schools (#97) */
+.section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.activity-form-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.activity-form-group legend {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.exception-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.exception-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+.exception-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.exception-add .field {
+  flex: 0 1 220px;
+}
+.clash-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.session-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.session-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-height: 44px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
 /* Courts and spaces of a facility (M1) */
 .resource-rows {
   display: flex;

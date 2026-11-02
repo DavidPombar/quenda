@@ -13,9 +13,13 @@ import { GetOpenDataSchemaController } from "./infrastructure/api/public/get-ope
 import { GetOpenOccupancy } from "./application/queries/get-open-occupancy.query";
 import { GetOpenOccupancyJsonController } from "./infrastructure/api/public/get-occupancy-json.controller";
 import { GetOpenOccupancyCsvController } from "./infrastructure/api/public/get-occupancy-csv.controller";
+import { GetOpenActivitiesJsonController } from "./infrastructure/api/public/get-activities-json.controller";
+import { GetOpenActivitiesCsvController } from "./infrastructure/api/public/get-activities-csv.controller";
+import { ListOpenActivities } from "./application/queries/list-open-activities.query";
 @Module({
   imports: [InsightsModule],
   providers: [
+    ListOpenActivities,
     ListOpenFacilities,
     GetOpenOccupancy,
     { provide: OpenDataRepository, useClass: PostgresOpenDataRepository },
@@ -29,6 +33,8 @@ import { GetOpenOccupancyCsvController } from "./infrastructure/api/public/get-o
     GetOpenDataSchemaController,
     GetOpenOccupancyJsonController,
     GetOpenOccupancyCsvController,
+    GetOpenActivitiesJsonController,
+    GetOpenActivitiesCsvController,
   ],
 })
 export class OpenDataModule {}

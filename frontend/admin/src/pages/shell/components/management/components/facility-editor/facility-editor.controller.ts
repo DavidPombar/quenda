@@ -189,7 +189,8 @@ export function useFacilityEditorController(args: {
     }
     if (shuttingDown && !confirming) {
       const affected = (await impact.refetch()).data;
-      if (affected?.bookings) {
+      // Activity sessions (#97) are cancelled with the same reason as the bookings.
+      if (affected?.bookings || affected?.sessions) {
         mutation.reset();
         setConfirming(true);
         return;

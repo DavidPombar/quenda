@@ -69,3 +69,7 @@ Managers register clubs and their representatives, open campaigns with published
 ## Facility catalogue (#26)
 
 The catalogue is filtered and paginated on the server, each municipality keeps its own sports catalogue starting from a CNID-based list, and the facility page shows photos with required alternative text, a Leaflet map with a tile server set per deployment, and the opening hours of the coming week. See [facility catalogue](catalogue.md).
+
+## Activities and sports schools (#97)
+
+Managers publish courses with places, a weekly RFC 5545 rule, ages, informative prices and an enrolment period; each session occupies its court in `booking_units`, and sessions that would clash with bookings, clubs, other activities or the opening hours are listed to become dates without a session instead of being saved. See [activities and sports schools](activities.md).

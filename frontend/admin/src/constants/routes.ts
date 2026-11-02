@@ -18,6 +18,7 @@ export const ROUTES = {
   bookings: "reservas",
   access: "acceso",
   seasons: "temporadas",
+  activities: "actividades",
   staff: "persoal",
 } as const;
 export function operatorRouteFor(child: string) {

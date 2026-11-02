@@ -24,6 +24,14 @@ All notable changes to Quenda are documented here. The format follows
 
 ### Added
 
+- Activities and sports schools, part A (#97, C1, M1, M2): managers publish courses with places,
+  ages, informative prices, an enrolment period and a weekly RFC 5545 rule; each session holds its
+  court in `booking_units`, and dates that clash with bookings, clubs, other activities or the
+  opening hours are listed to become dates without a session. Sessions can be cancelled one by one
+  or with the activity, and a facility closure cancels them. The citizen app lists the activities
+  with filters and numbered pages, each with its own page, and facility pages link them. Open data
+  adds `activities.json` and `activities.csv`; exports carry activities, prices and sessions.
+
 - Shared capacity (#95, C2, M1): a court without parts can take a capacity of 2–200 places, so
   several people book the same slot of a pool lane or a room. The server counts places under the
   facility lock and refuses a second place for the same person (`already_booked`); the citizen

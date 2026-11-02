@@ -59,6 +59,12 @@ const AUDIT_ACTIONS = [
   ["facility.photo_removed", "auditPhotoRemoved"],
   ["season_allocation.cancelled", "auditAllocationCancelled"],
   ["season_occurrence.cancelled", "auditOccurrenceCancelled"],
+  ["activity.created", "auditActivityCreated"],
+  ["activity.updated", "auditActivityUpdated"],
+  ["activity.published", "auditActivityPublished"],
+  ["activity.cancelled", "auditActivityCancelled"],
+  ["activity_session.cancelled", "auditActivitySessionCancelled"],
+  ["facility.activity_sessions_cancelled", "auditFacilitySessionsCancelled"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {

@@ -138,6 +138,15 @@ export class SaveFacility {
         : [];
     if (upcoming.length && (scheduleChanged || !closing || !reason))
       return Result.err(failure("calendar_in_use"));
+    // Activity sessions (#97) end with a closure too, and need its reason for the people enrolled.
+    const sessions = closing
+      ? await this.facilities.upcomingActivitySessions(
+          municipality.id,
+          args.id,
+          now,
+        )
+      : 0;
+    if (sessions && !reason) return Result.err(failure("calendar_in_use"));
     const saved = await this.facilities.save(facility);
     if (saved.isFailure)
       return saved.fold<Result<FacilityDetails, SaveFacilityError>>(
@@ -160,6 +169,20 @@ export class SaveFacility {
       );
     // A closed facility offers nothing: its waiting lists end and their holds go (#96).
     if (closing) await this.waitlist.close(facility.tenantId, facility.id);
+    if (sessions && reason) {
+      const cancelled = await this.facilities.cancelActivitySessions({
+        tenantId: municipality.id,
+        id: facility.id,
+        reason,
+        at: now,
+      });
+      await this.audit.record(
+        args.principal,
+        "facility.activity_sessions_cancelled",
+        facility.id,
+        { dates: cancelled, reason },
+      );
+    }
     // A new facility is bookable at once through its default resource (same id and name).
     if (!existing)
       await this.resources.add({

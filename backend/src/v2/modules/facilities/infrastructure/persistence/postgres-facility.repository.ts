@@ -206,6 +206,37 @@ export class PostgresFacilityRepository extends FacilityRepository {
       end: Temporal.Instant.from(row.end),
     }));
   }
+  async upcomingActivitySessions(
+    tenantId: string,
+    id: string,
+    now: Temporal.Instant,
+  ) {
+    const { rows } = await this.db.query<{ count: number }>(
+      `SELECT count(*)::int AS count FROM activity_sessions x JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id
+      WHERE x.tenant_id=$1 AND a.facility_id=$2 AND x.status='active' AND x.ends_at>$3`,
+      [tenantId, id, now.toString()],
+    );
+    return rows[0]?.count ?? 0;
+  }
+  async cancelActivitySessions(args: {
+    tenantId: string;
+    id: string;
+    reason: string;
+    at: Temporal.Instant;
+  }) {
+    const { rows } = await this.db.query<{ id: string }>(
+      `UPDATE activity_sessions x SET status='cancelled', cancellation_reason=$4 FROM activities a
+      WHERE a.tenant_id=x.tenant_id AND a.id=x.activity_id AND x.tenant_id=$1 AND a.facility_id=$2
+        AND x.status='active' AND x.ends_at>$3
+      RETURNING x.id`,
+      [args.tenantId, args.id, args.at.toString(), args.reason],
+    );
+    await this.db.query(
+      "DELETE FROM booking_units WHERE tenant_id=$1 AND session_id = ANY($2::uuid[])",
+      [args.tenantId, rows.map((row) => row.id)],
+    );
+    return rows.length;
+  }
   async cancelBookings(args: {
     tenantId: string;
     bookings: readonly { id: string; userId: string; notificationId: string }[];
@@ -246,9 +277,10 @@ export class PostgresFacilityRepository extends FacilityRepository {
       start: string;
       end: string;
       season: boolean;
+      activity: boolean;
       shared: boolean;
     }>(
-      'SELECT u.unit_id AS "unitId",u.starts_at AS start,u.ends_at AS end,u.occurrence_id IS NOT NULL AS season,u.shared FROM booking_units u JOIN resources r ON r.tenant_id=u.tenant_id AND r.id=u.unit_id WHERE r.tenant_id=$1 AND r.facility_id=$2 AND u.starts_at<$4 AND u.ends_at>$3',
+      'SELECT u.unit_id AS "unitId",u.starts_at AS start,u.ends_at AS end,u.occurrence_id IS NOT NULL AS season,u.session_id IS NOT NULL AS activity,u.shared FROM booking_units u JOIN resources r ON r.tenant_id=u.tenant_id AND r.id=u.unit_id WHERE r.tenant_id=$1 AND r.facility_id=$2 AND u.starts_at<$4 AND u.ends_at>$3',
       [tenantId, id, start.toString(), end.toString()],
     );
     return rows.map((row) => ({
@@ -256,6 +288,7 @@ export class PostgresFacilityRepository extends FacilityRepository {
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
       season: row.season,
+      activity: row.activity,
       shared: row.shared,
     }));
   }

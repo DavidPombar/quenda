@@ -25,6 +25,12 @@ export function ClosureConfirmation(p: {
           <p>
             {t("closureBookings")}: <strong>{p.impact.bookings}</strong> ·{" "}
             {t("closurePeople")}: <strong>{p.impact.people}</strong>
+            {p.impact.sessions > 0 && (
+              <>
+                {" "}
+                · {t("closureSessions")}: <strong>{p.impact.sessions}</strong>
+              </>
+            )}
           </p>
           <p>
             {t("closureBody")} ({t(p.status)})

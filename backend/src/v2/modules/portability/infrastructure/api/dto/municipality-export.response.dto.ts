@@ -343,7 +343,65 @@ class ExportedWaitlistOutcomeDTO {
   @ApiProperty() accepted!: number;
   @ApiProperty() expired!: number;
 }
+class ExportedActivityDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() resourceId!: string;
+  @ApiProperty() sport!: string;
+  @ApiProperty() nameGl!: string;
+  @ApiProperty() nameEs!: string;
+  @ApiProperty() descriptionGl!: string;
+  @ApiProperty() descriptionEs!: string;
+  @ApiProperty({ type: [Number], description: "ISO weekdays, 1 = Monday" })
+  weekdays!: number[];
+  @ApiProperty() startsLocal!: string;
+  @ApiProperty() endsLocal!: string;
+  @ApiProperty() startsOn!: string;
+  @ApiProperty() endsOn!: string;
+  @ApiProperty({ type: [String] }) exceptions!: string[];
+  @ApiProperty({
+    description:
+      "RFC 5545 VCALENDAR of the rule; the dated sessions are authoritative",
+  })
+  schedule!: string;
+  @ApiProperty() places!: number;
+  @ApiProperty({ type: Number, nullable: true }) minAge!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) maxAge!: number | null;
+  @ApiProperty() enrolmentOpensOn!: string;
+  @ApiProperty() enrolmentClosesOn!: string;
+  @ApiProperty({ enum: ["draft", "published", "cancelled"] }) status!: string;
+  @ApiProperty({ type: String, nullable: true })
+  cancellationReason!: string | null;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({ type: String, nullable: true }) publishedAt!: string | null;
+  @ApiProperty({ type: String, nullable: true }) cancelledAt!: string | null;
+}
+class ExportedActivityPriceDTO {
+  @ApiProperty() activityId!: string;
+  @ApiProperty({ description: "general or a user category" })
+  category!: string;
+  @ApiProperty() priceCents!: number;
+}
+class ExportedActivitySessionDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() activityId!: string;
+  @ApiProperty() start!: string;
+  @ApiProperty() end!: string;
+  @ApiProperty({ enum: ["active", "cancelled"] }) status!: string;
+  @ApiProperty({ type: String, nullable: true })
+  cancellationReason!: string | null;
+  @ApiProperty() sequence!: number;
+}
 export class MunicipalityExportResponseDTO {
+  @ApiProperty({
+    type: [ExportedActivityDTO],
+    description: "Activities and sports schools (#97)",
+  })
+  activities!: ExportedActivityDTO[];
+  @ApiProperty({ type: [ExportedActivityPriceDTO] })
+  activityPrices!: ExportedActivityPriceDTO[];
+  @ApiProperty({ type: [ExportedActivitySessionDTO] })
+  activitySessions!: ExportedActivitySessionDTO[];
   @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
   facilityPhotos!: ExportedFacilityPhotoDTO[];
@@ -434,6 +492,9 @@ export class MunicipalityExportResponseDTO {
       facilityPhotos: snapshot.facilityPhotos,
       waitlistEntries: snapshot.waitlistEntries,
       waitlistOutcomes: snapshot.waitlistOutcomes,
+      activities: snapshot.activities,
+      activityPrices: snapshot.activityPrices,
+      activitySessions: snapshot.activitySessions,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

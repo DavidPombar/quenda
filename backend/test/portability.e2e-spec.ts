@@ -217,6 +217,42 @@ describe("Municipality data portability", () => {
       .set("Content-Type", "image/png")
       .send(courtPhoto(32, 20))
       .expect(201);
+    // An activity (#97) with its prices and weekly sessions, one of them cancelled.
+    const activity = await post(manager, "manager/activities", {
+      facilityId: court,
+      resourceId: court,
+      sport: "padel",
+      name: { gl: "Escola de pádel", es: "Escuela de pádel" },
+      description: { gl: "Iniciación", es: "" },
+      rule: {
+        weekdays: [seasonStart.dayOfWeek],
+        startsLocal: "18:00",
+        endsLocal: "19:00",
+        startsOn: seasonStart.toString(),
+        endsOn: seasonStart.add({ days: 13 }).toString(),
+        exceptions: [],
+      },
+      places: 6,
+      minAge: 8,
+      maxAge: null,
+      enrolmentOpensOn: seasonStart.subtract({ days: 1 }).toString(),
+      enrolmentClosesOn: seasonStart.toString(),
+      prices: [
+        { category: "general", priceCents: 2500 },
+        { category: "resident", priceCents: 1500 },
+      ],
+    }).expect(201);
+    const sessions = (
+      await post(
+        manager,
+        `manager/activities/${activity.body.id}/publication`,
+        {},
+      ).expect(200)
+    ).body.sessions as { id: string }[];
+    await patch(manager, `manager/activity-sessions/${sessions[0].id}`, {
+      status: "cancelled",
+      reason: "Choiva",
+    }).expect(204);
     await db.query(
       "INSERT INTO check_ins (id,tenant_id,booking_id,booking_sequence,actor_id,method,checked_in_at,recorded_at) SELECT $1,$2,$3,0,id,'manual','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='manager'",
       [randomUUID(), tenantId, kept],
@@ -336,7 +372,8 @@ describe("Municipality data portability", () => {
     expect(
       pack.facilities.find((value) => value.id === court)?.openingCalendar,
     ).toBe(openingCalendar(court));
-    expect(JSON.stringify(pack)).not.toMatch(/token|session/i);
+    // Sign-in tokens and sessions never travel; activity sessions (#97) are dates of the offer.
+    expect(JSON.stringify(pack)).not.toMatch(/token|(?<!activity_?)session/i);
 
     await importMunicipality(pack, { url: targetUrl });
     await expect(importMunicipality(pack, { url: targetUrl })).rejects.toThrow(
@@ -371,6 +408,9 @@ describe("Municipality data portability", () => {
       "season_occurrences",
       "sports",
       "facility_photos",
+      "activities",
+      "activity_prices",
+      "activity_sessions",
     ]) {
       const scope = table === "municipalities" ? "id" : "tenant_id";
       const filter =

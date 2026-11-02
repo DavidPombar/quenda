@@ -127,3 +127,17 @@ export function fullDateLabel(date: string, locale: Locale) {
     year: "numeric",
   });
 }
+// "27 de outubro de 2026" for the local day of an instant.
+export function instantDayLabel(
+  instant: string,
+  timezone: string,
+  locale: Locale,
+) {
+  return fullDateLabel(
+    Temporal.Instant.from(instant)
+      .toZonedDateTimeISO(timezone)
+      .toPlainDate()
+      .toString(),
+    locale,
+  );
+}

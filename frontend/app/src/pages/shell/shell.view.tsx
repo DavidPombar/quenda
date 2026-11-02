@@ -5,6 +5,8 @@ import {
   PiArrowSquareOut,
   PiCalendarBlank,
   PiCalendarBlankFill,
+  PiChalkboardTeacher,
+  PiChalkboardTeacherFill,
   PiMapPin,
   PiSignOut,
   PiSquaresFour,
@@ -103,6 +105,18 @@ export function Shell() {
                   <PiSquaresFour size={22} aria-hidden="true" />
                 )}
                 {t("facilities")}
+              </>
+            )}
+          </NavLink>
+          <NavLink to={routeFor(municipality.slug, ROUTES.activities)}>
+            {({ isActive }) => (
+              <>
+                {isActive ? (
+                  <PiChalkboardTeacherFill size={22} aria-hidden="true" />
+                ) : (
+                  <PiChalkboardTeacher size={22} aria-hidden="true" />
+                )}
+                {t("activities")}
               </>
             )}
           </NavLink>

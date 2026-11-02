@@ -5,6 +5,7 @@ import {
   PiArrowSquareOut,
   PiBuildings,
   PiCalendarCheck,
+  PiChalkboardTeacher,
   PiChartBar,
   PiGearSix,
   PiIdentificationCard,
@@ -88,6 +89,12 @@ export function Shell() {
             <NavLink to={routeFor(municipality.slug, ROUTES.seasons)}>
               <PiUsersThree size={20} aria-hidden="true" />
               {t("seasons")}
+            </NavLink>
+          )}
+          {c.isManager && (
+            <NavLink to={routeFor(municipality.slug, ROUTES.activities)}>
+              <PiChalkboardTeacher size={20} aria-hidden="true" />
+              {t("activities")}
             </NavLink>
           )}
           {c.isManager && (

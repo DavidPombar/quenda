@@ -273,7 +273,7 @@ describe("Attendance, no-show penalty and municipal cancellations", () => {
           .get(`/v2/manager/facilities/${court.id}/impact`)
           .expect(200)
       ).body,
-    ).toEqual({ bookings: 2, people: 1 });
+    ).toEqual({ bookings: 2, people: 1, sessions: 0 });
     await context.citizen
       .get(`/v2/manager/facilities/${court.id}/impact`)
       .expect(403);
@@ -331,7 +331,7 @@ describe("Attendance, no-show penalty and municipal cancellations", () => {
           .get(`/v2/manager/facilities/${court.id}/impact`)
           .expect(200)
       ).body,
-    ).toEqual({ bookings: 0, people: 0 });
+    ).toEqual({ bookings: 0, people: 0, sessions: 0 });
   });
   it("should include no-shows and blocks in the person's data export", async () => {
     const context = await tenant();

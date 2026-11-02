@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { SESSION_ENDED_EVENT } from "@/constants/events";
 export class ApiError extends Error {
+  /** `problem` is the whole problem document, extension members included (RFC 9457). */
   constructor(
     readonly code: string,
     message: string,
     readonly status: number,
+    readonly problem: Record<string, unknown> = {},
   ) {
     super(message);
   }
@@ -31,8 +33,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       .catch(() => ({ code: "network", detail: "" }))) as {
       code: string;
       detail: string;
-    };
-    throw new ApiError(problem.code, problem.detail, response.status);
+    } & Record<string, unknown>;
+    throw new ApiError(problem.code, problem.detail, response.status, problem);
   }
   return response.status === 204
     ? (undefined as T)

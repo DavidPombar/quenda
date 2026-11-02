@@ -84,6 +84,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     slot_available: "Esta quenda está libre: podes reservala directamente.",
     already_waiting: "Xa estás na lista de espera desta quenda.",
     offer_closed: "Esta oferta xa non está dispoñible.",
+    activity_conflict:
+      "Algunhas sesións coinciden con reservas, temporadas ou outras actividades, ou caen fóra do horario. Engádeas como excepcións ou resolve antes esas reservas.",
+    activity_not_editable:
+      "Esta actividade está anulada ou xa rematou: non se pode cambiar.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -161,6 +165,10 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     slot_available: "Este turno está libre: puedes reservarlo directamente.",
     already_waiting: "Ya estás en la lista de espera de este turno.",
     offer_closed: "Esta oferta ya no está disponible.",
+    activity_conflict:
+      "Algunas sesiones coinciden con reservas, temporadas u otras actividades, o caen fuera del horario. Añádelas como excepciones o resuelve antes esas reservas.",
+    activity_not_editable:
+      "Esta actividad está anulada o ya terminó: no se puede cambiar.",
   },
 };
 @Catch(HttpException)
@@ -191,6 +199,7 @@ export class ProblemFilter implements ExceptionFilter {
     if (status === 429 && retryAfter)
       response.setHeader("Retry-After", String(response.getHeader(retryAfter)));
     response.status(status).type("application/problem+json").send({
+      ...(exception instanceof ProblemException ? exception.extensions : {}),
       type: "about:blank",
       title: code,
       status,

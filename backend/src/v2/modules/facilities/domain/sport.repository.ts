@@ -19,7 +19,7 @@ export abstract class SportRepository {
   abstract visible(slugs: readonly string[]): Promise<Sport[]>;
   abstract find(tenantId: string, code: string): Promise<Sport | null>;
   abstract save(tenantId: string, sport: Sport): Promise<void>;
-  /** Whether a facility or a club of the municipality uses the sport. */
+  /** Whether a facility, a club or an activity of the municipality uses the sport. */
   abstract inUse(tenantId: string, code: string): Promise<boolean>;
   abstract remove(tenantId: string, code: string): Promise<boolean>;
 }
