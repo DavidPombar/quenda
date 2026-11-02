@@ -10,8 +10,16 @@ import { usePrefetchAccessPasses } from "@/queries/bookings/get-access-pass.quer
 import { dateLabel } from "@/services/date.service";
 import { fill, type TextKey } from "@/services/i18n.service";
 import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
+import { useListWaitlistQuery } from "@/queries/waitlist/list-waitlist.query";
+import { useLeaveWaitlistMutation } from "@/queries/waitlist/leave-waitlist.mutation";
+import { timeLabel } from "@/services/date.service";
 import type { AppContext } from "@/types/app-context";
-import type { Booking, Notification, PenaltyStanding } from "@/types/models";
+import type {
+  Booking,
+  Notification,
+  PenaltyStanding,
+  WaitlistEntry,
+} from "@/types/models";
 const NOTICE_TITLES = {
   confirmed: "noticeConfirmed",
   rescheduled: "noticeRescheduled",
@@ -21,6 +29,7 @@ const NOTICE_TITLES = {
   blocked: "noticeBlocked",
   unblocked: "noticeUnblocked",
   reminder: "noticeReminder",
+  waitlist_offer: "noticeWaitlistOffer",
 } as const satisfies Record<Notification["kind"], TextKey>;
 // Most recent notices shown before "Ver todos".
 const NOTICE_PREVIEW = 10;
@@ -28,12 +37,22 @@ const NOTICE_PREVIEW = 10;
 const BOOKING_PAGE = 10;
 // Passes of bookings starting this soon are fetched ahead for the door (#24).
 const PASS_AHEAD_HOURS = 24;
+function focusWaitlistTab() {
+  window.requestAnimationFrame(() =>
+    document.querySelector<HTMLElement>("#bookings-tab-waitlist")?.focus(),
+  );
+}
 export function useMyBookingsController() {
   const context = useOutletContext<AppContext>();
   const query = useListBookingsQuery(context.session?.userId);
   const notices = useListNotificationsQuery(context.session?.userId);
   const penalty = useGetPenaltyStandingQuery(context.session?.userId);
-  const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
+  const waitlist = useListWaitlistQuery(context.session?.userId);
+  const leave = useLeaveWaitlistMutation();
+  const [tab, setTab] = useState<"upcoming" | "waitlist" | "history">(
+    "upcoming",
+  );
+  const [accepting, setAccepting] = useState<WaitlistEntry | null>(null);
   const [cancelling, setCancelling] = useState<Booking | null>(null);
   const [showingPass, setShowingPass] = useState<Booking | null>(null);
   const [changing, setChanging] = useState<Booking | null>(null);
@@ -129,13 +148,50 @@ export function useMyBookingsController() {
     noticeTitle: (notice: Notification) => t(NOTICE_TITLES[notice.kind]),
     noticeDetail: (notice: Notification) =>
       notice.details?.reason ??
-      (notice.details?.standing ? standingText(notice.details.standing) : ""),
+      (notice.details?.standing
+        ? standingText(notice.details.standing)
+        : notice.details?.offerExpiresAt
+          ? fill(t("waitlistHeld"), {
+              time: timeLabel(
+                notice.details.offerExpiresAt,
+                context.municipality.timezone,
+              ),
+            })
+          : ""),
     visibleNotices,
     hiddenNotices: Math.max(allNotices.length - NOTICE_PREVIEW, 0),
     showAllNotices,
     toggleNotices: () => setShowAllNotices((value) => !value),
     tab,
-    setTab: (value: "upcoming" | "history") => {
+    // The tab shows while the council has a waiting list or the person is still on one (#96).
+    tabs: [
+      "upcoming",
+      ...(context.municipality.waitlistMaxEntries > 0 || waitlist.data?.length
+        ? (["waitlist"] as const)
+        : []),
+      "history",
+    ] as const,
+    waitlist,
+    offers: (waitlist.data ?? []).filter((entry) => entry.status === "offered")
+      .length,
+    leave,
+    /** The notice goes away with its button, so focus moves to the tab it opens (WCAG 2.4.3). */
+    showOffers: () => {
+      setTab("waitlist");
+      setBookingLimit(BOOKING_PAGE);
+      focusWaitlistTab();
+    },
+    // The row and its button go away once the person leaves; focus returns to the tab.
+    leaveList: (id: string) =>
+      leave.mutate(id, { onSuccess: focusWaitlistTab }),
+    accepting,
+    setAccepting,
+    // A confirmed offer leaves the list, so its row cannot take focus back.
+    closeAccepting: () => {
+      setAccepting(null);
+      focusWaitlistTab();
+    },
+    setTab: (value: "upcoming" | "waitlist" | "history") => {
       setTab(value);
       setBookingLimit(BOOKING_PAGE);
     },

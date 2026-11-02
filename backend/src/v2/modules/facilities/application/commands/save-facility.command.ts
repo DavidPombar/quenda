@@ -17,6 +17,7 @@ import {
   Outbox,
   queueBookingChange,
 } from "../../../../shared/application/outbox";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityError =
@@ -38,6 +39,7 @@ export class SaveFacility {
     private readonly outbox: Outbox,
     private readonly sports: SportRepository,
     private readonly describer: FacilityDescriber,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -156,6 +158,8 @@ export class SaveFacility {
         facility.status,
         now,
       );
+    // A closed facility offers nothing: its waiting lists end and their holds go (#96).
+    if (closing) await this.waitlist.close(facility.tenantId, facility.id);
     // A new facility is bookable at once through its default resource (same id and name).
     if (!existing)
       await this.resources.add({

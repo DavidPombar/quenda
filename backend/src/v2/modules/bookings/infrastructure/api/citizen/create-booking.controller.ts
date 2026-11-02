@@ -41,6 +41,7 @@ export class CreateBookingController {
       facilityId: body.facilityId,
       resourceId: body.resourceId,
       start: body.start,
+      waitlistEntryId: body.waitlistEntryId,
     });
     return result.fold(BookingResponseDTO.from, this.handleError);
   }
@@ -56,6 +57,7 @@ export class CreateBookingController {
       | AppError<"booking_blocked">
       | AppError<"slot_taken">
       | AppError<"already_booked">
+      | AppError<"offer_closed">
       | AppError<"id_reused">
       | AppError<"resource_required">
       | AppError<"resource_unavailable">,
@@ -79,6 +81,7 @@ export class CreateBookingController {
       case "slot_taken":
         throw new ProblemException(409, error);
       case "id_reused":
+      case "offer_closed":
         throw new ProblemException(409, error);
       case "resource_required":
         throw new ProblemException(422, error);

@@ -34,6 +34,18 @@ export class PostgresRetentionRepository extends RetentionRepository {
       cutoff,
     );
   }
+  async deleteWaitlist(tenantId: string, now: Temporal.Instant) {
+    await this.run(
+      "DELETE FROM booking_units u USING waitlist_entries w WHERE u.tenant_id=w.tenant_id AND u.waitlist_entry_id=w.id AND w.tenant_id=$1 AND w.ends_at<=$2",
+      tenantId,
+      now,
+    );
+    return this.run(
+      "DELETE FROM waitlist_entries WHERE tenant_id=$1 AND ends_at<=$2",
+      tenantId,
+      now,
+    );
+  }
   deleteBlocks(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       "DELETE FROM booking_blocks WHERE tenant_id=$1 AND ends_at<$2",

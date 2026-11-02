@@ -13,6 +13,7 @@ export function useUpdateBookingMutation() {
           "penalty",
           "availability",
           "insights",
+          "waitlist",
         ].map((key) => cache.invalidateQueries({ queryKey: [key] })),
       );
     },

@@ -51,6 +51,9 @@ export const municipality: Municipality = {
   noShowLimit: 3,
   noShowWindowDays: 30,
   noShowBlockDays: 7,
+  // Off unless a test is about the waiting list (#96), so full slots stay disabled.
+  waitlistMaxEntries: 0,
+  waitlistOfferMinutes: 30,
   dataLicense: "CC-BY-4.0",
   analytics: false,
 };
@@ -167,11 +170,15 @@ export function stubShell(
 ) {
   stubAuthMethods(methods);
   stubJsonResponse({ path: "*/v2/public/season-campaigns", response: [] });
-  if (authenticated)
+  if (authenticated) {
     stubJsonResponse({
       path: "*/v2/citizen/tariffs/*",
       response: { category: "general", priceCents: facility.priceCents },
     });
+    // Not on any waiting list unless a test says otherwise (#96).
+    stubJsonResponse({ path: "*/v2/citizen/waitlist", response: [] });
+    stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
+  }
   stubJsonResponse({
     path: "*/v2/public/municipalities",
     response: [municipality],
@@ -273,6 +280,7 @@ export const notificationSettings: NotificationSettings = {
     cancellation: { email: true, push: true },
     reminder: { email: true, push: true },
     penalty: { email: false, push: false },
+    waitlist: { email: true, push: true },
   },
   push: { available: true, publicKey: "BPublicKeyForTests", devices: 0 },
 };

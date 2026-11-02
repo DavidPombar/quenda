@@ -13,6 +13,7 @@ import { WebhookSender } from "../../application/webhook-sender";
 import { ScheduleReminders } from "../../application/commands/schedule-reminders.command";
 import { ClaimDeliveries } from "../../application/commands/claim-deliveries.command";
 import { CompleteDelivery } from "../../application/commands/complete-delivery.command";
+import { ExpireWaitlistOffers } from "../../../waitlist/application/commands/expire-waitlist-offers.command";
 import { Mailer } from "../../../../shared/application/mailer";
 import { Delivery } from "../../domain/delivery.read-model";
 import { renderMail } from "../mail/templates";
@@ -22,7 +23,8 @@ const BATCH_SIZE = 50;
 /** A push notice older than a day is no longer useful; the history keeps it. */
 const PUSH_TTL_SECONDS = 24 * 60 * 60;
 /**
- * One pass of the delivery loop: queue due reminders, lease pending messages, send each one
+ * One pass of the delivery loop: queue due reminders, pass expired waiting-list offers on (#96),
+ * lease pending messages, send each one
  * outside any transaction and record the outcome. Delivery is at-least-once; the Message-ID
  * repeats if a crash happens between sending and recording.
  */
@@ -46,7 +48,8 @@ export class DeliveryWorker {
   ) {}
   async runOnce() {
     let reminders = 0;
-    for (const municipality of await this.municipalities.list())
+    let expired = 0;
+    for (const municipality of await this.municipalities.list()) {
       reminders += (
         await this.commands
           .get(ScheduleReminders)
@@ -55,6 +58,16 @@ export class DeliveryWorker {
         (count) => count,
         () => 0,
       );
+      // Before claiming, so the next person's offer goes out in the same pass.
+      expired += (
+        await this.commands
+          .get(ExpireWaitlistOffers)
+          .execute({ tenantId: municipality.id })
+      ).fold(
+        (value) => value.expired,
+        () => 0,
+      );
+    }
     const deliveries = (
       await this.commands.get(ClaimDeliveries).execute({ limit: BATCH_SIZE })
     ).fold(
@@ -71,11 +84,11 @@ export class DeliveryWorker {
     }
     // Sign-in codes left unsent by a mail server failure (#8).
     const codes = await this.loginCodes.send();
-    if (reminders || deliveries.length || codes)
+    if (reminders || expired || deliveries.length || codes)
       this.logger.log(
-        `reminders queued ${reminders}, sent ${sent}/${deliveries.length}, sign-in codes ${codes}`,
+        `reminders queued ${reminders}, offers expired ${expired}, sent ${sent}/${deliveries.length}, sign-in codes ${codes}`,
       );
-    return { reminders, sent, failed: deliveries.length - sent };
+    return { reminders, expired, sent, failed: deliveries.length - sent };
   }
   private async deliver(delivery: Delivery): Promise<string | undefined> {
     try {

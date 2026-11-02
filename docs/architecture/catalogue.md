@@ -74,6 +74,8 @@ court with parts never takes one, because booking it holds all its parts.
   `open_minutes` follows the same rule.
 - **Seasons:** a club's date on a lane that already has places is a conflict, as with any
   booking.
+- **Waiting list:** a full slot, of a shared lane or of an exclusive court, can be waited for; a
+  freed place is held for the first person in the queue ([waiting list](waitlist.md)).
 
 ## Photos
 

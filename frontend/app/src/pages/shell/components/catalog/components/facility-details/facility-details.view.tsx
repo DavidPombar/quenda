@@ -21,6 +21,7 @@ import {
   money,
 } from "@/services/date.service";
 import { categoryLabel } from "@/services/tariff.service";
+import { WaitlistDialog } from "./components/waitlist-dialog/waitlist-dialog.view";
 import { BookingDialog } from "./components/booking-dialog/booking-dialog.view";
 import { SlotSuggestions } from "./components/slot-suggestions/slot-suggestions.view";
 import { ResourceGrid } from "./components/resource-grid/resource-grid.view";
@@ -259,7 +260,7 @@ export function FacilityDetails() {
                     type="button"
                     className={`time-slot ${slot.status}`}
                     key={slot.start}
-                    disabled={slot.status !== "available"}
+                    disabled={!c.canOpen(slot)}
                     onClick={() => c.select(slot)}
                   >
                     <strong>
@@ -274,6 +275,9 @@ export function FacilityDetails() {
                       </>
                     ) : (
                       <span>{c.slotText(slot)}</span>
+                    )}
+                    {c.waitNote(slot) && (
+                      <span className="slot-waitlist">{c.waitNote(slot)}</span>
                     )}
                   </button>
                 ))}
@@ -350,6 +354,27 @@ export function FacilityDetails() {
           />
         )}
       </BookingDialog>
+      {c.waiting && (
+        <WaitlistDialog
+          context={{
+            municipality: c.municipality,
+            session: c.session,
+            locale: c.locale,
+            t: c.t,
+            signIn: c.signIn,
+            showPrivacy: c.showPrivacy,
+            online: c.online,
+            track: c.track,
+          }}
+          facilityId={f.id}
+          facilityName={f.name}
+          resourceId={c.waiting.resourceId}
+          resourceName={c.waiting.resourceName}
+          slot={c.waiting.slot}
+          entry={c.waiting.entry}
+          onClose={c.closeWaiting}
+        />
+      )}
     </div>
   );
 }

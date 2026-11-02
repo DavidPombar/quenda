@@ -52,6 +52,8 @@ const editable = [
   "noShowLimit",
   "noShowWindowDays",
   "noShowBlockDays",
+  "waitlistMaxEntries",
+  "waitlistOfferMinutes",
   "dataLicense",
   "dir3Code",
   "analyticsEnabled",

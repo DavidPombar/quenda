@@ -14,6 +14,7 @@ const texts: Record<Delivery["locale"], Record<Delivery["kind"], string>> = {
     no_show: "Tes un aviso sobre unha ausencia.",
     blocked: "As túas reservas están bloqueadas temporalmente.",
     unblocked: "Xa podes reservar de novo.",
+    waitlist_offer: "Quedou libre unha praza que esperabas. Confírmaa axiña.",
   },
   es: {
     confirmed: "Tienes una reserva confirmada.",
@@ -25,6 +26,8 @@ const texts: Record<Delivery["locale"], Record<Delivery["kind"], string>> = {
     no_show: "Tienes un aviso sobre una ausencia.",
     blocked: "Tus reservas están bloqueadas temporalmente.",
     unblocked: "Ya puedes reservar de nuevo.",
+    waitlist_offer:
+      "Ha quedado libre una plaza que esperabas. Confírmala pronto.",
   },
 };
 export interface PushPayload {
@@ -40,6 +43,6 @@ export function pushPayload(delivery: Delivery, url: string): PushPayload {
     title: delivery.municipality.name,
     body: texts[delivery.locale][delivery.kind],
     url,
-    tag: `quenda-${delivery.bookingId}`,
+    tag: `quenda-${delivery.bookingId ?? delivery.waitlistEntryId}`,
   };
 }

@@ -20,10 +20,19 @@ export class NotificationDetailsDTO {
     description: "No-show penalty standing when the notice was created",
   })
   standing?: PenaltySnapshotDTO;
+  @ApiPropertyOptional({
+    description: "Until when a waiting-list offer holds the place (#96)",
+  })
+  offerExpiresAt?: string;
 }
 export class NotificationResponseDTO {
   @ApiProperty({ description: "Notification UUID" }) id!: string;
-  @ApiProperty({ description: "Related reservation" }) bookingId!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Related reservation; null for a waiting-list offer",
+  })
+  bookingId!: string | null;
   @ApiProperty({
     enum: [
       "confirmed",
@@ -34,6 +43,7 @@ export class NotificationResponseDTO {
       "blocked",
       "unblocked",
       "reminder",
+      "waitlist_offer",
     ],
     description: "Event kind",
   })

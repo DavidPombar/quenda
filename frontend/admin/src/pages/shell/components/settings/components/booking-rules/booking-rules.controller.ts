@@ -4,7 +4,12 @@ import type { FormEvent } from "react";
 import { useUpdateMunicipalitySettingsMutation } from "@/queries/municipality-settings/update-municipality-settings.mutation";
 import type { TextKey } from "@/services/i18n.service";
 import type { MunicipalitySettings } from "@/types/models";
-type Rule = "advanceDays" | "cancellationHours" | "maxActiveBookings";
+type Rule =
+  | "advanceDays"
+  | "cancellationHours"
+  | "maxActiveBookings"
+  | "waitlistMaxEntries"
+  | "waitlistOfferMinutes";
 export const RULES = [
   ["advanceDays", 1, 90, "advanceDaysLabel", "advanceDaysError"],
   [
@@ -21,6 +26,20 @@ export const RULES = [
     "maxActiveBookingsLabel",
     "maxActiveBookingsError",
   ],
+  [
+    "waitlistMaxEntries",
+    0,
+    10,
+    "waitlistMaxEntriesLabel",
+    "waitlistMaxEntriesError",
+  ],
+  [
+    "waitlistOfferMinutes",
+    5,
+    240,
+    "waitlistOfferMinutesLabel",
+    "waitlistOfferMinutesError",
+  ],
 ] as const satisfies readonly (readonly [
   Rule,
   number,
@@ -35,6 +54,8 @@ export function useBookingRulesController(args: {
     advanceDays: String(args.settings.advanceDays),
     cancellationHours: String(args.settings.cancellationHours),
     maxActiveBookings: String(args.settings.maxActiveBookings),
+    waitlistMaxEntries: String(args.settings.waitlistMaxEntries),
+    waitlistOfferMinutes: String(args.settings.waitlistOfferMinutes),
   }));
   const [errors, setErrors] = useState<Partial<Record<Rule, TextKey>>>({});
   const [saved, setSaved] = useState(false);
@@ -65,6 +86,8 @@ export function useBookingRulesController(args: {
         advanceDays: Number(draft.advanceDays),
         cancellationHours: Number(draft.cancellationHours),
         maxActiveBookings: Number(draft.maxActiveBookings),
+        waitlistMaxEntries: Number(draft.waitlistMaxEntries),
+        waitlistOfferMinutes: Number(draft.waitlistOfferMinutes),
       });
       setSaved(true);
     } catch {

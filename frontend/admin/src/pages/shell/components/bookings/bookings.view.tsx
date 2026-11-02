@@ -123,6 +123,11 @@ export function Bookings() {
                             {booking.cancellationReason}
                           </span>
                         )}
+                        {c.waitingLabel(booking) && (
+                          <span className="audit-role">
+                            {c.waitingLabel(booking)}
+                          </span>
+                        )}
                       </td>
                       <td>
                         <div className="row-actions">

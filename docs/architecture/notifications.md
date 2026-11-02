@@ -13,6 +13,12 @@ them **by email** and **on their devices** (Web Push). SMS is out of scope.
 | `cancellation`                           | `cancelled`, `cancelled_by_municipality`  | on    | on   |
 | `reminder`                               | `reminder`                                | on    | on   |
 | `penalty`                                | `no_show`, `blocked`, `unblocked` (#16)   | off   | off  |
+| `waitlist`                               | `waitlist_offer` (#96)                    | on    | on   |
+
+A waiting-list offer belongs to its entry, not to a booking: its `notifications` and `outbox` rows
+carry `waitlist_entry_id` instead of `booking_id` (exactly one of the two is set). The worker closes
+an offer message as `skipped:offer_closed` when the offer was taken, left or let expire before it
+went out, and the email says until when the place is held. See [waiting list](waitlist.md).
 
 The defaults live in one place, `backend/src/v2/shared/application/notice-preferences.ts`. A
 missing row means the default, so existing accounts keep receiving what they received before.

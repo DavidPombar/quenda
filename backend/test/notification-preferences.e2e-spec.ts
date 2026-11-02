@@ -143,6 +143,7 @@ describe("Notice preferences per kind and channel, and Web Push", () => {
       cancellation: { email: true, push: true },
       reminder: { email: true, push: true },
       penalty: { email: false, push: false },
+      waitlist: { email: true, push: true },
     });
     expect(initial.push).toMatchObject({ available: true, devices: 0 });
     expect(initial.push.publicKey).toMatch(/^[A-Za-z0-9_-]{80,}$/);

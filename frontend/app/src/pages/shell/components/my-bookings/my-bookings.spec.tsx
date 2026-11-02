@@ -560,3 +560,106 @@ describe("Installed app without a network (#24)", () => {
     expect(localStorage.getItem("quenda.app.offline")).not.toContain(soon.id);
   });
 });
+describe("My bookings with waiting lists (#96)", () => {
+  const offered = {
+    id: "60000000-0000-4000-8000-000000000001",
+    facilityId: facility.id,
+    facilityName: facility.name,
+    resourceId: facility.id,
+    resourceName: facility.name,
+    start: at(10),
+    end: at(11),
+    status: "offered",
+    offerExpiresAt: at(9),
+    position: 0,
+    createdAt: "2026-10-18T09:00:00Z",
+  };
+  const queued = {
+    ...offered,
+    id: "60000000-0000-4000-8000-000000000002",
+    start: at(18),
+    end: at(19),
+    status: "waiting",
+    offerExpiresAt: null,
+    position: 2,
+  };
+  test("should point to a held place, confirm it as a booking and let the person leave a list", async () => {
+    stubShell(true);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [{ ...municipality, waitlistMaxEntries: 3 }],
+    });
+    stubBookings([]);
+    stubJsonResponse({
+      path: "*/v2/citizen/waitlist",
+      response: [offered, queued],
+    });
+    const create = stubJsonResponse({
+      path: "*/v2/citizen/bookings",
+      method: "POST",
+      response: { ...padelBooking, start: at(10), end: at(11) },
+      status: 201,
+    });
+    const leave = stubJsonResponse({
+      path: `*/v2/citizen/waitlist/${queued.id}`,
+      method: "DELETE",
+      response: null,
+      status: 204,
+    });
+    await commands.navigate("/app/vilaverde/reservas");
+    await render(<App />);
+    // An offer is announced on the default tab, with the way to it.
+    await expect
+      .element(page.getByRole("status").filter({ hasText: "Quedou libre" }))
+      .toBeVisible();
+    await page.getByRole("button", { name: "Ver a oferta" }).click();
+    const waitingTab = page.getByRole("button", { name: "En espera (2)" });
+    await expect.element(waitingTab).toHaveAttribute("aria-pressed", "true");
+    // The notice and its button are gone, so focus is on the tab they opened (WCAG 2.4.3).
+    await expect.element(waitingTab).toHaveFocus();
+    const held = page.getByRole("article").filter({ hasText: "Praza gardada" });
+    const later = page
+      .getByRole("article")
+      .filter({ hasText: "Posto 2 na lista" });
+    await expect.element(later).toBeVisible();
+    await held.getByRole("button", { name: "Confirmar reserva" }).click();
+    const dialog = page.getByRole("dialog", { name: "Confirmar a praza" });
+    await expect
+      .element(dialog.getByText(/pasará á seguinte persoa/))
+      .toBeVisible();
+    await dialog.getByRole("button", { name: "Confirmar reserva" }).click();
+    await expect
+      .element(
+        page.getByRole("dialog", { name: "A túa quenda está confirmada!" }),
+      )
+      .toBeVisible();
+    expect(create.spy.mock.calls[0][0].body).toEqual({
+      id: expect.any(String) as string,
+      facilityId: facility.id,
+      resourceId: facility.id,
+      start: at(10),
+      waitlistEntryId: offered.id,
+    });
+    await page.getByRole("button", { name: "De acordo" }).click();
+    await later.getByRole("button", { name: "Saír da lista" }).click();
+    await expect.poll(() => leave.spy.mock.calls.length).toBe(1);
+  });
+  test("should explain the waiting list when the person is on none", async () => {
+    stubShell(true);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [{ ...municipality, waitlistMaxEntries: 3 }],
+    });
+    stubBookings([]);
+    await commands.navigate("/app/vilaverde/reservas");
+    await render(<App />);
+    await page.getByRole("button", { name: "En espera" }).click();
+    await expect
+      .element(
+        page.getByRole("heading", {
+          name: "Non estás en ningunha lista de espera.",
+        }),
+      )
+      .toBeVisible();
+  });
+});

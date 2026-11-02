@@ -9,7 +9,7 @@ import { wants } from "../../../../shared/application/notice-preferences";
 /**
  * Leases due messages for delivery outside the transaction. Messages nobody can receive any more
  * (no address, deleted account, notice switched off since it was queued, reminder of a cancelled
- * reservation) are closed without sending.
+ * reservation, waiting-list offer no longer open) are closed without sending.
  */
 @Injectable()
 export class ClaimDeliveries {
@@ -39,7 +39,9 @@ export class ClaimDeliveries {
               : delivery.kind === "reminder" &&
                   delivery.bookingStatus !== "confirmed"
                 ? "skipped:cancelled"
-                : null;
+                : delivery.kind === "waitlist_offer" && !delivery.offerOpen
+                  ? "skipped:offer_closed"
+                  : null;
       if (skip) await this.deliveries.markSent(delivery.id, now, skip);
       else ready.push(delivery);
     }

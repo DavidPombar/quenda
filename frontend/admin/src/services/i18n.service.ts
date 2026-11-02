@@ -441,6 +441,12 @@ const gl = {
   cancellationHoursError: "Indica entre 0 e 168 horas.",
   maxActiveBookingsLabel: "Reservas activas por persoa",
   maxActiveBookingsError: "Indica entre 1 e 50 reservas.",
+  waitlistMaxEntriesLabel:
+    "Listas de espera abertas por persoa (0 = sen lista)",
+  waitlistMaxEntriesError: "Indica entre 0 e 10 listas.",
+  waitlistOfferMinutesLabel:
+    "Minutos para confirmar unha praza que queda libre",
+  waitlistOfferMinutesError: "Indica entre 5 e 240 minutos.",
   generalSettingsSection: "Contacto e idioma",
   contactLabel: "Contacto municipal",
   contactHint: "Correo ou teléfono que ve a cidadanía para pedir axuda.",
@@ -700,6 +706,11 @@ const gl = {
   insightsCancelled: "Cancelacións",
   insightsNoShows: "Non presentados",
   insightsNoShowsHint: "Reservas sen usar; non contan como tempo reservado.",
+  insightsWaitlistAccepted: "Ofertas da lista de espera aceptadas",
+  insightsWaitlistExpired: "Ofertas da lista de espera caducadas",
+  insightsWaitlistHint:
+    "Prazas que quedaron libres e se ofreceron a quen esperaba.",
+  bookingWaiting: "{count} en espera",
   insightsBefore: "Período comparado",
   insightsDelta: "Diferenza (puntos)",
   insightsByFacility: "Ocupación por instalación",
@@ -1331,6 +1342,11 @@ const es: Record<TextKey, string> = {
   cancellationHoursError: "Indica entre 0 y 168 horas.",
   maxActiveBookingsLabel: "Reservas activas por persona",
   maxActiveBookingsError: "Indica entre 1 y 50 reservas.",
+  waitlistMaxEntriesLabel:
+    "Listas de espera abiertas por persona (0 = sin lista)",
+  waitlistMaxEntriesError: "Indica entre 0 y 10 listas.",
+  waitlistOfferMinutesLabel: "Minutos para confirmar una plaza que queda libre",
+  waitlistOfferMinutesError: "Indica entre 5 y 240 minutos.",
   generalSettingsSection: "Contacto e idioma",
   contactLabel: "Contacto municipal",
   contactHint: "Correo o teléfono que ve la ciudadanía para pedir ayuda.",
@@ -1593,6 +1609,11 @@ const es: Record<TextKey, string> = {
   insightsCancelled: "Cancelaciones",
   insightsNoShows: "No presentados",
   insightsNoShowsHint: "Reservas sin usar; no cuentan como tiempo reservado.",
+  insightsWaitlistAccepted: "Ofertas de la lista de espera aceptadas",
+  insightsWaitlistExpired: "Ofertas de la lista de espera caducadas",
+  insightsWaitlistHint:
+    "Plazas que quedaron libres y se ofrecieron a quien esperaba.",
+  bookingWaiting: "{count} en espera",
   insightsBefore: "Periodo comparado",
   insightsDelta: "Diferencia (puntos)",
   insightsByFacility: "Ocupación por instalación",

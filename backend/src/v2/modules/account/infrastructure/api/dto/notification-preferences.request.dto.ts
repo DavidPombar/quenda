@@ -54,4 +54,12 @@ export class NotificationPreferencesRequestDTO {
   @ValidateNested()
   @Type(() => NoticeChannelsRequestDTO)
   penalty!: NoticeChannelsRequestDTO;
+  @ApiProperty({
+    description: "A place freed on a waiting list is held for the person (#96)",
+    type: NoticeChannelsRequestDTO,
+  })
+  @IsObject()
+  @ValidateNested()
+  @Type(() => NoticeChannelsRequestDTO)
+  waitlist!: NoticeChannelsRequestDTO;
 }

@@ -79,6 +79,11 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Este concello non ten activados os avisos no dispositivo.",
     analytics_unavailable:
       "Non foi posible ler as estatísticas do Umami agora mesmo. Téntao máis tarde.",
+    waitlist_disabled: "Este concello non ten lista de espera.",
+    waitlist_limit: "Acadaches o límite de listas de espera abertas.",
+    slot_available: "Esta quenda está libre: podes reservala directamente.",
+    already_waiting: "Xa estás na lista de espera desta quenda.",
+    offer_closed: "Esta oferta xa non está dispoñible.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -151,6 +156,11 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Este ayuntamiento no tiene activados los avisos en el dispositivo.",
     analytics_unavailable:
       "No se pudieron leer las estadísticas del Umami ahora mismo. Inténtalo más tarde.",
+    waitlist_disabled: "Este ayuntamiento no tiene lista de espera.",
+    waitlist_limit: "Has alcanzado el límite de listas de espera abiertas.",
+    slot_available: "Este turno está libre: puedes reservarlo directamente.",
+    already_waiting: "Ya estás en la lista de espera de este turno.",
+    offer_closed: "Esta oferta ya no está disponible.",
   },
 };
 @Catch(HttpException)

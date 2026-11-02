@@ -51,6 +51,10 @@ export interface MunicipalitySettings {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** Open waiting-list entries a person may have (#96); 0 switches the waiting list off. */
+  waitlistMaxEntries: number;
+  /** Minutes a freed place is held for the person it is offered to, never past the start. */
+  waitlistOfferMinutes: number;
   accessibility: AccessibilitySettings;
   /** SPDX identifier of the licence of the published open data. */
   dataLicense: DataLicense;

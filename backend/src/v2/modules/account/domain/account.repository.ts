@@ -11,6 +11,7 @@ import type {
   ExportedMessage,
   ExportedNotification,
   ExportedPushDevice,
+  ExportedWaitlistEntry,
 } from "./account.read-model";
 import type {
   NoticeChannel,
@@ -42,11 +43,14 @@ export abstract class AccountRepository {
     now: Temporal.Instant,
   ): Promise<void>;
   /** Returns the number of confirmed reservations that were still ahead. */
+  /** Returns the slots the cancelled reservations held, so they can be offered on (#96). */
   abstract cancelFutureBookings(
     tenantId: string,
     userId: string,
     now: Temporal.Instant,
-  ): Promise<number>;
+  ): Promise<
+    { facilityId: string; start: Temporal.Instant; end: Temporal.Instant }[]
+  >;
   abstract deleteNotifications(
     tenantId: string,
     userId: string,
@@ -124,6 +128,10 @@ export abstract class AccountRepository {
     userId: string,
   ): Promise<ExportedNotification[]>;
   /** Temporary booking bans after repeated no-shows. */
+  abstract listWaitlistAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedWaitlistEntry[]>;
   abstract listBlocksAll(
     tenantId: string,
     userId: string,

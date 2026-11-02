@@ -24,6 +24,7 @@ const noticeKinds = JSON.stringify(
         "no_show",
         "blocked",
         "unblocked",
+        "waitlist_offer",
       ] satisfies MessageKind[]
     ).map((kind) => [kind, noticeKindOf(kind)]),
   ),
@@ -34,7 +35,8 @@ interface DeliveryRow {
   channel: Delivery["channel"];
   tenantId: string;
   userId: string;
-  bookingId: string;
+  bookingId: string | null;
+  waitlistEntryId: string | null;
   attempts: number;
   email: string | null;
   locale: string;
@@ -56,6 +58,8 @@ interface DeliveryRow {
   openingCalendar: string;
   start: string;
   end: string;
+  offerExpiresAt: string | null;
+  offerOpen: boolean;
 }
 @Injectable()
 export class PostgresDeliveryRepository extends DeliveryRepository {
@@ -99,7 +103,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         UPDATE outbox o SET locked_until=$2, attempts=o.attempts+1
         FROM due WHERE o.id=due.id RETURNING o.*)
       SELECT c.id, c.kind, c.channel, c.tenant_id AS "tenantId", c.user_id AS "userId",
-        c.booking_id AS "bookingId", c.attempts,
+        c.booking_id AS "bookingId", c.waitlist_entry_id AS "waitlistEntryId", c.attempts,
         CASE WHEN u.deleted_at IS NULL THEN u.email END AS email,
         COALESCE(u.locale, m.locale) AS locale, b.status AS "bookingStatus",
         m.slug, m.name AS "municipalityName", m.timezone,
@@ -113,13 +117,16 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
           WHERE n.tenant_id=c.tenant_id AND n.booking_id=c.booking_id AND n.kind=c.kind
           ORDER BY n.created_at DESC LIMIT 1) AS standing,
         m.access_webhook_url AS "webhookUrl", m.access_webhook_secret_sealed AS "webhookSecretSealed",
-        b.facility_id AS "facilityId", f.opening_calendar AS "openingCalendar",
-        b.starts_at AS start, b.ends_at AS "end"
+        f.id AS "facilityId", f.opening_calendar AS "openingCalendar",
+        COALESCE(b.starts_at, w.starts_at) AS start, COALESCE(b.ends_at, w.ends_at) AS "end",
+        w.offer_expires_at AS "offerExpiresAt",
+        (w.status='offered' AND w.offer_expires_at > $1) IS TRUE AS "offerOpen"
       FROM claimed c
       JOIN users u ON u.tenant_id=c.tenant_id AND u.id=c.user_id
       JOIN municipalities m ON m.id=c.tenant_id
-      JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id
-      JOIN facilities f ON f.tenant_id=b.tenant_id AND f.id=b.facility_id
+      LEFT JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id
+      LEFT JOIN waitlist_entries w ON w.tenant_id=c.tenant_id AND w.id=c.waitlist_entry_id
+      JOIN facilities f ON f.tenant_id=c.tenant_id AND f.id=COALESCE(b.facility_id, w.facility_id)
       LEFT JOIN notification_preferences p ON p.tenant_id=c.tenant_id AND p.user_id=c.user_id
         AND p.channel=c.channel AND p.kind=($5::jsonb ->> c.kind)`,
       [
@@ -137,6 +144,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       tenantId: row.tenantId,
       userId: row.userId,
       bookingId: row.bookingId,
+      waitlistEntryId: row.waitlistEntryId,
       attempts: row.attempts,
       email: row.email,
       locale: row.locale === "es" ? "es" : "gl",
@@ -161,6 +169,10 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       openingCalendar: row.openingCalendar,
       start: Temporal.Instant.from(row.start),
       end: Temporal.Instant.from(row.end),
+      offerExpiresAt: row.offerExpiresAt
+        ? Temporal.Instant.from(row.offerExpiresAt)
+        : null,
+      offerOpen: row.offerOpen,
     }));
   }
   async markSent(id: string, now: Temporal.Instant, note: string | null) {

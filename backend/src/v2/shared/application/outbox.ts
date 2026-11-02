@@ -8,7 +8,8 @@ export type MessageKind =
   | "reminder"
   | "no_show"
   | "blocked"
-  | "unblocked";
+  | "unblocked"
+  | "waitlist_offer";
 /**
  * Email and Web Push to the person, as they chose; webhook to the council's access-control
  * system when it has one.
@@ -33,7 +34,9 @@ export abstract class Outbox {
     id: string;
     tenantId: string;
     userId: string;
-    bookingId: string;
+    /** A message is about a reservation or about a waiting-list offer (#96). */
+    bookingId: string | null;
+    waitlistEntryId?: string | null;
     kind: MessageKind;
     channel: MessageChannel;
     dedupeKey: string;
@@ -72,6 +75,30 @@ export async function queueBookingChange(
         channel === "email"
           ? `${args.kind}:${args.notificationId}`
           : `${args.kind}:${channel}:${args.notificationId}`,
+      createdAt: args.createdAt,
+    });
+}
+/** Email and push of a waiting-list offer (#96); an entry is offered once, so its id is the key. */
+export async function queueWaitlistOffer(
+  outbox: Outbox,
+  args: {
+    newId: () => string;
+    tenantId: string;
+    userId: string;
+    entryId: string;
+    createdAt: Temporal.Instant;
+  },
+) {
+  for (const channel of ["email", "push"] as const)
+    await outbox.enqueue({
+      id: args.newId(),
+      tenantId: args.tenantId,
+      userId: args.userId,
+      bookingId: null,
+      waitlistEntryId: args.entryId,
+      kind: "waitlist_offer",
+      channel,
+      dedupeKey: `waitlist_offer:${channel}:${args.entryId}`,
       createdAt: args.createdAt,
     });
 }

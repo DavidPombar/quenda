@@ -32,6 +32,11 @@ export class NoticePreferencesResponseDTO {
     type: NoticeChannelsResponseDTO,
   })
   penalty!: NoticeChannelsResponseDTO;
+  @ApiProperty({
+    description: "A place freed on a waiting list is held for the person (#96)",
+    type: NoticeChannelsResponseDTO,
+  })
+  waitlist!: NoticeChannelsResponseDTO;
   static from(value: NoticePreferences): NoticePreferencesResponseDTO {
     return {
       confirmation: { ...value.confirmation },
@@ -39,6 +44,7 @@ export class NoticePreferencesResponseDTO {
       cancellation: { ...value.cancellation },
       reminder: { ...value.reminder },
       penalty: { ...value.penalty },
+      waitlist: { ...value.waitlist },
     };
   }
 }

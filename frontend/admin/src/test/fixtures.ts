@@ -42,6 +42,8 @@ export const municipality: Municipality = {
   noShowLimit: 3,
   noShowWindowDays: 30,
   noShowBlockDays: 7,
+  waitlistMaxEntries: 3,
+  waitlistOfferMinutes: 30,
   dataLicense: "CC-BY-4.0",
   dir3Code: null,
   analytics: false,
@@ -144,6 +146,8 @@ export function insightsFor(
     openMinutes: 6000,
     occupancy,
     facilities: 1,
+    waitlistAccepted: 2,
+    waitlistExpired: 1,
     byFacility: [
       {
         id: facility.id,

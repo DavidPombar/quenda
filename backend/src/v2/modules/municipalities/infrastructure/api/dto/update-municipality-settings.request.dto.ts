@@ -165,6 +165,24 @@ export class UpdateMunicipalitySettingsRequestDTO {
   @Max(365)
   noShowBlockDays?: number;
   @ApiPropertyOptional({
+    description:
+      "Open waiting-list entries per person (0–10); 0 switches the waiting list off (#96)",
+  })
+  @ValidateIf(defined)
+  @IsInt()
+  @Min(0)
+  @Max(10)
+  waitlistMaxEntries?: number;
+  @ApiPropertyOptional({
+    description:
+      "Minutes a freed place is held for the person offered it (5–240)",
+  })
+  @ValidateIf(defined)
+  @IsInt()
+  @Min(5)
+  @Max(240)
+  waitlistOfferMinutes?: number;
+  @ApiPropertyOptional({
     enum: dataLicenses,
     description: "Licence of the published open data (T3, #21)",
   })

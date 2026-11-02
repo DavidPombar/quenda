@@ -19,6 +19,54 @@ export class PostgresBookingUnitRepository extends BookingUnitRepository {
     place: { capacity: number; userId: string } | null;
   }) {
     await this.release(args.tenantId, args.bookingId);
+    return this.occupy("booking_id", args.bookingId, args);
+  }
+  async hold(args: {
+    tenantId: string;
+    entryId: string;
+    unitIds: readonly string[];
+    start: Temporal.Instant;
+    end: Temporal.Instant;
+    place: { capacity: number; userId: string } | null;
+  }) {
+    await this.releaseHold(args.tenantId, args.entryId);
+    return this.occupy("waitlist_entry_id", args.entryId, args);
+  }
+  async release(tenantId: string, bookingId: string) {
+    await this.db.query(
+      "DELETE FROM booking_units WHERE tenant_id=$1 AND booking_id=$2",
+      [tenantId, bookingId],
+    );
+  }
+  async releaseHold(tenantId: string, entryId: string) {
+    await this.db.query(
+      "DELETE FROM booking_units WHERE tenant_id=$1 AND waitlist_entry_id=$2",
+      [tenantId, entryId],
+    );
+  }
+  async vacancy(args: {
+    tenantId: string;
+    unitIds: readonly string[];
+    start: Temporal.Instant;
+    end: Temporal.Instant;
+    place: { capacity: number; userId: string } | null;
+  }): Promise<"free" | "full" | "mine"> {
+    const taken = await this.taken(args);
+    if (args.place) {
+      if (taken.mine) return "mine";
+      return taken.exclusive || taken.places >= args.place.capacity
+        ? "full"
+        : "free";
+    }
+    return taken.places || taken.exclusive ? "full" : "free";
+  }
+  private async taken(args: {
+    tenantId: string;
+    unitIds: readonly string[];
+    start: Temporal.Instant;
+    end: Temporal.Instant;
+    place: { capacity: number; userId: string } | null;
+  }) {
     // Slots follow the facility's grid, so the rows that overlap the interval are the places taken.
     const { rows } = await this.db.query<{
       places: number;
@@ -38,18 +86,34 @@ export class PostgresBookingUnitRepository extends BookingUnitRepository {
         args.place?.userId ?? null,
       ],
     );
-    const taken = rows[0]!;
+    return rows[0]!;
+  }
+  private async occupy(
+    owner: "booking_id" | "waitlist_entry_id",
+    ownerId: string,
+    args: {
+      tenantId: string;
+      unitIds: readonly string[];
+      start: Temporal.Instant;
+      end: Temporal.Instant;
+      place: { capacity: number; userId: string } | null;
+    },
+  ) {
+    const taken = await this.taken(args);
     if (args.place) {
       if (taken.mine) return Result.err(failure("already_booked"));
       if (taken.exclusive || taken.places >= args.place.capacity)
         return Result.err(failure("slot_taken"));
-    } else if (taken.places) return Result.err(failure("slot_taken"));
+    } else if (taken.places || taken.exclusive)
+      return Result.err(failure("slot_taken"));
+    // Checked before inserting: a violated constraint would abort the whole transaction, and a
+    // hold is placed inside the command that freed the place. The constraint stays as the guard.
     try {
       await this.db.query(
-        "INSERT INTO booking_units (tenant_id,booking_id,unit_id,starts_at,ends_at,shared) SELECT $1,$2,unit,$4,$5,$6 FROM unnest($3::uuid[]) AS unit",
+        `INSERT INTO booking_units (tenant_id,${owner},unit_id,starts_at,ends_at,shared) SELECT $1,$2,unit,$4,$5,$6 FROM unnest($3::uuid[]) AS unit`,
         [
           args.tenantId,
-          args.bookingId,
+          ownerId,
           [...args.unitIds],
           args.start.toString(),
           args.end.toString(),
@@ -63,11 +127,5 @@ export class PostgresBookingUnitRepository extends BookingUnitRepository {
         return Result.err(failure("slot_taken"));
       throw error;
     }
-  }
-  async release(tenantId: string, bookingId: string) {
-    await this.db.query(
-      "DELETE FROM booking_units WHERE tenant_id=$1 AND booking_id=$2",
-      [tenantId, bookingId],
-    );
   }
 }

@@ -604,3 +604,124 @@ test("should count the booking funnel when the council has analytics on", async 
     path: `/app/vilaverde/instalacions/${facility.id}`,
   });
 });
+describe("Facility details with a waiting list (#96)", () => {
+  const waiting = { ...municipality, waitlistMaxEntries: 3 };
+  test("should let a signed-in person wait for a full slot and say their place in the queue", async () => {
+    stubShell(true);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [waiting],
+    });
+    stubAvailability(facility, () => [{ ...slot, status: "booked" }]);
+    const join = stubJsonResponse({
+      path: "*/v2/citizen/waitlist",
+      method: "POST",
+      response: {
+        id: "60000000-0000-4000-8000-000000000001",
+        facilityId: facility.id,
+        resourceId: facility.id,
+        ...slot,
+        status: "waiting",
+        offerExpiresAt: null,
+        createdAt: "2026-10-18T09:00:00Z",
+      },
+      status: 201,
+    });
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    // The full slot says so in text and can still be opened to wait for it.
+    await page
+      .getByRole("button", { name: "10:00 Reservada Lista de espera" })
+      .click();
+    const dialog = page.getByRole("dialog", { name: "Quenda ocupada" });
+    await expect.element(dialog.getByText(/durante 30 minutos/)).toBeVisible();
+    stubJsonResponse({
+      path: "*/v2/citizen/waitlist",
+      response: [
+        {
+          id: "60000000-0000-4000-8000-000000000001",
+          facilityId: facility.id,
+          facilityName: facility.name,
+          resourceId: facility.id,
+          resourceName: facility.name,
+          ...slot,
+          status: "waiting",
+          offerExpiresAt: null,
+          position: 2,
+          createdAt: "2026-10-18T09:00:00Z",
+        },
+      ],
+    });
+    await dialog
+      .getByRole("button", { name: "Avisarme se queda libre" })
+      .click();
+    await expect
+      .element(dialog.getByRole("status"))
+      .toHaveTextContent("Xa estás na lista de espera. Posto 2.");
+    expect(join.spy.mock.calls[0][0].body).toEqual({
+      id: expect.any(String) as string,
+      facilityId: facility.id,
+      start: slot.start,
+    });
+    await dialog.getByRole("button", { name: "De acordo" }).click();
+    await expect
+      .element(
+        page.getByRole("button", { name: "10:00 Reservada Estás na lista" }),
+      )
+      .toBeVisible();
+  });
+  test("should ask a signed-out person to sign in before waiting", async () => {
+    stubShell(false);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [waiting],
+    });
+    stubAvailability(facility, () => [{ ...slot, status: "booked" }]);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await page
+      .getByRole("button", { name: "10:00 Reservada Lista de espera" })
+      .click();
+    await expect
+      .element(
+        page
+          .getByRole("dialog", { name: "Quenda ocupada" })
+          .getByRole("button", { name: "Entrar" }),
+      )
+      .toBeVisible();
+  });
+  test("should not offer the waiting list for a slot the person already booked", async () => {
+    stubShell(true);
+    stubJsonResponse({
+      path: "*/v2/public/municipalities",
+      response: [waiting],
+    });
+    stubAvailability(facility, () => [{ ...slot, status: "booked" }]);
+    stubJsonResponse({
+      path: "*/v2/citizen/bookings",
+      response: [
+        {
+          id: "booking-1",
+          facilityId: facility.id,
+          resourceId: facility.id,
+          ...slot,
+          status: "confirmed",
+        },
+      ],
+    });
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await expect
+      .element(page.getByRole("button", { name: "10:00 Reservada" }))
+      .toBeDisabled();
+  });
+  test("should keep full slots disabled when the council has no waiting list", async () => {
+    stubShell(true);
+    stubAvailability(facility, () => [{ ...slot, status: "booked" }]);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await expect
+      .element(page.getByRole("button", { name: "10:00 Reservada" }))
+      .toBeDisabled();
+  });
+});

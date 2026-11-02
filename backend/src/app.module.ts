@@ -19,6 +19,7 @@ import { CalendarsModule } from "./v2/modules/calendars/calendars.module";
 import { PortabilityModule } from "./v2/modules/portability/portability.module";
 import { OpenDataModule } from "./v2/modules/open-data/open-data.module";
 import { AnalyticsModule } from "./v2/modules/analytics/analytics.module";
+import { WaitlistModule } from "./v2/modules/waitlist/waitlist.module";
 @Module({
   imports: [
     SharedModule,
@@ -28,6 +29,7 @@ import { AnalyticsModule } from "./v2/modules/analytics/analytics.module";
     FacilitiesModule,
     TariffsModule,
     BookingsModule,
+    WaitlistModule,
     InsightsModule,
     AccountModule,
     AuditModule,

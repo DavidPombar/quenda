@@ -11,6 +11,7 @@ const KIND_LABELS: Record<NoticeKind, TextKey> = {
   cancellation: "noticeKindCancellation",
   reminder: "noticeKindReminder",
   penalty: "noticeKindPenalty",
+  waitlist: "noticeKindWaitlist",
 };
 // The link only opens this page; a click confirms, so mail scanners that follow links change nothing.
 export function useUnsubscribeController() {

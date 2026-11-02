@@ -99,7 +99,8 @@ export interface ExportedCategory {
 }
 export interface ExportedNotification {
   id: string;
-  bookingId: string;
+  /** Null for a waiting-list offer (#96). */
+  bookingId: string | null;
   kind:
     | "confirmed"
     | "rescheduled"
@@ -108,12 +109,26 @@ export interface ExportedNotification {
     | "no_show"
     | "blocked"
     | "unblocked"
-    | "reminder";
+    | "reminder"
+    | "waitlist_offer";
   facilityName: string;
   resourceId: string;
   resourceName: string;
   createdAt: Temporal.Instant;
   details: Record<string, unknown> | null;
+}
+/** A waiting-list entry (#96); entries of slots that have ended are already deleted. */
+export interface ExportedWaitlistEntry {
+  id: string;
+  facilityId: string;
+  facilityName: string;
+  resourceId: string;
+  resourceName: string;
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  status: "waiting" | "offered" | "accepted" | "expired" | "left" | "closed";
+  createdAt: Temporal.Instant;
+  offeredAt: Temporal.Instant | null;
 }
 export interface ExportedBlock {
   start: Temporal.Instant;
@@ -147,5 +162,6 @@ export interface AccountExport {
   pushDevices: ExportedPushDevice[];
   messages: ExportedMessage[];
   blocks: ExportedBlock[];
+  waitlist: ExportedWaitlistEntry[];
   auditEvents: ExportedAuditEvent[];
 }

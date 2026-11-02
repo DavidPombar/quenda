@@ -18,6 +18,8 @@ export type EditableSettings = Pick<
   | "noShowLimit"
   | "noShowWindowDays"
   | "noShowBlockDays"
+  | "waitlistMaxEntries"
+  | "waitlistOfferMinutes"
   | "dataLicense"
   | "dir3Code"
   | "analyticsEnabled"

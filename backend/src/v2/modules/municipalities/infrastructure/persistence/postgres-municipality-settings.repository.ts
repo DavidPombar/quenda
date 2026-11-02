@@ -23,6 +23,8 @@ const columns: Record<
   noShowLimit: "no_show_limit",
   noShowWindowDays: "no_show_window_days",
   noShowBlockDays: "no_show_block_days",
+  waitlistMaxEntries: "waitlist_max_entries",
+  waitlistOfferMinutes: "waitlist_offer_minutes",
   dataLicense: "data_license",
   dir3Code: "dir3_code",
   analyticsEnabled: "analytics_enabled",
