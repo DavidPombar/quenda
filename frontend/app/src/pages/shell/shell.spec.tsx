@@ -25,6 +25,38 @@ describe("Citizen sign-in", () => {
       .element(page.getByRole("button", { name: /^Entrar con / }))
       .not.toBeInTheDocument();
   });
+  test("should move focus to the page heading once the person signs in", async () => {
+    stubShell(false, { demo: true, oidc: null });
+    await commands.navigate("/app/vilaverde/instalacions");
+    await render(<App />);
+    await openSignIn();
+    await page.getByText("Lin e acepto o aviso de privacidade").click();
+    const session = {
+      userId: "10000000-0000-4000-8000-000000000011",
+      tenantId: municipality.id,
+      displayName: "Alex",
+      role: "citizen",
+    };
+    stubJsonResponse({
+      path: "*/v2/public/sessions",
+      method: "POST",
+      response: session,
+      status: 201,
+    });
+    stubJsonResponse({
+      path: "*/v2/public/session",
+      response: { session, expiresAt: null },
+    });
+    stubJsonResponse({
+      path: "*/v2/citizen/me",
+      method: "PATCH",
+      response: {},
+    });
+    await page.getByRole("button", { name: "Entrar como cidadanía" }).click();
+    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+    // "Entrar" is gone, so focus cannot return to it (WCAG 2.4.3).
+    await expect.element(page.getByRole("heading", { level: 1 })).toHaveFocus();
+  });
   test("should enable eID sign-in only after the privacy notice is accepted", async () => {
     stubShell(false, { demo: true, oidc: { label: "Cl@ve" } });
     await commands.navigate("/app/vilaverde/instalacions");

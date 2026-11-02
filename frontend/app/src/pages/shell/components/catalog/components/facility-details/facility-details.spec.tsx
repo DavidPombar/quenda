@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, test, expect } from "vitest";
-import { page, commands } from "vitest/browser";
+import { page, commands, userEvent } from "vitest/browser";
 import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
@@ -56,6 +56,8 @@ describe("Facility details with a single court", () => {
       )
       .toMatch(/\. Quendas libres: 1\./);
     await page.getByRole("button", { name: "10:00 Libre" }).click();
+    // Refetched after the booking: the slot is now taken.
+    stubAvailability(facility, () => [{ ...slot, status: "booked" }]);
     await page.getByRole("button", { name: "Confirmar reserva" }).click();
     await expect
       .element(
@@ -72,6 +74,12 @@ describe("Facility details with a single court", () => {
     await expect
       .element(page.getByRole("combobox", { name: "Pista" }))
       .not.toBeInTheDocument();
+    // The booked slot can no longer take focus, so closing returns to the slot list.
+    await userEvent.keyboard("{Escape}");
+    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole("heading", { name: "Escolle a túa quenda" }))
+      .toHaveFocus();
     expect(create.spy.mock.calls[0][0].body).toEqual({
       id: expect.any(String) as string,
       facilityId: facility.id,

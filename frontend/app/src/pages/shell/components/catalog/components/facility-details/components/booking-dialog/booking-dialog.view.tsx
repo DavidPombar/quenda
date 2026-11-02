@@ -20,6 +20,7 @@ import type {
   Tariff,
 } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
+import { keepFocus } from "@/services/page.service";
 export function BookingDialog(p: {
   open: boolean;
   slot: Slot | null;
@@ -48,6 +49,7 @@ export function BookingDialog(p: {
       onOpenChange={(event) => {
         if (!event.open && !p.pending) p.onClose();
       }}
+      onExitComplete={() => keepFocus("#slots-title")}
       placement="center"
       scrollBehavior="inside"
     >

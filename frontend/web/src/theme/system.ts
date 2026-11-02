@@ -84,6 +84,8 @@ const config = defineConfig({
           muted: { value: "#e4e8e3" },
           subtle: { value: "#e4e8e3" },
           emphasized: { value: "#a9b2ab" },
+          // Form control outline: at least 3:1 on paper and ground (WCAG 1.4.11).
+          control: { value: "{colors.gray.500}" },
           error: { value: "#a3322a" },
         },
         court: {
@@ -183,6 +185,7 @@ const config = defineConfig({
           size: {
             md: { textStyle: "md", px: "3.5", "--input-height": "sizes.11" },
           },
+          variant: { outline: { borderColor: "border.control" } },
         },
         defaultVariants: { size: "md" },
       },
@@ -194,12 +197,23 @@ const config = defineConfig({
           focusRingWidth: "3px",
           _focusVisible: { borderColor: "court.600" },
         },
-        variants: { size: { md: { textStyle: "md", px: "3.5", py: "2.5" } } },
+        variants: {
+          size: { md: { textStyle: "md", px: "3.5", py: "2.5" } },
+          variant: { outline: { borderColor: "border.control" } },
+        },
         defaultVariants: { size: "md" },
       },
       spinner: { base: { color: "court.600" } },
     },
     slotRecipes: {
+      checkbox: {
+        slots: ["root", "label", "control", "indicator", "group"],
+        variants: {
+          variant: {
+            solid: { control: { borderColor: "border.control" } },
+          },
+        },
+      },
       nativeSelect: {
         slots: ["root", "field", "indicator"],
         base: {
@@ -219,6 +233,7 @@ const config = defineConfig({
               field: { textStyle: "md", ps: "3.5", pe: "9" },
             },
           },
+          variant: { outline: { field: { borderColor: "border.control" } } },
         },
         defaultVariants: { size: "md" },
       },

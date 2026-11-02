@@ -2,6 +2,7 @@
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import type { TextKey } from "@/services/i18n.service";
+import { keepFocus } from "@/services/page.service";
 import { StaffSignIn } from "@/components/staff-sign-in/staff-sign-in.view";
 export function SessionDialog(props: {
   open: boolean;
@@ -24,6 +25,7 @@ export function SessionDialog(props: {
       onOpenChange={(event) => {
         if (!event.open) props.onClose();
       }}
+      onExitComplete={() => keepFocus()}
       placement="center"
     >
       <Portal>

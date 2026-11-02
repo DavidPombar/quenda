@@ -7,7 +7,7 @@ previstas e grao de cumprimento». This document is that degree of conformance: 
 certification, and Quenda does not claim full conformance. The accessibility statement of each
 municipality (#9) says «parcialmente conforme» until the pending reviews are done.
 
-Last review: 2026-11-01 (issue #68), updated as each gap is fixed.
+Last review: 2026-11-01 (issue #68), updated as each gap is fixed (last on 2026-11-02, #89–#91).
 
 ## Legal frame
 
@@ -82,10 +82,10 @@ Paths are relative to the repository. FD is
 | 1.4.1 Use of colour | A | 9.1.4.1 | Manual | Meets | Slot states are written as text («Libre» or the status) plus a border style (`FD/facility-details.view.tsx`, `styles.css` `.time-slot`). This rule is in `design-guidelines.md` |
 | 1.4.2 Audio control | A | 9.1.4.2 | — | N/A | No audio |
 | 1.4.3 Contrast (minimum) | AA | 9.1.4.3 | Auto + manual | Partial | axe `color-contrast` passes on 50 scans. Sport colours are at least 4.5:1 (design guidelines). Still to review by eye: text over photos and the map, which axe marks as incomplete |
-| 1.4.4 Resize text | AA | 9.1.4.4 | Semi | Partial | No fixed font sizes in `px` for body text. A 640 px viewport (200 % zoom of 1280 px) works on the website, the catalogue, the facility page, «As miñas reservas» and the operator area. The signed-in backoffice scrolls sideways at 640 px (#90). Other screens: #77 |
+| 1.4.4 Resize text | AA | 9.1.4.4 | Semi | Partial | No fixed font sizes in `px` for body text. A 640 px viewport (200 % zoom of 1280 px) works on the website, the catalogue, the facility page, «As miñas reservas», the operator area and the signed-in backoffice (#90). The smoke test checks 640 px with 320 and 390 px. Other screens: #77 |
 | 1.4.5 Images of text | AA | 9.1.4.5 | Manual | Meets | Only municipal logos (exempt as logotypes) |
-| 1.4.10 Reflow | AA | 9.1.4.10 | Semi | Partial | No page-level horizontal scroll at 320 and 390 px on the website, its statement, the catalogue, history, the resource grid, day bookings, management and operator analytics (smoke test). Tables scroll inside their own region, which is allowed for two-dimensional content. The bottom bar grows instead of clipping (#75). **Gap:** between 561 and 800 px the backoffice navigation neither wraps nor scrolls, and every signed-in backoffice page is 1351 px wide (#90) |
-| 1.4.11 Non-text contrast | AA | 9.1.4.11 | Manual | Gap | The focus ring is 3 px `#c25e00`. **Gap:** the border of text fields, selects and textareas is `--line` `#d8ddd6`, 1.38:1 on white, and it is the only cue to the field (#91). Free slots are identified by their text and booked ones are disabled, so they don't depend on the border |
+| 1.4.10 Reflow | AA | 9.1.4.10 | Semi | Partial | No page-level horizontal scroll at 320, 390 and 640 px on the website, its statement, the catalogue, history, the resource grid, day bookings, management and operator analytics (smoke test). Tables scroll inside their own region, which is allowed for two-dimensional content. The bottom bar grows instead of clipping (#75). Between 561 and 800 px the backoffice navigation wraps onto two or three rows, and no signed-in backoffice page scrolls sideways at 800, 640, 561 or 320 px (#90, 2026-11-02) |
+| 1.4.11 Non-text contrast | AA | 9.1.4.11 | Manual | Meets | The focus ring is 3 px `#c25e00`. Text fields, selects, textareas, the colour picker and unchecked checkboxes have a `border.control` / `--control-border` `#76837b` border: 3.96:1 on white and 3.58:1 on `--ground` (#91, measured 2026-11-02 on «Axustes», the catalogue and the sign-in dialog). `--line` stays for decorative separators. Free slots are identified by their text and booked ones are disabled, so they don't depend on the border |
 | 1.4.12 Text spacing | AA | 9.1.4.12 | Semi | Partial | With the 1.4.12 stylesheet at 320 px nothing is clipped on the facility page, and the bottom bar grows (`min-height`) instead of clipping its labels (#75). Other screens: #77 |
 | 1.4.13 Content on hover or focus | AA | 9.1.4.13 | Manual | Meets | No custom tooltips or toasts. The map marker no longer has a hover-only tooltip (#73, #74). The remaining `title` attribute is shown by the browser, which this criterion doesn't cover |
 
@@ -101,7 +101,7 @@ Paths are relative to the repository. FD is
 | 2.3.1 Three flashes | A | 9.2.3.1 | Manual | Meets | No flashing content |
 | 2.4.1 Bypass blocks | A | 9.2.4.1 | Auto + manual | Meets | «Saltar ao contido» to `main#main` on every page of the website, the app, the backoffice (its home too, #75) and the operator area. Landmarks on every page |
 | 2.4.2 Page titled | A | 9.2.4.2 | Code + test | Meets | The website sets a title per page. The app and the backoffice name each page after its `h1`, then the municipality and «Quenda» (`frontend/*/src/services/page.service.ts`, `shell.spec.tsx`) (#69) |
-| 2.4.3 Focus order | A | 9.2.4.3 | Manual + test | Partial | Logical order on the catalogue and the facility page. Focus moves to the new page's `h1` after an in-app navigation, to the field of each new sign-in step, and to «Ver as miñas reservas» once a booking is confirmed (`shell.spec.tsx`, `staff.spec.tsx`, `facility-details.spec.tsx`, #70). **Gap:** focus falls to `body` after signing in from the dialog (app and backoffice) and after closing the booking confirmation, because the control that opened the dialog is gone (#89) |
+| 2.4.3 Focus order | A | 9.2.4.3 | Manual + test | Partial | Logical order on the catalogue and the facility page. Focus moves to the new page's `h1` after an in-app navigation, to the field of each new sign-in step, and to «Ver as miñas reservas» once a booking is confirmed (`shell.spec.tsx`, `staff.spec.tsx`, `facility-details.spec.tsx`, #70). When the control that opened a dialog is gone or disabled once it closes, focus moves to the page `h1` after signing in (app and backoffice) and to «Escolle a túa quenda» after the booking confirmation (#89, `shell.spec.tsx`, `management.spec.tsx`, `facility-details.spec.tsx`) |
 | 2.4.4 Link purpose (in context) | A | 9.2.4.4 | Auto + manual | Meets | axe `link-name` passes. Links are descriptive («Ver as miñas reservas», «Abrir no OpenStreetMap»). External links don't say they open a new tab (#74, advisory) |
 | 2.4.5 Multiple ways | AA | 9.2.4.5 | Manual | Meets | Navigation, the catalogue search and sport filters, the municipality selector, and footer links. The backoffice has its main navigation |
 | 2.4.6 Headings and labels | AA | 9.2.4.6 | Manual | Meets | Headings and labels describe their content. The map's zoom controls are named «Achegar» and «Afastar» (#74) |
@@ -135,11 +135,11 @@ Paths are relative to the repository. FD is
 | 4.1.3 Status messages | AA | 9.4.1.3 | Manual + test | Meets | `Feedback` uses `role="status"` or `alert`. The door page announces each scan with `aria-live="assertive"`. A confirmed booking is announced in a persistent status region, and so is the number of free slots when the day or court changes (#70) |
 
 **Summary**:
-- **Meets:** 32 criteria.
-- **Partial:** 10 criteria, pending the manual review with assistive technology (#77). Two of them have a known gap: 2.4.3 (#89) and 1.4.10 (#90).
-- **Gap:** 1.4.11 (#91).
+- **Meets:** 33 criteria.
+- **Partial:** 10 criteria, pending the manual review with assistive technology (#77). None has a known gap.
+- **Gap:** none.
 
-The review of 2026-11-01 (`accesibilidade` skill: 50 axe scans with no violations, keyboard, focus, 320 and 640 px, text spacing and border contrast) found #89–#91.
+The review of 2026-11-01 (`accesibilidade` skill: 50 axe scans with no violations, keyboard, focus, 320 and 640 px, text spacing and border contrast) found #89–#91, fixed on 2026-11-02.
 - **N/A:** 7 criteria.
 
 The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each council edits its statement in the backoffice. #78 (the sign-in code request waiting for the mail server) is fixed too, though it is not a WCAG criterion.
@@ -152,7 +152,7 @@ The gaps found in #68 (#69–#75, #79, #80) are fixed, and so is #76: each counc
 | Facility map | **Meets:** a keyboard-operable region with a name and a text alternative (the address and the OpenStreetMap link), zoom controls in the page's language, a marker that is only a picture, and a link that says it opens another tab (#73, #74) |
 | QR codes and the door page | **Meets:** the pass QR and the TOTP QR have a text alternative and the code is also given as text. The door page works without a camera (search and a check-in button for each booking) and announces results. **Not reviewed:** typing the printed code by hand |
 | Sign-in dialogs (email code, password and TOTP) | **Meets:** `autocomplete` and `inputMode`, time limits warned and extendable (#71), focus on each step (#70), errors tied to their field (#72). The code request no longer waits for the mail server (#78) |
-| Reflow and text spacing | Checked at 320 and 390 px on seven screens, at 320 px with the spacing stylesheet on the facility page, «As miñas reservas» and the bottom bar (#75), and at 640 px on the website, app and backoffice. **Gap:** the backoffice between 561 and 800 px (#90). Other screens: #77 |
+| Reflow and text spacing | Checked at 320 and 390 px on seven screens, at 320 px with the spacing stylesheet on the facility page, «As miñas reservas» and the bottom bar (#75), and at 640 px on the website, app and backoffice. The backoffice also at 800 and 561 px (#90). Other screens: #77 |
 | Dark mode | Not supported. WCAG doesn't require it; the theme respects the system's reduced motion setting |
 
 ## Review and next steps

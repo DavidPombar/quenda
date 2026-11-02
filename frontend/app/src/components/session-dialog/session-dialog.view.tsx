@@ -2,6 +2,7 @@
 import { Button, Checkbox, Dialog, Portal, Text } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import type { TextKey } from "@/services/i18n.service";
+import { keepFocus } from "@/services/page.service";
 import type { Locale } from "@/types/models";
 import { EmailSignIn } from "./components/email-sign-in/email-sign-in.view";
 export function SessionDialog(props: {
@@ -30,6 +31,7 @@ export function SessionDialog(props: {
       onOpenChange={(event) => {
         if (!event.open) props.onClose();
       }}
+      onExitComplete={() => keepFocus()}
       placement="center"
       scrollBehavior="inside"
     >

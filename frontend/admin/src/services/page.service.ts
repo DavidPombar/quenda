@@ -30,3 +30,17 @@ export function followPage(suffix: string, focus: boolean) {
     window.clearTimeout(timeout);
   };
 }
+
+// A dialog returns focus to the control that opened it. When that control is gone or disabled
+// after the dialog closes (signing in, a booked slot), focus would fall to the body; move it to a
+// heading instead so keyboard and screen reader users keep their place (WCAG 2.4.3).
+export function keepFocus(selector = "main h1") {
+  window.requestAnimationFrame(() => {
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    const target = document.querySelector<HTMLElement>(selector);
+    if (!target) return;
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  });
+}
