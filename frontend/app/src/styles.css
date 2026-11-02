@@ -418,7 +418,7 @@ main {
   outline: none !important;
 }
 /* The page heading takes focus after navigation only to announce the page; it is not a control. */
-main h1[tabindex="-1"] {
+main :is(h1, h2)[tabindex="-1"] {
   outline: none !important;
 }
 .page {

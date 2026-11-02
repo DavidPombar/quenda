@@ -36,6 +36,46 @@ test("should require municipal access when a citizen opens the backoffice", asyn
     .not.toBeInTheDocument();
 });
 
+test("should move focus to the page heading once a manager signs in", async () => {
+  stubShell();
+  await commands.navigate("/admin/vilaverde/xestion");
+  await render(<App />);
+  await page
+    .getByRole("banner")
+    .getByRole("button", { name: "Entrar", exact: true })
+    .click();
+  const session = {
+    userId: "manager",
+    tenantId: municipality.id,
+    displayName: "Uxía",
+    role: "manager",
+  };
+  stubJsonResponse({
+    path: "*/v2/public/sessions",
+    method: "POST",
+    response: session,
+    status: 201,
+  });
+  stubJsonResponse({ path: "*/v2/public/session", response: { session } });
+  stubJsonResponse({
+    path: "*/v2/manager/insights",
+    response: {
+      confirmed: 0,
+      cancelled: 0,
+      occupancy: 0,
+      facilities: 1,
+      byFacility: [],
+    },
+  });
+  await page.getByRole("button", { name: "Entrar como xestor/a" }).click();
+  await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+  await expect
+    .element(page.getByRole("button", { name: "Nova instalación" }))
+    .toBeVisible();
+  // "Entrar" is gone, so focus cannot return to it (WCAG 2.4.3).
+  await expect.element(page.getByRole("heading", { level: 1 })).toHaveFocus();
+});
+
 test("should save the selected sport, status and duration when a manager creates a facility", async () => {
   stubShell();
   stubJsonResponse({

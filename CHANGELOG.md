@@ -14,6 +14,14 @@ All notable changes to Quenda are documented here. The format follows
   runs the same setup as a public demo. Backups and retention stay in Compose (restic,
   off-site), not in the host's cron.
 
+### Fixed
+
+- Accessibility (T5): form fields and unchecked checkboxes get a `#76837b` border, 3.96:1 on
+  white (#91, WCAG 1.4.11). The backoffice navigation wraps between 561 and 800 px, so the
+  backoffice no longer scrolls sideways at 200 % zoom; the smoke test now also checks 640 px
+  (#90, 1.4.10). Focus moves to the page heading after signing in and to the slot list after the
+  booking confirmation, instead of falling to the page body (#89, 2.4.3).
+
 ### Added
 
 - Production deployment and operations (#27, R1, T4): `deploy/compose.prod.yml` with Caddy

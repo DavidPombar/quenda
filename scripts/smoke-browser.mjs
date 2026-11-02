@@ -16,10 +16,13 @@ await fs.mkdir(".dev-logs", { recursive: true });
 // Known violations, by scan and axe rule, each tracked in its own issue; any other fails.
 const knownViolations = {};
 const scans = [];
-/** WCAG 1.4.10: no page-level horizontal scroll at 320 px (and the usual 390 px phone). */
+/**
+ * WCAG 1.4.10 and 1.4.4: no page-level horizontal scroll at 320 px, the usual 390 px phone or
+ * 640 px (200 % zoom on a 1280 px screen).
+ */
 async function assertReflow(label) {
   const size = page.viewportSize();
-  for (const width of [320, 390]) {
+  for (const width of [320, 390, 640]) {
     await page.setViewportSize({ width, height: 844 });
     assert.equal(
       await page.evaluate(
@@ -532,7 +535,7 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   assert.deepEqual(errors, [], "Browser runtime errors");
   console.log(
-    `Website → citizen app → admin → operator navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export, reflow at 320 and 390 px and ${scans.length} WCAG 2.1 A/AA scans passed${Object.keys(knownViolations).length ? " (known violations: see docs/architecture/accessibility.md)" : ""}.`,
+    `Website → citizen app → admin → operator navigation, role isolation, deep-link reloads, native selects and real booking flow passed. Calendar downloads, subscription revocation, municipal data export, reflow at 320, 390 and 640 px and ${scans.length} WCAG 2.1 A/AA scans passed${Object.keys(knownViolations).length ? " (known violations: see docs/architecture/accessibility.md)" : ""}.`,
   );
 } finally {
   await browser.close();
