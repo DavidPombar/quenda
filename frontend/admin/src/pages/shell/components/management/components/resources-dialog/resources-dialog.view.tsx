@@ -62,7 +62,10 @@ export function ResourcesDialog(p: {
                         <Field.Root
                           className="field"
                           required
-                          invalid={c.invalid && !row.name.trim()}
+                          invalid={
+                            c.invalid === "resourceNameRequired" &&
+                            !row.name.trim()
+                          }
                         >
                           <Field.Label>{t("resourceName")}</Field.Label>
                           <Input
@@ -101,6 +104,33 @@ export function ResourcesDialog(p: {
                               </NativeSelect.Field>
                               <NativeSelect.Indicator />
                             </NativeSelect.Root>
+                          </Field.Root>
+                        )}
+                        {!c.hasParts(row.id) && (
+                          <Field.Root
+                            className="field"
+                            invalid={!c.validCapacity(row.capacity)}
+                          >
+                            <Field.Label>{t("resourceCapacity")}</Field.Label>
+                            <Input
+                              type="number"
+                              inputMode="numeric"
+                              min={2}
+                              max={200}
+                              step={1}
+                              value={row.capacity ?? ""}
+                              onChange={(event) =>
+                                c.update(row.id, {
+                                  capacity:
+                                    event.target.value === ""
+                                      ? null
+                                      : Number(event.target.value),
+                                })
+                              }
+                            />
+                            <Field.HelperText>
+                              {t("resourceCapacityHint")}
+                            </Field.HelperText>
                           </Field.Root>
                         )}
                         <label className="checkbox-field">
@@ -156,7 +186,7 @@ export function ResourcesDialog(p: {
                 </Button>
                 {c.invalid && (
                   <p role="alert" className="error-text">
-                    {t("resourceNameRequired")}
+                    {t(c.invalid)}
                   </p>
                 )}
                 {c.mutation.error && (

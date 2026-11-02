@@ -83,15 +83,15 @@ Following the Münster and Paris open data, `occupancy.json` and `occupancy.csv`
 facilities are used, as decided in #21: one cell per facility × ISO 8601 week × ISO weekday ×
 local hour (municipality time zone), with no minimum threshold. Each cell has:
 
-| Column                                        | Meaning                                                                         |
-| --------------------------------------------- | ------------------------------------------------------------------------------- |
-| `facility_id`, `facility_name`, `sport`       | The facility, as in `facilities.csv`                                            |
-| `iso_year`, `iso_week`, `week_start`          | ISO week-numbering year and week, and its Monday                                |
-| `weekday`, `hour`                             | ISO weekday (1 = Monday) and local hour 0–23                                    |
-| `open_minutes`                                | Open time in that hour, times the active courts                                 |
-| `booked_minutes`                              | Open time held by confirmed bookings (attended or upcoming)                     |
-| `no_show_minutes`                             | Open time held by bookings marked as no-shows: booked but not used              |
-| `occupancy_pct`                               | `booked_minutes` over `open_minutes`, rounded percent                           |
+| Column                                  | Meaning                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `facility_id`, `facility_name`, `sport` | The facility, as in `facilities.csv`                                   |
+| `iso_year`, `iso_week`, `week_start`    | ISO week-numbering year and week, and its Monday                       |
+| `weekday`, `hour`                       | ISO weekday (1 = Monday) and local hour 0–23                           |
+| `open_minutes`                          | Open time in that hour, times the active courts (or their places, #95) |
+| `booked_minutes`                        | Open time held by confirmed bookings (attended or upcoming)            |
+| `no_show_minutes`                       | Open time held by bookings marked as no-shows: booked but not used     |
+| `occupancy_pct`                         | `booked_minutes` over `open_minutes`, rounded percent                  |
 
 Only cells with open time are listed, so a missing hour means "closed", not "0 %". Open time is
 the opening calendar while the facility was active, minus the municipal holidays it follows. The

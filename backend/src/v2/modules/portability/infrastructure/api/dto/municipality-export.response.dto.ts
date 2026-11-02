@@ -69,6 +69,12 @@ class ExportedResourceDTO {
   })
   parentId!: string | null;
   @ApiProperty() active!: boolean;
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: "Places of a shared court; null when exclusive",
+  })
+  capacity!: number | null;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
 }
 class ExportedUserDTO {

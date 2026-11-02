@@ -4,7 +4,7 @@ import { isValidHierarchy, units } from "./resource-units";
 export type ResourceDraft = Pick<
   Resource,
   "id" | "name" | "parentId" | "active"
->;
+> & { capacity?: number | null };
 export interface ResourceUsage {
   resourceId: string;
   /** A confirmed reservation that has not ended books it or occupies it as a unit. */
@@ -25,21 +25,35 @@ const MAX_NAME = 80;
 /**
  * Checks a facility's complete new set of courts against the current one (M1). Courts with
  * upcoming reservations cannot be removed, taken out of service, moved under another court or
- * split, because the reservations would no longer match the units they hold. A court with any
+ * split, because the reservations would no longer match the units they hold. Their capacity (#95)
+ * can only grow: removing, adding or lowering it would leave places that no longer fit. Only courts
+ * without parts take a capacity. A court with any
  * reservation history cannot be removed either; it can be taken out of service instead.
  */
 export function planResources(
   current: readonly Resource[],
-  requested: readonly ResourceDraft[],
+  drafts: readonly ResourceDraft[],
   usage: readonly ResourceUsage[],
 ): { plan: ResourcePlan } | { error: ResourcePlanError } {
+  const requested = drafts.map((item) => ({
+    ...item,
+    capacity: item.capacity ?? null,
+  }));
   const names = requested.map((item) => item.name.trim().toLocaleLowerCase());
   if (
     !requested.length ||
     names.some((name) => !name || name.length > MAX_NAME) ||
     new Set(names).size !== names.length ||
     new Set(requested.map((item) => item.id)).size !== requested.length ||
-    !isValidHierarchy(requested)
+    !isValidHierarchy(requested) ||
+    requested.some(
+      (item) =>
+        item.capacity !== null &&
+        (!Number.isInteger(item.capacity) ||
+          item.capacity < 2 ||
+          item.capacity > 200 ||
+          requested.some((other) => other.parentId === item.id)),
+    )
   )
     return { error: { code: "validation" } };
   const used = new Map(usage.map((item) => [item.resourceId, item]));
@@ -63,7 +77,13 @@ export function planResources(
       !next.active ||
       next.parentId !== resource.parentId ||
       before.length !== after.length ||
-      before.some((id) => !after.includes(id))
+      before.some((id) => !after.includes(id)) ||
+      (next.capacity !== (resource.capacity ?? null) &&
+        !(
+          next.capacity !== null &&
+          resource.capacity != null &&
+          next.capacity > resource.capacity
+        ))
     )
       return { error: { code: "resource_in_use", resourceId: resource.id } };
   }
@@ -81,6 +101,7 @@ export function planResources(
           name: item.name.trim(),
           parentId: item.parentId,
           active: item.active,
+          capacity: item.capacity,
           position: position.get(item.id)!,
         })),
       remove: current

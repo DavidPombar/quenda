@@ -24,6 +24,12 @@ All notable changes to Quenda are documented here. The format follows
 
 ### Added
 
+- Shared capacity (#95, C2, M1): a court without parts can take a capacity of 2–200 places, so
+  several people book the same slot of a pool lane or a room. The server counts places under the
+  facility lock and refuses a second place for the same person (`already_booked`); the citizen
+  app says how many places are left, and indicators count occupancy by place. The demo opens
+  Portomar's pool with four lanes of six places.
+
 - Production deployment and operations (#27, R1, T4): `deploy/compose.prod.yml` with Caddy
   TLS, nightly encrypted restic backups with pruning and checks, a daily retention job and
   migrations on start; and an operations guide in `docs/operacion/`

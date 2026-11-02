@@ -25,6 +25,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "O contrasinal debe ter polo menos 12 caracteres e non pode ser o nome de usuario.",
     login_taken: "Xa hai unha conta con ese nome de usuario.",
     slot_taken: "Esta quenda xa está reservada. Escolle outra hora.",
+    already_booked: "Xa tes unha praza nesta quenda.",
     outside_opening: "A instalación non está aberta nesa quenda.",
     booking_limit: "Acadaches o límite de reservas activas.",
     booking_window: "A data está fóra do prazo de reserva.",
@@ -44,7 +45,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     resource_unavailable:
       "Esta pista está fóra de servizo. Escolle outra pista.",
     resource_in_use:
-      "Unha pista con reservas pendentes non se pode quitar, poñer fóra de servizo, mover nin dividir ata que esas reservas pasen ou se cancelen.",
+      "Unha pista con reservas pendentes non se pode quitar, poñer fóra de servizo, mover, dividir nin baixarlle o aforo ata que esas reservas pasen ou se cancelen. O aforo si se pode subir.",
     resource_has_history:
       "Unha pista con reservas pasadas non se pode quitar, para conservar o historial. Ponla fóra de servizo.",
     insufficient_contrast:
@@ -95,6 +96,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "La contraseña debe tener al menos 12 caracteres y no puede ser el nombre de usuario.",
     login_taken: "Ya hay una cuenta con ese nombre de usuario.",
     slot_taken: "Este turno ya está reservado. Elige otra hora.",
+    already_booked: "Ya tienes una plaza en este turno.",
     outside_opening: "La instalación no está abierta en ese turno.",
     booking_limit: "Has alcanzado el límite de reservas activas.",
     booking_window: "La fecha está fuera del plazo de reserva.",
@@ -114,7 +116,7 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
     resource_unavailable:
       "Esta pista está fuera de servicio. Elige otra pista.",
     resource_in_use:
-      "Una pista con reservas pendientes no se puede quitar, poner fuera de servicio, mover ni dividir hasta que esas reservas pasen o se cancelen.",
+      "Una pista con reservas pendientes no se puede quitar, poner fuera de servicio, mover, dividir ni bajarle el aforo hasta que esas reservas pasen o se cancelen. El aforo sí se puede subir.",
     resource_has_history:
       "Una pista con reservas pasadas no se puede quitar, para conservar el historial. Ponla fuera de servicio.",
     insufficient_contrast:

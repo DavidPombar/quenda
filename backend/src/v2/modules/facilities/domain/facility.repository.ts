@@ -109,6 +109,8 @@ export abstract class FacilityRepository {
       start: Temporal.Instant;
       end: Temporal.Instant;
       season: boolean;
+      /** One shared place of a resource with a capacity (#95). */
+      shared: boolean;
     }[]
   >;
 }

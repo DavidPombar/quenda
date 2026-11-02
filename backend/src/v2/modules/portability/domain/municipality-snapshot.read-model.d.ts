@@ -96,6 +96,8 @@ export interface MunicipalitySnapshot {
     position: number;
     parentId: string | null;
     active: boolean;
+    /** Places of a shared court (#95); null when exclusive. */
+    capacity: number | null;
     createdAt: Temporal.Instant;
   }[];
   users: {

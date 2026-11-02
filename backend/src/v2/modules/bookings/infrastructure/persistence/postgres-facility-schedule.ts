@@ -24,7 +24,7 @@ export class PostgresFacilitySchedule extends FacilitySchedule {
   async resources(tenantId: string, facilityId: string) {
     return (
       await this.db.query<Resource>(
-        'SELECT id, tenant_id AS "tenantId", facility_id AS "facilityId", name, position, parent_id AS "parentId", active FROM resources WHERE tenant_id=$1 AND facility_id=$2 ORDER BY position, name',
+        'SELECT id, tenant_id AS "tenantId", facility_id AS "facilityId", name, position, parent_id AS "parentId", active, capacity FROM resources WHERE tenant_id=$1 AND facility_id=$2 ORDER BY position, name',
         [tenantId, facilityId],
       )
     ).rows;

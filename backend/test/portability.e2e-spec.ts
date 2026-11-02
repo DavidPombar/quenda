@@ -148,6 +148,27 @@ describe("Municipality data portability", () => {
       status: "cancelled",
     }).expect(204);
 
+    // A pool lane with shared places (#95): its places are rebuilt as shared units.
+    const pool = randomUUID();
+    await post(manager, "manager/facilities", {
+      id: pool,
+      name: "Portable pool",
+      sport: "swimming",
+      address: "Test street",
+      description: "Test facility",
+      accessible: true,
+      status: "active",
+      slotMinutes: 60,
+      priceCents: 0,
+      openingCalendar: openingCalendar(pool),
+      rules: "Swimming cap required",
+    }).expect(201);
+    await db.query("UPDATE resources SET capacity=4 WHERE id=$1", [pool]);
+    await post(citizen, "citizen/bookings", {
+      id: randomUUID(),
+      facilityId: pool,
+      start: start(2, 11),
+    }).expect(201);
     await post(citizen, `citizen/bookings/${kept}/access-pass`, {}).expect(200);
     await manager
       .put("/v2/manager/access-webhook")

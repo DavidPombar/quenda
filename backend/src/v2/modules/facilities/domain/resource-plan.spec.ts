@@ -14,6 +14,7 @@ const resource = (
   position: 0,
   parentId,
   active,
+  capacity: null,
 });
 const hall = [
   resource("whole"),
@@ -59,6 +60,7 @@ describe("Resource plan", () => {
             name: "Pista completa",
             parentId: null,
             active: true,
+            capacity: null,
             position: 1,
           },
           {
@@ -66,6 +68,7 @@ describe("Resource plan", () => {
             name: "Tercio A",
             parentId: "whole",
             active: true,
+            capacity: null,
             position: 0,
           },
         ],
@@ -151,6 +154,45 @@ describe("Resource plan", () => {
         ),
         usage,
       ),
+    ).toHaveProperty("plan");
+  });
+  it("should give a capacity only to courts without parts, between 2 and 200", () => {
+    const pool = [{ ...resource("whole") }, resource("lane", "whole")];
+    const drafts = (capacity: Record<string, number | null>) =>
+      pool.map((r) => ({ ...draft(r), capacity: capacity[r.id] ?? null }));
+    expect(planResources(pool, drafts({ lane: 6 }), [])).toHaveProperty("plan");
+    for (const capacity of [
+      { whole: 6 },
+      { lane: 1 },
+      { lane: 201 },
+      { lane: 2.5 },
+    ])
+      expect(planResources(pool, drafts(capacity), [])).toEqual({
+        error: { code: "validation" },
+      });
+  });
+  it("should only let the capacity of a court with upcoming reservations grow", () => {
+    const lane = { ...resource("lane"), capacity: 6 };
+    const usage = [booked("lane")];
+    const withCapacity = (capacity: number | null) => [
+      { ...draft(lane), capacity },
+    ];
+    expect(planResources([lane], withCapacity(8), usage)).toHaveProperty(
+      "plan",
+    );
+    for (const capacity of [4, null])
+      expect(planResources([lane], withCapacity(capacity), usage)).toEqual({
+        error: { code: "resource_in_use", resourceId: "lane" },
+      });
+    expect(
+      planResources(
+        [resource("court")],
+        [{ ...draft(resource("court")), capacity: 6 }],
+        [booked("court")],
+      ),
+    ).toEqual({ error: { code: "resource_in_use", resourceId: "court" } });
+    expect(
+      planResources([lane], withCapacity(4), [free("lane")]),
     ).toHaveProperty("plan");
   });
 });

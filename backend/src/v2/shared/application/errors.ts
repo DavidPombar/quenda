@@ -12,6 +12,7 @@ export type ErrorCode =
   | "unauthorized"
   | "validation"
   | "slot_taken"
+  | "already_booked"
   | "outside_opening"
   | "booking_limit"
   | "booking_window"

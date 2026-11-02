@@ -8,7 +8,7 @@ import { FacilitySchedule } from "../../domain/facility-schedule";
 import { NotificationRepository } from "../../domain/notification.repository";
 import { Booking } from "../../domain/booking.entity";
 import { Resource } from "../../../facilities/domain/resource.entity";
-import { units } from "../../../facilities/domain/resource-units";
+import { placeOf } from "./create-booking.command";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
 import { ResourceChoiceError, chooseResource } from "../resource-choice";
 import { Principal, can } from "../../../../shared/application/principal";
@@ -30,6 +30,7 @@ export type UpdateBookingError =
   | AppError<"cancellation_deadline">
   | AppError<"booking_cancelled">
   | AppError<"slot_taken">
+  | AppError<"already_booked">
   | AppError<"id_reused">;
 @Injectable()
 export class UpdateBooking {
@@ -164,7 +165,7 @@ export class UpdateBooking {
         await this.units.replace({
           tenantId,
           bookingId: updated.id,
-          unitIds: units(choice.resource, resources),
+          ...placeOf(choice.resource, resources, existing.userId),
           start: updated.start,
           end: updated.end,
         })

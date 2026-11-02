@@ -10,6 +10,8 @@ export interface FacilityActivity {
   sport: string;
   /** Active leaf resources: whole-court reservations occupy every child unit. */
   unitIds?: readonly string[];
+  /** Places of each shared unit (#95); a unit absent here holds one booking at a time. */
+  capacities?: Readonly<Record<string, number>>;
   /** Courts and spaces in service, with their active units; reported one by one. */
   resources?: readonly {
     id: string;
@@ -176,6 +178,8 @@ function localRange(
  * Open time of one facility within the range (calendar while active, minus holidays), and the
  * parts of it held by bookings of some statuses (club season slots count as held). Overlaps are merged within each unit only, so
  * simultaneous independent courts count separately; open time counts once per unit.
+ * A shared unit (#95) counts open time once per place: each place booked adds its own time, and
+ * anything else on it (a club slot, the whole composite) holds every place.
  */
 function facilityTime(facility: FacilityActivity, range: Span) {
   const open = subtract(
@@ -183,23 +187,33 @@ function facilityTime(facility: FacilityActivity, range: Span) {
     facility.closed,
   );
   const unitIds = facility.unitIds ?? [facility.id];
+  const places = (unitId: string) => facility.capacities?.[unitId];
   const held = (
     statuses: readonly FacilityActivity["bookings"][number]["status"][],
     units: readonly string[] = unitIds,
   ) =>
-    units.flatMap((unitId) =>
-      intersect(
-        facility.bookings.filter(
-          (booking) =>
-            statuses.includes(booking.status) &&
-            (booking.unitIds ?? [facility.id]).includes(unitId),
-        ),
-        open,
-      ),
-    );
+    units.flatMap((unitId) => {
+      const bookings = facility.bookings.filter(
+        (booking) =>
+          statuses.includes(booking.status) &&
+          (booking.unitIds ?? [facility.id]).includes(unitId),
+      );
+      const capacity = places(unitId);
+      if (!capacity) return intersect(bookings, open);
+      return bookings.flatMap((booking) => {
+        const spans = intersect([booking], open);
+        return booking.status !== "season" && booking.resourceId === unitId
+          ? spans
+          : Array.from({ length: capacity }, () => spans).flat();
+      });
+    });
+  /** Open time multiplier: one per exclusive unit, its places for a shared one. */
+  const weight = (units: readonly string[]) =>
+    units.reduce((total, unitId) => total + (places(unitId) ?? 1), 0);
   return {
     open,
-    units: unitIds.length,
+    units: weight(unitIds),
+    weight,
     booked: held(["confirmed", "season"]),
     noShows: held(["no_show"]),
     /** Held time on some of the units, for the per-court report. */
@@ -306,7 +320,10 @@ export function occupancyReport(args: {
     return value;
   };
   const byFacility = args.facilities.map((facility): FacilityReport => {
-    const { open, units, booked, bookedIn } = facilityTime(facility, range);
+    const { open, units, booked, bookedIn, weight } = facilityTime(
+      facility,
+      range,
+    );
     for (const span of open)
       byLocalHour(span, args.timezone, (local, value) => {
         cell(local.dayOfWeek, local.hour).open += value * units;
@@ -339,7 +356,7 @@ export function occupancyReport(args: {
         ),
         ...figures(
           minutes(bookedIn(resource.unitIds)),
-          minutes(open) * resource.unitIds.length,
+          minutes(open) * weight(resource.unitIds),
         ),
       }));
     return {

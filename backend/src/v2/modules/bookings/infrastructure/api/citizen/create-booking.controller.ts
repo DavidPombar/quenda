@@ -55,6 +55,7 @@ export class CreateBookingController {
       | AppError<"booking_limit">
       | AppError<"booking_blocked">
       | AppError<"slot_taken">
+      | AppError<"already_booked">
       | AppError<"id_reused">
       | AppError<"resource_required">
       | AppError<"resource_unavailable">,
@@ -74,6 +75,7 @@ export class CreateBookingController {
         throw new ProblemException(422, error);
       case "booking_limit":
         throw new ProblemException(422, error);
+      case "already_booked":
       case "slot_taken":
         throw new ProblemException(409, error);
       case "id_reused":

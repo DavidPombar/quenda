@@ -14,6 +14,7 @@ const hall: Facility = {
       name: "Pista completa",
       parentId: null,
       active: true,
+      capacity: null,
       position: 0,
     },
   ],
@@ -95,6 +96,48 @@ describe("Courts and spaces of a facility", () => {
       ["Tercio B", facility.id],
     ]);
   });
+  test("should give the lanes of a pool a capacity, but not the whole pool (#95)", async () => {
+    stubManager([hall]);
+    const { spy } = stubJsonResponse({
+      path: `*/v2/manager/facilities/${facility.id}/resources`,
+      method: "PUT",
+      response: ({ body }: { body: unknown }) =>
+        (body as { resources: ResourceDraft[] }).resources.map(
+          (item, position) => ({ ...item, position }),
+        ),
+    });
+    const dialog = await open();
+    await dialog.getByRole("button", { name: "Engadir pista" }).click();
+    await dialog
+      .getByRole("textbox", { name: "Nome da pista" })
+      .last()
+      .fill("Rúa 1");
+    await dialog
+      .getByRole("combobox", { name: "Parte de" })
+      .last()
+      .selectOptions("Pista completa");
+    // The whole court now has parts, so only the lane keeps a capacity field.
+    const capacity = dialog.getByRole("spinbutton", { name: "Aforo (prazas)" });
+    expect(capacity.elements()).toHaveLength(1);
+    await capacity.fill("1");
+    await dialog.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(dialog.getByRole("alert"))
+      .toMatchTextContent("O aforo debe ser un número enteiro entre 2 e 200.");
+    expect(spy).not.toHaveBeenCalled();
+    await capacity.fill("6");
+    await dialog.getByRole("button", { name: "Gardar cambios" }).click();
+    await expect
+      .element(page.getByRole("status"))
+      .toMatchTextContent("Pistas gardadas.");
+    const { resources } = (
+      spy.mock.calls[0][0] as { body: { resources: ResourceDraft[] } }
+    ).body;
+    expect(resources.map((item) => [item.name, item.capacity])).toEqual([
+      ["Pista completa", null],
+      ["Rúa 1", 6],
+    ]);
+  });
   test("should ask for distinct names before sending anything", async () => {
     stubManager([hall]);
     const { spy } = stubJsonResponse({
@@ -125,6 +168,7 @@ describe("Courts and spaces of a facility", () => {
             name: "Tercio A",
             parentId: facility.id,
             active: true,
+            capacity: null,
             position: 1,
           },
         ],

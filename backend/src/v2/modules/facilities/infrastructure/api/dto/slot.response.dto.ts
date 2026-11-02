@@ -10,11 +10,25 @@ export class SlotResponseDTO {
     enum: ["available", "booked", "season", "past"],
   })
   status!: "available" | "booked" | "season" | "past";
+  @ApiProperty({
+    description: "Places of a shared court (#95); absent for exclusive courts",
+    required: false,
+  })
+  capacity?: number;
+  @ApiProperty({
+    description: "Places still free in the slot; absent for exclusive courts",
+    required: false,
+  })
+  remaining?: number;
   static from(value: AvailabilitySlot): SlotResponseDTO {
     return {
       start: value.start.toString(),
       end: value.end.toString(),
       status: value.status,
+      ...(value.capacity !== undefined && {
+        capacity: value.capacity,
+        remaining: value.remaining,
+      }),
     };
   }
 }

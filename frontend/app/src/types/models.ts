@@ -158,6 +158,9 @@ export interface Slot {
   end: string;
   /** `season`: held by a club's season slot (#17). */
   status: "available" | "booked" | "season" | "past";
+  /** Shared courts only (#95): places in all and places still free. */
+  capacity?: number;
+  remaining?: number;
 }
 export interface ResourceAvailability {
   id: string;

@@ -154,6 +154,7 @@ const tables = {
     position: "position",
     parent_id: "parentId",
     active: "active",
+    capacity: "capacity",
     created_at: "createdAt",
   },
   users: {
@@ -462,10 +463,12 @@ export async function importMunicipality(
     );
     await insert("access_keys", data.accessKeys ?? []);
     await insert("check_ins", data.checkIns ?? []);
-    // Occupied units are derived data: the booked resource, or every part of a whole court.
+    // Occupied units are derived data: the booked resource, or every part of a whole court. A
+    // booking of a court with a capacity takes one shared place of it (#95).
     await client.query(
-      `INSERT INTO booking_units (tenant_id, booking_id, unit_id, starts_at, ends_at)
-      SELECT b.tenant_id, b.id, coalesce(part.id, r.id), b.starts_at, b.ends_at
+      `INSERT INTO booking_units (tenant_id, booking_id, unit_id, starts_at, ends_at, shared)
+      SELECT b.tenant_id, b.id, coalesce(part.id, r.id), b.starts_at, b.ends_at,
+        part.id IS NULL AND r.capacity IS NOT NULL
       FROM bookings b
       JOIN resources r ON r.tenant_id=b.tenant_id AND r.id=b.resource_id
       LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id

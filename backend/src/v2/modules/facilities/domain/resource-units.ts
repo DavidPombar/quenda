@@ -11,6 +11,20 @@ export function units(resource: Node, all: readonly Node[]): string[] {
     .map((other) => other.id);
   return parts.length ? parts : [resource.id];
 }
+/**
+ * What a booking of `resource` takes (#95). A resource without parts that has a capacity takes one
+ * shared place; anything else (a composite, an exclusive court) takes its units outright.
+ */
+export function occupancy(
+  resource: Node & Pick<Resource, "capacity">,
+  all: readonly Node[],
+): { unitIds: string[]; shared: boolean } {
+  const unitIds = units(resource, all);
+  return {
+    unitIds,
+    shared: resource.capacity !== null && unitIds[0] === resource.id,
+  };
+}
 /** One level only: a parent exists in the same set, is not itself a part and is not the resource. */
 export function isValidHierarchy(all: readonly Node[]): boolean {
   const byId = new Map(all.map((resource) => [resource.id, resource]));

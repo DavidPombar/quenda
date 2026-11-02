@@ -9,7 +9,7 @@ import { NotificationRepository } from "../../domain/notification.repository";
 import { BookingBlockRepository } from "../../domain/booking-block.repository";
 import { Booking } from "../../domain/booking.entity";
 import { Resource } from "../../../facilities/domain/resource.entity";
-import { units } from "../../../facilities/domain/resource-units";
+import { occupancy } from "../../../facilities/domain/resource-units";
 import { BookingPolicy, BookingPolicyError } from "../booking-policy";
 import { ResourceChoiceError, chooseResource } from "../resource-choice";
 import { Principal, can } from "../../../../shared/application/principal";
@@ -31,7 +31,20 @@ export type CreateBookingError =
   | AppError<"booking_limit">
   | AppError<"booking_blocked">
   | AppError<"slot_taken">
+  | AppError<"already_booked">
   | AppError<"id_reused">;
+/** The units a booking of `resource` holds, and its place when the resource is shared (#95). */
+export function placeOf(
+  resource: Resource,
+  resources: readonly Resource[],
+  userId: string,
+) {
+  const taken = occupancy(resource, resources);
+  return {
+    unitIds: taken.unitIds,
+    place: taken.shared ? { capacity: resource.capacity!, userId } : null,
+  };
+}
 @Injectable()
 export class CreateBooking {
   constructor(
@@ -133,7 +146,7 @@ export class CreateBooking {
             await this.units.replace({
               tenantId,
               bookingId: booking.id,
-              unitIds: units(resource, resources),
+              ...placeOf(resource, resources, userId),
               start: booking.start,
               end: booking.end,
             })

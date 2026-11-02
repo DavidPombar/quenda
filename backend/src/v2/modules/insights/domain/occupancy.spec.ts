@@ -89,6 +89,51 @@ describe("occupancy report", () => {
       ]);
     },
   );
+  it("should count each place of a shared lane and hold every place for anything else", () => {
+    const hour = span("2026-10-05T10:00", "2026-10-05T11:00");
+    const lane = (
+      overrides: Partial<FacilityActivity["bookings"][number]> = {},
+    ) => ({
+      ...hour,
+      status: "confirmed" as const,
+      unitIds: ["lane"],
+      resourceId: "lane",
+      ...overrides,
+    });
+    const pool = (bookings: FacilityActivity["bookings"]) =>
+      report(
+        facility({
+          unitIds: ["lane"],
+          capacities: { lane: 4 },
+          open: [hour],
+          resources: [
+            { id: "lane", name: "Lane", parentId: null, unitIds: ["lane"] },
+          ],
+          bookings,
+        }),
+        "2026-10-05",
+        "2026-10-05",
+      );
+    // Two of four places for the hour: half the lane's place-minutes.
+    expect(pool([lane(), lane()])).toMatchObject({
+      openMinutes: 240,
+      bookedMinutes: 120,
+      occupancy: 50,
+    });
+    expect(pool([lane(), lane()]).byFacility[0].byResource[0]).toMatchObject({
+      openMinutes: 240,
+      bookedMinutes: 120,
+    });
+    // A club's season slot holds the whole lane.
+    expect(pool([lane({ status: "season" })])).toMatchObject({
+      bookedMinutes: 240,
+      occupancy: 100,
+    });
+    // So does a booking of the whole pool, which occupies the lane as one of its parts.
+    expect(pool([lane({ resourceId: "pool" })])).toMatchObject({
+      bookedMinutes: 240,
+    });
+  });
   it("should report each court, with a whole court aggregating its parts", () => {
     const hour = span("2026-10-05T10:00", "2026-10-05T11:00");
     const result = report(

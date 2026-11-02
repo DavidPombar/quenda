@@ -6,9 +6,13 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsInt,
+  IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateIf,
   ValidateNested,
@@ -35,6 +39,18 @@ export class ResourceDraftRequestDTO {
   @ApiProperty({ description: "In service" })
   @IsBoolean()
   active!: boolean;
+  @ApiProperty({
+    description:
+      "People who can book the same slot (2–200, courts without parts only); null or absent keeps the court exclusive",
+    type: Number,
+    nullable: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(2)
+  @Max(200)
+  capacity?: number | null;
 }
 export class SaveResourcesRequestDTO {
   @ApiProperty({

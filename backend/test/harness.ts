@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { migrate } from "../src/database/migrate";
@@ -166,7 +166,13 @@ export interface ResourceSlots {
   name: string;
   parentId: string | null;
   active: boolean;
-  slots: { start: string; end: string; status: string }[];
+  slots: {
+    start: string;
+    end: string;
+    status: string;
+    capacity?: number;
+    remaining?: number;
+  }[];
 }
 export async function availability(
   context: Tenant,
@@ -199,14 +205,19 @@ export async function slotStatus(
 export async function addResources(
   context: Tenant,
   facilityId: string,
-  items: { name: string; parentId?: string; active?: boolean }[],
+  items: {
+    name: string;
+    parentId?: string;
+    active?: boolean;
+    capacity?: number;
+  }[],
 ) {
   const ids: string[] = [];
   for (const item of items) {
     const id = randomUUID();
     await harness.db.query(
-      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active)
-      SELECT $1,$2,$3,$4,coalesce(max(position),-1)+1,$5,$6 FROM resources WHERE tenant_id=$2 AND facility_id=$3`,
+      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active,capacity)
+      SELECT $1,$2,$3,$4,coalesce(max(position),-1)+1,$5,$6,$7 FROM resources WHERE tenant_id=$2 AND facility_id=$3`,
       [
         id,
         context.id,
@@ -214,11 +225,31 @@ export async function addResources(
         item.name,
         item.parentId ?? null,
         item.active ?? true,
+        item.capacity ?? null,
       ],
     );
     ids.push(id);
   }
   return ids;
+}
+/** A second citizen in the same municipality, signed in through a stored session. */
+export async function citizen(context: Tenant, displayName: string) {
+  const id = randomUUID();
+  const token = randomBytes(32).toString("hex");
+  await harness.db.query("INSERT INTO users VALUES ($1,$2,$3,'citizen')", [
+    id,
+    context.id,
+    displayName,
+  ]);
+  await harness.db.query("INSERT INTO sessions VALUES ($1,$2,$3,$4)", [
+    createHash("sha256").update(token).digest("hex"),
+    context.id,
+    id,
+    Temporal.Now.instant().add({ hours: 1 }).toString(),
+  ]);
+  const agent = request.agent(harness.app.getHttpServer());
+  agent.set("Cookie", `quenda_session=${token}`);
+  return { id, agent };
 }
 /** An empty disposable database on the test server, for schema migration checks. */
 export async function emptyDatabase() {

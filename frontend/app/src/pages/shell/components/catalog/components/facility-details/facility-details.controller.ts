@@ -141,6 +141,24 @@ export function useFacilityDetailsController() {
     start: slot.start,
     label: timeLabel(slot.start, context.municipality.timezone),
   }));
+  // A shared lane or room (#95) says how many places are left, in text and not only by colour.
+  const slotText = (slot: Slot) =>
+    slot.capacity === undefined
+      ? context.t(slot.status === "available" ? "slotFree" : slot.status)
+      : slot.status === "available"
+        ? fill(context.t("placesLeft"), {
+            remaining: slot.remaining ?? 0,
+            capacity: slot.capacity,
+          })
+        : context.t(slot.status === "booked" ? "placesFull" : slot.status);
+  /** Second line of a free slot of a shared court: «3 de 6 prazas». */
+  const slotPlaces = (slot: Slot) =>
+    slot.capacity !== undefined && slot.status === "available"
+      ? fill(context.t("placesCount"), {
+          remaining: slot.remaining ?? 0,
+          capacity: slot.capacity,
+        })
+      : null;
   const rows = resources.map((resource) => {
     const byStart = new Map(
       (availabilityById.get(resource.id)?.slots ?? []).map((slot) => [
@@ -157,13 +175,18 @@ export function useFacilityDetailsController() {
       active: resource.active,
       cells: visibleColumns.map((column) => {
         const slot = byStart.get(column.start);
-        const status = slot
-          ? context.t(slot.status === "available" ? "slotFree" : slot.status)
-          : "";
+        const status = slot ? slotText(slot) : "";
         return {
           start: column.start,
           slot,
-          status,
+          // The narrow grid cell shows the short count; its label reads it in full.
+          status:
+            slot?.capacity !== undefined && slot.status === "available"
+              ? fill(context.t("placesShort"), {
+                  remaining: slot.remaining ?? 0,
+                  capacity: slot.capacity,
+                })
+              : status,
           label: context
             .t("slotWithResource")
             .replace("{time}", column.label)
@@ -257,6 +280,8 @@ export function useFacilityDetailsController() {
     visibleSlots,
     visibleColumns,
     rows,
+    slotText,
+    slotPlaces,
     pastCount,
     showPast,
     togglePast: () => setShowPast((value) => !value),

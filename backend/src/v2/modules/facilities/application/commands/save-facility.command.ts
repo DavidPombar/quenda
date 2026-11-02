@@ -166,6 +166,7 @@ export class SaveFacility {
         position: 0,
         parentId: null,
         active: true,
+        capacity: null,
       });
     if (upcoming.length && reason) {
       const cancelled = upcoming.map((booking) => ({

@@ -4,7 +4,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import { FacilityRepository } from "../domain/facility.repository";
 import { Facility } from "../domain/facility.entity";
 import { Resource } from "../domain/resource.entity";
-import { units } from "../domain/resource-units";
+import { occupancy } from "../domain/resource-units";
 import { OpeningCalendar } from "../domain/opening-calendar";
 import { HolidayCalendar } from "../domain/holiday-calendar";
 import { MunicipalitySettings } from "../../../shared/application/municipality-settings";
@@ -13,6 +13,9 @@ export interface AvailabilitySlot {
   end: Temporal.Instant;
   /** `season`: held by a club's season slot (#17). */
   status: "available" | "booked" | "season" | "past";
+  /** Shared resources only (#95): places in all and places still free. */
+  capacity?: number;
+  remaining?: number;
 }
 export interface ResourceAvailability {
   resource: Resource;
@@ -89,7 +92,8 @@ export class AvailabilityGrid {
     }
     return resources.map((resource): ResourceAvailability => {
       if (!resource.active) return { resource, slots: [] };
-      const occupied = new Set(units(resource, resources));
+      const taking = occupancy(resource, resources);
+      const occupied = new Set(taking.unitIds);
       return {
         resource,
         slots: grid.map(({ start: from, end: to }): AvailabilitySlot => {
@@ -101,6 +105,24 @@ export class AvailabilityGrid {
               Temporal.Instant.compare(value.start, to) < 0 &&
               Temporal.Instant.compare(value.end, from) > 0,
           );
+          if (taking.shared) {
+            // A club slot or a booking of the whole composite holds every place.
+            const exclusive = taken.filter((value) => !value.shared);
+            const remaining = exclusive.length
+              ? 0
+              : Math.max(resource.capacity! - taken.length, 0);
+            return {
+              start: from,
+              end: to,
+              status: remaining
+                ? "available"
+                : exclusive.length && exclusive.every((value) => value.season)
+                  ? "season"
+                  : "booked",
+              capacity: resource.capacity!,
+              remaining,
+            };
+          }
           return {
             start: from,
             end: to,
