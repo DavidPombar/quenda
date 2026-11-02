@@ -5,4 +5,8 @@ export class FacilityImpactResponseDTO {
   bookings!: number;
   @ApiProperty({ description: "Distinct people who would be notified" })
   people!: number;
+  @ApiProperty({
+    description: "Upcoming activity sessions a closure would cancel (#97)",
+  })
+  sessions!: number;
 }

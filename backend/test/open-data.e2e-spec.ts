@@ -175,7 +175,11 @@ describe("Open data", () => {
     const distributions = (catalog["dcat:dataset"] as unknown as Node[])
       .flatMap((item) => item["dcat:distribution"] as unknown as Node[])
       .map((distribution) => distribution["@id"]);
-    expect(distributions).toHaveLength(5);
+    const activities = catalog["dcat:dataset"][2];
+    expect(activities["dct:identifier"]).toBe(
+      `${context.slug}-actividades-deportivas`,
+    );
+    expect(distributions).toHaveLength(7);
 
     const rdf = await open("catalog.rdf", context.slug).expect(200);
     expect(rdf.headers["content-type"]).toMatch(/^application\/rdf\+xml/);

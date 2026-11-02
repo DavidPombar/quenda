@@ -1945,7 +1945,8 @@ a.account:hover .account-name strong {
 }
 
 /* Season allocation to clubs (#17): taken like a booking, told apart by its label and a solid edge. */
-.time-slot.season:disabled {
+.time-slot.season:disabled,
+.time-slot.activity:disabled {
   border-style: solid;
 }
 .club-slots {
@@ -2176,4 +2177,83 @@ a.account:hover .account-name strong {
 }
 .waitlist-row.offered {
   border-left: 4px solid var(--court);
+}
+
+/* Activities and sports schools (#97): a list with dividers, facts as a definition list. */
+.age-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 260px;
+}
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.activity-list li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+.activity-list h2 {
+  font-size: var(--t-h3, 1.25rem);
+}
+.activity-list h2 a {
+  color: var(--ink);
+}
+.activity-list p {
+  margin: 0;
+}
+.activity-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+}
+.activity-facts dt {
+  color: var(--ink-2);
+  font-size: var(--t-small, 0.875rem);
+}
+.activity-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+.activity-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+}
+.activity-details .activity-facts {
+  flex-direction: column;
+}
+.session-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.session-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+.session-cancelled {
+  color: var(--danger);
+}
+.facility-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
 }

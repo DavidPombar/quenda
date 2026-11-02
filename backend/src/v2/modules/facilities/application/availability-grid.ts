@@ -11,8 +11,8 @@ import { MunicipalitySettings } from "../../../shared/application/municipality-s
 export interface AvailabilitySlot {
   start: Temporal.Instant;
   end: Temporal.Instant;
-  /** `season`: held by a club's season slot (#17). */
-  status: "available" | "booked" | "season" | "past";
+  /** `season`: held by a club's season slot (#17); `activity`: by a municipal activity (#97). */
+  status: "available" | "booked" | "season" | "activity" | "past";
   /** Shared resources only (#95): places in all and places still free. */
   capacity?: number;
   remaining?: number;
@@ -21,6 +21,15 @@ export interface ResourceAvailability {
   resource: Resource;
   /** Empty when the resource is out of service, the facility is not active or the date is out of range. */
   slots: AvailabilitySlot[];
+}
+/** Who holds a full slot: a club or an activity when only they do, otherwise bookings. */
+function heldBy(
+  taken: readonly { season: boolean; activity: boolean }[],
+): AvailabilitySlot["status"] {
+  if (taken.length && taken.every((value) => value.season)) return "season";
+  if (taken.length && taken.every((value) => value.activity))
+    return "activity";
+  return "booked";
 }
 /**
  * The bookable slots of one facility on one local date, per court. Shared by the public
@@ -114,11 +123,7 @@ export class AvailabilityGrid {
             return {
               start: from,
               end: to,
-              status: remaining
-                ? "available"
-                : exclusive.length && exclusive.every((value) => value.season)
-                  ? "season"
-                  : "booked",
+              status: remaining ? "available" : heldBy(exclusive),
               capacity: resource.capacity!,
               remaining,
             };
@@ -126,11 +131,7 @@ export class AvailabilityGrid {
           return {
             start: from,
             end: to,
-            status: !taken.length
-              ? "available"
-              : taken.every((value) => value.season)
-                ? "season"
-                : "booked",
+            status: !taken.length ? "available" : heldBy(taken),
           };
         }),
       };

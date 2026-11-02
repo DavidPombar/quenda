@@ -67,6 +67,20 @@ export function useOpenDataController() {
         schema: schema("occupancy.tableschema.json"),
       },
     ],
+    activities: [
+      {
+        label: "JSON-LD (schema.org)",
+        type: "application/ld+json",
+        href: file("activities.json"),
+        schema: schema("activities.schema.json"),
+      },
+      {
+        label: "CSV",
+        type: "text/csv",
+        href: file("activities.csv"),
+        schema: schema("activities.tableschema.json"),
+      },
+    ],
     catalogs: [
       {
         label: "RDF/XML",

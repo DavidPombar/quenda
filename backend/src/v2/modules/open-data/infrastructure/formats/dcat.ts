@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { facilityFiles, occupancyFiles, Publication } from "./publication";
+import {
+  activityFiles,
+  facilityFiles,
+  occupancyFiles,
+  Publication,
+} from "./publication";
 import type { OpenPublication } from "../../domain/open-facility.read-model";
 /**
  * DCAT-AP-ES (NTI-RISP) description of one municipality's open data, built once and serialised
@@ -126,6 +131,38 @@ export function catalog(publication: Publication<OpenPublication>): Catalog {
             title: { gl: "CSV", es: "CSV" },
             mediaType: occupancyFiles.csv.mediaType,
             conformsTo: publication.schema("occupancy.tableschema.json"),
+          },
+        ],
+      },
+      {
+        uri: `${publication.page()}#actividades`,
+        identifier: `${municipality.slug}-actividades-deportivas`,
+        title: {
+          gl: `Actividades e escolas deportivas: ${name}`,
+          es: `Actividades y escuelas deportivas: ${name}`,
+        },
+        description: {
+          gl: "Oferta actual de actividades e escolas deportivas municipais: deporte, instalación e pista, días e horario semanal, datas, prazas, idades e prezo indicativo. Sen datos das persoas inscritas.",
+          es: "Oferta actual de actividades y escuelas deportivas municipales: deporte, instalación y pista, días y horario semanal, fechas, plazas, edades y precio indicativo. Sin datos de las personas inscritas.",
+        },
+        keywords: [
+          { gl: "deporte", es: "deporte" },
+          { gl: "escolas deportivas", es: "escuelas deportivas" },
+          { gl: "cursos", es: "cursos" },
+        ],
+        landingPage: publication.page(),
+        distributions: [
+          {
+            uri: publication.file(activityFiles.json.file),
+            title: { gl: "JSON-LD (schema.org)", es: "JSON-LD (schema.org)" },
+            mediaType: activityFiles.json.mediaType,
+            conformsTo: publication.schema("activities.schema.json"),
+          },
+          {
+            uri: publication.file(activityFiles.csv.file),
+            title: { gl: "CSV", es: "CSV" },
+            mediaType: activityFiles.csv.mediaType,
+            conformsTo: publication.schema("activities.tableschema.json"),
           },
         ],
       },

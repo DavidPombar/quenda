@@ -308,6 +308,51 @@ export interface MunicipalitySnapshot {
     accepted: number;
     expired: number;
   }[];
+  /**
+   * Activities and sports schools (#97). The weekly rule is kept as edited and as RFC 5545 text;
+   * the dated sessions are authoritative. Instants and dates are ISO strings as stored.
+   */
+  activities: {
+    id: string;
+    facilityId: string;
+    resourceId: string;
+    sport: string;
+    nameGl: string;
+    nameEs: string;
+    descriptionGl: string;
+    descriptionEs: string;
+    weekdays: number[];
+    startsLocal: string;
+    endsLocal: string;
+    startsOn: string;
+    endsOn: string;
+    exceptions: string[];
+    schedule: string;
+    places: number;
+    minAge: number | null;
+    maxAge: number | null;
+    enrolmentOpensOn: string;
+    enrolmentClosesOn: string;
+    status: string;
+    cancellationReason: string | null;
+    createdAt: string;
+    publishedAt: string | null;
+    cancelledAt: string | null;
+  }[];
+  activityPrices: {
+    activityId: string;
+    category: string;
+    priceCents: number;
+  }[];
+  activitySessions: {
+    id: string;
+    activityId: string;
+    start: string;
+    end: string;
+    status: string;
+    cancellationReason: string | null;
+    sequence: number;
+  }[];
 }
 
 export interface MunicipalityExport {

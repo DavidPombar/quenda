@@ -6,10 +6,10 @@ export class SlotResponseDTO {
   @ApiProperty({ description: "UTC end instant" }) end!: string;
   @ApiProperty({
     description:
-      "Availability status; no personal data. `season` is a club's season slot (#17)",
-    enum: ["available", "booked", "season", "past"],
+      "Availability status; no personal data. `season` is a club's season slot (#17), `activity` a municipal activity's session (#97)",
+    enum: ["available", "booked", "season", "activity", "past"],
   })
-  status!: "available" | "booked" | "season" | "past";
+  status!: "available" | "booked" | "season" | "activity" | "past";
   @ApiProperty({
     description: "Places of a shared court (#95); absent for exclusive courts",
     required: false,

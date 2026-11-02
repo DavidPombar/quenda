@@ -22,10 +22,27 @@ describe("Open data page", () => {
         "/v2/public/open-data/facilities.geojson?slug=vilaverde",
       );
     await expect
-      .element(page.getByRole("link", { name: "Esquema CSV" }))
+      .element(
+        page
+          .getByLabelText("Instalacións deportivas")
+          .getByRole("link", { name: "Esquema CSV" }),
+      )
       .toHaveAttribute(
         "href",
         "/v2/public/open-data/schemas/facilities.tableschema.json",
+      );
+    const activities = page.getByLabelText("Actividades e escolas deportivas");
+    await expect
+      .element(activities.getByRole("link", { name: "CSV", exact: true }))
+      .toHaveAttribute(
+        "href",
+        "/v2/public/open-data/activities.csv?slug=vilaverde",
+      );
+    await expect
+      .element(activities.getByRole("link", { name: "Esquema CSV" }))
+      .toHaveAttribute(
+        "href",
+        "/v2/public/open-data/schemas/activities.tableschema.json",
       );
     await expect
       .element(

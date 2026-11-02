@@ -27,10 +27,11 @@ export interface FacilityActivity {
   closed: Span[];
   /**
    * A no-show held the slot but was not used, so it counts apart and not as booked time. A club's
-   * season slot (#17) is occupied time but not a booking, so it adds minutes and no count.
+   * season slot (#17) or an activity's session (#97) is occupied time but not a booking, so it
+   * adds minutes and no count.
    */
   bookings: (Span & {
-    status: "confirmed" | "cancelled" | "no_show" | "season";
+    status: "confirmed" | "cancelled" | "no_show" | "season" | "activity";
     unitIds?: readonly string[];
     /** The court booked; counts go to it, booked time to every unit it occupies. */
     resourceId?: string;
@@ -202,7 +203,9 @@ function facilityTime(facility: FacilityActivity, range: Span) {
       if (!capacity) return intersect(bookings, open);
       return bookings.flatMap((booking) => {
         const spans = intersect([booking], open);
-        return booking.status !== "season" && booking.resourceId === unitId
+        return booking.status !== "season" &&
+          booking.status !== "activity" &&
+          booking.resourceId === unitId
           ? spans
           : Array.from({ length: capacity }, () => spans).flat();
       });
@@ -214,11 +217,11 @@ function facilityTime(facility: FacilityActivity, range: Span) {
     open,
     units: weight(unitIds),
     weight,
-    booked: held(["confirmed", "season"]),
+    booked: held(["confirmed", "season", "activity"]),
     noShows: held(["no_show"]),
     /** Held time on some of the units, for the per-court report. */
     bookedIn: (units: readonly string[]) =>
-      held(["confirmed", "season"], units),
+      held(["confirmed", "season", "activity"], units),
   };
 }
 /**

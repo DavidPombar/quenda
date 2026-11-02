@@ -207,7 +207,7 @@ export type ResourceDraft = Omit<Resource, "position">;
 export interface Slot {
   start: string;
   end: string;
-  status: "available" | "booked" | "season" | "past";
+  status: "available" | "booked" | "season" | "activity" | "past";
 }
 export type BookingOutcome = "upcoming" | "attended" | "no_show" | "cancelled";
 /** One person's reservation as the municipality sees it on the bookings page. */
@@ -236,6 +236,8 @@ export type BookingChange =
 export interface FacilityImpact {
   bookings: number;
   people: number;
+  /** Upcoming activity sessions a closure would cancel (#97). */
+  sessions: number;
 }
 export interface FacilityUsage {
   id: string;
@@ -543,4 +545,66 @@ export interface StaffAccount {
 export interface TemporaryPassword {
   login: string;
   temporaryPassword: string | null;
+}
+
+/** The weekly rule of an activity (#97); times are local to the municipality. */
+export interface WeeklyRule {
+  /** ISO weekdays, 1 = Monday. */
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  startsOn: string;
+  endsOn: string;
+  /** Dates without a session. */
+  exceptions: string[];
+}
+export interface ActivityPrice {
+  category: Category | "general";
+  priceCents: number;
+}
+export interface ActivityInput {
+  facilityId: string;
+  resourceId: string;
+  sport: Sport;
+  name: Localized;
+  description: Localized;
+  rule: WeeklyRule;
+  places: number;
+  minAge: number | null;
+  maxAge: number | null;
+  enrolmentOpensOn: string;
+  enrolmentClosesOn: string;
+  prices: ActivityPrice[];
+}
+export interface ActivitySession {
+  id: string;
+  start: string;
+  end: string;
+  status: "active" | "cancelled";
+  cancellationReason: string | null;
+}
+/** A course or sports school with places on one court or lane (#97). */
+export interface ManagedActivity extends ActivityInput {
+  id: string;
+  facilityName: string;
+  facilityAddress: string;
+  resourceName: string;
+  sportName: Localized;
+  sportArt: SportArt;
+  status: "draft" | "published" | "cancelled";
+  cancellationReason: string | null;
+  nextSession: string | null;
+  upcomingSessions: number;
+  schedule: string;
+}
+export interface ManagedActivityDetails extends ManagedActivity {
+  sessions: ActivitySession[];
+}
+/** A session that cannot be held: the court is taken or the facility is closed then. */
+export interface ActivityClash {
+  start: string;
+  end: string;
+  /** Local date, to add as an exception. */
+  date: string;
+  reason: "booking" | "season" | "activity" | "waitlist_hold" | "closed";
 }

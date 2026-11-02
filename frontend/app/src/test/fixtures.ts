@@ -170,6 +170,10 @@ export function stubShell(
 ) {
   stubAuthMethods(methods);
   stubJsonResponse({ path: "*/v2/public/season-campaigns", response: [] });
+  stubJsonResponse({
+    path: "*/v2/public/activities",
+    response: { items: [], total: 0, page: 1, pageSize: 12 },
+  });
   if (authenticated) {
     stubJsonResponse({
       path: "*/v2/citizen/tariffs/*",

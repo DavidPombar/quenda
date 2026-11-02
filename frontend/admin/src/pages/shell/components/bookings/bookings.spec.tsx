@@ -162,7 +162,7 @@ describe("day bookings", () => {
     });
     stubJsonResponse({
       path: "*/v2/manager/facilities/:id/impact",
-      response: { bookings: 4, people: 3 },
+      response: { bookings: 4, people: 3, sessions: 0 },
     });
     let saved: Record<string, unknown> | undefined;
     stubJsonResponse({

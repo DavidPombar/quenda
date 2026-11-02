@@ -346,7 +346,165 @@ const occupancyTable = {
   primaryKey: ["facility_id", "iso_year", "iso_week", "weekday", "hour"],
   missingValues: [""],
 };
+const localTime = "^([01]\\d|2[0-3]):[0-5]\\d$";
+/** schema.org JSON-LD of the activities on offer (#97): EventSeries with a weekly Schedule. */
+const activitiesJson = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "activities.schema.json",
+  title: "Quenda activities (schema.org JSON-LD)",
+  type: "object",
+  required: [
+    "@context",
+    "@type",
+    "license",
+    "numberOfItems",
+    "itemListElement",
+  ],
+  properties: {
+    "@context": { const: "https://schema.org" },
+    "@type": { const: "ItemList" },
+    "@id": { type: "string", format: "uri" },
+    name: { type: "string" },
+    license: { type: "string", format: "uri" },
+    numberOfItems: { type: "integer", minimum: 0 },
+    itemListElement: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["@type", "position", "item"],
+        properties: {
+          "@type": { const: "ListItem" },
+          position: { type: "integer", minimum: 1 },
+          item: {
+            type: "object",
+            required: [
+              "@type",
+              "identifier",
+              "name",
+              "url",
+              "sport",
+              "startDate",
+              "endDate",
+              "eventSchedule",
+              "location",
+              "maximumAttendeeCapacity",
+            ],
+            properties: {
+              "@type": { const: "EventSeries" },
+              identifier: { type: "string", format: "uuid" },
+              name: { type: "string", minLength: 1 },
+              url: { type: "string", format: "uri" },
+              sport: { type: "string", pattern: sportCode },
+              startDate: { type: "string", format: "date" },
+              endDate: { type: "string", format: "date" },
+              eventSchedule: {
+                type: "object",
+                required: [
+                  "@type",
+                  "repeatFrequency",
+                  "byDay",
+                  "startTime",
+                  "endTime",
+                ],
+                properties: {
+                  "@type": { const: "Schedule" },
+                  repeatFrequency: { const: "P1W" },
+                  byDay: {
+                    type: "array",
+                    minItems: 1,
+                    items: { type: "string", format: "uri" },
+                  },
+                  startTime: { type: "string", pattern: localTime },
+                  endTime: { type: "string", pattern: localTime },
+                  exceptDate: {
+                    type: "array",
+                    items: { type: "string", format: "date" },
+                  },
+                },
+              },
+              location: {
+                type: "object",
+                required: ["@type", "name", "address"],
+                properties: { "@type": { const: "SportsActivityLocation" } },
+              },
+              maximumAttendeeCapacity: { type: "integer", minimum: 1 },
+              typicalAgeRange: {
+                type: "string",
+                pattern: "^\\d{1,3}-(\\d{1,3})?$",
+              },
+              offers: {
+                type: "object",
+                required: ["@type", "price", "priceCurrency"],
+                properties: {
+                  "@type": { const: "Offer" },
+                  price: { type: "number", minimum: 0 },
+                  priceCurrency: { const: "EUR" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+/** Frictionless Table Schema of activities.csv (#97). */
+const activitiesTable = {
+  $schema: "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  fields: [
+    field("id", "string", "Activity UUID", { required: true, unique: true }),
+    field("name", "string", "Activity name", { required: true }),
+    field("sport", "string", "Sport code from the municipality's catalogue", {
+      required: true,
+      pattern: sportCode,
+    }),
+    field("facility_id", "string", "Facility UUID", { required: true }),
+    field("facility_name", "string", "Facility name", { required: true }),
+    field("court", "string", "Court, lane or space", { required: true }),
+    field(
+      "weekdays",
+      "string",
+      "ISO weekdays of the sessions, 1 = Monday, separated by spaces",
+      { required: true, pattern: "^[1-7]( [1-7]){0,6}$" },
+    ),
+    field("starts_local", "string", "Local start time (HH:MM)", {
+      required: true,
+      pattern: localTime,
+    }),
+    field("ends_local", "string", "Local end time (HH:MM)", {
+      required: true,
+      pattern: localTime,
+    }),
+    field("starts_on", "date", "First day", { required: true }),
+    field("ends_on", "date", "Last day, included", { required: true }),
+    field(
+      "exceptions",
+      "string",
+      "Dates without a session (YYYY-MM-DD), separated by spaces",
+    ),
+    field("rrule", "string", "RFC 5545 recurrence rule of the sessions", {
+      required: true,
+    }),
+    field("places", "integer", "Places", { required: true, minimum: 1 }),
+    field("min_age", "integer", "Youngest age accepted", { minimum: 0 }),
+    field("max_age", "integer", "Oldest age accepted", { minimum: 0 }),
+    field("enrolment_opens_on", "date", "First day of enrolment", {
+      required: true,
+    }),
+    field("enrolment_closes_on", "date", "Last day of enrolment", {
+      required: true,
+    }),
+    field("price_eur", "number", "General indicative price, EUR", {
+      minimum: 0,
+    }),
+    field("url", "string", "Activity page", { required: true }),
+  ],
+  primaryKey: ["id"],
+  missingValues: [""],
+};
 export const openDataSchemas = {
+  "activities.schema.json": activitiesJson,
+  "activities.tableschema.json": activitiesTable,
   "facilities.schema.json": facilitiesJson,
   "facilities.geojson.schema.json": facilitiesGeoJson,
   "facilities.tableschema.json": facilitiesTable,

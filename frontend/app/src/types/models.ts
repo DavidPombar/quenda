@@ -161,7 +161,7 @@ export interface Slot {
   start: string;
   end: string;
   /** `season`: held by a club's season slot (#17). */
-  status: "available" | "booked" | "season" | "past";
+  status: "available" | "booked" | "season" | "activity" | "past";
   /** Shared courts only (#95): places in all and places still free. */
   capacity?: number;
   remaining?: number;
@@ -423,3 +423,65 @@ export interface SeasonCampaign {
 /** Fixed events of the citizen app (#57); they carry no properties. */
 export type AnalyticsEvent =
   "search" | "slot-open" | "booking-confirmed" | "suggestion-picked";
+
+/** The weekly rule of an activity (#97); times are local to the municipality. */
+export interface WeeklyRule {
+  /** ISO weekdays, 1 = Monday. */
+  weekdays: number[];
+  startsLocal: string;
+  endsLocal: string;
+  startsOn: string;
+  endsOn: string;
+  exceptions: string[];
+}
+export interface ActivitySession {
+  id: string;
+  start: string;
+  end: string;
+  status: "active" | "cancelled";
+  cancellationReason: string | null;
+}
+/** A course or sports school with places, as the public catalogue shows it (#97). */
+export interface PublicActivity {
+  id: string;
+  facilityId: string;
+  facilityName: string;
+  facilityAddress: string;
+  resourceId: string;
+  resourceName: string;
+  sport: Sport;
+  sportName: Localized;
+  sportArt: SportArt;
+  name: Localized;
+  description: Localized;
+  rule: WeeklyRule;
+  places: number;
+  minAge: number | null;
+  maxAge: number | null;
+  enrolmentOpensOn: string;
+  enrolmentClosesOn: string;
+  prices: { category: TariffCategory; priceCents: number }[];
+  status: "published" | "cancelled";
+  cancellationReason: string | null;
+  nextSession: string | null;
+  /** Whether people can enrol today. */
+  enrolment: "upcoming" | "open" | "closed";
+}
+export interface PublicActivityDetails extends PublicActivity {
+  /** Upcoming sessions, cancelled ones included. */
+  sessions: ActivitySession[];
+}
+export interface ActivityPage {
+  items: PublicActivity[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export interface ActivityFilters {
+  sport: string;
+  /** Age of the person who would attend; null for any. */
+  age: number | null;
+  open: boolean;
+  facilityId: string;
+  page: number;
+}

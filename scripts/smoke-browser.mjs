@@ -424,6 +424,59 @@ try {
     .waitFor();
   await audit("staff");
   await page.screenshot({ path: ".dev-logs/seasons.png", fullPage: true });
+  // Activities and sports schools (#97): a draft that becomes a published course, then the
+  // citizen's catalogue and the activity's page. Dates a month ahead avoid the demo bookings.
+  await page.getByRole("link", { name: "Actividades", exact: true }).click();
+  await page.waitForURL(/\/admin\/[^/]+\/actividades$/);
+  await page.getByRole("heading", { level: 1, name: "Actividades" }).waitFor();
+  await audit("activities-admin");
+  const activitySlug = new URL(page.url()).pathname.split("/")[2];
+  const dayAhead = (days) =>
+    new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+  await page.getByRole("button", { name: "Nova actividade" }).click();
+  const activityForm = page.getByRole("form", { name: "Nova actividade" });
+  await activityForm
+    .getByRole("textbox", { name: "Nome en galego" })
+    .fill("Escola de pádel");
+  await activityForm.getByRole("checkbox", { name: "Martes" }).check();
+  await activityForm.getByRole("checkbox", { name: "Xoves" }).check();
+  await activityForm.getByLabel("Hora de inicio").fill("20:00");
+  await activityForm.getByLabel("Hora de fin").fill("21:00");
+  await activityForm.getByLabel("Primeiro día").fill(dayAhead(30));
+  await activityForm.getByLabel("Último día").fill(dayAhead(60));
+  await activityForm.getByLabel("Inscrición ata").fill(dayAhead(29));
+  await activityForm.getByRole("textbox", { name: "Prezo xeral (€)" }).fill("30");
+  await activityForm.getByRole("button", { name: "Gardar borrador" }).click();
+  const clashes = page.getByRole("button", { name: /como días? sen sesión/ });
+  await Promise.race([
+    page.getByText("Actividade gardada.").waitFor(),
+    clashes.first().waitFor(),
+  ]);
+  if (await clashes.count()) {
+    // Whatever the demo data holds then becomes a date without a session.
+    const all = page.getByRole("button", { name: "Engadir todas como días sen sesión" });
+    await ((await all.count()) ? all : clashes.first()).click();
+    await activityForm.getByRole("button", { name: "Gardar borrador" }).click();
+    await page.getByText("Actividade gardada.").waitFor();
+  }
+  await page.getByRole("heading", { name: "Editando: Escola de pádel" }).waitFor();
+  await audit("activity-editor");
+  await page.getByRole("button", { name: "Publicar", exact: true }).click();
+  await page.getByText(/Actividade publicada/).waitFor();
+  await page.getByRole("heading", { name: "Sesións: Escola de pádel" }).waitFor();
+  await page.screenshot({ path: ".dev-logs/activities-admin.png", fullPage: true });
+  await page.goto(`${base}/app/${activitySlug}/actividades`);
+  await page
+    .getByRole("heading", { level: 1, name: "Actividades e escolas deportivas" })
+    .waitFor();
+  await page.getByRole("link", { name: "Escola de pádel" }).waitFor();
+  await audit("activities");
+  await assertReflow("activities");
+  await page.getByRole("link", { name: "Escola de pádel" }).click();
+  await page.getByRole("heading", { level: 1, name: "Escola de pádel" }).waitFor();
+  await page.getByRole("heading", { name: "Próximas sesións" }).waitFor();
+  await audit("activity-page");
+  await page.screenshot({ path: ".dev-logs/activity-page.png", fullPage: true });
   // The rest of the manager's pages, two of them also at phone widths.
   await auditRoute("admin-bookings", "/admin/portomar/reservas");
   const municipalCancel = page.getByRole("button", {

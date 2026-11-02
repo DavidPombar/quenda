@@ -17,6 +17,8 @@ All endpoints are public `GET` routes under `/v2/public/open-data/` and take the
 | `facilities.geojson` | `application/geo+json` | RFC 7946 `FeatureCollection` of `Point [longitude, latitude]`; `geometry` is `null` when a facility has no coordinates | `schemas/facilities.geojson.schema.json`                          |
 | `occupancy.json`     | `application/json`     | Aggregated occupancy, one item per facility × ISO week × weekday × local hour with open time (see below)               | `schemas/occupancy.schema.json`                                   |
 | `occupancy.csv`      | `text/csv`             | The same cells as RFC 4180 CSV, like `facilities.csv`                                                                  | `schemas/occupancy.tableschema.json`                              |
+| `activities.json`    | `application/ld+json`  | Activities and sports schools on offer (#97): schema.org `ItemList` of `EventSeries` with a weekly `Schedule`          | `schemas/activities.schema.json`                                  |
+| `activities.csv`     | `text/csv`             | One row per activity, like `facilities.csv`; lists (weekdays, dates without a session) are separated by spaces         | `schemas/activities.tableschema.json`                             |
 | `catalog.rdf`        | `application/rdf+xml`  | DCAT-AP-ES (NTI-RISP) catalogue, for the datos.gob.es federation                                                       | —                                                                 |
 | `catalog.jsonld`     | `application/ld+json`  | The same catalogue as JSON-LD, for CKAN harvesters such as abertos.xunta.gal                                           | —                                                                 |
 
@@ -102,6 +104,17 @@ Without parameters, the files cover the last 12 complete ISO weeks (Monday to th
 `from` and `to` (local dates, `YYYY-MM-DD`, both required) select another range of at most
 16 months; future dates show bookings already made. No booking, person or court identifier is
 published.
+
+## Activities
+
+`activities.json` and `activities.csv` publish the current offer of activities and sports schools
+(#97): published activities that have not ended. Each one carries its name, sport, facility and
+court, ISO weekdays and local times, first and last day, dates without a session, the RFC 5545
+`rrule` of its sessions, places, ages, enrolment dates and the general indicative price. In
+JSON-LD each activity is an `EventSeries` with an `eventSchedule` (`Schedule` with `byDay`,
+`startTime`, `endTime`, `repeatFrequency: P1W` and `exceptDate`), its `location`,
+`maximumAttendeeCapacity`, `typicalAgeRange` and an `Offer`. Drafts, cancelled activities and
+anything about the people enrolled are never published.
 
 ## Licence and publisher
 

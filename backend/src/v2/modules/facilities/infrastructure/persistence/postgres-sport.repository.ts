@@ -65,7 +65,8 @@ export class PostgresSportRepository extends SportRepository {
       (
         await this.db.query(
           `SELECT 1 FROM facilities WHERE tenant_id=$1 AND sport=$2
-          UNION ALL SELECT 1 FROM organizations WHERE tenant_id=$1 AND sport=$2 LIMIT 1`,
+          UNION ALL SELECT 1 FROM organizations WHERE tenant_id=$1 AND sport=$2
+          UNION ALL SELECT 1 FROM activities WHERE tenant_id=$1 AND sport=$2 LIMIT 1`,
           [tenantId, code],
         )
       ).rowCount,

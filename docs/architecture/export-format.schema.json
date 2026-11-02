@@ -1265,6 +1265,207 @@
         },
         "required": ["facilityId", "day", "accepted", "expired"]
       }
+    },
+    "activities": {
+      "type": "array",
+      "description": "Activities and sports schools (#97); optional. The weekly rule is kept as edited and as RFC 5545 text; activitySessions are authoritative",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "facilityId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "sport": {
+            "type": "string"
+          },
+          "nameGl": {
+            "type": "string"
+          },
+          "nameEs": {
+            "type": "string"
+          },
+          "descriptionGl": {
+            "type": "string"
+          },
+          "descriptionEs": {
+            "type": "string"
+          },
+          "weekdays": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            }
+          },
+          "startsLocal": {
+            "type": "string"
+          },
+          "endsLocal": {
+            "type": "string"
+          },
+          "startsOn": {
+            "type": "string"
+          },
+          "endsOn": {
+            "type": "string"
+          },
+          "exceptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schedule": {
+            "type": "string",
+            "description": "RFC 5545 VCALENDAR (RRULE + EXDATE)"
+          },
+          "places": {
+            "type": "integer"
+          },
+          "minAge": {
+            "type": ["integer", "null"]
+          },
+          "maxAge": {
+            "type": ["integer", "null"]
+          },
+          "enrolmentOpensOn": {
+            "type": "string"
+          },
+          "enrolmentClosesOn": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "published",
+              "cancelled"
+            ]
+          },
+          "cancellationReason": {
+            "type": ["string", "null"]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": ["string", "null"]
+          },
+          "cancelledAt": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "id",
+          "facilityId",
+          "resourceId",
+          "sport",
+          "nameGl",
+          "nameEs",
+          "descriptionGl",
+          "descriptionEs",
+          "weekdays",
+          "startsLocal",
+          "endsLocal",
+          "startsOn",
+          "endsOn",
+          "exceptions",
+          "schedule",
+          "places",
+          "minAge",
+          "maxAge",
+          "enrolmentOpensOn",
+          "enrolmentClosesOn",
+          "status",
+          "cancellationReason",
+          "createdAt",
+          "publishedAt",
+          "cancelledAt"
+        ]
+      }
+    },
+    "activityPrices": {
+      "type": "array",
+      "description": "Informative prices of activities (#97); optional",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "activityId": {
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "general",
+              "resident",
+              "family",
+              "local_club",
+              "minor",
+              "large_family",
+              "disability",
+              "senior"
+            ]
+          },
+          "priceCents": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "activityId",
+          "category",
+          "priceCents"
+        ]
+      }
+    },
+    "activitySessions": {
+      "type": "array",
+      "description": "Dated sessions of activities (#97); optional. Active sessions of published activities occupy their court on import",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "activityId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "cancelled"
+            ]
+          },
+          "cancellationReason": {
+            "type": ["string", "null"]
+          },
+          "sequence": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "activityId",
+          "start",
+          "end",
+          "status",
+          "cancellationReason",
+          "sequence"
+        ]
+      }
     }
   },
   "additionalProperties": false

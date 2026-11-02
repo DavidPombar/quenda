@@ -106,7 +106,7 @@ describe("Open data formats", () => {
       ...rdf.matchAll(/<dcat:Distribution rdf:about="([^"]+)"/g),
     ].map((match) => match[1].replaceAll("&amp;", "&"));
     expect(fromXml).toEqual(fromJson);
-    expect(fromJson).toHaveLength(5);
+    expect(fromJson).toHaveLength(7);
     expect(jsonld["dct:publisher"]["@id"]).toBe(
       "http://datos.gob.es/recurso/sector-publico/org/Organismo/L01360000",
     );

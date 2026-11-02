@@ -53,7 +53,9 @@ export type ErrorCode =
   | "waitlist_limit"
   | "slot_available"
   | "already_waiting"
-  | "offer_closed";
+  | "offer_closed"
+  | "activity_conflict"
+  | "activity_not_editable";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

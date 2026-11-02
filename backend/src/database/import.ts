@@ -43,6 +43,10 @@ export interface MunicipalityPackage {
   /** Waiting lists of slots that had not ended (#96); optional in older packages. */
   waitlistEntries?: Row[];
   waitlistOutcomes?: Row[];
+  /** Activities and sports schools (#97); optional in older packages. */
+  activities?: Row[];
+  activityPrices?: Row[];
+  activitySessions?: Row[];
 }
 const collections = [
   "facilities",
@@ -393,6 +397,50 @@ const tables = {
     accepted: "accepted",
     expired: "expired",
   },
+  activities: {
+    tenant_id: "tenantId",
+    id: "id",
+    facility_id: "facilityId",
+    resource_id: "resourceId",
+    sport: "sport",
+    name_gl: "nameGl",
+    name_es: "nameEs",
+    description_gl: "descriptionGl",
+    description_es: "descriptionEs",
+    weekdays: "weekdays",
+    starts_local: "startsLocal",
+    ends_local: "endsLocal",
+    starts_on: "startsOn",
+    ends_on: "endsOn",
+    exceptions: "exceptions",
+    schedule: "schedule",
+    places: "places",
+    min_age: "minAge",
+    max_age: "maxAge",
+    enrolment_opens_on: "enrolmentOpensOn",
+    enrolment_closes_on: "enrolmentClosesOn",
+    status: "status",
+    cancellation_reason: "cancellationReason",
+    created_at: "createdAt",
+    published_at: "publishedAt",
+    cancelled_at: "cancelledAt",
+  },
+  activity_prices: {
+    tenant_id: "tenantId",
+    activity_id: "activityId",
+    category: "category",
+    price_cents: "priceCents",
+  },
+  activity_sessions: {
+    tenant_id: "tenantId",
+    id: "id",
+    activity_id: "activityId",
+    starts_at: "start",
+    ends_at: "end",
+    status: "status",
+    cancellation_reason: "cancellationReason",
+    sequence: "sequence",
+  },
 } as const;
 /**
  * Loads a municipality export into this instance in one transaction (criterion 4,
@@ -537,6 +585,20 @@ export async function importMunicipality(
       JOIN resources r ON r.tenant_id=w.tenant_id AND r.id=w.resource_id
       LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
       WHERE w.tenant_id=$1 AND w.status='offered'`,
+      [tenantId],
+    );
+    await insert("activities", data.activities ?? []);
+    await insert("activity_prices", data.activityPrices ?? []);
+    await insert("activity_sessions", data.activitySessions ?? []);
+    // Active sessions of published activities occupy their units, exclusively, like club dates.
+    await client.query(
+      `INSERT INTO booking_units (tenant_id, session_id, unit_id, starts_at, ends_at)
+      SELECT x.tenant_id, x.id, coalesce(part.id, r.id), x.starts_at, x.ends_at
+      FROM activity_sessions x
+      JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id
+      JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
+      LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
+      WHERE x.tenant_id=$1 AND x.status='active' AND a.status='published'`,
       [tenantId],
     );
     await insert("notifications", data.notifications);
