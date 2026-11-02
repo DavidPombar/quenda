@@ -49,6 +49,32 @@ A hidden sport is no longer offered in filters and is refused for a new or chang
 (`400`), but those that already use it keep it. Open data takes the CNID and schema.org classification from this table
 (see [open data](open-data.md)).
 
+## Shared capacity (#95)
+
+A court without parts can take a **capacity** of 2–200 places (a pool lane, a gym, a room). Empty
+keeps it exclusive, as before. Managers set it in **Pistas e espazos** next to each court; a whole
+court with parts never takes one, because booking it holds all its parts.
+
+- **Places:** a booking of a court with a capacity takes one place. Its `booking_units` row is
+  `shared`; everything else (a whole court, a club's season slot, an exclusive court) is
+  exclusive and still guarded by the `booking_units_no_overlap` exclusion constraint.
+- **Counting:** `PostgresBookingUnitRepository.replace` counts the rows that overlap the slot
+  under the facility lock that every writer takes. A place enters while places remain and nothing
+  exclusive is there (`409 slot_taken` otherwise); an exclusive booking enters only when no place
+  is taken. Slots follow the facility's grid, so overlapping rows are places.
+- **One place per person** in a slot and court: a second one is `409 already_booked`. Group
+  bookings are out of scope.
+- **Availability:** slots of a shared court carry `capacity` and `remaining`. The citizen app
+  reads «Libre · 3 de 6 prazas» and shows «3 de 6» in the narrow grid cell, whose label reads it in
+  full. A full slot reads «Completa».
+- **Changes:** a court with upcoming bookings can only have its capacity raised; adding,
+  removing or lowering it is `409 resource_in_use`, like the other court changes.
+- **Indicators (M3):** a shared court counts open time once per place, and each place booked adds
+  its own time. A club slot or a whole-court booking holds every place. Open data's
+  `open_minutes` follows the same rule.
+- **Seasons:** a club's date on a lane that already has places is a conflict, as with any
+  booking.
+
 ## Photos
 
 - Up to ten photos per facility, PNG, JPEG or WebP, 4 MB each, stored in Postgres like the

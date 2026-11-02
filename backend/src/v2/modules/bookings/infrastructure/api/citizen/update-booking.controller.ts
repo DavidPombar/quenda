@@ -52,6 +52,7 @@ export class UpdateBookingController {
       | AppError<"cancellation_deadline">
       | AppError<"booking_cancelled">
       | AppError<"slot_taken">
+      | AppError<"already_booked">
       | AppError<"id_reused">
       | AppError<"resource_required">
       | AppError<"resource_unavailable">,
@@ -71,6 +72,7 @@ export class UpdateBookingController {
         throw new ProblemException(422, error);
       case "booking_cancelled":
         throw new ProblemException(422, error);
+      case "already_booked":
       case "slot_taken":
         throw new ProblemException(409, error);
       case "id_reused":

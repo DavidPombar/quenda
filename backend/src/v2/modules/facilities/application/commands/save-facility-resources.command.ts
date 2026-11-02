@@ -17,12 +17,13 @@ export type SaveFacilityResourcesError =
   | AppError<"resource_in_use">
   | AppError<"resource_has_history">;
 const audited = (
-  resource: Pick<Resource, "id" | "name" | "parentId" | "active">,
+  resource: Pick<Resource, "id" | "name" | "parentId" | "active" | "capacity">,
 ) => ({
   id: resource.id,
   name: resource.name,
   parentId: resource.parentId,
   active: resource.active,
+  capacity: resource.capacity,
 });
 /** Replaces the complete set of courts and spaces of a facility (M1). */
 @Injectable()

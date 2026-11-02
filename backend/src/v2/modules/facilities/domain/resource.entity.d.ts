@@ -12,4 +12,6 @@ export interface Resource {
   /** Composite resource this one is a part of; parts cannot have parts. */
   parentId: string | null;
   active: boolean;
+  /** People who can book the same slot (#95); null keeps the resource exclusive. Leaves only. */
+  capacity: number | null;
 }

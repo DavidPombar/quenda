@@ -11,6 +11,12 @@ export class ResourceResponseDTO {
   })
   parentId!: string | null;
   @ApiProperty({ description: "In service" }) active!: boolean;
+  @ApiProperty({
+    description: "People who can book the same slot; null when exclusive",
+    type: Number,
+    nullable: true,
+  })
+  capacity!: number | null;
   @ApiProperty({ description: "Display order within the facility" })
   position!: number;
   static from(value: Resource): ResourceResponseDTO {
@@ -19,6 +25,7 @@ export class ResourceResponseDTO {
       name: value.name,
       parentId: value.parentId,
       active: value.active,
+      capacity: value.capacity,
       position: value.position,
     };
   }

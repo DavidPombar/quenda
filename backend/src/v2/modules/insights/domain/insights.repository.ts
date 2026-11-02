@@ -8,6 +8,8 @@ export interface InsightsFacility {
   openingCalendar: string;
   followsMunicipalHolidays: boolean;
   unitIds: string[];
+  /** Places of each active shared unit (#95). */
+  capacities: Record<string, number>;
   /** Courts in service with their active units (a whole court's are its parts). */
   resources: {
     id: string;

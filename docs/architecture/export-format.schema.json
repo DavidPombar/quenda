@@ -283,6 +283,12 @@
           "active": {
             "type": "boolean"
           },
+          "capacity": {
+            "description": "Places of a shared court (#95). Optional; null or absent keeps it exclusive.",
+            "type": ["integer", "null"],
+            "minimum": 2,
+            "maximum": 200
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"

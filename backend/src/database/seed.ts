@@ -140,6 +140,12 @@ export async function seed(url = databaseUrl) {
         ],
       ] as const) {
         const id = `20000000-0000-4000-8000-0000000000${i}${j}`;
+        // Portomar's pool is open, so the demo shows lanes with shared places (#95).
+        const opened = i === 2 && j === 4;
+        const seeded = opened ? "active" : status;
+        const text = opened
+          ? "Piscina cuberta de 25 metros con catro rúas. Cada rúa admite ata seis persoas por quenda."
+          : description;
         await db.query(
           "INSERT INTO facilities VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(id) DO NOTHING",
           [
@@ -148,9 +154,9 @@ export async function seed(url = databaseUrl) {
             label,
             sport,
             address,
-            description,
+            text,
             accessible,
-            status,
+            seeded,
             60,
             price,
             openingCalendar(id),
@@ -160,8 +166,21 @@ export async function seed(url = databaseUrl) {
         // Demo facilities keep their seeded status since the calendar horizon.
         await db.query(
           "INSERT INTO facility_status_periods (tenant_id,facility_id,status,starts_at) VALUES ($1,$2,$3,'2000-01-01T00:00:00Z') ON CONFLICT DO NOTHING",
-          [tenant, id, status],
+          [tenant, id, seeded],
         );
+        // Demo databases seeded before #95 had this pool in maintenance; open it once, unless a
+        // manager has changed its status since.
+        if (seeded !== status)
+          await db.query(
+            `WITH opened AS (
+              UPDATE facility_status_periods SET status=$3 WHERE tenant_id=$1 AND facility_id=$2 AND status=$4
+                AND (SELECT count(*) FROM facility_status_periods p WHERE p.tenant_id=$1 AND p.facility_id=$2)=1
+              RETURNING facility_id
+            )
+            UPDATE facilities SET status=$3, description=CASE WHEN description=$5 THEN $6 ELSE description END
+            WHERE tenant_id=$1 AND id IN (SELECT facility_id FROM opened)`,
+            [tenant, id, seeded, status, description, text],
+          );
         // Fictitious positions in Galicia for the open data GeoJSON; a manager's values are kept.
         const [latitude, longitude] = i === 1 ? [42.61, -8.12] : [42.49, -8.86];
         await db.query(
@@ -329,13 +348,31 @@ async function seedResources(
     "INSERT INTO resources (id,tenant_id,facility_id,name,position) VALUES ($1,$2,$1,$3,0) ON CONFLICT(id) DO NOTHING",
     [facility, tenant, label],
   );
-  const courts: Record<number, { rename: string; others: string[] }> = {
-    1: { rename: "Pista 1", others: ["Pista 2"] },
+  const courts: Record<
+    number,
+    {
+      rename: string;
+      others: string[];
+      parts: boolean;
+      capacity: number | null;
+    }
+  > = {
+    1: { rename: "Pista 1", others: ["Pista 2"], parts: false, capacity: null },
     2: {
       rename: "Pista completa",
       others: ["Tercio A", "Tercio B", "Tercio C"],
+      parts: true,
+      capacity: null,
     },
   };
+  // Portomar's pool: four lanes of six places each, or the whole pool for a club (#95).
+  if (i === 2)
+    courts[4] = {
+      rename: "Piscina completa",
+      others: ["Rúa 1", "Rúa 2", "Rúa 3", "Rúa 4"],
+      parts: true,
+      capacity: 6,
+    };
   const plan = courts[j];
   if (!plan) return;
   await db.query(
@@ -344,8 +381,8 @@ async function seedResources(
   );
   for (const [index, name] of plan.others.entries())
     await db.query(
-      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id)
-      SELECT $1::uuid,$2::uuid,$3::uuid,$4::text,$5::int,$6::uuid
+      `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,capacity)
+      SELECT $1::uuid,$2::uuid,$3::uuid,$4::text,$5::int,$6::uuid,$7::int
       WHERE $6::uuid IS NULL OR NOT EXISTS (
         SELECT 1 FROM bookings WHERE tenant_id=$2 AND facility_id=$3 AND status='confirmed' AND ends_at>now()
       )
@@ -356,7 +393,8 @@ async function seedResources(
         facility,
         name,
         index + 1,
-        j === 2 ? facility : null,
+        plan.parts ? facility : null,
+        plan.capacity,
       ],
     );
 }

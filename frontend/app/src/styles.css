@@ -974,6 +974,9 @@ main :is(h1, h2)[tabindex="-1"] {
   font-size: var(--t-small);
   font-weight: 550;
 }
+.time-slot .slot-places {
+  font-weight: 450;
+}
 .time-slot:not(:disabled):hover {
   border-color: var(--court);
 }

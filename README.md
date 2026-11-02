@@ -36,8 +36,9 @@ obrigatorios **T1–T5** ([alcance](docs/contexto/01-alcance-funcional.md), [req
   buscador, filtros por deporte, acceso sen barreiras, fotos, mapa, normas, prezos por categoría e o
   horario da semana.
 - **Reservar en liña (C2):** dispoñibilidade real por día e pista, incluídas as pistas divididas en
-  partes que se bloquean entre si; o servidor impide os solapamentos e aplica os límites por
-  persoa e os prazos de reserva. Cando un día está cheo, Quenda suxire tres quendas libres a partir
+  partes que se bloquean entre si e as rúas ou salas con aforo, onde varias persoas reservan a
+  mesma quenda e a app di cantas prazas quedan; o servidor impide os solapamentos, non deixa
+  pasar do aforo e aplica os límites por persoa e os prazos de reserva. Cando un día está cheo, Quenda suxire tres quendas libres a partir
   do histórico agregado (sen IA).
 - **Cambiar e cancelar (C3)** dentro do prazo que fixe o concello.
 - **Historial e avisos (C4):** próximas reservas e historial, avisos na app, correo electrónico e
@@ -49,8 +50,8 @@ obrigatorios **T1–T5** ([alcance](docs/contexto/01-alcance-funcional.md), [req
 
 ### Para o concello (xestión municipal, `/admin/`)
 
-- **Instalacións (M1):** alta e edición de instalacións e das súas pistas ou rúas, fotos con texto
-  alternativo, estados activa, en mantemento e pechada, e peches cun motivo (as reservas afectadas
+- **Instalacións (M1):** alta e edición de instalacións e das súas pistas ou rúas (cun aforo
+  opcional para compartir a quenda), fotos con texto alternativo, estados activa, en mantemento e pechada, e peches cun motivo (as reservas afectadas
   cancélanse e avísase a quen as fixo).
 - **Horarios e normas (M2):** horarios de apertura en iCalendar (RFC 5545) con excepcións e
   importación de `.ics`, festivos locais, duración das quendas, prazo de reserva, prazo de
@@ -339,8 +340,8 @@ Quenda é unha V0 que funciona con datos ficticios; aínda non é un servizo que
 da veciñanza. Antes dun piloto real falta: a alta en produción con Cl@ve/Chave365, unha revisión
 de seguridade independente e unha revisión externa de accesibilidade con tecnoloxías de apoio
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), avisos por SMS, límites de peticións
-compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos e
-capacidade compartida (varias persoas nunha mesma rúa). Non se declara ningunha certificación RXPD,
+compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, lista
+de espera ([#96](https://github.com/DavidPombar/quenda/issues/96)) e reservas de grupo. Non se declara ningunha certificación RXPD,
 ENS nin WCAG; os concellos poden partir dos modelos en castelán do
 [rexistro de actividades de tratamento](docs/legal/registro-actividades-tratamiento.md) e do
 [contrato de encargo do tratamento](docs/legal/contrato-encargado-tratamiento.md), que debe revisar
@@ -403,8 +404,9 @@ council **M1–M3**, public reuse **R1–R3** and mandatory technical conditions
 - **Find a facility (C1):** a catalogue shared by every council of the instance, with search, sport
   filters, step-free access, photos, map, rules, prices by category and the week's opening hours.
 - **Book online (C2):** real availability by day and court, including courts split into parts that
-  block each other; overlap protection, per-person limits and booking windows are enforced by the
-  server. When a day is full, Quenda suggests three free slots from aggregated history (no AI).
+  block each other, and lanes or rooms with a capacity, where several people book the same slot
+  and the app says how many places are left; overlap protection, capacity, per-person limits and
+  booking windows are enforced by the server. When a day is full, Quenda suggests three free slots from aggregated history (no AI).
 - **Change and cancel (C3)** within the council's notice period.
 - **History and notices (C4):** upcoming bookings and history, in-app notices, email and Web Push
   for confirmations, changes, cancellations and reminders.
@@ -415,8 +417,8 @@ council **M1–M3**, public reuse **R1–R3** and mandatory technical conditions
 
 ### For the council (backoffice, `/admin/`)
 
-- **Facilities (M1):** create and edit facilities and their courts or lanes, photos with
-  alternative text, active, maintenance and closed states, closures with a reason (affected
+- **Facilities (M1):** create and edit facilities and their courts or lanes (with an optional
+  capacity to share a slot), photos with alternative text, active, maintenance and closed states, closures with a reason (affected
   bookings are cancelled and notified).
 - **Timetables and rules (M2):** opening hours as iCalendar (RFC 5545) with exceptions and `.ics`
   import, municipal holidays, slot duration, booking window, cancellation deadline, per-person
@@ -695,8 +697,8 @@ Quenda is a working V0 with synthetic data, not yet a service processing residen
 Still to do before a real pilot: production onboarding with Cl@ve/Chave365, an independent security
 review and an external accessibility review with assistive technology
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), SMS notices, rate limiting shared across
-API replicas, server-side pagination of long histories, payments and shared capacity (several
-people in one lane). No GDPR, ENS or WCAG certification is claimed; councils can start from the
+API replicas, server-side pagination of long histories, payments, a waiting
+list ([#96](https://github.com/DavidPombar/quenda/issues/96)) and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
 Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md)
 and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md), to be reviewed by
 their data protection officer.

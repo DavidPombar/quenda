@@ -265,11 +265,16 @@ export function FacilityDetails() {
                     <strong>
                       {timeLabel(slot.start, c.municipality.timezone)}
                     </strong>
-                    <span>
-                      {c.t(
-                        slot.status === "available" ? "slotFree" : slot.status,
-                      )}
-                    </span>
+                    {c.slotPlaces(slot) ? (
+                      <>
+                        <span>{c.t("slotFree")}</span>
+                        <span className="slot-places">
+                          {c.slotPlaces(slot)}
+                        </span>
+                      </>
+                    ) : (
+                      <span>{c.slotText(slot)}</span>
+                    )}
                   </button>
                 ))}
               </div>

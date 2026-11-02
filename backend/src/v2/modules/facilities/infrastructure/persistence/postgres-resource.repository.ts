@@ -6,7 +6,7 @@ import { ResourcePlan, ResourceUsage } from "../../domain/resource-plan";
 import { ResourceRepository } from "../../domain/resource.repository";
 import { Database } from "../../../../shared/infrastructure/database";
 const fields =
-  'id, tenant_id AS "tenantId", facility_id AS "facilityId", name, position, parent_id AS "parentId", active';
+  'id, tenant_id AS "tenantId", facility_id AS "facilityId", name, position, parent_id AS "parentId", active, capacity';
 @Injectable()
 export class PostgresResourceRepository extends ResourceRepository {
   constructor(private readonly db: Database) {
@@ -30,7 +30,7 @@ export class PostgresResourceRepository extends ResourceRepository {
   }
   async add(value: Resource) {
     await this.db.query(
-      "INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(id) DO NOTHING",
+      "INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active,capacity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING",
       [
         value.id,
         value.tenantId,
@@ -39,6 +39,7 @@ export class PostgresResourceRepository extends ResourceRepository {
         value.position,
         value.parentId,
         value.active,
+        value.capacity,
       ],
     );
   }
@@ -71,8 +72,8 @@ export class PostgresResourceRepository extends ResourceRepository {
   async apply(tenantId: string, facilityId: string, plan: ResourcePlan) {
     for (const item of plan.save)
       await this.db.query(
-        `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active) VALUES ($1,$2,$3,$4,$5,$6,$7)
-        ON CONFLICT(id) DO UPDATE SET name=$4, position=$5, parent_id=$6, active=$7
+        `INSERT INTO resources (id,tenant_id,facility_id,name,position,parent_id,active,capacity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        ON CONFLICT(id) DO UPDATE SET name=$4, position=$5, parent_id=$6, active=$7, capacity=$8
         WHERE resources.tenant_id=$2 AND resources.facility_id=$3`,
         [
           item.id,
@@ -82,6 +83,7 @@ export class PostgresResourceRepository extends ResourceRepository {
           item.position,
           item.parentId,
           item.active,
+          item.capacity,
         ],
       );
     if (plan.remove.length)

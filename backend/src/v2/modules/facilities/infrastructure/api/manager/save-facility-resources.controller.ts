@@ -28,7 +28,7 @@ export class SaveFacilityResourcesController {
   @ApiOperation({
     summary: "SaveFacilityResources",
     description:
-      "Replaces the facility's courts and spaces. Courts with upcoming reservations cannot be removed, taken out of service, moved or split (409 resource_in_use); courts with past reservations cannot be removed (409 resource_has_history).",
+      "Replaces the facility's courts and spaces. Courts with upcoming reservations cannot be removed, taken out of service, moved, split or have their capacity lowered, added or removed (409 resource_in_use); courts with past reservations cannot be removed (409 resource_has_history).",
   })
   @ApiResponse({
     status: 200,
@@ -44,7 +44,13 @@ export class SaveFacilityResourcesController {
     const result = await this.operation.execute({
       principal,
       facilityId: path.id,
-      resources: body.resources,
+      resources: body.resources.map((resource) => ({
+        id: resource.id,
+        name: resource.name,
+        parentId: resource.parentId,
+        active: resource.active,
+        capacity: resource.capacity ?? null,
+      })),
     });
     return result.fold(
       (resources) => resources.map(ResourceResponseDTO.from),

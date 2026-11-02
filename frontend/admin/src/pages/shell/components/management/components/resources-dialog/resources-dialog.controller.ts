@@ -4,6 +4,10 @@ import type { FormEvent } from "react";
 import { useSaveResourcesMutation } from "@/queries/facilities/save-resources.mutation";
 import type { Facility, ResourceDraft } from "@/types/models";
 import type { TextKey } from "@/services/i18n.service";
+/** Empty keeps a court exclusive; otherwise 2–200 people share each slot (#95). */
+const validCapacity = (capacity: number | null) =>
+  capacity === null ||
+  (Number.isInteger(capacity) && capacity >= 2 && capacity <= 200);
 export function useResourcesDialogController(args: {
   facility: Facility;
   t: (key: TextKey) => string;
@@ -12,14 +16,17 @@ export function useResourcesDialogController(args: {
   const [rows, setRows] = useState<ResourceDraft[]>(() =>
     [...(args.facility.resources ?? [])]
       .sort((a, b) => a.position - b.position)
-      .map(({ id, name, parentId, active }) => ({
+      .map(({ id, name, parentId, active, capacity }) => ({
         id,
         name,
         parentId,
         active,
+        capacity: capacity ?? null,
       })),
   );
-  const [invalid, setInvalid] = useState(false);
+  const [invalid, setInvalid] = useState<
+    "resourceNameRequired" | "resourceCapacityInvalid" | null
+  >(null);
   const mutation = useSaveResourcesMutation();
   const hasParts = (id: string) => rows.some((row) => row.parentId === id);
   /** Whole courts a row can be a part of: courts of their own, other than itself. */
@@ -29,7 +36,7 @@ export function useResourcesDialogController(args: {
     setRows((current) =>
       current.map((row) => (row.id === id ? { ...row, ...change } : row)),
     );
-    setInvalid(false);
+    setInvalid(null);
   }
   function move(index: number, by: -1 | 1) {
     setRows((current) => {
@@ -50,7 +57,7 @@ export function useResourcesDialogController(args: {
     const id = crypto.randomUUID();
     setRows((current) => [
       ...current,
-      { id, name: "", parentId: null, active: true },
+      { id, name: "", parentId: null, active: true, capacity: null },
     ]);
     // Focus the new name field once it renders.
     requestAnimationFrame(() =>
@@ -61,13 +68,23 @@ export function useResourcesDialogController(args: {
     event.preventDefault();
     const names = rows.map((row) => row.name.trim().toLocaleLowerCase());
     if (names.some((name) => !name) || new Set(names).size !== names.length) {
-      setInvalid(true);
+      setInvalid("resourceNameRequired");
+      return;
+    }
+    // Only courts without parts take a capacity; a whole court holds all its parts.
+    const drafts = rows.map((row) => ({
+      ...row,
+      name: row.name.trim(),
+      capacity: hasParts(row.id) ? null : row.capacity,
+    }));
+    if (drafts.some((row) => !validCapacity(row.capacity))) {
+      setInvalid("resourceCapacityInvalid");
       return;
     }
     try {
       await mutation.mutateAsync({
         facilityId: args.facility.id,
-        resources: rows.map((row) => ({ ...row, name: row.name.trim() })),
+        resources: drafts,
       });
       args.onClose(true);
     } catch {
@@ -77,6 +94,7 @@ export function useResourcesDialogController(args: {
   return {
     rows,
     invalid,
+    validCapacity,
     hasParts,
     parents,
     update,

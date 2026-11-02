@@ -63,8 +63,12 @@ describe("Court management in the backoffice (M1)", () => {
     const context = await tenant();
     const { court, whole, thirds } = await hall(context);
     expect(await courts(context, court.id)).toEqual([
-      { ...whole, position: 0 },
-      ...thirds.map((third, index) => ({ ...third, position: index + 1 })),
+      { ...whole, capacity: null, position: 0 },
+      ...thirds.map((third, index) => ({
+        ...third,
+        capacity: null,
+        position: index + 1,
+      })),
     ]);
     const begins = start();
     await post(context.citizen, "citizen/bookings", {

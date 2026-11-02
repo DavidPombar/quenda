@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import request from "supertest";
-import { Temporal } from "@js-temporal/polyfill";
 import {
+  citizen,
   del,
   facility,
   harness,
@@ -14,31 +14,11 @@ import {
   teardown,
   tenant,
   type Agent,
-  type Tenant,
 } from "./harness";
 beforeAll(setup);
 afterAll(teardown);
 function put(agent: Agent, path: string, body: unknown) {
   return agent.put(`/v2/${path}`).set("X-Quenda-Request", "1").send(body);
-}
-/** A second citizen in the same municipality, signed in through a stored session. */
-async function citizen(context: Tenant, displayName: string) {
-  const id = randomUUID();
-  const token = randomBytes(32).toString("hex");
-  await harness.db.query("INSERT INTO users VALUES ($1,$2,$3,'citizen')", [
-    id,
-    context.id,
-    displayName,
-  ]);
-  await harness.db.query("INSERT INTO sessions VALUES ($1,$2,$3,$4)", [
-    createHash("sha256").update(token).digest("hex"),
-    context.id,
-    id,
-    Temporal.Now.instant().add({ hours: 1 }).toString(),
-  ]);
-  const agent = request.agent(harness.app.getHttpServer());
-  agent.set("Cookie", `quenda_session=${token}`);
-  return { id, agent };
 }
 /** A municipality offering resident and family tariffs on a court priced 5 € in general. */
 async function pricedTenant() {

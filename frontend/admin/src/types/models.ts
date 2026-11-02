@@ -193,6 +193,8 @@ export interface Resource {
   name: string;
   parentId: string | null;
   active: boolean;
+  /** People who can book the same slot (#95); null when the court is exclusive. */
+  capacity: number | null;
   position: number;
 }
 export type ResourceDraft = Omit<Resource, "position">;

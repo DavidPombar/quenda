@@ -108,6 +108,62 @@ describe("Facility details with a single court", () => {
     await expect.element(page.getByRole("dialog")).toBeVisible();
   });
 });
+describe("Facility details with shared places (#95)", () => {
+  test("should say in text how many places are left and when a slot is full", async () => {
+    stubShell(true);
+    stubAvailability(facility, () => [
+      { ...slot, capacity: 6, remaining: 2 },
+      { ...later, status: "booked", capacity: 6, remaining: 0 },
+    ]);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await expect
+      .element(page.getByRole("button", { name: "10:00 Libre 2 de 6 prazas" }))
+      .toBeEnabled();
+    await expect
+      .element(page.getByRole("button", { name: "11:00 Completa" }))
+      .toBeDisabled();
+  });
+  test("should explain that the person already has a place in the slot", async () => {
+    stubShell(true);
+    stubAvailability(facility, () => [{ ...slot, capacity: 6, remaining: 5 }]);
+    stubJsonResponse({
+      path: "*/v2/citizen/bookings",
+      method: "POST",
+      response: {
+        code: "already_booked",
+        detail: "Xa tes unha praza nesta quenda.",
+      },
+      status: 409,
+    });
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    await page
+      .getByRole("button", { name: "10:00 Libre 5 de 6 prazas" })
+      .click();
+    await page.getByRole("button", { name: "Confirmar reserva" }).click();
+    await expect
+      .element(page.getByRole("alert"))
+      .toMatchTextContent("Xa tes unha praza nesta quenda.");
+  });
+  test("should show the short count in the grid and read it in full", async () => {
+    stubShell(true);
+    stubAvailability(pavilion, (resourceId) =>
+      resourceId === thirdA.id
+        ? [{ ...slot, capacity: 4, remaining: 3 }]
+        : [{ ...slot, status: "booked" }],
+    );
+    await commands.navigate(`/app/vilaverde/instalacions/${pavilion.id}`);
+    await render(<App />);
+    await page
+      .getByRole("combobox", { name: "Pista" })
+      .selectOptions("Todas as pistas");
+    const cell = page.getByRole("button", {
+      name: `Libre · 3 de 4 prazas, 10:00, ${thirdA.name}`,
+    });
+    await expect.element(cell).toHaveTextContent("3 de 4");
+  });
+});
 describe("Facility details with several courts", () => {
   test("should book the court chosen in the selector", async () => {
     stubShell(true);

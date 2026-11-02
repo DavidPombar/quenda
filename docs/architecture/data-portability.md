@@ -60,6 +60,10 @@ UUIDs), so references between records stay valid. `--slug` changes the public
 identifier when the target already uses that slug. A municipality whose id already
 exists in the target is refused: the import neither merges nor clones.
 
+Occupied units are rebuilt from bookings and season dates. A booking of a court with a
+`capacity` (#95) is rebuilt as one shared place; packages without `capacity` import every
+court as exclusive.
+
 ## Versioning
 
 - `version` changes only when a field is removed, renamed or changes meaning.

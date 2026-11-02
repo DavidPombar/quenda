@@ -320,10 +320,15 @@ const occupancyTable = {
       minimum: 0,
       maximum: 23,
     }),
-    field("open_minutes", "integer", "Open minutes, times active courts", {
-      required: true,
-      minimum: 1,
-    }),
+    field(
+      "open_minutes",
+      "integer",
+      "Open minutes, times active courts (or their places when shared)",
+      {
+        required: true,
+        minimum: 1,
+      },
+    ),
     field("booked_minutes", "integer", "Minutes held by confirmed bookings", {
       required: true,
       minimum: 0,
