@@ -319,14 +319,19 @@ export class PostgresSeasonRepository extends SeasonRepository {
   async findAllocation(tenantId: string, id: string) {
     const { rows } = await this.db.query<{
       id: string;
+      facilityId: string;
       cancelledAt: string | null;
     }>(
-      'SELECT id, cancelled_at AS "cancelledAt" FROM season_allocations WHERE tenant_id=$1 AND id=$2 FOR UPDATE',
+      'SELECT id, facility_id AS "facilityId", cancelled_at AS "cancelledAt" FROM season_allocations WHERE tenant_id=$1 AND id=$2 FOR UPDATE',
       [tenantId, id],
     );
     const row = rows[0];
     return row
-      ? { id: row.id, cancelledAt: optionalInstant(row.cancelledAt) }
+      ? {
+          id: row.id,
+          facilityId: row.facilityId,
+          cancelledAt: optionalInstant(row.cancelledAt),
+        }
       : null;
   }
   async listAllocations(tenantId: string, campaignId: string) {
@@ -365,14 +370,18 @@ export class PostgresSeasonRepository extends SeasonRepository {
     const { rows } = await this.db.query<{
       id: string;
       allocationId: string;
+      facilityId: string;
       status: "active" | "conflict" | "cancelled";
       start: string;
+      end: string;
     }>(
-      'SELECT id, allocation_id AS "allocationId", status, starts_at AS start FROM season_occurrences WHERE tenant_id=$1 AND id=$2 FOR UPDATE',
+      'SELECT o.id, o.allocation_id AS "allocationId", a.facility_id AS "facilityId", o.status, o.starts_at AS start, o.ends_at AS "end" FROM season_occurrences o JOIN season_allocations a ON a.tenant_id=o.tenant_id AND a.id=o.allocation_id WHERE o.tenant_id=$1 AND o.id=$2 FOR UPDATE OF o',
       [tenantId, id],
     );
     const row = rows[0];
-    return row ? { ...row, start: instant(row.start) } : null;
+    return row
+      ? { ...row, start: instant(row.start), end: instant(row.end) }
+      : null;
   }
   async cancelOccurrence(tenantId: string, id: string, reason: string) {
     await this.db.query(

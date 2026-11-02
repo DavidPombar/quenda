@@ -25,6 +25,7 @@ import {
   Outbox,
   queueBookingChange,
 } from "../../../../shared/application/outbox";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type ManageBookingError =
@@ -54,6 +55,7 @@ export class ManageBooking {
     private readonly audit: Audit,
     private readonly outbox: Outbox,
     private readonly units: BookingUnitRepository,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -138,6 +140,13 @@ export class ManageBooking {
         reason,
       },
     );
+    await this.waitlist.offer({
+      tenantId: existing.tenantId,
+      facilityId: existing.facilityId,
+      start: existing.start,
+      end: existing.end,
+      now,
+    });
     return Result.ok();
   }
   private async markNoShow(

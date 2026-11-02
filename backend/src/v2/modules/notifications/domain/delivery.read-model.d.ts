@@ -11,12 +11,17 @@ export interface Delivery {
   channel: MessageChannel;
   tenantId: string;
   userId: string;
-  bookingId: string;
+  /** The reservation, or null for a waiting-list offer (#96). */
+  bookingId: string | null;
+  waitlistEntryId: string | null;
   attempts: number;
   /** NULL when the account has no address or has been deleted. */
   email: string | null;
   locale: "gl" | "es";
-  bookingStatus: "confirmed" | "cancelled" | "no_show";
+  bookingStatus: "confirmed" | "cancelled" | "no_show" | null;
+  /** Until when an offer holds the place, and whether it is still open now. */
+  offerExpiresAt: Temporal.Instant | null;
+  offerOpen: boolean;
   municipality: {
     slug: string;
     name: string;

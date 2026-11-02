@@ -4,6 +4,7 @@ import { SeasonRepository } from "../../domain/season.repository";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CancelSeasonAllocationError =
@@ -15,6 +16,7 @@ export class CancelSeasonAllocation {
     private readonly seasons: SeasonRepository,
     private readonly clock: Clock,
     private readonly audit: Audit,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -29,11 +31,20 @@ export class CancelSeasonAllocation {
     const allocation = await this.seasons.findAllocation(tenantId, args.id);
     if (!allocation) return Result.err(failure("not_found"));
     if (allocation.cancelledAt) return Result.ok({ freed: 0 });
+    const now = this.clock.now();
     const freed = await this.seasons.cancelAllocation({
       tenantId,
       id: args.id,
       reason,
-      at: this.clock.now(),
+      at: now,
+    });
+    // Every freed date may go to someone waiting; entries only exist within the booking window.
+    await this.waitlist.offer({
+      tenantId,
+      facilityId: allocation.facilityId,
+      start: now,
+      end: now.add({ hours: 24 * 400 }),
+      now,
     });
     await this.audit.record(
       args.principal,

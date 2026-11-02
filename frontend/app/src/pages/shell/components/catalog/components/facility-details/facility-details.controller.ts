@@ -11,6 +11,8 @@ import { useGetFacilityQuery } from "@/queries/facilities/get-facility.query";
 import { useGetAvailabilityQuery } from "@/queries/facilities/get-availability.query";
 import { useCreateBookingMutation } from "@/queries/bookings/create-booking.mutation";
 import { useGetTariffQuery } from "@/queries/categories/get-tariff.query";
+import { useListWaitlistQuery } from "@/queries/waitlist/list-waitlist.query";
+import { useListBookingsQuery } from "@/queries/bookings/list-bookings.query";
 import { offeredPrices } from "@/services/tariff.service";
 import { today, timeLabel, longDayLabel } from "@/services/date.service";
 import { localized } from "@/services/catalog.service";
@@ -48,6 +50,12 @@ export function useFacilityDetailsController() {
   const [showPast, setShowPast] = useState(false);
   const [requestId, setRequestId] = useState("");
   const [chosenView, setChosenView] = useState("");
+  const [waiting, setWaiting] = useState<{
+    slot: Slot;
+    resource: Resource | null;
+  } | null>(null);
+  const waitlist = useListWaitlistQuery(context.session?.userId);
+  const mine = useListBookingsQuery(context.session?.userId);
   const availability = useGetAvailabilityQuery({
     slug: context.municipality.slug,
     id,
@@ -87,6 +95,37 @@ export function useFacilityDetailsController() {
     setSelected({ slot, resource });
     setRequestId(crypto.randomUUID());
     create.reset();
+  }
+  // A booked slot can be waited for when the council has a waiting list (#96); club slots cannot.
+  const waitlistOn = context.municipality.waitlistMaxEntries > 0;
+  // Nobody waits for a slot they already hold.
+  const own = (slot: Slot, resource: Resource | null) =>
+    (mine.data ?? []).some(
+      (booking) =>
+        booking.facilityId === id &&
+        booking.status === "confirmed" &&
+        booking.start === slot.start &&
+        (!resource || booking.resourceId === resource.id),
+    );
+  const canWait = (slot: Slot, resource: Resource | null) =>
+    waitlistOn && slot.status === "booked" && !own(slot, resource);
+  const entryFor = (slot: Slot, resource: Resource | null) =>
+    (waitlist.data ?? []).find(
+      (entry) =>
+        entry.facilityId === id &&
+        entry.start === slot.start &&
+        (!resource || entry.resourceId === resource.id),
+    ) ?? null;
+  /** Second line of a slot that can be waited for: on the list already, or the list itself. */
+  const waitNote = (slot: Slot, resource: Resource | null) =>
+    !canWait(slot, resource)
+      ? null
+      : context.t(
+          entryFor(slot, resource) ? "waitlistOnList" : "waitlistShort",
+        );
+  function choose(slot: Slot, resource: Resource | null) {
+    if (slot.status === "available") select(slot, resource);
+    else if (canWait(slot, resource)) setWaiting({ slot, resource });
   }
   function close() {
     setSelected(null);
@@ -175,7 +214,10 @@ export function useFacilityDetailsController() {
       active: resource.active,
       cells: visibleColumns.map((column) => {
         const slot = byStart.get(column.start);
-        const status = slot ? slotText(slot) : "";
+        const note = slot ? waitNote(slot, resource) : null;
+        const status = slot
+          ? `${slotText(slot)}${note ? `, ${note}` : ""}`
+          : "";
         return {
           start: column.start,
           slot,
@@ -192,8 +234,10 @@ export function useFacilityDetailsController() {
             .replace("{time}", column.label)
             .replace("{resource}", resource.name)
             .replace("{status}", status),
+          open:
+            !!slot && (slot.status === "available" || canWait(slot, resource)),
           select: () => {
-            if (slot) select(slot, resource);
+            if (slot) choose(slot, resource);
           },
         };
       }),
@@ -290,7 +334,21 @@ export function useFacilityDetailsController() {
       showResource && selected?.resource
         ? resourceLabel(selected.resource, resources)
         : "",
-    select: (slot: Slot) => select(slot, currentResource),
+    select: (slot: Slot) => choose(slot, currentResource),
+    canOpen: (slot: Slot) =>
+      slot.status === "available" || canWait(slot, currentResource),
+    waitNote: (slot: Slot) => waitNote(slot, currentResource),
+    waiting: waiting && {
+      ...waiting,
+      // The court is sent only when the facility has several, as for bookings.
+      resourceId: showResource && waiting.resource ? waiting.resource.id : null,
+      resourceName:
+        showResource && waiting.resource
+          ? resourceLabel(waiting.resource, resources)
+          : "",
+      entry: entryFor(waiting.slot, waiting.resource),
+    },
+    closeWaiting: () => setWaiting(null),
     close,
     reserve,
     create,

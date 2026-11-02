@@ -107,7 +107,11 @@ export abstract class SeasonRepository {
   abstract findAllocation(
     tenantId: string,
     id: string,
-  ): Promise<{ id: string; cancelledAt: Temporal.Instant | null } | null>;
+  ): Promise<{
+    id: string;
+    facilityId: string;
+    cancelledAt: Temporal.Instant | null;
+  } | null>;
   abstract listAllocations(
     tenantId: string,
     campaignId: string,
@@ -129,8 +133,10 @@ export abstract class SeasonRepository {
   ): Promise<{
     id: string;
     allocationId: string;
+    facilityId: string;
     status: "active" | "conflict" | "cancelled";
     start: Temporal.Instant;
+    end: Temporal.Instant;
   } | null>;
   /** Marks one date as cancelled and frees its units. */
   abstract cancelOccurrence(

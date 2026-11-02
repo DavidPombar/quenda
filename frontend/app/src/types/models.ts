@@ -63,6 +63,10 @@ export interface Municipality {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** Open waiting-list entries per person (#96); 0 means there is no waiting list. */
+  waitlistMaxEntries: number;
+  /** Minutes a freed place is held for the person it is offered to. */
+  waitlistOfferMinutes: number;
   /** SPDX identifier of the licence of the municipality's open data. */
   dataLicense: "CC-BY-4.0" | "CC-BY-SA-4.0" | "CC0-1.0" | "ODbL-1.0";
   /** Whether page views are counted in the council's own Umami (#25). */
@@ -215,7 +219,8 @@ export interface PenaltyStanding {
 }
 export interface Notification {
   id: string;
-  bookingId: string;
+  /** Null for a waiting-list offer (#96). */
+  bookingId: string | null;
   kind:
     | "confirmed"
     | "rescheduled"
@@ -224,7 +229,8 @@ export interface Notification {
     | "no_show"
     | "blocked"
     | "unblocked"
-    | "reminder";
+    | "reminder"
+    | "waitlist_offer";
   facilityName: string;
   resourceId: string;
   resourceName: string;
@@ -232,7 +238,25 @@ export interface Notification {
   details: {
     reason?: string;
     standing?: Omit<PenaltyStanding, "enabled">;
+    /** Until when a waiting-list offer holds the place. */
+    offerExpiresAt?: string;
   } | null;
+}
+/** A waiting list the person is on (#96): still waiting, or offered a freed place. */
+export interface WaitlistEntry {
+  id: string;
+  facilityId: string;
+  facilityName: string;
+  resourceId: string;
+  resourceName: string;
+  start: string;
+  end: string;
+  status: "waiting" | "offered";
+  /** Until when the place is held for the person; set while offered. */
+  offerExpiresAt: string | null;
+  /** Place among the people still waiting, from 1; 0 while offered. */
+  position: number;
+  createdAt: string;
 }
 export interface CalendarFeed {
   active: boolean;
@@ -274,6 +298,7 @@ export const NOTICE_KINDS = [
   "cancellation",
   "reminder",
   "penalty",
+  "waitlist",
 ] as const;
 export type NoticeKind = (typeof NOTICE_KINDS)[number];
 export type NoticeChannel = "email" | "push";

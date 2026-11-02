@@ -21,6 +21,7 @@ import {
   Outbox,
   queueBookingChange,
 } from "../../../../shared/application/outbox";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CreateBookingError =
@@ -32,6 +33,7 @@ export type CreateBookingError =
   | AppError<"booking_blocked">
   | AppError<"slot_taken">
   | AppError<"already_booked">
+  | AppError<"offer_closed">
   | AppError<"id_reused">;
 /** The units a booking of `resource` holds, and its place when the resource is shared (#95). */
 export function placeOf(
@@ -60,6 +62,7 @@ export class CreateBooking {
     private readonly audit: Audit,
     private readonly outbox: Outbox,
     private readonly blocks: BookingBlockRepository,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -67,6 +70,8 @@ export class CreateBooking {
     facilityId: string;
     resourceId?: string;
     start: string;
+    /** Accepts this waiting-list offer (#96): its held place becomes the reservation. */
+    waitlistEntryId?: string;
   }): Promise<Result<Booking, CreateBookingError>> {
     if (!can(args.principal, "bookings:own"))
       return Result.err(failure("forbidden"));
@@ -137,23 +142,37 @@ export class CreateBooking {
           tariffCategory: tariff.category,
           priceCents: tariff.priceCents,
         };
-        const rejected =
-          (await this.bookings.save(booking)).fold(
-            () => null,
-            (e) => e,
-          ) ??
-          (
-            await this.units.replace({
-              tenantId,
-              bookingId: booking.id,
-              ...placeOf(resource, resources, userId),
-              start: booking.start,
-              end: booking.end,
-            })
-          ).fold(
-            () => null,
-            (e) => e,
-          );
+        const saved = (await this.bookings.save(booking)).fold(
+          () => null,
+          (e) => e,
+        );
+        if (saved) return Result.err(saved);
+        if (
+          args.waitlistEntryId &&
+          !(await this.waitlist.accept({
+            tenantId,
+            userId,
+            entryId: args.waitlistEntryId,
+            resourceId: resource.id,
+            start: booking.start,
+            bookingId: booking.id,
+            timezone: settings.timezone,
+            now,
+          }))
+        )
+          return Result.err(failure("offer_closed"));
+        const rejected = (
+          await this.units.replace({
+            tenantId,
+            bookingId: booking.id,
+            ...placeOf(resource, resources, userId),
+            start: booking.start,
+            end: booking.end,
+          })
+        ).fold(
+          () => null,
+          (e) => e,
+        );
         if (rejected) return Result.err(rejected);
         const notificationId = this.ids.next();
         await this.notifications.add({

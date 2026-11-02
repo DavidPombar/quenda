@@ -20,6 +20,8 @@ export interface MunicipalitySnapshot {
     noShowLimit: number;
     noShowWindowDays: number;
     noShowBlockDays: number;
+    waitlistMaxEntries: number;
+    waitlistOfferMinutes: number;
     reminderHours: number;
     mailSenderName: string;
     mailReplyTo: string;
@@ -143,7 +145,9 @@ export interface MunicipalitySnapshot {
   notifications: {
     id: string;
     userId: string;
-    bookingId: string;
+    /** Null for a waiting-list offer, which belongs to its entry (#96). */
+    bookingId: string | null;
+    waitlistEntryId: string | null;
     kind: string;
     createdAt: Temporal.Instant;
     details: Record<string, unknown> | null;
@@ -198,7 +202,8 @@ export interface MunicipalitySnapshot {
   messages: {
     id: string;
     userId: string;
-    bookingId: string;
+    bookingId: string | null;
+    waitlistEntryId: string | null;
     kind: string;
     channel: string;
     dedupeKey: string;
@@ -278,6 +283,30 @@ export interface MunicipalitySnapshot {
     altEs: string;
     position: number;
     createdAt: string;
+  }[];
+  /**
+   * Waiting-list entries of slots that have not ended (#96); past ones are not exported.
+   * Instants are ISO strings as stored.
+   */
+  waitlistEntries: {
+    id: string;
+    userId: string;
+    facilityId: string;
+    resourceId: string;
+    start: string;
+    end: string;
+    createdAt: string;
+    status: string;
+    offeredAt: string | null;
+    offerExpiresAt: string | null;
+    bookingId: string | null;
+  }[];
+  /** Offers accepted and expired per facility and local day, without personal data. */
+  waitlistOutcomes: {
+    facilityId: string;
+    day: string;
+    accepted: number;
+    expired: number;
   }[];
 }
 

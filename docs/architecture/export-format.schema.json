@@ -107,6 +107,18 @@
         "noShowBlockDays": {
           "type": "integer"
         },
+        "waitlistMaxEntries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Open waiting-list entries per person (#96); 0 switches it off. Optional in older packages"
+        },
+        "waitlistOfferMinutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 240,
+          "description": "Minutes a freed place is held for the person offered it (#96). Optional in older packages"
+        },
         "reminderHours": {
           "type": "integer"
         },
@@ -473,7 +485,12 @@
             "type": "string"
           },
           "bookingId": {
-            "type": "string"
+            "type": ["string", "null"],
+            "description": "Null for a waiting-list offer, which belongs to its entry (#96)"
+          },
+          "waitlistEntryId": {
+            "type": ["string", "null"],
+            "description": "Waiting-list entry of an offer (#96); optional in older packages"
           },
           "kind": {
             "type": "string"
@@ -694,7 +711,12 @@
             "type": "string"
           },
           "bookingId": {
-            "type": "string"
+            "type": ["string", "null"],
+            "description": "Null for a waiting-list offer, which belongs to its entry (#96)"
+          },
+          "waitlistEntryId": {
+            "type": ["string", "null"],
+            "description": "Waiting-list entry of an offer (#96); optional in older packages"
           },
           "kind": {
             "type": "string"
@@ -1177,6 +1199,71 @@
           "position",
           "createdAt"
         ]
+      }
+    },
+    "waitlistEntries": {
+      "type": "array",
+      "description": "Waiting lists of slots that had not ended when exported (#96); past entries are not transferred. Optional in older packages",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string" },
+          "facilityId": { "type": "string" },
+          "resourceId": { "type": "string" },
+          "start": { "type": "string", "format": "date-time" },
+          "end": { "type": "string", "format": "date-time" },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Join time, which orders the queue"
+          },
+          "status": {
+            "enum": [
+              "waiting",
+              "offered",
+              "accepted",
+              "expired",
+              "left",
+              "closed"
+            ]
+          },
+          "offeredAt": { "type": ["string", "null"] },
+          "offerExpiresAt": {
+            "type": ["string", "null"],
+            "description": "Until when an open offer holds its place; the hold is derived again on import"
+          },
+          "bookingId": { "type": ["string", "null"] }
+        },
+        "required": [
+          "id",
+          "userId",
+          "facilityId",
+          "resourceId",
+          "start",
+          "end",
+          "createdAt",
+          "status",
+          "offeredAt",
+          "offerExpiresAt",
+          "bookingId"
+        ]
+      }
+    },
+    "waitlistOutcomes": {
+      "type": "array",
+      "description": "Waiting-list offers accepted and expired per facility and local day, without personal data (#96). Optional in older packages",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "facilityId": { "type": "string" },
+          "day": { "type": "string", "format": "date" },
+          "accepted": { "type": "integer", "minimum": 0 },
+          "expired": { "type": "integer", "minimum": 0 }
+        },
+        "required": ["facilityId", "day", "accepted", "expired"]
       }
     }
   },

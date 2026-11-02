@@ -42,6 +42,12 @@ export abstract class InsightsRepository {
     start: Temporal.Instant,
     end: Temporal.Instant,
   ): Promise<StatusPeriod[]>;
+  /** Waiting-list offers accepted and expired on slots of the local dates from–to (#96). */
+  abstract waitlistOutcomes(
+    tenantId: string,
+    from: Temporal.PlainDate,
+    to: Temporal.PlainDate,
+  ): Promise<{ accepted: number; expired: number }>;
   /** Bookings overlapping start–end, whatever their status. */
   abstract bookings(
     tenantId: string,

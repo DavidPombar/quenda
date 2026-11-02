@@ -74,6 +74,11 @@ describe("indicators", () => {
       .filter({ hasText: "Non presentados" })
       .element().parentElement!;
     expect(noShows.querySelector(".stat-value")?.textContent).toBe("3");
+    const accepted = page
+      .getByRole("term")
+      .filter({ hasText: "Ofertas da lista de espera aceptadas" })
+      .element().parentElement!;
+    expect(accepted.querySelector(".stat-value")?.textContent).toBe("2");
     await expect
       .element(
         page.getByRole("columnheader", {

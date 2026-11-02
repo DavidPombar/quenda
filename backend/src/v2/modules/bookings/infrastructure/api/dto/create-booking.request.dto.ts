@@ -20,4 +20,11 @@ export class CreateBookingRequestDTO {
   @IsString()
   @MaxLength(64)
   start!: string;
+  @ApiPropertyOptional({
+    description:
+      "Open waiting-list offer of the person for this slot, whose held place the booking takes (#96)",
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @IsUUID()
+  waitlistEntryId?: string;
 }

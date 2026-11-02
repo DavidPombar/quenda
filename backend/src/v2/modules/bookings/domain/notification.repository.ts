@@ -6,7 +6,9 @@ export abstract class NotificationRepository {
     id: string;
     tenantId: string;
     userId: string;
-    bookingId: string;
+    /** A notice is about a reservation, or about a waiting-list offer (#96). */
+    bookingId: string | null;
+    waitlistEntryId?: string;
     kind: Notification["kind"];
     createdAt: Temporal.Instant;
     details?: NotificationDetails;

@@ -3,7 +3,12 @@ import { ApiProperty } from "@nestjs/swagger";
 import { ExportedNotification } from "../../../domain/account.read-model";
 export class ExportedNotificationResponseDTO {
   @ApiProperty({ description: "Notification UUID" }) id!: string;
-  @ApiProperty({ description: "Related reservation" }) bookingId!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Related reservation; null for a waiting-list offer",
+  })
+  bookingId!: string | null;
   @ApiProperty({ description: "Event kind" })
   kind!: ExportedNotification["kind"];
   @ApiProperty({

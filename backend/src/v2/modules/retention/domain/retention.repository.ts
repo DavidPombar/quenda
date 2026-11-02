@@ -11,6 +11,14 @@ export abstract class RetentionRepository {
     tenantId: string,
     cutoff: Temporal.Instant,
   ): Promise<number>;
+  /**
+   * Removes waiting-list entries of slots that have ended, with any hold left (#96). The worker
+   * already does it on every pass; this is the backstop when the worker is not running.
+   */
+  abstract deleteWaitlist(
+    tenantId: string,
+    now: Temporal.Instant,
+  ): Promise<number>;
   /** Removes booking bans that ended before the cutoff. */
   abstract deleteBlocks(
     tenantId: string,

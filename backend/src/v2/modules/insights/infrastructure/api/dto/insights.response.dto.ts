@@ -26,6 +26,10 @@ export class InsightsResponseDTO {
   })
   occupancy!: number | null;
   @ApiProperty({ description: "Number of facilities" }) facilities!: number;
+  @ApiProperty({ description: "Waiting-list offers accepted (#96)" })
+  waitlistAccepted!: number;
+  @ApiProperty({ description: "Waiting-list offers that expired (#96)" })
+  waitlistExpired!: number;
   @ApiProperty({
     description: "Usage by facility",
     type: [FacilityUsageResponseDTO],
@@ -49,6 +53,8 @@ export class InsightsResponseDTO {
       openMinutes: value.openMinutes,
       occupancy: value.occupancy,
       facilities: value.facilities,
+      waitlistAccepted: value.waitlistAccepted,
+      waitlistExpired: value.waitlistExpired,
       byFacility: value.byFacility.map(FacilityUsageResponseDTO.from),
       heatmap: value.heatmap.map(HeatmapCellResponseDTO.from),
     };

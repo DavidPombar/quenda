@@ -5,6 +5,7 @@ import { SeasonRepository } from "../../domain/season.repository";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CancelSeasonOccurrenceError =
@@ -16,6 +17,7 @@ export class CancelSeasonOccurrence {
     private readonly seasons: SeasonRepository,
     private readonly clock: Clock,
     private readonly audit: Audit,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -30,9 +32,18 @@ export class CancelSeasonOccurrence {
     const occurrence = await this.seasons.findOccurrence(tenantId, args.id);
     if (!occurrence) return Result.err(failure("not_found"));
     if (occurrence.status === "cancelled") return Result.ok();
-    if (Temporal.Instant.compare(occurrence.start, this.clock.now()) <= 0)
+    const now = this.clock.now();
+    if (Temporal.Instant.compare(occurrence.start, now) <= 0)
       return Result.err(failure("validation"));
     await this.seasons.cancelOccurrence(tenantId, args.id, reason);
+    // The freed date may go to someone on its waiting list (#96).
+    await this.waitlist.offer({
+      tenantId,
+      facilityId: occurrence.facilityId,
+      start: occurrence.start,
+      end: occurrence.end,
+      now,
+    });
     await this.audit.record(
       args.principal,
       "season_occurrence.cancelled",

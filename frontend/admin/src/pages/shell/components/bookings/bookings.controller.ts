@@ -10,7 +10,7 @@ import {
   timeLabel,
   today,
 } from "@/services/date.service";
-import type { TextKey } from "@/services/i18n.service";
+import { fill, type TextKey } from "@/services/i18n.service";
 import type { AppContext } from "@/types/app-context";
 import type { BookingOutcome, ManagedBooking } from "@/types/models";
 const OUTCOME_LABELS = {
@@ -99,6 +99,11 @@ export function useBookingsController() {
     time,
     rowLabel: (key: TextKey, booking: ManagedBooking) =>
       `${t(key)}: ${booking.displayName}, ${time(booking)}`,
+    /** People waiting for the same slot of the court (#96); empty when nobody waits. */
+    waitingLabel: (booking: ManagedBooking) =>
+      booking.waiting > 0 && booking.outcome === "upcoming"
+        ? fill(t("bookingWaiting"), { count: booking.waiting })
+        : "",
     outcomeLabel: (booking: ManagedBooking) =>
       t(
         booking.outcome === "cancelled" &&

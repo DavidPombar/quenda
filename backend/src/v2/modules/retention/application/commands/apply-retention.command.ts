@@ -15,6 +15,7 @@ export interface RetentionSummary {
   messagesDeleted: number;
   checkInsDeleted: number;
   blocksDeleted: number;
+  waitlistDeleted: number;
   auditPseudonymised: number;
   sessionsPurged: number;
   loginAttemptsPurged: number;
@@ -58,6 +59,7 @@ export class ApplyRetention {
       cutoff,
     );
     const blocksDeleted = await this.retention.deleteBlocks(tenantId, cutoff);
+    const waitlistDeleted = await this.retention.deleteWaitlist(tenantId, now);
     const auditPseudonymised = await this.retention.pseudonymiseAudit(
       tenantId,
       cutoff,
@@ -83,6 +85,7 @@ export class ApplyRetention {
       messagesDeleted,
       checkInsDeleted,
       blocksDeleted,
+      waitlistDeleted,
       auditPseudonymised,
       sessionsPurged,
       loginAttemptsPurged,
@@ -96,6 +99,7 @@ export class ApplyRetention {
       messagesDeleted,
       checkInsDeleted,
       blocksDeleted,
+      waitlistDeleted,
       auditPseudonymised,
       sessionsPurged,
       loginAttemptsPurged,

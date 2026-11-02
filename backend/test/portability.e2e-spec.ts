@@ -292,7 +292,7 @@ describe("Municipality data portability", () => {
     );
     const pack = exported.body as Record<string, unknown> & {
       users: Record<string, unknown>[];
-      facilities: { openingCalendar: string }[];
+      facilities: { id: string; openingCalendar: string }[];
     };
     expect(pack).toMatchObject({
       format: "quenda-municipality-export",
@@ -332,7 +332,10 @@ describe("Municipality data portability", () => {
         }),
       ]),
     });
-    expect(pack.facilities[0].openingCalendar).toBe(openingCalendar(court));
+    // Facilities are ordered by id, so the court is found rather than assumed first.
+    expect(
+      pack.facilities.find((value) => value.id === court)?.openingCalendar,
+    ).toBe(openingCalendar(court));
     expect(JSON.stringify(pack)).not.toMatch(/token|session/i);
 
     await importMunicipality(pack, { url: targetUrl });

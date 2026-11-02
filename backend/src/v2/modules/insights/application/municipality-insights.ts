@@ -27,6 +27,9 @@ export interface Insights extends OccupancyReport {
   to: string;
   total: number;
   facilities: number;
+  /** Waiting-list offers accepted and let expire (#96). */
+  waitlistAccepted: number;
+  waitlistExpired: number;
 }
 export interface DateRange {
   from: Temporal.PlainDate;
@@ -95,6 +98,11 @@ export class MunicipalityInsights {
       ...range,
       facilities: activities,
     });
+    const waitlist = await this.repository.waitlistOutcomes(
+      settings.id,
+      range.from,
+      range.to,
+    );
     return {
       ...report,
       slug: settings.slug,
@@ -102,6 +110,8 @@ export class MunicipalityInsights {
       to: range.to.toString(),
       total: report.confirmed + report.cancelled + report.noShows,
       facilities: facilities.length,
+      waitlistAccepted: waitlist.accepted,
+      waitlistExpired: waitlist.expired,
     };
   }
   /** Occupancy by facility × ISO week × weekday × hour, published as open data (#21). */

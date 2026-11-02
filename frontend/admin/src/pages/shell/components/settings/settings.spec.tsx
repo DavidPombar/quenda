@@ -75,6 +75,11 @@ describe("municipal settings", () => {
         name: "Prazo para cambiar ou cancelar (horas antes)",
       })
       .fill("48");
+    await rules
+      .getByRole("spinbutton", {
+        name: "Minutos para confirmar unha praza que queda libre",
+      })
+      .fill("15");
     await rules.getByRole("button", { name: "Gardar cambios" }).click();
     await expect
       .element(rules.getByRole("status"))
@@ -83,6 +88,8 @@ describe("municipal settings", () => {
       advanceDays: 14,
       cancellationHours: 48,
       maxActiveBookings: 5,
+      waitlistMaxEntries: 3,
+      waitlistOfferMinutes: 15,
     });
   });
 

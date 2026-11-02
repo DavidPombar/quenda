@@ -40,6 +40,9 @@ export interface MunicipalityPackage {
   /** Sports catalogue and facility photos (#26); optional in older packages. */
   sports?: Row[];
   facilityPhotos?: Row[];
+  /** Waiting lists of slots that had not ended (#96); optional in older packages. */
+  waitlistEntries?: Row[];
+  waitlistOutcomes?: Row[];
 }
 const collections = [
   "facilities",
@@ -90,6 +93,8 @@ const tables = {
     no_show_limit: "noShowLimit",
     no_show_window_days: "noShowWindowDays",
     no_show_block_days: "noShowBlockDays",
+    waitlist_max_entries: "waitlistMaxEntries",
+    waitlist_offer_minutes: "waitlistOfferMinutes",
     reminder_hours: "reminderHours",
     mail_sender_name: "mailSenderName",
     mail_reply_to: "mailReplyTo",
@@ -202,6 +207,7 @@ const tables = {
     id: "id",
     user_id: "userId",
     booking_id: "bookingId",
+    waitlist_entry_id: "waitlistEntryId",
     kind: "kind",
     created_at: "createdAt",
     details: "details",
@@ -355,6 +361,7 @@ const tables = {
     id: "id",
     user_id: "userId",
     booking_id: "bookingId",
+    waitlist_entry_id: "waitlistEntryId",
     kind: "kind",
     channel: "channel",
     dedupe_key: "dedupeKey",
@@ -364,6 +371,27 @@ const tables = {
     locked_until: "lockedUntil",
     sent_at: "sentAt",
     last_error: "lastError",
+  },
+  waitlist_entries: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    facility_id: "facilityId",
+    resource_id: "resourceId",
+    starts_at: "start",
+    ends_at: "end",
+    created_at: "createdAt",
+    status: "status",
+    offered_at: "offeredAt",
+    offer_expires_at: "offerExpiresAt",
+    booking_id: "bookingId",
+  },
+  waitlist_outcomes: {
+    tenant_id: "tenantId",
+    facility_id: "facilityId",
+    day: "day",
+    accepted: "accepted",
+    expired: "expired",
   },
 } as const;
 /**
@@ -496,6 +524,19 @@ export async function importMunicipality(
       JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
       LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
       WHERE s.tenant_id=$1 AND s.status='active'`,
+      [tenantId],
+    );
+    await insert("waitlist_entries", data.waitlistEntries ?? []);
+    await insert("waitlist_outcomes", data.waitlistOutcomes ?? []);
+    // An open offer holds its place again, as a booking of that person would (#96).
+    await client.query(
+      `INSERT INTO booking_units (tenant_id, waitlist_entry_id, unit_id, starts_at, ends_at, shared)
+      SELECT w.tenant_id, w.id, coalesce(part.id, r.id), w.starts_at, w.ends_at,
+        part.id IS NULL AND r.capacity IS NOT NULL
+      FROM waitlist_entries w
+      JOIN resources r ON r.tenant_id=w.tenant_id AND r.id=w.resource_id
+      LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id
+      WHERE w.tenant_id=$1 AND w.status='offered'`,
       [tenantId],
     );
     await insert("notifications", data.notifications);

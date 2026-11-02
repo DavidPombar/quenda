@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { MunicipalityExport } from "../../../domain/municipality-snapshot.read-model";
 export const EXPORT_FORMAT = "quenda-municipality-export";
 export const EXPORT_VERSION = 2;
@@ -24,6 +24,8 @@ class ExportedMunicipalityDTO {
   @ApiProperty() noShowLimit!: number;
   @ApiProperty() noShowWindowDays!: number;
   @ApiProperty() noShowBlockDays!: number;
+  @ApiPropertyOptional() waitlistMaxEntries?: number;
+  @ApiPropertyOptional() waitlistOfferMinutes?: number;
   @ApiProperty() reminderHours!: number;
   @ApiProperty() mailSenderName!: string;
   @ApiProperty() mailReplyTo!: string;
@@ -131,7 +133,9 @@ class ExportedBookingDTO {
 class ExportedNotificationDTO {
   @ApiProperty() id!: string;
   @ApiProperty() userId!: string;
-  @ApiProperty() bookingId!: string;
+  @ApiProperty({ type: String, nullable: true }) bookingId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  waitlistEntryId!: string | null;
   @ApiProperty() kind!: string;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
   @ApiProperty({ type: Object, additionalProperties: true, nullable: true })
@@ -192,7 +196,9 @@ class ExportedNotificationPreferenceDTO {
 class ExportedMessageDTO {
   @ApiProperty() id!: string;
   @ApiProperty() userId!: string;
-  @ApiProperty() bookingId!: string;
+  @ApiProperty({ type: String, nullable: true }) bookingId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  waitlistEntryId!: string | null;
   @ApiProperty() kind!: string;
   @ApiProperty() channel!: string;
   @ApiProperty() dedupeKey!: string;
@@ -314,10 +320,40 @@ class ExportedFacilityPhotoDTO {
   @ApiProperty() position!: number;
   @ApiProperty() createdAt!: string;
 }
+class ExportedWaitlistEntryDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() userId!: string;
+  @ApiProperty() facilityId!: string;
+  @ApiProperty() resourceId!: string;
+  @ApiProperty() start!: string;
+  @ApiProperty() end!: string;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({
+    enum: ["waiting", "offered", "accepted", "expired", "left", "closed"],
+  })
+  status!: string;
+  @ApiProperty({ type: String, nullable: true }) offeredAt!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  offerExpiresAt!: string | null;
+  @ApiProperty({ type: String, nullable: true }) bookingId!: string | null;
+}
+class ExportedWaitlistOutcomeDTO {
+  @ApiProperty() facilityId!: string;
+  @ApiProperty({ description: "Local date of the slots" }) day!: string;
+  @ApiProperty() accepted!: number;
+  @ApiProperty() expired!: number;
+}
 export class MunicipalityExportResponseDTO {
   @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
   facilityPhotos!: ExportedFacilityPhotoDTO[];
+  @ApiProperty({
+    type: [ExportedWaitlistEntryDTO],
+    description: "Waiting-list entries of slots that have not ended (#96)",
+  })
+  waitlistEntries!: ExportedWaitlistEntryDTO[];
+  @ApiProperty({ type: [ExportedWaitlistOutcomeDTO] })
+  waitlistOutcomes!: ExportedWaitlistOutcomeDTO[];
   @ApiProperty({ type: [ExportedOrganizationDTO] })
   organizations!: ExportedOrganizationDTO[];
   @ApiProperty({ type: [ExportedSeasonCampaignDTO] })
@@ -396,6 +432,8 @@ export class MunicipalityExportResponseDTO {
       seasonOccurrences: snapshot.seasonOccurrences,
       sports: snapshot.sports,
       facilityPhotos: snapshot.facilityPhotos,
+      waitlistEntries: snapshot.waitlistEntries,
+      waitlistOutcomes: snapshot.waitlistOutcomes,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

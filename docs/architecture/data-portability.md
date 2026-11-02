@@ -24,7 +24,7 @@ manager can only export their own. The file is named
 | `facilityStatusPeriods` | Facility status history for reproducible range indicators. Optional in older packages, which fall back to the current status. |
 | `facilityPrices`, `userCategories` | Category prices and verification/request records, including nullable decision times. Optional for older packages. |
 | `bookings` | All statuses, including no-shows and anonymised history, the booked court (`resourceId`), the applied tariff and price, cancellation details and calendar revision. The occupied units are derived on import from the court and its parts |
-| `notifications` | In-app notices and their details |
+| `notifications` | In-app notices and their details; a waiting-list offer carries `waitlistEntryId` instead of `bookingId` |
 | `auditEvents` | Audit trail, including nullable actors, actor role and details |
 | `consents`, `legalTexts` | Accepted privacy notice versions and their complete bilingual texts |
 | `logos` | Image bytes encoded as base64, content type, hash and update time |
@@ -33,6 +33,7 @@ manager can only export their own. The file is named
 | `messages` | Transactional email outbox, including delivery state, attempts and deduplication keys |
 | `organizations`, `seasonCampaigns`, `seasonAllocations`, `seasonOccurrences` | Season allocation to clubs (#17): clubs, campaigns with their facilities and published criteria, weekly slots with an informative RFC 5545 `rrule`, and every dated occurrence with its status (active, conflict or cancelled). Active occurrences occupy their court units again on import. Optional in older packages |
 | `sports`, `facilityPhotos` | Sports catalogue (#26): codes, names in Galician and Spanish, CNID and schema.org classification, hidden flag and order; and facility photos as base64 with their alternative texts. Packages without a catalogue get the initial one. Optional in older packages |
+| `waitlistEntries`, `waitlistOutcomes` | Waiting lists (#96) of slots that had not ended, in queue order, with the offer's times; an open offer holds its place again on import. Entries of past slots are not transferred. Offers accepted and expired per facility and day, without people, for the indicators. Optional in older packages |
 
 Sessions and calendar subscription credentials are deliberately excluded. People
 sign in again and create new subscription links on the destination. Deleted

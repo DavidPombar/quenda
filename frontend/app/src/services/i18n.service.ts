@@ -478,6 +478,31 @@ const gl = {
   facilityMaintenanceTitle: "Instalación en mantemento",
   facilityUnavailableBody:
     "Agora mesmo non se pode reservar. Consulta o horario e volve máis adiante, ou escolle outra instalación.",
+  waitlistShort: "Lista de espera",
+  waitlistOnList: "Estás na lista",
+  waitlistTitle: "Quenda ocupada",
+  waitlistBody:
+    "Esta quenda está reservada. Se queda libre unha praza, gardámola para ti durante {minutes} minutos e avisámoste aquí, por correo e no dispositivo se tes os avisos activados. Ninguén reserva por ti: es ti quen confirma.",
+  waitlistJoin: "Avisarme se queda libre",
+  waitlistJoined: "Xa estás na lista de espera. Posto {position}.",
+  waitlistOfferedHere:
+    "Quedou libre unha praza para ti. Confírmaa nas túas reservas antes das {time}.",
+  waitlistTab: "En espera",
+  waitlistEmpty: "Non estás en ningunha lista de espera.",
+  waitlistEmptyBody:
+    "Cando unha quenda estea ocupada, podes apuntarte para que che avisemos se queda libre.",
+  waitlistPosition: "Posto {position} na lista",
+  waitlistHeld: "Praza gardada para ti ata as {time}",
+  waitlistConfirm: "Confirmar reserva",
+  waitlistLeave: "Saír da lista",
+  waitlistOfferBanner: "Quedou libre unha praza que esperabas.",
+  waitlistOfferSee: "Ver a oferta",
+  acceptOfferTitle: "Confirmar a praza",
+  acceptOfferBody:
+    "Confírmaa antes das {time}. Se non, a praza pasará á seguinte persoa da lista.",
+  noticeWaitlistOffer: "Praza libre na lista de espera",
+  noticeKindWaitlist: "Listas de espera",
+  understood: "De acordo",
 } as const;
 export type TextKey = keyof typeof gl;
 const es: Record<TextKey, string> = {
@@ -937,6 +962,31 @@ const es: Record<TextKey, string> = {
   facilityMaintenanceTitle: "Instalación en mantenimiento",
   facilityUnavailableBody:
     "Ahora mismo no se puede reservar. Consulta el horario y vuelve más adelante, o elige otra instalación.",
+  waitlistShort: "Lista de espera",
+  waitlistOnList: "Estás en la lista",
+  waitlistTitle: "Turno ocupado",
+  waitlistBody:
+    "Este turno está reservado. Si queda libre una plaza, la guardamos para ti durante {minutes} minutos y te avisamos aquí, por correo y en el dispositivo si tienes los avisos activados. Nadie reserva por ti: eres tú quien confirma.",
+  waitlistJoin: "Avisarme si queda libre",
+  waitlistJoined: "Ya estás en la lista de espera. Puesto {position}.",
+  waitlistOfferedHere:
+    "Ha quedado libre una plaza para ti. Confírmala en tus reservas antes de las {time}.",
+  waitlistTab: "En espera",
+  waitlistEmpty: "No estás en ninguna lista de espera.",
+  waitlistEmptyBody:
+    "Cuando un turno esté ocupado, puedes apuntarte para que te avisemos si queda libre.",
+  waitlistPosition: "Puesto {position} en la lista",
+  waitlistHeld: "Plaza guardada para ti hasta las {time}",
+  waitlistConfirm: "Confirmar reserva",
+  waitlistLeave: "Salir de la lista",
+  waitlistOfferBanner: "Ha quedado libre una plaza que esperabas.",
+  waitlistOfferSee: "Ver la oferta",
+  acceptOfferTitle: "Confirmar la plaza",
+  acceptOfferBody:
+    "Confírmala antes de las {time}. Si no, la plaza pasará a la siguiente persona de la lista.",
+  noticeWaitlistOffer: "Plaza libre en la lista de espera",
+  noticeKindWaitlist: "Listas de espera",
+  understood: "De acuerdo",
 };
 export function translate(locale: Locale, key: TextKey): string {
   return (locale === "es" ? es : gl)[key];

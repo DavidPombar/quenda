@@ -5,6 +5,10 @@ import { BookingHistoryResponseDTO } from "./booking-history.response.dto";
 export class ManagedBookingResponseDTO extends BookingHistoryResponseDTO {
   @ApiProperty({ description: "Display name of the person" })
   displayName!: string;
+  @ApiProperty({
+    description: "People on the waiting list of the same slot of the court",
+  })
+  waiting!: number;
   @ApiProperty({ description: "Started today and still confirmed" })
   canMarkNoShow!: boolean;
   @ApiProperty({ description: "Marked as no-show; can be reverted any time" })
@@ -15,6 +19,7 @@ export class ManagedBookingResponseDTO extends BookingHistoryResponseDTO {
     return {
       ...BookingHistoryResponseDTO.from(value),
       displayName: value.displayName,
+      waiting: value.waiting,
       canMarkNoShow: value.canMarkNoShow,
       canRevert: value.canRevert,
       canCancel: value.canCancel,

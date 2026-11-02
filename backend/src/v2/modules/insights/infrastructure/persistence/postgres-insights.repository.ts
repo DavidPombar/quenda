@@ -41,6 +41,20 @@ export class PostgresInsightsRepository extends InsightsRepository {
       end: row.end === null ? null : Temporal.Instant.from(row.end),
     }));
   }
+  async waitlistOutcomes(
+    tenantId: string,
+    from: Temporal.PlainDate,
+    to: Temporal.PlainDate,
+  ) {
+    const { rows } = await this.db.query<{
+      accepted: number;
+      expired: number;
+    }>(
+      "SELECT COALESCE(sum(accepted),0)::int AS accepted, COALESCE(sum(expired),0)::int AS expired FROM waitlist_outcomes WHERE tenant_id=$1 AND day BETWEEN $2 AND $3",
+      [tenantId, from.toString(), to.toString()],
+    );
+    return rows[0]!;
+  }
   async bookings(
     tenantId: string,
     start: Temporal.Instant,

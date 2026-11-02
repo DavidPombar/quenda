@@ -2137,3 +2137,43 @@ a.account:hover .account-name strong {
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* Waiting list (#96): a full slot that can be waited for looks taken but stays operable. */
+.time-slot.booked:not(:disabled) {
+  background: var(--paper);
+  border: 1px dashed var(--ink-2);
+  color: var(--ink-2);
+}
+.time-slot.booked:not(:disabled):hover {
+  border-style: solid;
+  border-color: var(--court);
+}
+.time-slot .slot-waitlist {
+  color: var(--court);
+  font-weight: 650;
+}
+.offer-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--court);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+  color: var(--court);
+}
+.offer-banner p {
+  flex: 1 1 12rem;
+  margin: 0;
+  color: var(--ink);
+  font-weight: 650;
+}
+.booking-status.waiting {
+  color: var(--ink-2);
+}
+.waitlist-row.offered {
+  border-left: 4px solid var(--court);
+}

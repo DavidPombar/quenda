@@ -39,7 +39,9 @@ obrigatorios **T1–T5** ([alcance](docs/contexto/01-alcance-funcional.md), [req
   partes que se bloquean entre si e as rúas ou salas con aforo, onde varias persoas reservan a
   mesma quenda e a app di cantas prazas quedan; o servidor impide os solapamentos, non deixa
   pasar do aforo e aplica os límites por persoa e os prazos de reserva. Cando un día está cheo, Quenda suxire tres quendas libres a partir
-  do histórico agregado (sen IA).
+  do histórico agregado (sen IA), e quen queira pode apuntarse á lista de espera dunha quenda
+  ocupada: se queda libre unha praza, gárdaselle durante un tempo e avísase na app, por correo e no
+  dispositivo ([lista de espera](docs/architecture/waitlist.md)).
 - **Cambiar e cancelar (C3)** dentro do prazo que fixe o concello.
 - **Historial e avisos (C4):** próximas reservas e historial, avisos na app, correo electrónico e
   Web Push para confirmacións, cambios, cancelacións e lembretes.
@@ -341,7 +343,7 @@ da veciñanza. Antes dun piloto real falta: a alta en produción con Cl@ve/Chave
 de seguridade independente e unha revisión externa de accesibilidade con tecnoloxías de apoio
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), avisos por SMS, límites de peticións
 compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, lista
-de espera ([#96](https://github.com/DavidPombar/quenda/issues/96)) e reservas de grupo. Non se declara ningunha certificación RXPD,
+de espera para tempadas e actividades ([#97](https://github.com/DavidPombar/quenda/issues/97)) e reservas de grupo. Non se declara ningunha certificación RXPD,
 ENS nin WCAG; os concellos poden partir dos modelos en castelán do
 [rexistro de actividades de tratamento](docs/legal/registro-actividades-tratamiento.md) e do
 [contrato de encargo do tratamento](docs/legal/contrato-encargado-tratamiento.md), que debe revisar
@@ -352,7 +354,7 @@ a súa persoa delegada de protección de datos.
 | Área | Documentos |
 |---|---|
 | Operación (en castelán) | [Guía](docs/operacion/README.md) · [despregamento nun concello](docs/operacion/despliegue-concello.md) · [despregamento nunha deputación](docs/operacion/despliegue-deputacion.md) · [alta dun concello](docs/operacion/alta-concello.md) · [copias de seguridade](docs/operacion/copias-de-seguridad.md) · [actualizacións](docs/operacion/actualizacion.md) · [soporte](docs/operacion/soporte.md) · [plan de implantación](docs/operacion/plan-implantacion.md) · [kit ENS](docs/operacion/ens) |
-| Arquitectura (en inglés) | [Implementación](docs/architecture/implementation.md) · [identidade](docs/architecture/identity.md) · [avisos](docs/architecture/notifications.md) · [calendarios](docs/architecture/calendars.md) · [catálogo](docs/architecture/catalogue.md) · [tempadas](docs/architecture/seasons.md) · [control de accesos](docs/architecture/access-control.md) · [app instalable](docs/architecture/pwa.md) · [analítica](docs/architecture/analytics.md) · [migracións](docs/architecture/migrations.md) |
+| Arquitectura (en inglés) | [Implementación](docs/architecture/implementation.md) · [identidade](docs/architecture/identity.md) · [avisos](docs/architecture/notifications.md) · [calendarios](docs/architecture/calendars.md) · [catálogo](docs/architecture/catalogue.md) · [tempadas](docs/architecture/seasons.md) · [lista de espera](docs/architecture/waitlist.md) · [control de accesos](docs/architecture/access-control.md) · [app instalable](docs/architecture/pwa.md) · [analítica](docs/architecture/analytics.md) · [migracións](docs/architecture/migrations.md) |
 | Datos e dereitos | [Datos abertos](docs/architecture/open-data.md) · [portabilidade dos datos](docs/architecture/data-portability.md) · [protección de datos](docs/architecture/data-protection.md) · [modelos legais](docs/legal) |
 | Accesibilidade e deseño | [Matriz WCAG 2.1 AA](docs/architecture/accessibility.md) · [pautas de deseño](docs/architecture/design-guidelines.md) |
 | Certame | [Alcance](docs/contexto/01-alcance-funcional.md) · [requisitos técnicos](docs/contexto/02-requisitos-tecnicos.md) · [valoración](docs/contexto/03-concurso-presentacion-valoracion.md) · [folla de ruta](docs/memoria/roadmap.md) · [investigación](docs/investigacion/00-resumen-ejecutivo.md) |
@@ -406,7 +408,9 @@ council **M1–M3**, public reuse **R1–R3** and mandatory technical conditions
 - **Book online (C2):** real availability by day and court, including courts split into parts that
   block each other, and lanes or rooms with a capacity, where several people book the same slot
   and the app says how many places are left; overlap protection, capacity, per-person limits and
-  booking windows are enforced by the server. When a day is full, Quenda suggests three free slots from aggregated history (no AI).
+  booking windows are enforced by the server. When a day is full, Quenda suggests three free slots from aggregated history (no AI), and people
+  can join the waiting list of a full slot: a freed place is held for the first of them for a while
+  and they are told in the app, by email and on their device ([waiting list](docs/architecture/waitlist.md)).
 - **Change and cancel (C3)** within the council's notice period.
 - **History and notices (C4):** upcoming bookings and history, in-app notices, email and Web Push
   for confirmations, changes, cancellations and reminders.
@@ -698,7 +702,7 @@ Still to do before a real pilot: production onboarding with Cl@ve/Chave365, an i
 review and an external accessibility review with assistive technology
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), SMS notices, rate limiting shared across
 API replicas, server-side pagination of long histories, payments, a waiting
-list ([#96](https://github.com/DavidPombar/quenda/issues/96)) and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
+list for seasons and activities ([#97](https://github.com/DavidPombar/quenda/issues/97)) and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
 Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md)
 and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md), to be reviewed by
 their data protection officer.
@@ -708,7 +712,7 @@ their data protection officer.
 | Area | Documents |
 |---|---|
 | Operations (Spanish) | [Guide](docs/operacion/README.md) · [council deployment](docs/operacion/despliegue-concello.md) · [deputación deployment](docs/operacion/despliegue-deputacion.md) · [onboarding](docs/operacion/alta-concello.md) · [backups](docs/operacion/copias-de-seguridad.md) · [upgrades](docs/operacion/actualizacion.md) · [support](docs/operacion/soporte.md) · [rollout plan](docs/operacion/plan-implantacion.md) · [ENS kit](docs/operacion/ens) |
-| Architecture | [Implementation](docs/architecture/implementation.md) · [identity](docs/architecture/identity.md) · [notifications](docs/architecture/notifications.md) · [calendars](docs/architecture/calendars.md) · [catalogue](docs/architecture/catalogue.md) · [seasons](docs/architecture/seasons.md) · [access control](docs/architecture/access-control.md) · [installable app](docs/architecture/pwa.md) · [analytics](docs/architecture/analytics.md) · [migrations](docs/architecture/migrations.md) |
+| Architecture | [Implementation](docs/architecture/implementation.md) · [identity](docs/architecture/identity.md) · [notifications](docs/architecture/notifications.md) · [calendars](docs/architecture/calendars.md) · [catalogue](docs/architecture/catalogue.md) · [seasons](docs/architecture/seasons.md) · [waiting list](docs/architecture/waitlist.md) · [access control](docs/architecture/access-control.md) · [installable app](docs/architecture/pwa.md) · [analytics](docs/architecture/analytics.md) · [migrations](docs/architecture/migrations.md) |
 | Data and rights | [Open data](docs/architecture/open-data.md) · [data portability](docs/architecture/data-portability.md) · [data protection](docs/architecture/data-protection.md) · [legal templates](docs/legal) |
 | Accessibility and design | [WCAG 2.1 AA matrix](docs/architecture/accessibility.md) · [design guidelines](docs/architecture/design-guidelines.md) |
 | Contest | [Scope](docs/contexto/01-alcance-funcional.md) · [technical requirements](docs/contexto/02-requisitos-tecnicos.md) · [evaluation](docs/contexto/03-concurso-presentacion-valoracion.md) · [roadmap](docs/memoria/roadmap.md) · [research](docs/investigacion/00-resumen-ejecutivo.md) |

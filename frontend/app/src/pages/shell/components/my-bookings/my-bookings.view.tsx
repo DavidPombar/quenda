@@ -7,6 +7,7 @@ import {
   PiCalendarX,
   PiCheckCircle,
   PiClockClockwise,
+  PiHourglassMedium,
   PiSquareHalf,
   PiProhibit,
   PiUserMinus,
@@ -21,6 +22,8 @@ import { BookingRow } from "./components/booking-row/booking-row.view";
 import { CalendarFeed } from "./components/calendar-feed/calendar-feed.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { AccessPassDialog } from "./components/access-pass-dialog/access-pass-dialog.view";
+import { WaitlistRow } from "./components/waitlist-row/waitlist-row.view";
+import { AcceptOfferDialog } from "./components/accept-offer-dialog/accept-offer-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
 const NOTICE_ICONS = {
   confirmed: PiCalendarCheck,
@@ -31,6 +34,7 @@ const NOTICE_ICONS = {
   blocked: PiProhibit,
   unblocked: PiCheckCircle,
   reminder: PiBell,
+  waitlist_offer: PiHourglassMedium,
 };
 export function MyBookings() {
   const c = useMyBookingsController();
@@ -58,20 +62,73 @@ export function MyBookings() {
                 {c.penaltyMessage}
               </p>
             )}
+            {c.offers > 0 && c.tab !== "waitlist" && (
+              <div className="offer-banner" role="status">
+                <PiHourglassMedium size={22} aria-hidden="true" />
+                <p>{c.t("waitlistOfferBanner")}</p>
+                <Button colorPalette="court" size="sm" onClick={c.showOffers}>
+                  {c.t("waitlistOfferSee")}
+                </Button>
+              </div>
+            )}
             <div className="tabs" role="group" aria-label={c.t("bookings")}>
-              {(["upcoming", "history"] as const).map((tab) => (
+              {c.tabs.map((tab) => (
                 <button
                   type="button"
                   key={tab}
+                  id={`bookings-tab-${tab}`}
                   aria-pressed={c.tab === tab}
                   className={c.tab === tab ? "selected" : ""}
                   onClick={() => c.setTab(tab)}
                 >
-                  {c.t(tab)}
+                  {tab === "waitlist"
+                    ? `${c.t("waitlistTab")}${c.waitlist.data?.length ? ` (${c.waitlist.data.length})` : ""}`
+                    : c.t(tab)}
                 </button>
               ))}
             </div>
-            {c.query.isPending ? (
+            {c.tab === "waitlist" ? (
+              c.waitlist.isPending ? (
+                <Feedback message={c.t("loading")} />
+              ) : c.waitlist.isError && !c.waitlist.data ? (
+                <Feedback
+                  message={c.t("loadError")}
+                  error
+                  retryLabel={c.t("retry")}
+                  retry={() => {
+                    void c.waitlist.refetch();
+                  }}
+                />
+              ) : c.waitlist.data?.length ? (
+                <div className="booking-list">
+                  {c.leave.error && (
+                    <p role="alert" className="error-text">
+                      {c.leave.error.message}
+                    </p>
+                  )}
+                  {c.waitlist.data.map((entry) => (
+                    <WaitlistRow
+                      key={entry.id}
+                      entry={entry}
+                      municipality={c.municipality}
+                      locale={c.locale}
+                      t={c.t}
+                      leaving={
+                        c.leave.isPending && c.leave.variables === entry.id
+                      }
+                      onAccept={() => c.setAccepting(entry)}
+                      onLeave={() => c.leaveList(entry.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <SpotArt kind="bookings" />
+                  <h2>{c.t("waitlistEmpty")}</h2>
+                  <p>{c.t("waitlistEmptyBody")}</p>
+                </div>
+              )
+            ) : c.query.isPending ? (
               <Feedback message={c.t("loading")} />
             ) : c.query.isError && !c.query.data ? (
               <Feedback
@@ -287,6 +344,22 @@ export function MyBookings() {
         <ChangeBookingDialog
           booking={c.changing}
           onClose={() => c.setChanging(null)}
+          context={{
+            municipality: c.municipality,
+            session: c.session,
+            locale: c.locale,
+            t: c.t,
+            signIn: c.signIn,
+            showPrivacy: c.showPrivacy,
+            online: c.online,
+            track: c.track,
+          }}
+        />
+      )}
+      {c.accepting && (
+        <AcceptOfferDialog
+          entry={c.accepting}
+          onClose={c.closeAccepting}
           context={{
             municipality: c.municipality,
             session: c.session,

@@ -7,6 +7,7 @@ import { ResourceDraft, planResources } from "../../domain/resource-plan";
 import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityResourcesError =
@@ -33,6 +34,7 @@ export class SaveFacilityResources {
     private readonly resources: ResourceRepository,
     private readonly clock: Clock,
     private readonly audit: Audit,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -63,10 +65,11 @@ export class SaveFacilityResources {
       ).length
     )
       return Result.err(failure("id_reused"));
+    const now = this.clock.now();
     const result = planResources(
       current,
       args.resources,
-      await this.resources.usage(tenantId, args.facilityId, this.clock.now()),
+      await this.resources.usage(tenantId, args.facilityId, now),
     );
     if ("error" in result) return Result.err(failure(result.error.code));
     await this.resources.apply(tenantId, args.facilityId, result.plan);
@@ -80,6 +83,14 @@ export class SaveFacilityResources {
       args.facilityId,
       { before: current.map(audited), after: saved.map(audited) },
     );
+    // A larger capacity or a court back in service frees places for the people waiting (#96).
+    await this.waitlist.offer({
+      tenantId,
+      facilityId: args.facilityId,
+      start: now,
+      end: now.add({ hours: 24 * 400 }),
+      now,
+    });
     return Result.ok(saved);
   }
 }

@@ -11,6 +11,7 @@ const projection =
   "json_build_object('gl', COALESCE(t.text_gl, m.legal_text), 'es', COALESCE(t.text_es, m.legal_text)) AS \"legalTexts\", " +
   'm.enabled_categories AS "enabledCategories", m.legal_version AS "legalVersion", m.retention_months AS "retentionMonths", m.primary_color AS "primaryColor", m.holidays_calendar AS "holidaysCalendar", left(l.sha256, 16) AS "logoVersion", left(l.icon_sha256, 16) AS "iconVersion", ' +
   'm.no_show_limit AS "noShowLimit", m.no_show_window_days AS "noShowWindowDays", m.no_show_block_days AS "noShowBlockDays", ' +
+  'm.waitlist_max_entries AS "waitlistMaxEntries", m.waitlist_offer_minutes AS "waitlistOfferMinutes", ' +
   'm.reminder_hours AS "reminderHours", m.mail_sender_name AS "mailSenderName", m.mail_reply_to AS "mailReplyTo", ' +
   'm.store_nif AS "storeNif", m.data_license AS "dataLicense", m.dir3_code AS "dir3Code", ' +
   'm.analytics_enabled AS "analyticsEnabled", ' +

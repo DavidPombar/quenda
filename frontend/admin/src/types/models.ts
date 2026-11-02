@@ -69,6 +69,10 @@ export interface Municipality {
   noShowLimit: number;
   noShowWindowDays: number;
   noShowBlockDays: number;
+  /** Open waiting-list entries per person (#96); 0 switches the waiting list off. */
+  waitlistMaxEntries: number;
+  /** Minutes a freed place is held for the person it is offered to. */
+  waitlistOfferMinutes: number;
   accessibility: Accessibility;
   /** Licence of the published open data. */
   dataLicense: DataLicense;
@@ -111,6 +115,8 @@ export type SettingsPatch = Partial<
     | "noShowLimit"
     | "noShowWindowDays"
     | "noShowBlockDays"
+    | "waitlistMaxEntries"
+    | "waitlistOfferMinutes"
     | "dataLicense"
     | "dir3Code"
     | "analyticsEnabled"
@@ -217,6 +223,8 @@ export interface ManagedBooking {
   cancelledBy: "citizen" | "municipality" | null;
   cancellationReason: string | null;
   displayName: string;
+  /** People waiting for the same slot of the court (#96). */
+  waiting: number;
   canMarkNoShow: boolean;
   canRevert: boolean;
   canCancel: boolean;
@@ -277,6 +285,9 @@ export interface Insights extends DateRange {
   openMinutes: number;
   occupancy: number | null;
   facilities: number;
+  /** Waiting-list offers accepted and let expire (#96). */
+  waitlistAccepted: number;
+  waitlistExpired: number;
   byFacility: FacilityUsage[];
   /** Only weekday × hour cells with open time. */
   heatmap: HeatmapCell[];

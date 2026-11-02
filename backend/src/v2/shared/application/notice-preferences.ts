@@ -7,6 +7,7 @@ export const noticeKinds = [
   "cancellation",
   "reminder",
   "penalty",
+  "waitlist",
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 /** Channels a person chooses; the in-app notice is the history (C4) and is always kept. */
@@ -25,6 +26,7 @@ const noticeOf: Record<MessageKind, NoticeKind> = {
   no_show: "penalty",
   blocked: "penalty",
   unblocked: "penalty",
+  waitlist_offer: "waitlist",
 };
 export function noticeKindOf(kind: MessageKind): NoticeKind {
   return noticeOf[kind];
@@ -39,6 +41,7 @@ export const DEFAULT_PREFERENCES: NoticePreferences = {
   cancellation: { email: true, push: true },
   reminder: { email: true, push: true },
   penalty: { email: false, push: false },
+  waitlist: { email: true, push: true },
 };
 export interface StoredPreference {
   kind: NoticeKind;

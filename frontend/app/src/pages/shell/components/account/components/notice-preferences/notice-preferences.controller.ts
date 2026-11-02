@@ -18,6 +18,7 @@ const KIND_LABELS: Record<NoticeKind, TextKey> = {
   cancellation: "noticeKindCancellation",
   reminder: "noticeKindReminder",
   penalty: "noticeKindPenalty",
+  waitlist: "noticeKindWaitlist",
 };
 /** What the device block shows, in order of precedence. */
 export type DeviceState =

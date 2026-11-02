@@ -24,4 +24,28 @@ export abstract class BookingUnitRepository {
   >;
   /** Frees every unit of the reservation. */
   abstract release(tenantId: string, bookingId: string): Promise<void>;
+  /**
+   * Holds the units for an open waiting-list offer (#96), with the same rules as a reservation
+   * of the person, so nobody else can take the place while the offer lasts.
+   */
+  abstract hold(args: {
+    tenantId: string;
+    entryId: string;
+    unitIds: readonly string[];
+    start: Temporal.Instant;
+    end: Temporal.Instant;
+    place: { capacity: number; userId: string } | null;
+  }): Promise<
+    Result<void, AppError<"slot_taken"> | AppError<"already_booked">>
+  >;
+  /** Frees the hold of an offer. */
+  abstract releaseHold(tenantId: string, entryId: string): Promise<void>;
+  /** Whether the person could take the slot now: free, full, or already theirs. */
+  abstract vacancy(args: {
+    tenantId: string;
+    unitIds: readonly string[];
+    start: Temporal.Instant;
+    end: Temporal.Instant;
+    place: { capacity: number; userId: string } | null;
+  }): Promise<"free" | "full" | "mine">;
 }

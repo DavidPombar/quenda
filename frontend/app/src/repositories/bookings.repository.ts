@@ -20,6 +20,8 @@ export const bookingsRepository = {
     facilityId: string;
     resourceId?: string;
     start: string;
+    /** Takes the place a waiting-list offer holds for the person (#96). */
+    waitlistEntryId?: string;
   }) =>
     apiClient.request<Booking>("citizen/bookings", {
       method: "POST",

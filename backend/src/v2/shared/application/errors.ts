@@ -48,7 +48,12 @@ export type ErrorCode =
   | "photo_limit"
   | "unsubscribe_stale"
   | "push_unavailable"
-  | "analytics_unavailable";
+  | "analytics_unavailable"
+  | "waitlist_disabled"
+  | "waitlist_limit"
+  | "slot_available"
+  | "already_waiting"
+  | "offer_closed";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

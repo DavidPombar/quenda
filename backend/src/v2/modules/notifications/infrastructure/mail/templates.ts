@@ -15,6 +15,7 @@ const copy = {
       no_show: "Non presentado",
       blocked: "Reservas bloqueadas temporalmente",
       unblocked: "Xa podes reservar de novo",
+      waitlist_offer: "Quedou libre a quenda que esperabas",
     },
     intro: {
       confirmed: "A túa reserva está confirmada.",
@@ -27,7 +28,10 @@ const copy = {
         "Acumulaches demasiadas ausencias e non podes facer reservas novas durante uns días.",
       unblocked:
         "O concello corrixiu unha ausencia e retirou o bloqueo das túas reservas.",
+      waitlist_offer:
+        "Quedou libre unha praza na quenda da túa lista de espera. Gardámola para ti: confírmaa nas túas reservas antes da hora indicada ou pasará á seguinte persoa.",
     },
+    holdUntil: "Gardada ata",
     standing: (s: Standing, until: string | null) =>
       until
         ? `Non podes reservar ata o ${until}.`
@@ -43,6 +47,8 @@ const copy = {
     bookings: "Ver as miñas reservas",
     footer: (name: string) =>
       `Recibes este correo porque tes unha reserva no ${name}. Se tes dúbidas, responde a esta mensaxe.`,
+    waitlistFooter: (name: string) =>
+      `Recibes este correo porque te apuntaches a unha lista de espera no ${name}. Se tes dúbidas, responde a esta mensaxe.`,
     unsubscribe:
       "Non queres recibir este tipo de aviso por correo? Date de baixa:",
   },
@@ -56,6 +62,7 @@ const copy = {
       no_show: "No presentado",
       blocked: "Reservas bloqueadas temporalmente",
       unblocked: "Ya puedes reservar de nuevo",
+      waitlist_offer: "Ha quedado libre el turno que esperabas",
     },
     intro: {
       confirmed: "Tu reserva está confirmada.",
@@ -68,7 +75,10 @@ const copy = {
         "Has acumulado demasiadas ausencias y no puedes hacer reservas nuevas durante unos días.",
       unblocked:
         "El ayuntamiento ha corregido una ausencia y ha retirado el bloqueo de tus reservas.",
+      waitlist_offer:
+        "Ha quedado libre una plaza en el turno de tu lista de espera. La guardamos para ti: confírmala en tus reservas antes de la hora indicada o pasará a la siguiente persona.",
     },
+    holdUntil: "Guardada hasta",
     standing: (s: Standing, until: string | null) =>
       until
         ? `No puedes reservar hasta el ${until}.`
@@ -84,6 +94,8 @@ const copy = {
     bookings: "Ver mis reservas",
     footer: (name: string) =>
       `Recibes este correo porque tienes una reserva en el ${name}. Si tienes dudas, responde a este mensaje.`,
+    waitlistFooter: (name: string) =>
+      `Recibes este correo porque te apuntaste a una lista de espera en el ${name}. Si tienes dudas, responde a este mensaje.`,
     unsubscribe:
       "¿No quieres recibir este tipo de aviso por correo? Date de baja:",
   },
@@ -128,6 +140,14 @@ export function renderMail(
     [t.date, day],
     [t.time, `${clock(start)}–${clock(end)}`],
     [t.address, delivery.facility.address],
+    ...(delivery.kind === "waitlist_offer" && delivery.offerExpiresAt
+      ? ([
+          [
+            t.holdUntil,
+            clock(delivery.offerExpiresAt.toZonedDateTimeISO(zone)),
+          ],
+        ] as [string, string][])
+      : []),
     ...(delivery.kind === "cancelled_by_municipality" &&
     delivery.cancellationReason
       ? ([[t.reason, delivery.cancellationReason]] as [string, string][])
@@ -153,7 +173,9 @@ export function renderMail(
       : []),
   ];
   const subject = `${t.subject[delivery.kind]}: ${delivery.facility.name}`;
-  const footer = t.footer(delivery.municipality.name);
+  const footer = (
+    delivery.kind === "waitlist_offer" ? t.waitlistFooter : t.footer
+  )(delivery.municipality.name);
   const text = [
     t.intro[delivery.kind],
     "",

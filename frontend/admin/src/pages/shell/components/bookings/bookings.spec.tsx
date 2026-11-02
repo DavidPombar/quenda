@@ -19,6 +19,7 @@ const started: ManagedBooking = {
   cancelledBy: null,
   cancellationReason: null,
   displayName: "Alex",
+  waiting: 0,
   canMarkNoShow: true,
   canRevert: false,
   canCancel: false,
@@ -30,6 +31,8 @@ const later: ManagedBooking = {
   end: "2026-10-27T19:00:00Z",
   outcome: "upcoming",
   displayName: "Brais",
+  // Two people wait for this slot (#96).
+  waiting: 2,
   canMarkNoShow: false,
   canCancel: true,
 };
@@ -96,6 +99,11 @@ describe("day bookings", () => {
     });
     await commands.navigate("/admin/vilaverde/reservas?date=2026-10-27");
     await render(<App />);
+    await expect
+      .element(
+        page.getByRole("row", { name: /Brais/ }).getByText("2 en espera"),
+      )
+      .toBeVisible();
     const table = page.getByRole("table", { name: /Reservas do/ });
     await expect
       .element(table.getByRole("rowheader", { name: "Alex" }))

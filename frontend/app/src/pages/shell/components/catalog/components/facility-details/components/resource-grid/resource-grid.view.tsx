@@ -19,6 +19,8 @@ export function ResourceGrid(p: {
       slot?: Slot;
       status: string;
       label: string;
+      /** Free, or full with a waiting list to join (#96). */
+      open: boolean;
       select: () => void;
     }[];
   }[];
@@ -62,7 +64,7 @@ export function ResourceGrid(p: {
                         type="button"
                         className={`time-slot grid-slot ${cell.slot.status}`}
                         aria-label={cell.label}
-                        disabled={cell.slot.status !== "available"}
+                        disabled={!cell.open}
                         onClick={cell.select}
                       >
                         <span>{cell.status}</span>

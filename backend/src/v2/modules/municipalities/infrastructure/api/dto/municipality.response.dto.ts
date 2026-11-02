@@ -119,6 +119,15 @@ export class MunicipalityResponseDTO {
   })
   noShowBlockDays!: number;
   @ApiProperty({
+    description:
+      "Open waiting-list entries per person; 0 means there is no waiting list (#96)",
+  })
+  waitlistMaxEntries!: number;
+  @ApiProperty({
+    description: "Minutes a freed place is held for the person offered it",
+  })
+  waitlistOfferMinutes!: number;
+  @ApiProperty({
     type: AccessibilityResponseDTO,
     description: "Accessibility statement data (RD 1112/2018)",
   })
@@ -169,6 +178,8 @@ export class MunicipalityResponseDTO {
       noShowLimit: value.noShowLimit,
       noShowWindowDays: value.noShowWindowDays,
       noShowBlockDays: value.noShowBlockDays,
+      waitlistMaxEntries: value.waitlistMaxEntries,
+      waitlistOfferMinutes: value.waitlistOfferMinutes,
       accessibility: AccessibilityResponseDTO.from(value.accessibility),
       dataLicense: value.dataLicense,
       dir3Code: value.dir3Code,

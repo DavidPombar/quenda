@@ -20,6 +20,7 @@ import {
   Outbox,
   queueBookingChange,
 } from "../../../../shared/application/outbox";
+import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type UpdateBookingError =
@@ -46,6 +47,7 @@ export class UpdateBooking {
     private readonly notifications: NotificationRepository,
     private readonly audit: Audit,
     private readonly outbox: Outbox,
+    private readonly waitlist: WaitlistOffers,
   ) {}
   /** Reschedules (new start and/or another resource of the same facility) or cancels. */
   async execute(args: {
@@ -111,6 +113,7 @@ export class UpdateBooking {
       if (rejected) return Result.err(rejected);
       await this.units.release(tenantId, existing.id);
       await this.notify(existing, "cancelled", now);
+      await this.offerFreed(existing, now);
       await this.audit.record(
         args.principal,
         "booking.cancelled",
@@ -175,6 +178,7 @@ export class UpdateBooking {
       );
     if (rejected) return Result.err(rejected);
     await this.notify(existing, "rescheduled", now);
+    await this.offerFreed(existing, now);
     await this.audit.record(
       args.principal,
       "booking.rescheduled",
@@ -193,6 +197,16 @@ export class UpdateBooking {
       },
     );
     return Result.ok();
+  }
+  /** The slot the reservation held may now go to someone on its waiting list (#96). */
+  private async offerFreed(booking: Booking, now: Temporal.Instant) {
+    await this.waitlist.offer({
+      tenantId: booking.tenantId,
+      facilityId: booking.facilityId,
+      start: booking.start,
+      end: booking.end,
+      now,
+    });
   }
   private async notify(
     booking: Booking,

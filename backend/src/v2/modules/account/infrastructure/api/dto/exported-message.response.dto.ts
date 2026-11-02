@@ -14,6 +14,7 @@ export class ExportedMessageResponseDTO {
       "no_show",
       "blocked",
       "unblocked",
+      "waitlist_offer",
     ],
   })
   kind!: ExportedMessage["kind"];

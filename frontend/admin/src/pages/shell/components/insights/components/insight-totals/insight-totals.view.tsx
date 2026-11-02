@@ -50,6 +50,17 @@ export function InsightTotals(p: {
       before: previous?.noShows,
       note: t("insightsNoShowsHint"),
     },
+    {
+      label: "insightsWaitlistAccepted",
+      value: current.waitlistAccepted,
+      before: previous?.waitlistAccepted,
+      note: t("insightsWaitlistHint"),
+    },
+    {
+      label: "insightsWaitlistExpired",
+      value: current.waitlistExpired,
+      before: previous?.waitlistExpired,
+    },
   ];
   return (
     <dl className="stats-strip insight-totals">

@@ -12,8 +12,8 @@ export class PostgresOutbox extends Outbox {
     const { rowCount } = await this.db.query(
       // Email and push follow the person's choice (the default when there is no row); push also
       // needs a device. Webhooks are only queued for municipalities with a connector configured.
-      `INSERT INTO outbox (id,tenant_id,user_id,booking_id,kind,channel,dedupe_key,created_at,available_at)
-        SELECT $1,$2,$3,$4,$5,$6,$7,$8,$8
+      `INSERT INTO outbox (id,tenant_id,user_id,booking_id,waitlist_entry_id,kind,channel,dedupe_key,created_at,available_at)
+        SELECT $1,$2,$3,$4,$11,$5,$6,$7,$8,$8
         WHERE CASE $6
           WHEN 'webhook' THEN EXISTS (SELECT 1 FROM municipalities WHERE id=$2 AND access_webhook_url <> '')
           ELSE COALESCE(
@@ -36,6 +36,7 @@ export class PostgresOutbox extends Outbox {
         args.channel === "webhook"
           ? false
           : wants(args.kind, args.channel, null),
+        args.waitlistEntryId ?? null,
       ],
     );
     return (rowCount ?? 0) > 0;

@@ -43,6 +43,8 @@ privado). Si el concello la aloja por sí mismo, indicar «No hay encargado».
 - Permitir que la ciudadanía consulte la disponibilidad de las instalaciones y reserve, cambie o
   cancele turnos.
 - Mantener el historial de reservas de cada persona y los avisos asociados.
+- Gestionar las listas de espera de turnos completos y avisar a quien espera cuando queda libre una
+  plaza.
 - Gestionar las instalaciones, sus horarios y normas de uso.
 - Obtener indicadores agregados de ocupación para la planificación municipal.
 - Dejar constancia de los cambios realizados (registro de auditoría) para la rendición de cuentas.
@@ -72,7 +74,7 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 |---|---|
 | Identificativos | Nombre y apellidos facilitados por el sistema de identificación (Cl@ve u otro); identificador del proveedor de identidad; identificador interno; correo electrónico si el proveedor lo facilita |
 | NIF (solo si el concello activa la verificación de empadronamiento) | Número de identificación fiscal, cifrado; para aplicar tarifas de persona empadronada `{{Eliminar esta fila si no se activa.}}` |
-| Uso del servicio | Reservas (instalación, fecha y hora, estado), avisos, versión del aviso de privacidad aceptada y fecha |
+| Uso del servicio | Reservas (instalación, fecha y hora, estado), listas de espera (turno esperado, orden de llegada y ofertas), avisos, versión del aviso de privacidad aceptada y fecha |
 | Seguridad | Sesiones (identificador cifrado y caducidad); registro de auditoría de las acciones |
 
 | Categoría de usuario | Categorías que dan derecho a una tarifa propia (empadronamiento, familia, club local, menor, familia numerosa, discapacidad, jubilación) y si están verificadas; sin documentos acreditativos |
@@ -100,6 +102,8 @@ No se realizan. `{{Confirmar que el alojamiento está en el Espacio Económico E
 - Si la persona elimina su cuenta, se anonimiza de inmediato: se cancelan sus reservas futuras, se
   borran sus avisos y sesiones y se sustituye su nombre. Sus constancias de aceptación del aviso se
   borran al cumplirse el plazo anterior.
+- Las entradas en listas de espera se borran en cuanto pasa el turno esperado, o al eliminar la
+  cuenta; para los indicadores solo se guardan recuentos diarios sin datos personales.
 - `{{Indicar plazos superiores exigidos por otras normas, por ejemplo de contabilidad o archivo.}}`
 
 ## 11. Derechos de las personas interesadas

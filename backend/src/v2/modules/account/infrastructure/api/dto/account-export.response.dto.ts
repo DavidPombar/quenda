@@ -13,6 +13,7 @@ import { ExportedMessageResponseDTO } from "./exported-message.response.dto";
 import { NoticePreferencesResponseDTO } from "./notice-preferences.response.dto";
 import { ExportedPushDeviceResponseDTO } from "./exported-push-device.response.dto";
 import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
+import { ExportedWaitlistEntryResponseDTO } from "./exported-waitlist-entry.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -78,6 +79,11 @@ export class AccountExportResponseDTO {
   })
   blocks!: ExportedBlockResponseDTO[];
   @ApiProperty({
+    description: "Waiting-list entries of slots that have not ended (#96)",
+    type: [ExportedWaitlistEntryResponseDTO],
+  })
+  waitlist!: ExportedWaitlistEntryResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -99,6 +105,7 @@ export class AccountExportResponseDTO {
       pushDevices: value.pushDevices.map(ExportedPushDeviceResponseDTO.from),
       messages: value.messages.map(ExportedMessageResponseDTO.from),
       blocks: value.blocks.map(ExportedBlockResponseDTO.from),
+      waitlist: value.waitlist.map(ExportedWaitlistEntryResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

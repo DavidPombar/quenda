@@ -12,6 +12,7 @@ import {
   ExportedIdentity,
   ExportedMessage,
   ExportedPushDevice,
+  ExportedWaitlistEntry,
   ExportedNotification,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
@@ -121,17 +122,26 @@ export class PostgresAccountRepository extends AccountRepository {
     now: Temporal.Instant,
   ) {
     // Cancelling also frees the occupied units, in the same statement.
-    const { rows } = await this.db.query<{ count: number }>(
+    const { rows } = await this.db.query<{
+      facilityId: string;
+      start: string;
+      end: string;
+    }>(
       `WITH cancelled AS (
         UPDATE bookings SET status='cancelled', cancelled_at=$3, cancelled_by='citizen'
-        WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3 RETURNING id
+        WHERE tenant_id=$1 AND user_id=$2 AND status='confirmed' AND ends_at>$3
+        RETURNING id, facility_id, starts_at, ends_at
       ), released AS (
         DELETE FROM booking_units u USING cancelled c WHERE u.tenant_id=$1 AND u.booking_id=c.id
       )
-      SELECT count(*)::int AS count FROM cancelled`,
+      SELECT facility_id AS "facilityId", starts_at AS start, ends_at AS "end" FROM cancelled`,
       [tenantId, userId, now.toString()],
     );
-    return rows[0].count;
+    return rows.map((row) => ({
+      facilityId: row.facilityId,
+      start: Temporal.Instant.from(row.start),
+      end: Temporal.Instant.from(row.end),
+    }));
   }
   async deleteNotifications(tenantId: string, userId: string) {
     const { rowCount } = await this.db.query(
@@ -344,12 +354,36 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listNotificationsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<NotificationRow>(
-      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName", b.resource_id AS "resourceId", r.name AS "resourceName" FROM notifications n JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id JOIN facilities f ON f.id=b.facility_id AND f.tenant_id=b.tenant_id JOIN resources r ON r.id=b.resource_id AND r.tenant_id=b.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
+      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName", COALESCE(b.resource_id,w.resource_id) AS "resourceId", r.name AS "resourceName" FROM notifications n LEFT JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id LEFT JOIN waitlist_entries w ON w.id=n.waitlist_entry_id AND w.tenant_id=n.tenant_id JOIN facilities f ON f.id=COALESCE(b.facility_id,w.facility_id) AND f.tenant_id=n.tenant_id JOIN resources r ON r.id=COALESCE(b.resource_id,w.resource_id) AND r.tenant_id=n.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
       [tenantId, userId],
     );
     return rows.map((row): ExportedNotification => ({
       ...row,
       createdAt: Temporal.Instant.from(row.createdAt),
+    }));
+  }
+  async listWaitlistAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      id: string;
+      facilityId: string;
+      facilityName: string;
+      resourceId: string;
+      resourceName: string;
+      start: string;
+      end: string;
+      status: ExportedWaitlistEntry["status"];
+      createdAt: string;
+      offeredAt: string | null;
+    }>(
+      'SELECT w.id, w.facility_id AS "facilityId", f.name AS "facilityName", w.resource_id AS "resourceId", r.name AS "resourceName", w.starts_at AS start, w.ends_at AS "end", w.status, w.created_at AS "createdAt", w.offered_at AS "offeredAt" FROM waitlist_entries w JOIN facilities f ON f.tenant_id=w.tenant_id AND f.id=w.facility_id JOIN resources r ON r.tenant_id=w.tenant_id AND r.id=w.resource_id WHERE w.tenant_id=$1 AND w.user_id=$2 ORDER BY w.starts_at DESC',
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedWaitlistEntry => ({
+      ...row,
+      start: Temporal.Instant.from(row.start),
+      end: Temporal.Instant.from(row.end),
+      createdAt: Temporal.Instant.from(row.createdAt),
+      offeredAt: row.offeredAt ? Temporal.Instant.from(row.offeredAt) : null,
     }));
   }
   async listBlocksAll(tenantId: string, userId: string) {

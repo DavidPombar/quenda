@@ -2,6 +2,8 @@
 import type { Temporal } from "@js-temporal/polyfill";
 export interface NotificationDetails {
   reason?: string;
+  /** Until when a waiting-list offer holds the place (#96). */
+  offerExpiresAt?: string;
   standing?: {
     count: number;
     limit: number;
@@ -13,7 +15,8 @@ export interface NotificationDetails {
 }
 export interface Notification {
   id: string;
-  bookingId: string;
+  /** Null for a waiting-list offer, which has no reservation yet. */
+  bookingId: string | null;
   kind:
     | "confirmed"
     | "rescheduled"
@@ -22,7 +25,8 @@ export interface Notification {
     | "no_show"
     | "blocked"
     | "unblocked"
-    | "reminder";
+    | "reminder"
+    | "waitlist_offer";
   /** Municipal reason or penalty standing at the time of the notice. */
   details: NotificationDetails | null;
   facilityName: string;

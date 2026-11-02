@@ -12,4 +12,6 @@ export interface BookingReadModel {
 }
 export interface ManagedBookingReadModel extends BookingReadModel {
   displayName: string;
+  /** People on the waiting list of the same slot of the court (#96). */
+  waiting: number;
 }
