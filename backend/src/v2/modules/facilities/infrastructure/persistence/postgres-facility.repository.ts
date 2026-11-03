@@ -235,7 +235,7 @@ export class PostgresFacilityRepository extends FacilityRepository {
       "DELETE FROM booking_units WHERE tenant_id=$1 AND session_id = ANY($2::uuid[])",
       [args.tenantId, rows.map((row) => row.id)],
     );
-    return rows.length;
+    return rows.map((row) => row.id);
   }
   async cancelBookings(args: {
     tenantId: string;

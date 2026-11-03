@@ -136,6 +136,9 @@ class ExportedNotificationDTO {
   @ApiProperty({ type: String, nullable: true }) bookingId!: string | null;
   @ApiProperty({ type: String, nullable: true })
   waitlistEntryId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) enrolmentId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  activitySessionId!: string | null;
   @ApiProperty() kind!: string;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
   @ApiProperty({ type: Object, additionalProperties: true, nullable: true })
@@ -199,6 +202,9 @@ class ExportedMessageDTO {
   @ApiProperty({ type: String, nullable: true }) bookingId!: string | null;
   @ApiProperty({ type: String, nullable: true })
   waitlistEntryId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) enrolmentId!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  activitySessionId!: string | null;
   @ApiProperty() kind!: string;
   @ApiProperty() channel!: string;
   @ApiProperty() dedupeKey!: string;
@@ -392,6 +398,20 @@ class ExportedActivitySessionDTO {
   cancellationReason!: string | null;
   @ApiProperty() sequence!: number;
 }
+class ExportedActivityEnrolmentDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() activityId!: string;
+  @ApiProperty() userId!: string;
+  @ApiProperty({
+    enum: ["enrolled", "waiting", "left", "removed", "cancelled"],
+  })
+  status!: string;
+  @ApiProperty() createdAt!: string;
+  @ApiProperty({ type: String, nullable: true }) enrolledAt!: string | null;
+  @ApiProperty({ type: String, nullable: true }) endedAt!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  removalReason!: string | null;
+}
 export class MunicipalityExportResponseDTO {
   @ApiProperty({
     type: [ExportedActivityDTO],
@@ -402,6 +422,11 @@ export class MunicipalityExportResponseDTO {
   activityPrices!: ExportedActivityPriceDTO[];
   @ApiProperty({ type: [ExportedActivitySessionDTO] })
   activitySessions!: ExportedActivitySessionDTO[];
+  @ApiProperty({
+    type: [ExportedActivityEnrolmentDTO],
+    description: "Enrolments in activities (#97)",
+  })
+  activityEnrolments!: ExportedActivityEnrolmentDTO[];
   @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
   facilityPhotos!: ExportedFacilityPhotoDTO[];
@@ -495,6 +520,7 @@ export class MunicipalityExportResponseDTO {
       activities: snapshot.activities,
       activityPrices: snapshot.activityPrices,
       activitySessions: snapshot.activitySessions,
+      activityEnrolments: snapshot.activityEnrolments,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

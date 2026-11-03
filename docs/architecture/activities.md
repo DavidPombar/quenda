@@ -5,9 +5,9 @@ course with places, a weekly schedule and an enrolment period. Small councils us
 with a paper form at the town hall. Quenda models them next to the reservation engine, so an
 activity's sessions and a one-off booking never take the same court at the same time (C1, M1, M2).
 
-This is the first of four parts. Part A, described here, publishes the offer and holds the courts.
-Enrolment with a waiting list, people in the care of an adult (minors), and attendance with its
-indicators follow in later parts.
+This is described in four parts. Part A publishes the offer and holds the courts; part B lets
+adults enrol, with an automatic waiting list. People in the care of an adult (minors) and attendance
+with its indicators follow in later parts.
 
 ## Model
 
@@ -77,5 +77,44 @@ ones marked with their reason. Drafts are never public. The citizen app shows th
   only (see [open data](open-data.md)).
 - **Portability**: exports include `activities`, `activityPrices` and `activitySessions`; the import
   rebuilds the court units of active sessions (see [data portability](data-portability.md)).
-- **Data protection**: part A stores no personal data. Enrolment and minors come with their own
-  review of `data-protection.md`.
+- **Data protection**: the offer itself holds no personal data; enrolments do, and are listed in
+  [data protection](data-protection.md). Minors come with their own review.
+
+## Enrolment (part B)
+
+- **Who**: a signed-in adult enrols themself (`POST /v2/citizen/activity-enrolments` with a
+  client-generated id, so a repeated request returns the same enrolment). An activity whose top age
+  is under 18 is for minors; until part C its enrolments go through the council.
+- **When**: only a published activity whose enrolment period includes today, in the
+  municipality's time zone (`enrolment_closed` otherwise). One open enrolment per person and
+  activity (`already_enrolled`).
+- **Places**: under the activity's row lock, a free place makes the enrolment `enrolled`; with
+  none left it is `waiting`, in order of arrival. Twenty people enrolling at once for eight places
+  get exactly eight places.
+- **Automatic waiting list** (decision of this issue): when a place frees — the person leaves
+  (`DELETE /v2/citizen/activity-enrolments/:id`), the council removes them with a reason
+  (`PATCH /v2/manager/activity-enrolments/:id`), their account is deleted, or the council adds
+  places — the first person waiting gets it at once, with no confirmation, and is told
+  (`enrolment_promoted`). The rule is one pure function, `promotions()`, shared by every path.
+- **Editing with people enrolled**: places cannot drop below the people holding one
+  (`places_below_enrolled`). Once anyone has enrolled, the court, days, times and dates stay as
+  they are (`activity_has_enrolments`), because notices and calendars refer to the sessions; dates
+  are cancelled one by one instead.
+- **Cancellations**: cancelling a date, closing the facility or cancelling the activity tells the
+  people holding a place, once per cancellation (a repeated request tells nobody twice). A
+  cancelled activity ends its open enrolments as `cancelled`.
+
+Notices follow the person's choices (see [notifications](notifications.md)): confirmed, waiting
+and promoted are confirmations; removed, date cancelled and activity cancelled are cancellations.
+They go by email and push only; the access-control webhook is not told.
+
+The person sees their enrolments under **As miñas reservas → Inscricións**, with their place in
+the queue, the next session and how many dates were cancelled. Their calendar subscription
+carries every session of the activities where they hold a place (`UID <session>-<enrolment>@quenda`,
+the session's `SEQUENCE`, `STATUS:CANCELLED` for a cancelled date).
+
+The backoffice lists the people of an activity page by page (filter by place or waiting list),
+removes one with a reason, and downloads them as CSV
+(`GET /v2/manager/activities/:id/enrolments.csv`: UTF-8 with BOM, `;`, Galician or Spanish headers;
+text a spreadsheet would run as a formula is neutralised). Each download is audited
+(`activity.enrolments_exported`), as are `activity_enrolment.created`, `.left` and `.removed`.

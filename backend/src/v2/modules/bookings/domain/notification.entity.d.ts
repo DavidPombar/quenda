@@ -4,6 +4,8 @@ export interface NotificationDetails {
   reason?: string;
   /** Until when a waiting-list offer holds the place (#96). */
   offerExpiresAt?: string;
+  /** Start of each cancelled date of an activity (#97). */
+  dates?: string[];
   standing?: {
     count: number;
     limit: number;
@@ -26,11 +28,20 @@ export interface Notification {
     | "blocked"
     | "unblocked"
     | "reminder"
-    | "waitlist_offer";
+    | "waitlist_offer"
+    | "enrolment_confirmed"
+    | "enrolment_waiting"
+    | "enrolment_promoted"
+    | "enrolment_removed"
+    | "activity_session_cancelled"
+    | "activity_cancelled";
   /** Municipal reason or penalty standing at the time of the notice. */
   details: NotificationDetails | null;
   facilityName: string;
   resourceId: string;
   resourceName: string;
+  /** The activity of an enrolment notice (#97). */
+  activityId: string | null;
+  activityName: { gl: string; es: string } | null;
   createdAt: Temporal.Instant;
 }

@@ -233,7 +233,8 @@ export function useActivityEditorController(p: {
     publishDraft,
     saving: save.isPending,
     publishing: publish.isPending,
-    failed:
-      (save.isError || publish.isError) && clashes.length === 0,
+    failed: (save.isError || publish.isError) && clashes.length === 0,
+    /** The server's explanation, such as places below the people enrolled (#97). */
+    failure: (save.error ?? publish.error)?.message || null,
   };
 }

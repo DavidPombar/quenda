@@ -3,13 +3,17 @@ import { useState } from "react";
 import { Button, Dialog, Field, Portal, Textarea } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import type { TextKey } from "@/services/i18n.service";
-/** Asks why a session or an activity is cancelled; the reason goes to the audit journal. */
+/**
+ * Asks why something is cancelled or someone removed: a session or an activity (#97), or a
+ * person's enrolment. The reason goes to the audit journal and, where it applies, to the person.
+ */
 export function ReasonDialog(p: {
   title: string;
   description: string;
   t: (key: TextKey) => string;
   pending: boolean;
-  error: boolean;
+  /** Shown when the last attempt failed. */
+  error: string | null;
   onConfirm: (reason: string) => void;
   onClose: () => void;
 }) {
@@ -37,7 +41,7 @@ export function ReasonDialog(p: {
             </Dialog.Header>
             <Dialog.Body>
               <form
-                id="activity-reason-form"
+                id="reason-form"
                 noValidate
                 onSubmit={(event) => {
                   event.preventDefault();
@@ -65,7 +69,7 @@ export function ReasonDialog(p: {
                 </Field.Root>
                 {p.error && (
                   <p role="alert" className="error-text">
-                    {t("activityCancelError")}
+                    {p.error}
                   </p>
                 )}
               </form>
@@ -76,7 +80,7 @@ export function ReasonDialog(p: {
               </Button>
               <Button
                 type="submit"
-                form="activity-reason-form"
+                form="reason-form"
                 colorPalette="red"
                 loading={p.pending}
               >

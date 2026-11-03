@@ -14,6 +14,7 @@ import {
   ExportedPushDevice,
   ExportedWaitlistEntry,
   ExportedNotification,
+  ExportedEnrolment,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
 import {
@@ -354,7 +355,16 @@ export class PostgresAccountRepository extends AccountRepository {
   }
   async listNotificationsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<NotificationRow>(
-      'SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details, f.name AS "facilityName", COALESCE(b.resource_id,w.resource_id) AS "resourceId", r.name AS "resourceName" FROM notifications n LEFT JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id LEFT JOIN waitlist_entries w ON w.id=n.waitlist_entry_id AND w.tenant_id=n.tenant_id JOIN facilities f ON f.id=COALESCE(b.facility_id,w.facility_id) AND f.tenant_id=n.tenant_id JOIN resources r ON r.id=COALESCE(b.resource_id,w.resource_id) AND r.tenant_id=n.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC',
+      `SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details,
+        f.name AS "facilityName", r.id AS "resourceId", r.name AS "resourceName"
+      FROM notifications n
+      LEFT JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id
+      LEFT JOIN waitlist_entries w ON w.id=n.waitlist_entry_id AND w.tenant_id=n.tenant_id
+      LEFT JOIN activity_enrolments e ON e.id=n.enrolment_id AND e.tenant_id=n.tenant_id
+      LEFT JOIN activities a ON a.id=e.activity_id AND a.tenant_id=n.tenant_id
+      JOIN facilities f ON f.id=COALESCE(b.facility_id,w.facility_id,a.facility_id) AND f.tenant_id=n.tenant_id
+      JOIN resources r ON r.id=COALESCE(b.resource_id,w.resource_id,a.resource_id) AND r.tenant_id=n.tenant_id
+      WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC`,
       [tenantId, userId],
     );
     return rows.map((row): ExportedNotification => ({
@@ -384,6 +394,34 @@ export class PostgresAccountRepository extends AccountRepository {
       end: Temporal.Instant.from(row.end),
       createdAt: Temporal.Instant.from(row.createdAt),
       offeredAt: row.offeredAt ? Temporal.Instant.from(row.offeredAt) : null,
+    }));
+  }
+  async listEnrolmentsAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      id: string;
+      activityId: string;
+      activityName: string;
+      facilityName: string;
+      status: ExportedEnrolment["status"];
+      createdAt: string;
+      enrolledAt: string | null;
+      endedAt: string | null;
+      removalReason: string | null;
+    }>(
+      `SELECT e.id, e.activity_id AS "activityId", a.name_gl AS "activityName", f.name AS "facilityName",
+        e.status, e.created_at AS "createdAt", e.enrolled_at AS "enrolledAt", e.ended_at AS "endedAt",
+        e.removal_reason AS "removalReason"
+      FROM activity_enrolments e
+      JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
+      JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
+      WHERE e.tenant_id=$1 AND e.user_id=$2 ORDER BY e.created_at DESC`,
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedEnrolment => ({
+      ...row,
+      createdAt: Temporal.Instant.from(row.createdAt),
+      enrolledAt: row.enrolledAt ? Temporal.Instant.from(row.enrolledAt) : null,
+      endedAt: row.endedAt ? Temporal.Instant.from(row.endedAt) : null,
     }));
   }
   async listBlocksAll(tenantId: string, userId: string) {

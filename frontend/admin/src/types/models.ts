@@ -596,6 +596,9 @@ export interface ManagedActivity extends ActivityInput {
   nextSession: string | null;
   upcomingSessions: number;
   schedule: string;
+  /** People holding a place, and people waiting for one. */
+  enrolled: number;
+  waiting: number;
 }
 export interface ManagedActivityDetails extends ManagedActivity {
   sessions: ActivitySession[];
@@ -607,4 +610,24 @@ export interface ActivityClash {
   /** Local date, to add as an exception. */
   date: string;
   reason: "booking" | "season" | "activity" | "waitlist_hold" | "closed";
+}
+/** A person enrolled in an activity or on its waiting list, for the backoffice (#97). */
+export interface ManagedEnrolment {
+  id: string;
+  userId: string;
+  status: "enrolled" | "waiting" | "left" | "removed" | "cancelled";
+  /** Place in the waiting list, from 1. */
+  position: number | null;
+  name: string;
+  email: string | null;
+  createdAt: string;
+  enrolledAt: string | null;
+  endedAt: string | null;
+  removalReason: string | null;
+}
+export interface ManagedEnrolmentPage {
+  items: ManagedEnrolment[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

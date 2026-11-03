@@ -18,9 +18,9 @@ function utc(instant: Temporal.Instant) {
   );
 }
 /**
- * Serializes bookings as RFC 5545 PUBLISH events. Times are UTC instants, so
+ * Serializes bookings and activity sessions as RFC 5545 PUBLISH events. Times are UTC instants, so
  * no VTIMEZONE is needed and clients render them in local time. UID is stable
- * per booking and SEQUENCE grows with each change, so subscribed calendars
+ * per booking or session and SEQUENCE grows with each change, so subscribed calendars
  * replace the previous version instead of duplicating it.
  */
 export function bookingCalendar(document: CalendarDocument) {
@@ -32,7 +32,7 @@ export function bookingCalendar(document: CalendarDocument) {
   root.addPropertyWithValue("x-wr-calname", "Quenda");
   for (const entry of document.entries) {
     const event = new ICAL.Component("vevent");
-    event.addPropertyWithValue("uid", `${entry.bookingId}@quenda`);
+    event.addPropertyWithValue("uid", entry.uid);
     event.addPropertyWithValue("dtstamp", utc(document.generatedAt));
     event.addPropertyWithValue("created", utc(entry.createdAt));
     event.addPropertyWithValue("dtstart", utc(entry.start));
@@ -43,11 +43,13 @@ export function bookingCalendar(document: CalendarDocument) {
       entry.status === "cancelled" ? "CANCELLED" : "CONFIRMED",
     );
     // The court is named only when it differs from the facility (a facility with several).
-    event.addPropertyWithValue(
-      "summary",
+    const place =
       entry.resourceName === entry.facilityName
         ? entry.facilityName
-        : `${entry.facilityName}, ${entry.resourceName}`,
+        : `${entry.facilityName}, ${entry.resourceName}`;
+    event.addPropertyWithValue(
+      "summary",
+      entry.activityName ? `${entry.activityName} (${place})` : place,
     );
     event.addPropertyWithValue("location", entry.facilityAddress);
     event.addPropertyWithValue("description", entry.municipalityName);

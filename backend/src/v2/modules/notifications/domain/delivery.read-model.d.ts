@@ -11,9 +11,17 @@ export interface Delivery {
   channel: MessageChannel;
   tenantId: string;
   userId: string;
-  /** The reservation, or null for a waiting-list offer (#96). */
+  /** The reservation, or null for a waiting-list offer (#96) or an enrolment notice (#97). */
   bookingId: string | null;
   waitlistEntryId: string | null;
+  enrolmentId: string | null;
+  /** Activity of an enrolment notice, and the state of that enrolment now. */
+  activity: { name: { gl: string; es: string } } | null;
+  enrolmentStatus:
+    "enrolled" | "waiting" | "left" | "removed" | "cancelled" | null;
+  /** Reason and cancelled dates recorded in the enrolment notice. */
+  noticeReason: string | null;
+  cancelledDates: Temporal.Instant[];
   attempts: number;
   /** NULL when the account has no address or has been deleted. */
   email: string | null;
@@ -42,6 +50,7 @@ export interface Delivery {
   standing: PenaltyStanding | null;
   /** Reason given by the municipality when it cancelled the reservation. */
   cancellationReason: string | null;
+  /** The reservation, the offered slot, or for an enrolment the session it is about. */
   start: Temporal.Instant;
   end: Temporal.Instant;
 }

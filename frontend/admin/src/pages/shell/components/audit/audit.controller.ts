@@ -65,6 +65,10 @@ const AUDIT_ACTIONS = [
   ["activity.cancelled", "auditActivityCancelled"],
   ["activity_session.cancelled", "auditActivitySessionCancelled"],
   ["facility.activity_sessions_cancelled", "auditFacilitySessionsCancelled"],
+  ["activity_enrolment.created", "auditEnrolmentCreated"],
+  ["activity_enrolment.left", "auditEnrolmentLeft"],
+  ["activity_enrolment.removed", "auditEnrolmentRemoved"],
+  ["activity.enrolments_exported", "auditEnrolmentsExported"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 const ACTION_LABELS = new Map<string, TextKey>(AUDIT_ACTIONS);
 const ROLE_LABELS = {

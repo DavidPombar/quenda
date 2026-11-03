@@ -24,6 +24,14 @@ All notable changes to Quenda are documented here. The format follows
 
 ### Added
 
+- Enrolment in activities, part B (#97, C2, C4, M2): adults enrol from the activity's page; past
+  the places they join a waiting list and the first person waiting gets a freed place on their own,
+  with a notice. Leaving, removal by the council with a reason, account deletion and new places all
+  move the queue. Cancelled dates and cancelled activities tell the people enrolled once, by the
+  channels they chose. «As miñas reservas» gains an «Inscricións» tab, the calendar subscription
+  carries the sessions, and the backoffice lists the people page by page and downloads them as an
+  audited CSV. Exports, account exports and retention include enrolments.
+
 - Activities and sports schools, part A (#97, C1, M1, M2): managers publish courses with places,
   ages, informative prices, an enrolment period and a weekly RFC 5545 rule; each session holds its
   court in `booking_units`, and dates that clash with bookings, clubs, other activities or the

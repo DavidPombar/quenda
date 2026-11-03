@@ -44,7 +44,9 @@ obrigatorios **T1–T5** ([alcance](docs/contexto/01-alcance-funcional.md), [req
   dispositivo ([lista de espera](docs/architecture/waitlist.md)).
 - **Actividades e escolas deportivas:** cursos con prazas e horario semanal (por exemplo, natación
   infantil martes e xoves), con filtros por deporte, idade e inscrición aberta, e as súas sesións
-  na ficha de cada instalación ([actividades](docs/architecture/activities.md)).
+  na ficha de cada instalación. As persoas adultas inscríbense en liña; cando non quedan prazas
+  entran nunha lista de espera e a primeira collerá a praza que quede libre, cun aviso
+  ([actividades](docs/architecture/activities.md)).
 - **Cambiar e cancelar (C3)** dentro do prazo que fixe o concello.
 - **Historial e avisos (C4):** próximas reservas e historial, avisos na app, correo electrónico e
   Web Push para confirmacións, cambios, cancelacións e lembretes.
@@ -347,7 +349,7 @@ da veciñanza. Antes dun piloto real falta: a alta en produción con Cl@ve/Chave
 de seguridade independente e unha revisión externa de accesibilidade con tecnoloxías de apoio
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), avisos por SMS, límites de peticións
 compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, a
-inscrición en liña nas actividades, con lista de espera, persoas menores ao cargo e asistencia
+inscrición nas actividades de persoas menores ao cargo dunha persoa adulta e a asistencia
 ([#97](https://github.com/DavidPombar/quenda/issues/97)), e reservas de grupo. Non se declara ningunha certificación RXPD,
 ENS nin WCAG; os concellos poden partir dos modelos en castelán do
 [rexistro de actividades de tratamento](docs/legal/registro-actividades-tratamiento.md) e do
@@ -418,7 +420,8 @@ council **M1–M3**, public reuse **R1–R3** and mandatory technical conditions
   and they are told in the app, by email and on their device ([waiting list](docs/architecture/waitlist.md)).
 - **Activities and sports schools:** courses with places and a weekly schedule (children's
   swimming on Tuesdays and Thursdays, say), filtered by sport, age and open enrolment, and listed on
-  each facility's page ([activities](docs/architecture/activities.md)).
+  each facility's page. Adults enrol online; past the places they join a waiting list and the first
+  of them gets a freed place, with a notice ([activities](docs/architecture/activities.md)).
 - **Change and cancel (C3)** within the council's notice period.
 - **History and notices (C4):** upcoming bookings and history, in-app notices, email and Web Push
   for confirmations, changes, cancellations and reminders.
@@ -711,8 +714,8 @@ Quenda is a working V0 with synthetic data, not yet a service processing residen
 Still to do before a real pilot: production onboarding with Cl@ve/Chave365, an independent security
 review and an external accessibility review with assistive technology
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), SMS notices, rate limiting shared across
-API replicas, server-side pagination of long histories, payments, online
-enrolment in activities with a waiting list, minors in an adult's care and attendance
+API replicas, server-side pagination of long histories, payments, enrolling minors in an
+adult's care in activities, and attendance
 ([#97](https://github.com/DavidPombar/quenda/issues/97)), and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
 Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md)
 and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md), to be reviewed by

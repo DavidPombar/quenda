@@ -44,8 +44,7 @@ export class ActivitySessionResponseDTO {
   @ApiProperty() start!: string;
   @ApiProperty() end!: string;
   @ApiProperty({ enum: ["active", "cancelled"] }) status!:
-    | "active"
-    | "cancelled";
+    "active" | "cancelled";
   @ApiProperty({ type: String, nullable: true })
   cancellationReason!: string | null;
   static from(value: ActivitySession): ActivitySessionResponseDTO {
@@ -124,18 +123,26 @@ export class ManagedActivityResponseDTO extends ActivityFieldsDTO {
   schedule!: string;
   @ApiProperty({ description: "Active sessions that have not started" })
   upcomingSessions!: number;
+  @ApiProperty({ description: "People holding a place" })
+  enrolled!: number;
+  @ApiProperty({ description: "People on the waiting list" })
+  waiting!: number;
   static from(value: ManagedActivity): ManagedActivityResponseDTO {
     return {
       ...fields(value),
       schedule: value.schedule,
       upcomingSessions: value.upcomingSessions,
+      enrolled: value.enrolled,
+      waiting: value.waiting,
     };
   }
 }
 export class ManagedActivityDetailsResponseDTO extends ManagedActivityResponseDTO {
   @ApiProperty({ type: [ActivitySessionResponseDTO] })
   sessions!: ActivitySessionResponseDTO[];
-  static from(value: ManagedActivityDetails): ManagedActivityDetailsResponseDTO {
+  static from(
+    value: ManagedActivityDetails,
+  ): ManagedActivityDetailsResponseDTO {
     return {
       ...ManagedActivityResponseDTO.from(value),
       sessions: value.sessions.map(ActivitySessionResponseDTO.from),
@@ -144,12 +151,22 @@ export class ManagedActivityDetailsResponseDTO extends ManagedActivityResponseDT
 }
 export class PublicActivityResponseDTO extends ActivityFieldsDTO {
   @ApiProperty({
-    enum: ["upcoming", "open", "closed"],
-    description: "Whether people can enrol today",
+    enum: ["upcoming", "open", "full", "closed"],
+    description:
+      "Whether people can enrol today; full means enrolling joins the waiting list",
   })
-  enrolment!: "upcoming" | "open" | "closed";
+  enrolment!: "upcoming" | "open" | "full" | "closed";
+  @ApiProperty({ description: "Places left" })
+  freePlaces!: number;
+  @ApiProperty({ description: "People on the waiting list" })
+  waiting!: number;
   static from(value: PublicActivity): PublicActivityResponseDTO {
-    return { ...fields(value), enrolment: value.enrolment };
+    return {
+      ...fields(value),
+      enrolment: value.enrolment,
+      freePlaces: value.freePlaces,
+      waiting: value.waiting,
+    };
   }
 }
 export class PublicActivityDetailsResponseDTO extends PublicActivityResponseDTO {

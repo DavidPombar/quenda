@@ -6,9 +6,12 @@ export abstract class NotificationRepository {
     id: string;
     tenantId: string;
     userId: string;
-    /** A notice is about a reservation, or about a waiting-list offer (#96). */
+    /** A notice is about a reservation, a waiting-list offer (#96) or an enrolment (#97). */
     bookingId: string | null;
     waitlistEntryId?: string;
+    enrolmentId?: string;
+    /** The cancelled date an enrolment notice is about. */
+    activitySessionId?: string;
     kind: Notification["kind"];
     createdAt: Temporal.Instant;
     details?: NotificationDetails;

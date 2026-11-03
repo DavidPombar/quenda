@@ -55,7 +55,12 @@ export type ErrorCode =
   | "already_waiting"
   | "offer_closed"
   | "activity_conflict"
-  | "activity_not_editable";
+  | "activity_not_editable"
+  | "activity_has_enrolments"
+  | "places_below_enrolled"
+  | "enrolment_closed"
+  | "already_enrolled"
+  | "age_not_allowed";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

@@ -4,7 +4,7 @@ import { Feedback } from "@/components/feedback/feedback.view";
 import { instantDayLabel, timeLabel } from "@/services/date.service";
 import { fill, type TextKey } from "@/services/i18n.service";
 import type { ActivitySession, Locale, ManagedActivity } from "@/types/models";
-import { ReasonDialog } from "./components/reason-dialog/reason-dialog.view";
+import { ReasonDialog } from "@/components/reason-dialog/reason-dialog.view";
 import { useActivitySessionsController } from "./activity-sessions.controller";
 export function ActivitySessions(p: {
   activity: ManagedActivity;
@@ -85,11 +85,7 @@ export function ActivitySessions(p: {
       )}
       {p.activity.status === "published" && (
         <div className="row-actions">
-          <Button
-            variant="ghost"
-            colorPalette="red"
-            onClick={c.openActivity}
-          >
+          <Button variant="ghost" colorPalette="red" onClick={c.openActivity}>
             {t("activityWithdraw")}
           </Button>
         </div>
@@ -108,7 +104,7 @@ export function ActivitySessions(p: {
           }
           t={t}
           pending={c.pending}
-          error={c.failed}
+          error={c.failed ? t("activityCancelError") : null}
           onConfirm={(reason) => {
             void c.confirm(reason);
           }}

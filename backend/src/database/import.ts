@@ -47,6 +47,8 @@ export interface MunicipalityPackage {
   activities?: Row[];
   activityPrices?: Row[];
   activitySessions?: Row[];
+  /** Enrolments in activities (#97); optional in older packages. */
+  activityEnrolments?: Row[];
 }
 const collections = [
   "facilities",
@@ -212,6 +214,8 @@ const tables = {
     user_id: "userId",
     booking_id: "bookingId",
     waitlist_entry_id: "waitlistEntryId",
+    enrolment_id: "enrolmentId",
+    activity_session_id: "activitySessionId",
     kind: "kind",
     created_at: "createdAt",
     details: "details",
@@ -366,6 +370,8 @@ const tables = {
     user_id: "userId",
     booking_id: "bookingId",
     waitlist_entry_id: "waitlistEntryId",
+    enrolment_id: "enrolmentId",
+    activity_session_id: "activitySessionId",
     kind: "kind",
     channel: "channel",
     dedupe_key: "dedupeKey",
@@ -440,6 +446,17 @@ const tables = {
     status: "status",
     cancellation_reason: "cancellationReason",
     sequence: "sequence",
+  },
+  activity_enrolments: {
+    tenant_id: "tenantId",
+    id: "id",
+    activity_id: "activityId",
+    user_id: "userId",
+    status: "status",
+    created_at: "createdAt",
+    enrolled_at: "enrolledAt",
+    ended_at: "endedAt",
+    removal_reason: "removalReason",
   },
 } as const;
 /**
@@ -601,6 +618,7 @@ export async function importMunicipality(
       WHERE x.tenant_id=$1 AND x.status='active' AND a.status='published'`,
       [tenantId],
     );
+    await insert("activity_enrolments", data.activityEnrolments ?? []);
     await insert("notifications", data.notifications);
     await insert("audit_events", data.auditEvents);
     await insert("consents", data.consents);

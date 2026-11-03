@@ -148,6 +148,9 @@ export interface MunicipalitySnapshot {
     /** Null for a waiting-list offer, which belongs to its entry (#96). */
     bookingId: string | null;
     waitlistEntryId: string | null;
+    /** An enrolment notice (#97) and the cancelled date it is about. */
+    enrolmentId: string | null;
+    activitySessionId: string | null;
     kind: string;
     createdAt: Temporal.Instant;
     details: Record<string, unknown> | null;
@@ -204,6 +207,9 @@ export interface MunicipalitySnapshot {
     userId: string;
     bookingId: string | null;
     waitlistEntryId: string | null;
+    /** An enrolment notice (#97) and the cancelled date it is about. */
+    enrolmentId: string | null;
+    activitySessionId: string | null;
     kind: string;
     channel: string;
     dedupeKey: string;
@@ -352,6 +358,17 @@ export interface MunicipalitySnapshot {
     status: string;
     cancellationReason: string | null;
     sequence: number;
+  }[];
+  /** Enrolments in activities (#97); instants are ISO strings as stored. */
+  activityEnrolments: {
+    id: string;
+    activityId: string;
+    userId: string;
+    status: string;
+    createdAt: string;
+    enrolledAt: string | null;
+    endedAt: string | null;
+    removalReason: string | null;
   }[];
 }
 

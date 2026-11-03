@@ -10,24 +10,10 @@ import {
   PushDevice,
 } from "../../domain/delivery.read-model";
 import { noticeKindOf } from "../../../../shared/application/notice-preferences";
-import { MessageKind } from "../../../../shared/application/outbox";
+import { messageKinds } from "../../../../shared/application/outbox";
 // Message kind → notice kind, as a JSON object the claim query looks the preference up with.
 const noticeKinds = JSON.stringify(
-  Object.fromEntries(
-    (
-      [
-        "confirmed",
-        "rescheduled",
-        "cancelled",
-        "cancelled_by_municipality",
-        "reminder",
-        "no_show",
-        "blocked",
-        "unblocked",
-        "waitlist_offer",
-      ] satisfies MessageKind[]
-    ).map((kind) => [kind, noticeKindOf(kind)]),
-  ),
+  Object.fromEntries(messageKinds.map((kind) => [kind, noticeKindOf(kind)])),
 );
 interface DeliveryRow {
   id: string;
@@ -37,6 +23,11 @@ interface DeliveryRow {
   userId: string;
   bookingId: string | null;
   waitlistEntryId: string | null;
+  enrolmentId: string | null;
+  activityNameGl: string | null;
+  activityNameEs: string | null;
+  enrolmentStatus: Delivery["enrolmentStatus"];
+  noticeDetails: { reason?: string; dates?: string[] } | null;
   attempts: number;
   email: string | null;
   locale: string;
@@ -104,6 +95,12 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
         FROM due WHERE o.id=due.id RETURNING o.*)
       SELECT c.id, c.kind, c.channel, c.tenant_id AS "tenantId", c.user_id AS "userId",
         c.booking_id AS "bookingId", c.waitlist_entry_id AS "waitlistEntryId", c.attempts,
+        c.enrolment_id AS "enrolmentId", a.name_gl AS "activityNameGl", a.name_es AS "activityNameEs",
+        e.status AS "enrolmentStatus",
+        (SELECT n.details FROM notifications n
+          WHERE n.tenant_id=c.tenant_id AND n.enrolment_id=c.enrolment_id AND n.kind=c.kind
+            AND n.activity_session_id IS NOT DISTINCT FROM c.activity_session_id
+          ORDER BY n.created_at DESC LIMIT 1) AS "noticeDetails",
         CASE WHEN u.deleted_at IS NULL THEN u.email END AS email,
         COALESCE(u.locale, m.locale) AS locale, b.status AS "bookingStatus",
         m.slug, m.name AS "municipalityName", m.timezone,
@@ -118,7 +115,8 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
           ORDER BY n.created_at DESC LIMIT 1) AS standing,
         m.access_webhook_url AS "webhookUrl", m.access_webhook_secret_sealed AS "webhookSecretSealed",
         f.id AS "facilityId", f.opening_calendar AS "openingCalendar",
-        COALESCE(b.starts_at, w.starts_at) AS start, COALESCE(b.ends_at, w.ends_at) AS "end",
+        COALESCE(b.starts_at, w.starts_at, x.starts_at, c.created_at) AS start,
+        COALESCE(b.ends_at, w.ends_at, x.ends_at, c.created_at) AS "end",
         w.offer_expires_at AS "offerExpiresAt",
         (w.status='offered' AND w.offer_expires_at > $1) IS TRUE AS "offerOpen"
       FROM claimed c
@@ -126,7 +124,17 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       JOIN municipalities m ON m.id=c.tenant_id
       LEFT JOIN bookings b ON b.tenant_id=c.tenant_id AND b.id=c.booking_id
       LEFT JOIN waitlist_entries w ON w.tenant_id=c.tenant_id AND w.id=c.waitlist_entry_id
-      JOIN facilities f ON f.tenant_id=c.tenant_id AND f.id=COALESCE(b.facility_id, w.facility_id)
+      LEFT JOIN activity_enrolments e ON e.tenant_id=c.tenant_id AND e.id=c.enrolment_id
+      LEFT JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
+      -- An enrolment notice is about its cancelled date, else the next session, else the last one.
+      LEFT JOIN LATERAL (
+        SELECT s.starts_at, s.ends_at FROM activity_sessions s
+        WHERE a.id IS NOT NULL AND s.tenant_id=a.tenant_id AND s.activity_id=a.id
+          AND (c.activity_session_id IS NULL OR s.id=c.activity_session_id)
+        ORDER BY (c.activity_session_id IS NULL AND s.status='active' AND s.starts_at>$1) DESC,
+          CASE WHEN s.starts_at>$1 THEN s.starts_at END ASC, s.starts_at DESC
+        LIMIT 1) x ON true
+      JOIN facilities f ON f.tenant_id=c.tenant_id AND f.id=COALESCE(b.facility_id, w.facility_id, a.facility_id)
       LEFT JOIN notification_preferences p ON p.tenant_id=c.tenant_id AND p.user_id=c.user_id
         AND p.channel=c.channel AND p.kind=($5::jsonb ->> c.kind)`,
       [
@@ -145,6 +153,16 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       userId: row.userId,
       bookingId: row.bookingId,
       waitlistEntryId: row.waitlistEntryId,
+      enrolmentId: row.enrolmentId,
+      activity:
+        row.activityNameGl === null
+          ? null
+          : { name: { gl: row.activityNameGl, es: row.activityNameEs ?? "" } },
+      enrolmentStatus: row.enrolmentStatus,
+      noticeReason: row.noticeDetails?.reason ?? null,
+      cancelledDates: (row.noticeDetails?.dates ?? []).map((date) =>
+        Temporal.Instant.from(date),
+      ),
       attempts: row.attempts,
       email: row.email,
       locale: row.locale === "es" ? "es" : "gl",

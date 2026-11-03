@@ -2,7 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { ActivityRepository } from "../../domain/activity.repository";
 import { PublicActivityDetails } from "../../domain/activity.read-model";
-import { enrolmentState } from "../activity-input";
+import { catalogueEnrolment } from "../activity-input";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
 import { Result } from "../../../../shared/application/result";
@@ -31,10 +31,7 @@ export class GetPublicActivity {
     const today = now.toZonedDateTimeISO(municipality.timezone).toPlainDate();
     return Result.ok({
       ...details,
-      enrolment:
-        details.status === "cancelled"
-          ? "closed"
-          : enrolmentState(details, today),
+      enrolment: catalogueEnrolment(details, today),
     });
   }
 }

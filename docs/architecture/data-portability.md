@@ -35,6 +35,7 @@ manager can only export their own. The file is named
 | `sports`, `facilityPhotos` | Sports catalogue (#26): codes, names in Galician and Spanish, CNID and schema.org classification, hidden flag and order; and facility photos as base64 with their alternative texts. Packages without a catalogue get the initial one. Optional in older packages |
 | `waitlistEntries`, `waitlistOutcomes` | Waiting lists (#96) of slots that had not ended, in queue order, with the offer's times; an open offer holds its place again on import. Entries of past slots are not transferred. Offers accepted and expired per facility and day, without people, for the indicators. Optional in older packages |
 | `activities`, `activityPrices`, `activitySessions` | Activities and sports schools (#97): the weekly rule as edited and as RFC 5545 `schedule`, places, ages, enrolment dates, status, informative prices, and every dated session with its status and `sequence`. Active sessions of published activities occupy their court units again on import. Optional in older packages |
+| `activityEnrolments` | Enrolments in activities (#97): person, status, times and removal reason. Notices and outbox messages carry `enrolmentId` and `activitySessionId`. Optional in older packages |
 
 Sessions and calendar subscription credentials are deliberately excluded. People
 sign in again and create new subscription links on the destination. Deleted

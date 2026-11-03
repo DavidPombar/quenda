@@ -1,21 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { ExportedMessage } from "../../../domain/account.read-model";
+import { messageKinds } from "../../../../../shared/application/outbox";
 export class ExportedMessageResponseDTO {
   @ApiProperty({ description: "Message UUID" }) id!: string;
   @ApiProperty({
     description: "Notice kind",
-    enum: [
-      "confirmed",
-      "rescheduled",
-      "cancelled",
-      "cancelled_by_municipality",
-      "reminder",
-      "no_show",
-      "blocked",
-      "unblocked",
-      "waitlist_offer",
-    ],
+    enum: messageKinds,
   })
   kind!: ExportedMessage["kind"];
   @ApiProperty({

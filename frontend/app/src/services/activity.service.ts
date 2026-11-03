@@ -71,6 +71,7 @@ export function agesLabel(
 const ENROLMENT: Record<PublicActivity["enrolment"], TextKey> = {
   upcoming: "enrolmentUpcoming",
   open: "enrolmentOpen",
+  full: "enrolmentFull",
   closed: "enrolmentClosed",
 };
 export function enrolmentLabel(activity: Pick<PublicActivity, "enrolment">) {

@@ -219,7 +219,7 @@ export interface PenaltyStanding {
 }
 export interface Notification {
   id: string;
-  /** Null for a waiting-list offer (#96). */
+  /** Null for a waiting-list offer (#96) or an enrolment notice (#97). */
   bookingId: string | null;
   kind:
     | "confirmed"
@@ -230,16 +230,27 @@ export interface Notification {
     | "blocked"
     | "unblocked"
     | "reminder"
-    | "waitlist_offer";
+    | "waitlist_offer"
+    | "enrolment_confirmed"
+    | "enrolment_waiting"
+    | "enrolment_promoted"
+    | "enrolment_removed"
+    | "activity_session_cancelled"
+    | "activity_cancelled";
   facilityName: string;
   resourceId: string;
   resourceName: string;
+  /** The activity of an enrolment notice (#97). */
+  activityId?: string | null;
+  activityName?: Localized | null;
   createdAt: string;
   details: {
     reason?: string;
     standing?: Omit<PenaltyStanding, "enabled">;
     /** Until when a waiting-list offer holds the place. */
     offerExpiresAt?: string;
+    /** Start of each cancelled date of an activity. */
+    dates?: string[];
   } | null;
 }
 /** A waiting list the person is on (#96): still waiting, or offered a freed place. */
@@ -464,8 +475,10 @@ export interface PublicActivity {
   status: "published" | "cancelled";
   cancellationReason: string | null;
   nextSession: string | null;
-  /** Whether people can enrol today. */
-  enrolment: "upcoming" | "open" | "closed";
+  /** Whether people can enrol today; `full` means enrolling joins the waiting list. */
+  enrolment: "upcoming" | "open" | "full" | "closed";
+  freePlaces: number;
+  waiting: number;
 }
 export interface PublicActivityDetails extends PublicActivity {
   /** Upcoming sessions, cancelled ones included. */
@@ -484,4 +497,24 @@ export interface ActivityFilters {
   open: boolean;
   facilityId: string;
   page: number;
+}
+export type EnrolmentStatus =
+  "enrolled" | "waiting" | "left" | "removed" | "cancelled";
+/** An enrolment of the person in an activity (#97). */
+export interface MyEnrolment {
+  id: string;
+  activityId: string;
+  activityName: Localized;
+  activityStatus: "draft" | "published" | "cancelled";
+  facilityId: string;
+  facilityName: string;
+  resourceName: string;
+  status: EnrolmentStatus;
+  /** Place in the waiting list, from 1. */
+  position: number | null;
+  createdAt: string;
+  enrolledAt: string | null;
+  endedAt: string | null;
+  nextSession: string | null;
+  cancelledSessions: number;
 }

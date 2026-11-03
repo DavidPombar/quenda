@@ -94,13 +94,13 @@ export abstract class FacilityRepository {
     id: string,
     now: Temporal.Instant,
   ): Promise<number>;
-  /** Cancels those sessions, freeing their units, when the facility closes. Returns how many. */
+  /** Cancels those sessions, freeing their units, when the facility closes. Returns their ids. */
   abstract cancelActivitySessions(args: {
     tenantId: string;
     id: string;
     reason: string;
     at: Temporal.Instant;
-  }): Promise<number>;
+  }): Promise<string[]>;
   abstract cancelBookings(args: {
     tenantId: string;
     bookings: readonly { id: string; userId: string; notificationId: string }[];

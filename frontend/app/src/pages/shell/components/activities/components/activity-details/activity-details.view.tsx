@@ -18,6 +18,7 @@ import {
   enrolmentLabel,
   scheduleLabel,
 } from "@/services/activity.service";
+import { EnrolPanel } from "./components/enrol-panel/enrol-panel.view";
 import { useActivityDetailsController } from "./activity-details.controller";
 export function ActivityDetails() {
   const c = useActivityDetailsController();
@@ -112,14 +113,7 @@ export function ActivityDetails() {
             <p className="muted small">{t("activityPricesNote")}</p>
           </>
         )}
-        {a.status === "published" && a.enrolment !== "closed" && (
-          <p>
-            {t("activityEnrolHow")}{" "}
-            <a href={`mailto:${c.municipality.contact}`}>
-              {c.municipality.contact}
-            </a>
-          </p>
-        )}
+        <EnrolPanel activity={a} context={c.context} />
         <h2>{t("activityUpcomingSessions")}</h2>
         {c.sessions.length === 0 ? (
           <p className="muted">{t("activityNoSessions")}</p>
@@ -129,7 +123,8 @@ export function ActivityDetails() {
               <li key={session.id}>
                 <span>
                   {dateLabel(session.start, zone, locale)},{" "}
-                  {timeLabel(session.start, zone)}–{timeLabel(session.end, zone)}
+                  {timeLabel(session.start, zone)}–
+                  {timeLabel(session.end, zone)}
                 </span>
                 {session.status === "cancelled" && (
                   <span className="session-cancelled">

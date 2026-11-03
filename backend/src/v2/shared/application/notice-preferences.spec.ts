@@ -13,6 +13,20 @@ describe("notice preferences", () => {
     for (const kind of ["no_show", "blocked", "unblocked"] as const)
       expect(noticeKindOf(kind)).toBe("penalty");
   });
+  it("should file enrolment notices under confirmations and cancellations (#97)", () => {
+    for (const kind of [
+      "enrolment_confirmed",
+      "enrolment_waiting",
+      "enrolment_promoted",
+    ] as const)
+      expect(noticeKindOf(kind)).toBe("confirmation");
+    for (const kind of [
+      "enrolment_removed",
+      "activity_session_cancelled",
+      "activity_cancelled",
+    ] as const)
+      expect(noticeKindOf(kind)).toBe("cancellation");
+  });
   it("should email service notices by default and penalty notices only on request", () => {
     expect(wants("reminder", "email", null)).toBe(true);
     expect(wants("rescheduled", "push", null)).toBe(true);

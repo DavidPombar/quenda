@@ -253,6 +253,18 @@ describe("Municipality data portability", () => {
       status: "cancelled",
       reason: "Choiva",
     }).expect(204);
+    // An enrolment in it (#97, part B) with the notice of the cancelled date.
+    const enrolment = randomUUID();
+    await db.query(
+      "INSERT INTO activity_enrolments (id,tenant_id,activity_id,user_id,status,created_at,enrolled_at) SELECT $1,$2,$3,id,'enrolled','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='citizen'",
+      [enrolment, tenantId, activity.body.id],
+    );
+    await db.query(
+      `INSERT INTO notifications (id,tenant_id,user_id,kind,created_at,details,enrolment_id,activity_session_id)
+      SELECT $1,$2,user_id,'activity_session_cancelled','2026-10-20T10:00:00Z','{"reason":"Choiva"}',id,$3
+      FROM activity_enrolments WHERE id=$4`,
+      [randomUUID(), tenantId, sessions[0].id, enrolment],
+    );
     await db.query(
       "INSERT INTO check_ins (id,tenant_id,booking_id,booking_sequence,actor_id,method,checked_in_at,recorded_at) SELECT $1,$2,$3,0,id,'manual','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='manager'",
       [randomUUID(), tenantId, kept],
@@ -411,6 +423,7 @@ describe("Municipality data portability", () => {
       "activities",
       "activity_prices",
       "activity_sessions",
+      "activity_enrolments",
     ]) {
       const scope = table === "municipalities" ? "id" : "tenant_id";
       const filter =

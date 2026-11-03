@@ -1,11 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import {
-  Button,
-  Field,
-  Input,
-  NativeSelect,
-  Textarea,
-} from "@chakra-ui/react";
+import { Button, Field, Input, NativeSelect, Textarea } from "@chakra-ui/react";
 import { PiX } from "react-icons/pi";
 import { fullDateLabel } from "@/services/date.service";
 import { fill, type TextKey } from "@/services/i18n.service";
@@ -380,7 +374,7 @@ export function ActivityEditor(p: {
       )}
       {c.failed && (
         <p role="alert" className="error-text">
-          {t("activityError")}
+          {c.failure ?? t("activityError")}
         </p>
       )}
       <div role="status">
