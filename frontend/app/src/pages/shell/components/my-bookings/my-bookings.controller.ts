@@ -12,6 +12,9 @@ import { fill, type TextKey } from "@/services/i18n.service";
 import { useBookingCalendarLink } from "@/queries/calendar-feeds/booking-calendar.link";
 import { useListWaitlistQuery } from "@/queries/waitlist/list-waitlist.query";
 import { useLeaveWaitlistMutation } from "@/queries/waitlist/leave-waitlist.mutation";
+import { useListEnrolmentsQuery } from "@/queries/enrolments/list-enrolments.query";
+import { useLeaveEnrolmentMutation } from "@/queries/enrolments/leave-enrolment.mutation";
+import { localized } from "@/services/catalog.service";
 import { timeLabel } from "@/services/date.service";
 import type { AppContext } from "@/types/app-context";
 import type {
@@ -30,6 +33,12 @@ const NOTICE_TITLES = {
   unblocked: "noticeUnblocked",
   reminder: "noticeReminder",
   waitlist_offer: "noticeWaitlistOffer",
+  enrolment_confirmed: "noticeEnrolmentConfirmed",
+  enrolment_waiting: "noticeEnrolmentWaiting",
+  enrolment_promoted: "noticeEnrolmentPromoted",
+  enrolment_removed: "noticeEnrolmentRemoved",
+  activity_session_cancelled: "noticeActivitySessionCancelled",
+  activity_cancelled: "noticeActivityCancelled",
 } as const satisfies Record<Notification["kind"], TextKey>;
 // Most recent notices shown before "Ver todos".
 const NOTICE_PREVIEW = 10;
@@ -37,11 +46,13 @@ const NOTICE_PREVIEW = 10;
 const BOOKING_PAGE = 10;
 // Passes of bookings starting this soon are fetched ahead for the door (#24).
 const PASS_AHEAD_HOURS = 24;
-function focusWaitlistTab() {
+type Tab = "upcoming" | "waitlist" | "enrolments" | "history";
+function focusTab(tab: Tab) {
   window.requestAnimationFrame(() =>
-    document.querySelector<HTMLElement>("#bookings-tab-waitlist")?.focus(),
+    document.querySelector<HTMLElement>(`#bookings-tab-${tab}`)?.focus(),
   );
 }
+const focusWaitlistTab = () => focusTab("waitlist");
 export function useMyBookingsController() {
   const context = useOutletContext<AppContext>();
   const query = useListBookingsQuery(context.session?.userId);
@@ -49,9 +60,9 @@ export function useMyBookingsController() {
   const penalty = useGetPenaltyStandingQuery(context.session?.userId);
   const waitlist = useListWaitlistQuery(context.session?.userId);
   const leave = useLeaveWaitlistMutation();
-  const [tab, setTab] = useState<"upcoming" | "waitlist" | "history">(
-    "upcoming",
-  );
+  const enrolments = useListEnrolmentsQuery(context.session?.userId);
+  const leaveEnrolment = useLeaveEnrolmentMutation();
+  const [tab, setTab] = useState<Tab>("upcoming");
   const [accepting, setAccepting] = useState<WaitlistEntry | null>(null);
   const [cancelling, setCancelling] = useState<Booking | null>(null);
   const [showingPass, setShowingPass] = useState<Booking | null>(null);
@@ -134,6 +145,28 @@ export function useMyBookingsController() {
       blockDays: standing.blockDays,
     });
   }
+  /** Cancelled dates of an activity, the municipal reason, or the penalty or offer details. */
+  function noticeDetail(notice: Notification) {
+    const zone = context.municipality.timezone;
+    const dates = (notice.details?.dates ?? [])
+      .map(
+        (date) =>
+          `${dateLabel(date, zone, context.locale)}, ${timeLabel(date, zone)}`,
+      )
+      .join("; ");
+    const detail =
+      notice.details?.reason ??
+      (notice.details?.standing
+        ? standingText(notice.details.standing)
+        : notice.details?.offerExpiresAt
+          ? fill(t("waitlistHeld"), {
+              time: timeLabel(notice.details.offerExpiresAt, zone),
+            })
+          : "");
+    return [dates && fill(t("noticeDates"), { dates }), detail]
+      .filter(Boolean)
+      .join(". ");
+  }
   const standing = penalty.data;
   return {
     ...context,
@@ -146,18 +179,12 @@ export function useMyBookingsController() {
         : "",
     blocked: !!standing?.blockedUntil,
     noticeTitle: (notice: Notification) => t(NOTICE_TITLES[notice.kind]),
-    noticeDetail: (notice: Notification) =>
-      notice.details?.reason ??
-      (notice.details?.standing
-        ? standingText(notice.details.standing)
-        : notice.details?.offerExpiresAt
-          ? fill(t("waitlistHeld"), {
-              time: timeLabel(
-                notice.details.offerExpiresAt,
-                context.municipality.timezone,
-              ),
-            })
-          : ""),
+    /** An enrolment notice names its activity before the place (#97). */
+    noticePlace: (notice: Notification) =>
+      notice.activityName
+        ? `${localized(notice.activityName, context.locale)} · ${notice.facilityName}`
+        : notice.facilityName,
+    noticeDetail,
     visibleNotices,
     hiddenNotices: Math.max(allNotices.length - NOTICE_PREVIEW, 0),
     showAllNotices,
@@ -169,8 +196,14 @@ export function useMyBookingsController() {
       ...(context.municipality.waitlistMaxEntries > 0 || waitlist.data?.length
         ? (["waitlist"] as const)
         : []),
+      "enrolments",
       "history",
     ] as const,
+    enrolments,
+    leaveEnrolment,
+    // The row's button goes away once the person leaves; focus returns to the tab.
+    leaveActivity: (id: string) =>
+      leaveEnrolment.mutate(id, { onSuccess: () => focusTab("enrolments") }),
     waitlist,
     offers: (waitlist.data ?? []).filter((entry) => entry.status === "offered")
       .length,
@@ -191,7 +224,7 @@ export function useMyBookingsController() {
       setAccepting(null);
       focusWaitlistTab();
     },
-    setTab: (value: "upcoming" | "waitlist" | "history") => {
+    setTab: (value: Tab) => {
       setTab(value);
       setBookingLimit(BOOKING_PAGE);
     },

@@ -72,4 +72,4 @@ The catalogue is filtered and paginated on the server, each municipality keeps i
 
 ## Activities and sports schools (#97)
 
-Managers publish courses with places, a weekly RFC 5545 rule, ages, informative prices and an enrolment period; each session occupies its court in `booking_units`, and sessions that would clash with bookings, clubs, other activities or the opening hours are listed to become dates without a session instead of being saved. See [activities and sports schools](activities.md).
+Managers publish courses with places, a weekly RFC 5545 rule, ages, informative prices and an enrolment period; each session occupies its court in `booking_units`, and sessions that would clash with bookings, clubs, other activities or the opening hours are listed to become dates without a session instead of being saved. Adults enrol while the period is open; past the places they wait in order and move up on their own when a place frees, under the activity's row lock. The activities module is global so facilities and accounts can cancel sessions or remove people through `ActivityEnrolments` in their own transaction. See [activities and sports schools](activities.md).

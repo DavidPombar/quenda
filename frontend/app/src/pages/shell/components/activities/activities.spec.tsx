@@ -5,7 +5,11 @@ import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { facility, stubFacilities, stubShell } from "@/test/fixtures";
-import type { PublicActivity, PublicActivityDetails } from "@/types/models";
+import type {
+  MyEnrolment,
+  PublicActivity,
+  PublicActivityDetails,
+} from "@/types/models";
 const swimming: PublicActivity = {
   id: "60000000-0000-4000-8000-000000000011",
   facilityId: facility.id,
@@ -39,6 +43,8 @@ const swimming: PublicActivity = {
   cancellationReason: null,
   nextSession: "2026-11-03T16:00:00Z",
   enrolment: "open",
+  freePlaces: 3,
+  waiting: 0,
 };
 const details: PublicActivityDetails = {
   ...swimming,
@@ -79,16 +85,15 @@ describe("Activities and sports schools", () => {
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: "Natación infantil" }))
-      .toHaveAttribute(
-        "href",
-        `/app/vilaverde/actividades/${swimming.id}`,
-      );
+      .toHaveAttribute("href", `/app/vilaverde/actividades/${swimming.id}`);
     await expect
       .element(page.getByText("martes e xoves, 17:00–18:00"))
       .toBeVisible();
     await expect.element(page.getByText("De 6 a 12 anos")).toBeVisible();
     await expect.element(page.getByText("1 actividade")).toBeVisible();
-    await page.getByRole("checkbox", { name: "Só con inscrición aberta" }).click();
+    await page
+      .getByRole("checkbox", { name: "Só con inscrición aberta" })
+      .click();
     await page
       .getByRole("spinbutton", { name: "Idade de quen vai participar" })
       .fill("9");
@@ -109,7 +114,9 @@ describe("Activities and sports schools", () => {
     await commands.navigate(`/app/vilaverde/actividades/${swimming.id}`);
     await render(<App />);
     await expect
-      .element(page.getByRole("heading", { name: "Natación infantil", level: 1 }))
+      .element(
+        page.getByRole("heading", { name: "Natación infantil", level: 1 }),
+      )
       .toBeVisible();
     await expect
       .element(page.getByRole("link", { name: facility.name }))
@@ -121,6 +128,98 @@ describe("Activities and sports schools", () => {
     await page.getByRole("button", { name: "ES", exact: true }).click();
     await expect
       .element(page.getByText("martes y jueves, 17:00–18:00"))
+      .toBeVisible();
+  });
+  test("should enrol a signed-in adult after confirming, and show their place", async () => {
+    stubShell(true);
+    stubFacilities([facility]);
+    const adults = { ...details, minAge: 16, maxAge: null };
+    stubJsonResponse({ path: "*/v2/public/activities/:id", response: adults });
+    const enrolled: MyEnrolment = {
+      id: "62000000-0000-4000-8000-000000000001",
+      activityId: swimming.id,
+      activityName: swimming.name,
+      activityStatus: "published",
+      facilityId: facility.id,
+      facilityName: facility.name,
+      resourceName: "Rúa 2",
+      status: "enrolled",
+      position: null,
+      createdAt: "2026-10-21T10:00:00Z",
+      enrolledAt: "2026-10-21T10:00:00Z",
+      endedAt: null,
+      nextSession: "2026-11-05T16:00:00Z",
+      cancelledSessions: 0,
+    };
+    const { spy } = stubJsonResponse({
+      path: "*/v2/citizen/activity-enrolments",
+      method: "POST",
+      status: 201,
+      response: enrolled,
+    });
+    await commands.navigate(`/app/vilaverde/actividades/${swimming.id}`);
+    await render(<App />);
+    await expect.element(page.getByText("3 de 8 prazas libres")).toBeVisible();
+    await page.getByRole("button", { name: "Inscribirme" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect
+      .element(
+        dialog.getByRole("heading", {
+          name: "Inscribirte en Natación infantil",
+        }),
+      )
+      .toBeVisible();
+    stubJsonResponse({
+      path: "*/v2/citizen/activity-enrolments",
+      response: [enrolled],
+    });
+    await dialog.getByRole("button", { name: "Confirmar inscrición" }).click();
+    await expect
+      .element(dialog.getByText("Xa estás inscrito ou inscrita."))
+      .toBeVisible();
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({ activityId: swimming.id }),
+      }),
+    );
+    await dialog.getByRole("button", { name: "Pechar" }).first().click();
+    await expect
+      .element(page.getByText("Estás inscrito ou inscrita nesta actividade."))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("button", { name: "Darme de baixa" }))
+      .toBeVisible();
+  });
+  test("should offer the waiting list when full and ask people to sign in first", async () => {
+    stubShell();
+    stubFacilities([facility]);
+    stubJsonResponse({
+      path: "*/v2/public/activities/:id",
+      response: {
+        ...details,
+        minAge: 16,
+        maxAge: null,
+        enrolment: "full",
+        freePlaces: 0,
+        waiting: 2,
+      },
+    });
+    await commands.navigate(`/app/vilaverde/actividades/${swimming.id}`);
+    await render(<App />);
+    await expect
+      .element(
+        page.getByText(
+          "Non quedan prazas libres. Persoas na lista de espera: 2.",
+        ),
+      )
+      .toBeVisible();
+    await expect
+      .element(
+        page.getByRole("button", { name: "Inicia sesión para inscribirte" }),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByText("Completa: lista de espera", { exact: false }))
       .toBeVisible();
   });
 });

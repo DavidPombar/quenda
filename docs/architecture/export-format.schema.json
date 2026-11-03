@@ -492,6 +492,14 @@
             "type": ["string", "null"],
             "description": "Waiting-list entry of an offer (#96); optional in older packages"
           },
+          "enrolmentId": {
+            "type": ["string", "null"],
+            "description": "Enrolment the notice belongs to (#97)"
+          },
+          "activitySessionId": {
+            "type": ["string", "null"],
+            "description": "Cancelled activity date the notice is about (#97)"
+          },
           "kind": {
             "type": "string"
           },
@@ -717,6 +725,14 @@
           "waitlistEntryId": {
             "type": ["string", "null"],
             "description": "Waiting-list entry of an offer (#96); optional in older packages"
+          },
+          "enrolmentId": {
+            "type": ["string", "null"],
+            "description": "Enrolment the notice belongs to (#97)"
+          },
+          "activitySessionId": {
+            "type": ["string", "null"],
+            "description": "Cancelled activity date the notice is about (#97)"
           },
           "kind": {
             "type": "string"
@@ -1464,6 +1480,56 @@
           "status",
           "cancellationReason",
           "sequence"
+        ]
+      }
+    },
+    "activityEnrolments": {
+      "type": "array",
+      "description": "Enrolments in activities (#97); optional. Notices of an enrolment refer to it",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "activityId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "enrolled",
+              "waiting",
+              "left",
+              "removed",
+              "cancelled"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "enrolledAt": {
+            "type": ["string", "null"]
+          },
+          "endedAt": {
+            "type": ["string", "null"]
+          },
+          "removalReason": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "id",
+          "activityId",
+          "userId",
+          "status",
+          "createdAt",
+          "enrolledAt",
+          "endedAt",
+          "removalReason"
         ]
       }
     }

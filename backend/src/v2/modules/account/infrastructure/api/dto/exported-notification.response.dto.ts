@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { ExportedNotification } from "../../../domain/account.read-model";
+import { messageKinds } from "../../../../../shared/application/outbox";
 export class ExportedNotificationResponseDTO {
   @ApiProperty({ description: "Notification UUID" }) id!: string;
   @ApiProperty({
     type: String,
     nullable: true,
-    description: "Related reservation; null for a waiting-list offer",
+    description:
+      "Related reservation; null for a waiting-list offer or an enrolment notice",
   })
   bookingId!: string | null;
-  @ApiProperty({ description: "Event kind" })
+  @ApiProperty({ description: "Event kind", enum: messageKinds })
   kind!: ExportedNotification["kind"];
   @ApiProperty({
     type: Object,

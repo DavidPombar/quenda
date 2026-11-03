@@ -5,6 +5,7 @@ import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
 import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
+import { ActivityEnrolments } from "../../../../shared/application/activity-enrolments";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type DeleteAccountError = AppError<"forbidden"> | AppError<"not_found">;
@@ -13,7 +14,8 @@ const anonymisedName = "Conta eliminada";
  * Right to erasure, in place: foreign keys keep past reservations and audit rows attached to a
  * user row that no longer carries personal data. Future reservations are released without the
  * cancellation deadline and without notices, and their places offered to the people waiting;
- * the person's own waiting-list entries are deleted. E-mail and NIF are cleared and external identities
+ * the person's own waiting-list entries are deleted and their places in activities go to the
+ * next person waiting. E-mail and NIF are cleared and external identities
  * unlinked, so a later eID sign-in creates a new, unrelated account. Consents stay as evidence until retention purges them.
  */
 @Injectable()
@@ -23,6 +25,7 @@ export class DeleteAccount {
     private readonly clock: Clock,
     private readonly audit: Audit,
     private readonly waitlist: WaitlistOffers,
+    private readonly enrolments: ActivityEnrolments,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -43,6 +46,7 @@ export class DeleteAccount {
     await this.waitlist.forget(tenantId, userId, now);
     for (const slot of freed)
       await this.waitlist.offer({ tenantId, ...slot, now });
+    await this.enrolments.forget(tenantId, userId, now);
     await this.accounts.deleteNotifications(tenantId, userId);
     await this.accounts.deleteCategories(tenantId, userId);
     await this.accounts.deleteMessaging(tenantId, userId);

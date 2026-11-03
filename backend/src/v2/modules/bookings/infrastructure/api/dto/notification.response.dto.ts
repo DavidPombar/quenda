@@ -4,6 +4,7 @@ import {
   Notification,
   NotificationDetails,
 } from "../../../domain/notification.entity";
+import { messageKinds } from "../../../../../shared/application/outbox";
 export class PenaltySnapshotDTO {
   @ApiProperty() count!: number;
   @ApiProperty() limit!: number;
@@ -24,27 +25,28 @@ export class NotificationDetailsDTO {
     description: "Until when a waiting-list offer holds the place (#96)",
   })
   offerExpiresAt?: string;
+  @ApiPropertyOptional({
+    type: [String],
+    description: "Start of each cancelled date of an activity (#97)",
+  })
+  dates?: string[];
+}
+export class NotificationActivityNameDTO {
+  @ApiProperty() gl!: string;
+  @ApiProperty({ description: "Empty means use the Galician text" })
+  es!: string;
 }
 export class NotificationResponseDTO {
   @ApiProperty({ description: "Notification UUID" }) id!: string;
   @ApiProperty({
     type: String,
     nullable: true,
-    description: "Related reservation; null for a waiting-list offer",
+    description:
+      "Related reservation; null for a waiting-list offer or an enrolment notice",
   })
   bookingId!: string | null;
   @ApiProperty({
-    enum: [
-      "confirmed",
-      "rescheduled",
-      "cancelled",
-      "cancelled_by_municipality",
-      "no_show",
-      "blocked",
-      "unblocked",
-      "reminder",
-      "waitlist_offer",
-    ],
+    enum: messageKinds,
     description: "Event kind",
   })
   kind!: Notification["kind"];
@@ -54,6 +56,14 @@ export class NotificationResponseDTO {
   @ApiProperty({ description: "Booked resource UUID" }) resourceId!: string;
   @ApiProperty({ description: "Court or space display name" })
   resourceName!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Activity of an enrolment notice (#97)",
+  })
+  activityId!: string | null;
+  @ApiProperty({ type: NotificationActivityNameDTO, nullable: true })
+  activityName!: NotificationActivityNameDTO | null;
   @ApiProperty({ description: "Event instant" }) createdAt!: string;
   static from(value: Notification): NotificationResponseDTO {
     return {
@@ -64,6 +74,8 @@ export class NotificationResponseDTO {
       facilityName: value.facilityName,
       resourceId: value.resourceId,
       resourceName: value.resourceName,
+      activityId: value.activityId,
+      activityName: value.activityName,
       createdAt: value.createdAt.toString(),
     };
   }

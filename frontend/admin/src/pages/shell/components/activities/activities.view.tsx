@@ -8,6 +8,7 @@ import { fill, type TextKey } from "@/services/i18n.service";
 import type { ManagedActivity } from "@/types/models";
 import { ActivityEditor } from "./components/activity-editor/activity-editor.view";
 import { ActivitySessions } from "./components/activity-sessions/activity-sessions.view";
+import { ActivityEnrolments } from "./components/activity-enrolments/activity-enrolments.view";
 import { useActivitiesController } from "./activities.controller";
 const STATUS: Record<ManagedActivity["status"], TextKey> = {
   draft: "activityStatusDraft",
@@ -80,8 +81,10 @@ export function Activities() {
                     })}
                   </span>
                   <span className="muted">
-                    {fill(t("activityPlacesCount"), {
+                    {fill(t("activityPlacesTaken"), {
+                      enrolled: activity.enrolled,
                       places: activity.places,
+                      waiting: activity.waiting,
                     })}
                   </span>
                   {activity.nextSession && (
@@ -125,6 +128,15 @@ export function Activities() {
           )}
           {c.selected && c.selected.status !== "draft" && (
             <ActivitySessions
+              activity={c.selected}
+              timezone={c.municipality.timezone}
+              locale={locale}
+              t={t}
+            />
+          )}
+          {c.selected && c.selected.status !== "draft" && (
+            <ActivityEnrolments
+              key={c.selected.id}
               activity={c.selected}
               timezone={c.municipality.timezone}
               locale={locale}

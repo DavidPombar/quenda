@@ -15,6 +15,12 @@ const texts: Record<Delivery["locale"], Record<Delivery["kind"], string>> = {
     blocked: "As túas reservas están bloqueadas temporalmente.",
     unblocked: "Xa podes reservar de novo.",
     waitlist_offer: "Quedou libre unha praza que esperabas. Confírmaa axiña.",
+    enrolment_confirmed: "Tes praza nunha actividade.",
+    enrolment_waiting: "Estás na lista de espera dunha actividade.",
+    enrolment_promoted: "Quedou libre unha praza nunha actividade e xa é túa.",
+    enrolment_removed: "Tes un aviso sobre unha actividade.",
+    activity_session_cancelled: "Anulouse unha sesión dunha actividade.",
+    activity_cancelled: "Anulouse unha actividade na que estabas.",
   },
   es: {
     confirmed: "Tienes una reserva confirmada.",
@@ -28,6 +34,13 @@ const texts: Record<Delivery["locale"], Record<Delivery["kind"], string>> = {
     unblocked: "Ya puedes reservar de nuevo.",
     waitlist_offer:
       "Ha quedado libre una plaza que esperabas. Confírmala pronto.",
+    enrolment_confirmed: "Tienes plaza en una actividad.",
+    enrolment_waiting: "Estás en la lista de espera de una actividad.",
+    enrolment_promoted:
+      "Ha quedado libre una plaza en una actividad y ya es tuya.",
+    enrolment_removed: "Tienes un aviso sobre una actividad.",
+    activity_session_cancelled: "Se ha anulado una sesión de una actividad.",
+    activity_cancelled: "Se ha anulado una actividad en la que estabas.",
   },
 };
 export interface PushPayload {
@@ -35,7 +48,7 @@ export interface PushPayload {
   body: string;
   /** Page the notice opens, inside the citizen app. */
   url: string;
-  /** Groups notices of the same reservation on the device. */
+  /** Groups notices of the same reservation, offer or enrolment on the device. */
   tag: string;
 }
 export function pushPayload(delivery: Delivery, url: string): PushPayload {
@@ -43,6 +56,6 @@ export function pushPayload(delivery: Delivery, url: string): PushPayload {
     title: delivery.municipality.name,
     body: texts[delivery.locale][delivery.kind],
     url,
-    tag: `quenda-${delivery.bookingId ?? delivery.waitlistEntryId}`,
+    tag: `quenda-${delivery.bookingId ?? delivery.waitlistEntryId ?? delivery.enrolmentId}`,
   };
 }

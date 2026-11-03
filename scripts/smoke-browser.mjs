@@ -445,7 +445,9 @@ try {
   await activityForm.getByLabel("Primeiro día").fill(dayAhead(30));
   await activityForm.getByLabel("Último día").fill(dayAhead(60));
   await activityForm.getByLabel("Inscrición ata").fill(dayAhead(29));
-  await activityForm.getByRole("textbox", { name: "Prezo xeral (€)" }).fill("30");
+  await activityForm
+    .getByRole("textbox", { name: "Prezo xeral (€)" })
+    .fill("30");
   await activityForm.getByRole("button", { name: "Gardar borrador" }).click();
   const clashes = page.getByRole("button", { name: /como días? sen sesión/ });
   await Promise.race([
@@ -454,29 +456,117 @@ try {
   ]);
   if (await clashes.count()) {
     // Whatever the demo data holds then becomes a date without a session.
-    const all = page.getByRole("button", { name: "Engadir todas como días sen sesión" });
+    const all = page.getByRole("button", {
+      name: "Engadir todas como días sen sesión",
+    });
     await ((await all.count()) ? all : clashes.first()).click();
     await activityForm.getByRole("button", { name: "Gardar borrador" }).click();
     await page.getByText("Actividade gardada.").waitFor();
   }
-  await page.getByRole("heading", { name: "Editando: Escola de pádel" }).waitFor();
+  await page
+    .getByRole("heading", { name: "Editando: Escola de pádel" })
+    .waitFor();
   await audit("activity-editor");
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
   await page.getByText(/Actividade publicada/).waitFor();
-  await page.getByRole("heading", { name: "Sesións: Escola de pádel" }).waitFor();
-  await page.screenshot({ path: ".dev-logs/activities-admin.png", fullPage: true });
+  await page
+    .getByRole("heading", { name: "Sesións: Escola de pádel" })
+    .waitFor();
+  await page.screenshot({
+    path: ".dev-logs/activities-admin.png",
+    fullPage: true,
+  });
   await page.goto(`${base}/app/${activitySlug}/actividades`);
   await page
-    .getByRole("heading", { level: 1, name: "Actividades e escolas deportivas" })
+    .getByRole("heading", {
+      level: 1,
+      name: "Actividades e escolas deportivas",
+    })
     .waitFor();
   await page.getByRole("link", { name: "Escola de pádel" }).waitFor();
   await audit("activities");
   await assertReflow("activities");
   await page.getByRole("link", { name: "Escola de pádel" }).click();
-  await page.getByRole("heading", { level: 1, name: "Escola de pádel" }).waitFor();
+  await page
+    .getByRole("heading", { level: 1, name: "Escola de pádel" })
+    .waitFor();
   await page.getByRole("heading", { name: "Próximas sesións" }).waitFor();
   await audit("activity-page");
-  await page.screenshot({ path: ".dev-logs/activity-page.png", fullPage: true });
+  await page.screenshot({
+    path: ".dev-logs/activity-page.png",
+    fullPage: true,
+  });
+  // Enrolment (#97, part B): a citizen takes a place and finds it in their bookings. The manager
+  // signs in again afterwards for the rest of the backoffice.
+  await context.clearCookies();
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Inicia sesión para inscribirte" })
+    .click();
+  await page.getByText("Lin e acepto o aviso de privacidade").click();
+  await page.getByRole("button", { name: "Entrar como cidadanía" }).click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.getByRole("button", { name: "Inscribirme", exact: true }).click();
+  const enrolDialog = page.getByRole("dialog", {
+    name: "Inscribirte en Escola de pádel",
+  });
+  await enrolDialog.waitFor();
+  await audit("enrol-dialog");
+  await enrolDialog
+    .getByRole("button", { name: "Confirmar inscrición" })
+    .click();
+  await enrolDialog.getByText("Xa estás inscrito ou inscrita.").waitFor();
+  await enrolDialog
+    .getByRole("button", { name: "Pechar", exact: true })
+    .first()
+    .click();
+  await page
+    .getByText("Estás inscrito ou inscrita nesta actividade.")
+    .waitFor();
+  await page.goto(`${base}/app/${activitySlug}/reservas`);
+  await page.getByRole("button", { name: "Inscricións", exact: true }).click();
+  await page.getByRole("link", { name: "Escola de pádel" }).waitFor();
+  await audit("my-enrolments");
+  await assertReflow("my-enrolments");
+  await page.screenshot({
+    path: ".dev-logs/my-enrolments.png",
+    fullPage: true,
+  });
+  await context.clearCookies();
+  await page.goto(`${base}/admin/${activitySlug}/xestion`);
+  // The backoffice remembers the manager's session and says it has ended.
+  const ended = page
+    .locator('[role="dialog"], [role="alertdialog"]')
+    .filter({ hasText: "A túa sesión rematou" });
+  await ended.waitFor();
+  await ended
+    .getByRole("button", { name: "Pechar", exact: true })
+    .first()
+    .click();
+  await ended.waitFor({ state: "hidden" });
+  await page
+    .getByRole("heading", { name: "Este espazo é para o persoal municipal." })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Entrar", exact: true })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Entrar como xestor/a" }).click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.getByRole("button", { name: "Nova instalación" }).waitFor();
+  await page.goto(`${base}/admin/${activitySlug}/actividades`);
+  await page.getByRole("button", { name: "Nova actividade" }).waitFor();
+  await page
+    .getByRole("button", { name: "Editar actividade: Escola de pádel" })
+    .click();
+  await page
+    .getByRole("heading", { name: "Inscricións: Escola de pádel" })
+    .waitFor();
+  await page
+    .getByRole("button", { name: /^Dar de baixa: / })
+    .first()
+    .waitFor();
+  await audit("activity-enrolments");
   // The rest of the manager's pages, two of them also at phone widths.
   await auditRoute("admin-bookings", "/admin/portomar/reservas");
   const municipalCancel = page.getByRole("button", {

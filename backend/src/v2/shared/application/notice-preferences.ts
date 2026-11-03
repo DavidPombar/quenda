@@ -27,6 +27,12 @@ const noticeOf: Record<MessageKind, NoticeKind> = {
   blocked: "penalty",
   unblocked: "penalty",
   waitlist_offer: "waitlist",
+  enrolment_confirmed: "confirmation",
+  enrolment_waiting: "confirmation",
+  enrolment_promoted: "confirmation",
+  enrolment_removed: "cancellation",
+  activity_session_cancelled: "cancellation",
+  activity_cancelled: "cancellation",
 };
 export function noticeKindOf(kind: MessageKind): NoticeKind {
   return noticeOf[kind];

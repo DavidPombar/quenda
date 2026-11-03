@@ -46,6 +46,16 @@ export class PostgresRetentionRepository extends RetentionRepository {
       now,
     );
   }
+  deleteEnrolments(tenantId: string, cutoff: Temporal.Instant) {
+    // Notices and messages of each enrolment go with it (ON DELETE CASCADE).
+    return this.run(
+      `DELETE FROM activity_enrolments e USING activities a
+      WHERE e.tenant_id=$1 AND a.tenant_id=e.tenant_id AND a.id=e.activity_id
+        AND a.ends_on < ($2::timestamptz AT TIME ZONE 'UTC')::date`,
+      tenantId,
+      cutoff,
+    );
+  }
   deleteBlocks(tenantId: string, cutoff: Temporal.Instant) {
     return this.run(
       "DELETE FROM booking_blocks WHERE tenant_id=$1 AND ends_at<$2",
@@ -115,7 +125,8 @@ export class PostgresRetentionRepository extends RetentionRepository {
         AND NOT EXISTS (SELECT 1 FROM identities i WHERE i.tenant_id=u.tenant_id AND i.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM outbox o WHERE o.tenant_id=u.tenant_id AND o.user_id=u.id)
         AND NOT EXISTS (SELECT 1 FROM notification_preferences p WHERE p.tenant_id=u.tenant_id AND p.user_id=u.id)
-        AND NOT EXISTS (SELECT 1 FROM push_subscriptions d WHERE d.tenant_id=u.tenant_id AND d.user_id=u.id)`,
+        AND NOT EXISTS (SELECT 1 FROM push_subscriptions d WHERE d.tenant_id=u.tenant_id AND d.user_id=u.id)
+        AND NOT EXISTS (SELECT 1 FROM activity_enrolments e WHERE e.tenant_id=u.tenant_id AND e.user_id=u.id)`,
       tenantId,
       cutoff,
     );

@@ -25,7 +25,9 @@ const optionalInstant = (value: string | null) =>
 const PRICE_ORDER =
   "ARRAY['general','resident','family','local_club','minor','large_family','disability','senior']";
 /** Columns of an activity with its place and sport; `a` is the activity, `$now` its parameter. */
-const columns = (now: string) => `a.id, a.tenant_id AS "tenantId", a.facility_id AS "facilityId",
+const columns = (
+  now: string,
+) => `a.id, a.tenant_id AS "tenantId", a.facility_id AS "facilityId",
   a.resource_id AS "resourceId", a.sport, a.name_gl AS "nameGl", a.name_es AS "nameEs",
   a.description_gl AS "descriptionGl", a.description_es AS "descriptionEs",
   a.weekdays, to_char(a.starts_local, 'HH24:MI') AS "startsLocal", to_char(a.ends_local, 'HH24:MI') AS "endsLocal",
@@ -44,7 +46,11 @@ const columns = (now: string) => `a.id, a.tenant_id AS "tenantId", a.facility_id
   (SELECT count(*) FROM activity_sessions x WHERE x.tenant_id=a.tenant_id AND x.activity_id=a.id
     AND x.status='active' AND x.starts_at>${now})::int AS "upcomingSessions",
   (SELECT min(x.starts_at) FROM activity_sessions x WHERE x.tenant_id=a.tenant_id AND x.activity_id=a.id
-    AND x.status='active' AND x.starts_at>${now}) AS "nextSession"`;
+    AND x.status='active' AND x.starts_at>${now}) AS "nextSession",
+  (SELECT count(*) FROM activity_enrolments e WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id
+    AND e.status='enrolled')::int AS enrolled,
+  (SELECT count(*) FROM activity_enrolments e WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id
+    AND e.status='waiting')::int AS waiting`;
 const joins = `JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
   JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
   JOIN sports s ON s.tenant_id=a.tenant_id AND s.code=a.sport`;
@@ -84,6 +90,8 @@ interface ActivityRow {
   sportArt: SportArt;
   upcomingSessions: number;
   nextSession: string | null;
+  enrolled: number;
+  waiting: number;
 }
 function activity(row: ActivityRow): Activity {
   return {
@@ -126,6 +134,8 @@ function managed(row: ActivityRow): ManagedActivity {
     sportArt: row.sportArt,
     upcomingSessions: row.upcomingSessions,
     nextSession: optionalInstant(row.nextSession),
+    enrolled: row.enrolled,
+    waiting: row.waiting,
   };
 }
 function published(row: ActivityRow): Omit<PublicActivity, "enrolment"> {
@@ -136,9 +146,10 @@ function published(row: ActivityRow): Omit<PublicActivity, "enrolment"> {
     publishedAt: _publishedAt,
     cancelledAt: _cancelledAt,
     upcomingSessions: _upcoming,
+    enrolled,
     ...value
   } = managed(row);
-  return value;
+  return { ...value, freePlaces: Math.max(0, value.places - enrolled) };
 }
 interface SessionRow {
   id: string;
@@ -433,9 +444,7 @@ export class PostgresActivityRepository extends ActivityRepository {
     let total = rows[0] ? Number(rows[0].total) : 0;
     // A page past the end still reports how many there are.
     if (!rows.length && args.page > 1)
-      total = (
-        await this.search({ ...args, page: 1, size: 1 })
-      ).total;
+      total = (await this.search({ ...args, page: 1, size: 1 })).total;
     return { items: rows.map(published), total };
   }
   async publicDetails(tenantId: string, id: string, now: Temporal.Instant) {

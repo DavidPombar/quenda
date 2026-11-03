@@ -11,6 +11,7 @@ export function useActivityDetailsController() {
   const sessions = query.data?.sessions ?? [];
   return {
     ...context,
+    context,
     query,
     activity: query.data,
     sessions: sessions.slice(0, SHOWN),

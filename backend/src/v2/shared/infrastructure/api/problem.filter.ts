@@ -88,6 +88,13 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Algunhas sesións coinciden con reservas, temporadas ou outras actividades, ou caen fóra do horario. Engádeas como excepcións ou resolve antes esas reservas.",
     activity_not_editable:
       "Esta actividade está anulada ou xa rematou: non se pode cambiar.",
+    activity_has_enrolments:
+      "Esta actividade xa ten persoas inscritas: non se poden cambiar os días, o horario nin a pista. Anula as datas que non se vaian facer.",
+    places_below_enrolled:
+      "Hai máis persoas inscritas que as prazas indicadas. Dá de baixa a alguén antes de reducilas.",
+    enrolment_closed: "A inscrición nesta actividade non está aberta.",
+    already_enrolled: "Xa estás inscrito ou inscrita nesta actividade.",
+    age_not_allowed: "Esta actividade non é para a túa idade.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -169,6 +176,13 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Algunas sesiones coinciden con reservas, temporadas u otras actividades, o caen fuera del horario. Añádelas como excepciones o resuelve antes esas reservas.",
     activity_not_editable:
       "Esta actividad está anulada o ya terminó: no se puede cambiar.",
+    activity_has_enrolments:
+      "Esta actividad ya tiene personas inscritas: no se pueden cambiar los días, el horario ni la pista. Anula las fechas que no se vayan a hacer.",
+    places_below_enrolled:
+      "Hay más personas inscritas que las plazas indicadas. Da de baja a alguien antes de reducirlas.",
+    enrolment_closed: "La inscripción en esta actividad no está abierta.",
+    already_enrolled: "Ya estás inscrito o inscrita en esta actividad.",
+    age_not_allowed: "Esta actividad no es para tu edad.",
   },
 };
 @Catch(HttpException)
@@ -198,13 +212,16 @@ export class ProblemFilter implements ExceptionFilter {
       .find((name) => name.startsWith("retry-after"));
     if (status === 429 && retryAfter)
       response.setHeader("Retry-After", String(response.getHeader(retryAfter)));
-    response.status(status).type("application/problem+json").send({
-      ...(exception instanceof ProblemException ? exception.extensions : {}),
-      type: "about:blank",
-      title: code,
-      status,
-      code,
-      detail: messages[locale][code],
-    });
+    response
+      .status(status)
+      .type("application/problem+json")
+      .send({
+        ...(exception instanceof ProblemException ? exception.extensions : {}),
+        type: "about:blank",
+        title: code,
+        status,
+        code,
+        detail: messages[locale][code],
+      });
   }
 }

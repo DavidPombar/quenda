@@ -9,7 +9,8 @@ import { wants } from "../../../../shared/application/notice-preferences";
 /**
  * Leases due messages for delivery outside the transaction. Messages nobody can receive any more
  * (no address, deleted account, notice switched off since it was queued, reminder of a cancelled
- * reservation, waiting-list offer no longer open) are closed without sending.
+ * reservation, waiting-list offer no longer open, enrolment that changed since) are closed
+ * without sending.
  */
 @Injectable()
 export class ClaimDeliveries {
@@ -41,7 +42,15 @@ export class ClaimDeliveries {
                 ? "skipped:cancelled"
                 : delivery.kind === "waitlist_offer" && !delivery.offerOpen
                   ? "skipped:offer_closed"
-                  : null;
+                  : // A place or a waiting turn the person no longer holds is not news (#97).
+                    (delivery.kind === "enrolment_promoted" ||
+                        delivery.kind === "enrolment_confirmed") &&
+                      delivery.enrolmentStatus !== "enrolled"
+                    ? "skipped:enrolment_closed"
+                    : delivery.kind === "enrolment_waiting" &&
+                        delivery.enrolmentStatus !== "waiting"
+                      ? "skipped:enrolment_closed"
+                      : null;
       if (skip) await this.deliveries.markSent(delivery.id, now, skip);
       else ready.push(delivery);
     }

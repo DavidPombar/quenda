@@ -132,7 +132,10 @@ export function isEditable(
 ): boolean {
   return (
     activity.status !== "cancelled" &&
-    Temporal.PlainDate.compare(Temporal.PlainDate.from(activity.rule.endsOn), today) >= 0
+    Temporal.PlainDate.compare(
+      Temporal.PlainDate.from(activity.rule.endsOn),
+      today,
+    ) >= 0
   );
 }
 /** Enrolment state on the municipality's local date. */
@@ -153,4 +156,18 @@ export function enrolmentState(
   ) > 0
     ? "closed"
     : "open";
+}
+/** Enrolment state shown in the catalogue: a cancelled activity is closed, a full one says so. */
+export function catalogueEnrolment(
+  activity: {
+    status: string;
+    enrolmentOpensOn: string;
+    enrolmentClosesOn: string;
+    freePlaces: number;
+  },
+  today: Temporal.PlainDate,
+): "upcoming" | "open" | "full" | "closed" {
+  if (activity.status === "cancelled") return "closed";
+  const state = enrolmentState(activity, today);
+  return state === "open" && activity.freePlaces === 0 ? "full" : state;
 }

@@ -6,11 +6,15 @@ import { Principal, can } from "../../../../shared/application/principal";
 import { Clock } from "../../../../shared/application/clock";
 import { Audit } from "../../../../shared/application/audit";
 import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
+import { EnrolmentNotices } from "../enrolment-notices";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type CancelActivitySessionError =
   AppError<"forbidden"> | AppError<"not_found"> | AppError<"validation">;
-/** Cancels one date of an activity (an exception) and frees the court for that time (#97). */
+/**
+ * Cancels one date of an activity (an exception) and frees the court for that time; the people
+ * enrolled are told (#97).
+ */
 @Injectable()
 export class CancelActivitySession {
   constructor(
@@ -18,6 +22,7 @@ export class CancelActivitySession {
     private readonly clock: Clock,
     private readonly audit: Audit,
     private readonly waitlist: WaitlistOffers,
+    private readonly notices: EnrolmentNotices,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -35,13 +40,22 @@ export class CancelActivitySession {
     const now = this.clock.now();
     if (Temporal.Instant.compare(session.start, now) <= 0)
       return Result.err(failure("validation"));
-    await this.activities.cancelSessions({
+    // The activity's lock orders this with enrolments, so everyone enrolled is told.
+    await this.activities.find(tenantId, session.activityId);
+    const cancelled = await this.activities.cancelSessions({
       tenantId,
       activityId: session.activityId,
       from: now,
       reason,
       ids: [session.id],
     });
+    if (cancelled.length)
+      await this.notices.sessionsCancelled({
+        tenantId,
+        sessionIds: [session.id],
+        reason,
+        now,
+      });
     await this.waitlist.offer({
       tenantId,
       facilityId: session.facilityId,

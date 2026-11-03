@@ -182,6 +182,11 @@ export function stubShell(
     // Not on any waiting list unless a test says otherwise (#96).
     stubJsonResponse({ path: "*/v2/citizen/waitlist", response: [] });
     stubJsonResponse({ path: "*/v2/citizen/bookings", response: [] });
+    // Not enrolled in any activity unless a test says otherwise (#97).
+    stubJsonResponse({
+      path: "*/v2/citizen/activity-enrolments",
+      response: [],
+    });
   }
   stubJsonResponse({
     path: "*/v2/public/municipalities",

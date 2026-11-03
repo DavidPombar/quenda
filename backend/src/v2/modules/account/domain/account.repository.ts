@@ -10,6 +10,7 @@ import type {
   ExportedIdentity,
   ExportedMessage,
   ExportedNotification,
+  ExportedEnrolment,
   ExportedPushDevice,
   ExportedWaitlistEntry,
 } from "./account.read-model";
@@ -132,6 +133,10 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<ExportedWaitlistEntry[]>;
+  abstract listEnrolmentsAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedEnrolment[]>;
   abstract listBlocksAll(
     tenantId: string,
     userId: string,

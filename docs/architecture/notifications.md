@@ -8,9 +8,9 @@ them **by email** and **on their devices** (Web Push). SMS is out of scope.
 
 | Notice (`notification_preferences.kind`) | Outbox message kinds                      | Email | Push |
 | ---------------------------------------- | ----------------------------------------- | ----- | ---- |
-| `confirmation`                           | `confirmed`                               | on    | on   |
+| `confirmation`                           | `confirmed`; `enrolment_confirmed`, `enrolment_waiting`, `enrolment_promoted` (#97) | on    | on   |
 | `change`                                 | `rescheduled`                             | on    | on   |
-| `cancellation`                           | `cancelled`, `cancelled_by_municipality`  | on    | on   |
+| `cancellation`                           | `cancelled`, `cancelled_by_municipality`; `enrolment_removed`, `activity_session_cancelled`, `activity_cancelled` (#97) | on    | on   |
 | `reminder`                               | `reminder`                                | on    | on   |
 | `penalty`                                | `no_show`, `blocked`, `unblocked` (#16)   | off   | off  |
 | `waitlist`                               | `waitlist_offer` (#96)                    | on    | on   |
@@ -19,6 +19,12 @@ A waiting-list offer belongs to its entry, not to a booking: its `notifications`
 carry `waitlist_entry_id` instead of `booking_id` (exactly one of the two is set). The worker closes
 an offer message as `skipped:offer_closed` when the offer was taken, left or let expire before it
 went out, and the email says until when the place is held. See [waiting list](waitlist.md).
+
+An enrolment notice (#97) belongs to its enrolment (`enrolment_id`); a cancelled date is named by
+`activity_session_id`, and several dates cancelled at once (a facility closure) go in one notice
+that lists them. The email names the activity, the facility and the session it is about; push
+says only what kind of thing happened. A confirmation or promotion is closed as
+`skipped:enrolment_closed` when the person no longer holds the place by the time it goes out.
 
 The defaults live in one place, `backend/src/v2/shared/application/notice-preferences.ts`. A
 missing row means the default, so existing accounts keep receiving what they received before.

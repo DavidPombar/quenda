@@ -19,6 +19,14 @@ export abstract class RetentionRepository {
     tenantId: string,
     now: Temporal.Instant,
   ): Promise<number>;
+  /**
+   * Removes the enrolments, with their notices, of activities whose last day was before the
+   * cutoff (#97).
+   */
+  abstract deleteEnrolments(
+    tenantId: string,
+    cutoff: Temporal.Instant,
+  ): Promise<number>;
   /** Removes booking bans that ended before the cutoff. */
   abstract deleteBlocks(
     tenantId: string,

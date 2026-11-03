@@ -4,6 +4,7 @@ import type {
   ActivityInput,
   ManagedActivity,
   ManagedActivityDetails,
+  ManagedEnrolmentPage,
 } from "@/types/models";
 const json = (method: string, body: unknown) => ({
   method,
@@ -29,6 +30,24 @@ export const activitiesRepository = {
     apiClient.request<void>(
       `manager/activities/${encodeURIComponent(args.id)}`,
       json("PATCH", { status: "cancelled", reason: args.reason }),
+    ),
+  enrolments: (args: {
+    id: string;
+    status: "enrolled" | "waiting" | null;
+    page: number;
+  }) =>
+    apiClient.request<ManagedEnrolmentPage>(
+      `manager/activities/${encodeURIComponent(args.id)}/enrolments?${new URLSearchParams(
+        {
+          page: String(args.page),
+          ...(args.status ? { status: args.status } : {}),
+        },
+      )}`,
+    ),
+  removeEnrolment: (args: { id: string; reason: string }) =>
+    apiClient.request<void>(
+      `manager/activity-enrolments/${encodeURIComponent(args.id)}`,
+      json("PATCH", { status: "removed", reason: args.reason }),
     ),
   cancelSession: (args: { id: string; reason: string }) =>
     apiClient.request<void>(

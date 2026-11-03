@@ -662,4 +662,67 @@ describe("My bookings with waiting lists (#96)", () => {
       )
       .toBeVisible();
   });
+  test("should list the person's activities, with their turn in the queue, and let them leave (#97)", async () => {
+    stubShell(true);
+    stubBookings([]);
+    const enrolment = {
+      id: "62000000-0000-4000-8000-000000000001",
+      activityId: "60000000-0000-4000-8000-000000000011",
+      activityName: { gl: "Natación para persoas adultas", es: "" },
+      activityStatus: "published" as const,
+      facilityId: facility.id,
+      facilityName: facility.name,
+      resourceName: facility.name,
+      status: "enrolled" as const,
+      position: null,
+      createdAt: "2026-10-21T10:00:00Z",
+      enrolledAt: "2026-10-21T10:00:00Z",
+      endedAt: null,
+      nextSession: at(17),
+      cancelledSessions: 1,
+    };
+    stubJsonResponse({
+      path: "*/v2/citizen/activity-enrolments",
+      response: [
+        enrolment,
+        {
+          ...enrolment,
+          id: "62000000-0000-4000-8000-000000000002",
+          activityId: "60000000-0000-4000-8000-000000000012",
+          activityName: { gl: "Ioga", es: "" },
+          status: "waiting",
+          position: 2,
+          enrolledAt: null,
+        },
+      ],
+    });
+    const leave = stubJsonResponse({
+      path: `*/v2/citizen/activity-enrolments/${enrolment.id}`,
+      method: "DELETE",
+      response: null,
+      status: 204,
+    });
+    await commands.navigate("/app/vilaverde/reservas");
+    await render(<App />);
+    await page.getByRole("button", { name: "Inscricións" }).click();
+    const swimming = page
+      .getByRole("article")
+      .filter({ hasText: "Natación para persoas adultas" });
+    await expect.element(swimming.getByText("Con praza")).toBeVisible();
+    await expect
+      .element(
+        swimming.getByText("Sesións anuladas desde que te inscribiches: 1"),
+      )
+      .toBeVisible();
+    await expect
+      .element(
+        page
+          .getByRole("article")
+          .filter({ hasText: "Ioga" })
+          .getByText("Lista de espera: posición 2"),
+      )
+      .toBeVisible();
+    await swimming.getByRole("button", { name: "Darme de baixa" }).click();
+    await expect.poll(() => leave.spy.mock.calls.length).toBe(1);
+  });
 });

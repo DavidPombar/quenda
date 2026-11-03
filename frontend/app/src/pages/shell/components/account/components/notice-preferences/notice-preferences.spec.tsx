@@ -100,14 +100,14 @@ describe("Notice preferences", () => {
     await expect
       .element(
         section.getByRole("checkbox", {
-          name: "Confirmación da reserva Por correo",
+          name: "Confirmación da reserva ou da inscrición Por correo",
         }),
       )
       .toBeDisabled();
     await expect
       .element(
         section.getByRole("checkbox", {
-          name: "Confirmación da reserva No dispositivo",
+          name: "Confirmación da reserva ou da inscrición No dispositivo",
         }),
       )
       .toBeEnabled();

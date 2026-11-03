@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ProblemException } from "../../../../shared/infrastructure/api/problem";
-import {
-  AppError,
-  assertNever,
-} from "../../../../shared/application/errors";
+import { AppError, assertNever } from "../../../../shared/application/errors";
 import type { ActivityConflict } from "../../application/activity-preparation";
 /** HTTP problem for the errors of saving or publishing an activity (#97). */
 export function activityProblem(
@@ -13,6 +10,8 @@ export function activityProblem(
     | AppError<"validation">
     | AppError<"resource_unavailable">
     | AppError<"activity_not_editable">
+    | AppError<"activity_has_enrolments">
+    | AppError<"places_below_enrolled">
     | ActivityConflict,
 ): never {
   switch (error.code) {
@@ -25,6 +24,8 @@ export function activityProblem(
     case "resource_unavailable":
       throw new ProblemException(422, error);
     case "activity_not_editable":
+    case "activity_has_enrolments":
+    case "places_below_enrolled":
       throw new ProblemException(409, error);
     case "activity_conflict":
       // The dates to resolve or to add as exceptions, without who holds the court.

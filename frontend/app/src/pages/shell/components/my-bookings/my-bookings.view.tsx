@@ -5,6 +5,7 @@ import {
   PiBell,
   PiCalendarCheck,
   PiCalendarX,
+  PiChalkboardTeacher,
   PiCheckCircle,
   PiClockClockwise,
   PiHourglassMedium,
@@ -23,6 +24,7 @@ import { CalendarFeed } from "./components/calendar-feed/calendar-feed.view";
 import { ChangeBookingDialog } from "./components/change-booking-dialog/change-booking-dialog.view";
 import { AccessPassDialog } from "./components/access-pass-dialog/access-pass-dialog.view";
 import { WaitlistRow } from "./components/waitlist-row/waitlist-row.view";
+import { EnrolmentRow } from "./components/enrolment-row/enrolment-row.view";
 import { AcceptOfferDialog } from "./components/accept-offer-dialog/accept-offer-dialog.view";
 import { useMyBookingsController } from "./my-bookings.controller";
 const NOTICE_ICONS = {
@@ -35,6 +37,12 @@ const NOTICE_ICONS = {
   unblocked: PiCheckCircle,
   reminder: PiBell,
   waitlist_offer: PiHourglassMedium,
+  enrolment_confirmed: PiChalkboardTeacher,
+  enrolment_waiting: PiHourglassMedium,
+  enrolment_promoted: PiCheckCircle,
+  enrolment_removed: PiUserMinus,
+  activity_session_cancelled: PiCalendarX,
+  activity_cancelled: PiCalendarX,
 };
 export function MyBookings() {
   const c = useMyBookingsController();
@@ -83,11 +91,59 @@ export function MyBookings() {
                 >
                   {tab === "waitlist"
                     ? `${c.t("waitlistTab")}${c.waitlist.data?.length ? ` (${c.waitlist.data.length})` : ""}`
-                    : c.t(tab)}
+                    : tab === "enrolments"
+                      ? c.t("enrolmentsTab")
+                      : c.t(tab)}
                 </button>
               ))}
             </div>
-            {c.tab === "waitlist" ? (
+            {c.tab === "enrolments" ? (
+              c.enrolments.isPending ? (
+                <Feedback message={c.t("loading")} />
+              ) : c.enrolments.isError && !c.enrolments.data ? (
+                <Feedback
+                  message={c.t("loadError")}
+                  error
+                  retryLabel={c.t("retry")}
+                  retry={() => {
+                    void c.enrolments.refetch();
+                  }}
+                />
+              ) : c.enrolments.data?.length ? (
+                <div className="booking-list">
+                  {c.leaveEnrolment.error && (
+                    <p role="alert" className="error-text">
+                      {c.leaveEnrolment.error.message}
+                    </p>
+                  )}
+                  {c.enrolments.data.map((enrolment) => (
+                    <EnrolmentRow
+                      key={enrolment.id}
+                      enrolment={enrolment}
+                      municipality={c.municipality}
+                      locale={c.locale}
+                      t={c.t}
+                      leaving={
+                        c.leaveEnrolment.isPending &&
+                        c.leaveEnrolment.variables === enrolment.id
+                      }
+                      onLeave={() => c.leaveActivity(enrolment.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <SpotArt kind="bookings" />
+                  <h2>{c.t("enrolmentsEmpty")}</h2>
+                  <p>{c.t("enrolmentsEmptyBody")}</p>
+                  <Button asChild colorPalette="court" size="lg">
+                    <Link to={routeFor(c.municipality.slug, ROUTES.activities)}>
+                      {c.t("browseActivities")}
+                    </Link>
+                  </Button>
+                </div>
+              )
+            ) : c.tab === "waitlist" ? (
               c.waitlist.isPending ? (
                 <Feedback message={c.t("loading")} />
               ) : c.waitlist.isError && !c.waitlist.data ? (
@@ -203,7 +259,7 @@ export function MyBookings() {
                         <Icon size={20} aria-hidden="true" />
                         <div>
                           <strong>{c.noticeTitle(notice)}</strong>
-                          <p>{notice.facilityName}</p>
+                          <p>{c.noticePlace(notice)}</p>
                           {c.noticeDetail(notice) && (
                             <p className="notice-detail">
                               {c.noticeDetail(notice)}

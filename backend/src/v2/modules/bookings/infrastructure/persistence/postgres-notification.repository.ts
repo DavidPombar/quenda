@@ -11,7 +11,7 @@ export class PostgresNotificationRepository extends NotificationRepository {
   }
   async add(args: Parameters<NotificationRepository["add"]>[0]) {
     const { rowCount } = await this.db.query(
-      "INSERT INTO notifications (id,tenant_id,user_id,booking_id,kind,created_at,details,dedupe_key,waitlist_entry_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING",
+      "INSERT INTO notifications (id,tenant_id,user_id,booking_id,kind,created_at,details,dedupe_key,waitlist_entry_id,enrolment_id,activity_session_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING",
       [
         args.id,
         args.tenantId,
@@ -22,6 +22,8 @@ export class PostgresNotificationRepository extends NotificationRepository {
         args.details ?? null,
         args.dedupeKey ?? null,
         args.waitlistEntryId ?? null,
+        args.enrolmentId ?? null,
+        args.activitySessionId ?? null,
       ],
     );
     return (rowCount ?? 0) > 0;
@@ -30,7 +32,18 @@ export class PostgresNotificationRepository extends NotificationRepository {
     const { rows } = await this.db.query<
       Omit<Notification, "createdAt"> & { createdAt: string }
     >(
-      'SELECT n.id,n.booking_id AS "bookingId",n.kind,n.created_at AS "createdAt",n.details,f.name AS "facilityName",COALESCE(b.resource_id,w.resource_id) AS "resourceId",r.name AS "resourceName" FROM notifications n LEFT JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id LEFT JOIN waitlist_entries w ON w.id=n.waitlist_entry_id AND w.tenant_id=n.tenant_id JOIN facilities f ON f.id=COALESCE(b.facility_id,w.facility_id) AND f.tenant_id=n.tenant_id JOIN resources r ON r.id=COALESCE(b.resource_id,w.resource_id) AND r.tenant_id=n.tenant_id WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC LIMIT 50',
+      `SELECT n.id, n.booking_id AS "bookingId", n.kind, n.created_at AS "createdAt", n.details,
+        f.name AS "facilityName", r.id AS "resourceId", r.name AS "resourceName",
+        a.id AS "activityId", CASE WHEN a.id IS NULL THEN NULL
+          ELSE json_build_object('gl', a.name_gl, 'es', a.name_es) END AS "activityName"
+      FROM notifications n
+      LEFT JOIN bookings b ON b.id=n.booking_id AND b.tenant_id=n.tenant_id
+      LEFT JOIN waitlist_entries w ON w.id=n.waitlist_entry_id AND w.tenant_id=n.tenant_id
+      LEFT JOIN activity_enrolments e ON e.id=n.enrolment_id AND e.tenant_id=n.tenant_id
+      LEFT JOIN activities a ON a.id=e.activity_id AND a.tenant_id=n.tenant_id
+      JOIN facilities f ON f.id=COALESCE(b.facility_id,w.facility_id,a.facility_id) AND f.tenant_id=n.tenant_id
+      JOIN resources r ON r.id=COALESCE(b.resource_id,w.resource_id,a.resource_id) AND r.tenant_id=n.tenant_id
+      WHERE n.tenant_id=$1 AND n.user_id=$2 ORDER BY n.created_at DESC LIMIT 50`,
       [tenantId, userId],
     );
     return rows.map((row) => ({

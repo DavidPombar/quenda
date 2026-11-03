@@ -18,6 +18,7 @@ import {
   queueBookingChange,
 } from "../../../../shared/application/outbox";
 import { WaitlistOffers } from "../../../../shared/application/waitlist-offers";
+import { ActivityEnrolments } from "../../../../shared/application/activity-enrolments";
 import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type SaveFacilityError =
@@ -40,6 +41,7 @@ export class SaveFacility {
     private readonly sports: SportRepository,
     private readonly describer: FacilityDescriber,
     private readonly waitlist: WaitlistOffers,
+    private readonly enrolments: ActivityEnrolments,
   ) {}
   async execute(args: {
     principal: Principal;
@@ -176,11 +178,18 @@ export class SaveFacility {
         reason,
         at: now,
       });
+      // People enrolled in those activities are told which dates will not take place (#97).
+      await this.enrolments.sessionsCancelled({
+        tenantId: municipality.id,
+        sessionIds: cancelled,
+        reason,
+        now,
+      });
       await this.audit.record(
         args.principal,
         "facility.activity_sessions_cancelled",
         facility.id,
-        { dates: cancelled, reason },
+        { dates: cancelled.length, reason },
       );
     }
     // A new facility is bookable at once through its default resource (same id and name).

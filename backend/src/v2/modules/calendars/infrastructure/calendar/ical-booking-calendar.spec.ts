@@ -4,7 +4,8 @@ import ICAL from "ical.js";
 import { Temporal } from "@js-temporal/polyfill";
 import { bookingCalendar } from "./ical-booking-calendar";
 const entry = {
-  bookingId: "30000000-0000-4000-8000-000000000001",
+  uid: "30000000-0000-4000-8000-000000000001@quenda",
+  activityName: null,
   start: Temporal.Instant.from("2026-10-25T09:00:00Z"),
   end: Temporal.Instant.from("2026-10-25T10:00:00Z"),
   status: "cancelled" as const,
@@ -26,7 +27,7 @@ describe("RFC 5545 booking calendar", () => {
     expect(root.getFirstPropertyValue("method")).toBe("PUBLISH");
     const [component] = root.getAllSubcomponents("vevent");
     const event = new ICAL.Event(component);
-    expect(event.uid).toBe(`${entry.bookingId}@quenda`);
+    expect(event.uid).toBe(entry.uid);
     expect(event.sequence).toBe(2);
     expect(event.summary).toBe(entry.facilityName);
     expect(event.location).toBe(entry.facilityAddress);
@@ -46,5 +47,23 @@ describe("RFC 5545 booking calendar", () => {
     const root = new ICAL.Component(ICAL.parse(text));
     const event = new ICAL.Event(root.getFirstSubcomponent("vevent"));
     expect(event.summary).toBe("Pavillón, Tercio A");
+  });
+  it("should lead an activity session's summary with the activity (#97)", () => {
+    const text = bookingCalendar({
+      entries: [
+        {
+          ...entry,
+          uid: "s-e@quenda",
+          activityName: "Natación infantil",
+          facilityName: "Piscina",
+          resourceName: "Rúa 2",
+        },
+      ],
+      generatedAt: Temporal.Instant.from("2026-10-21T07:30:00Z"),
+    });
+    const root = new ICAL.Component(ICAL.parse(text));
+    const event = new ICAL.Event(root.getFirstSubcomponent("vevent"));
+    expect(event.uid).toBe("s-e@quenda");
+    expect(event.summary).toBe("Natación infantil (Piscina, Rúa 2)");
   });
 });

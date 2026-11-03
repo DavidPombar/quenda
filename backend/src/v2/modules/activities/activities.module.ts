@@ -1,8 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Module } from "@nestjs/common";
-import { FacilitiesModule } from "../facilities/facilities.module";
+import { Global, Module } from "@nestjs/common";
+import { ActivityEnrolments } from "../../shared/application/activity-enrolments";
+import { OpeningCalendar } from "../facilities/domain/opening-calendar";
+import { HolidayCalendar } from "../facilities/domain/holiday-calendar";
+import { IcalOpeningCalendar } from "../facilities/infrastructure/calendar/ical-opening-calendar";
+import { IcalHolidayCalendar } from "../facilities/infrastructure/calendar/ical-holiday-calendar";
+import { NotificationRepository } from "../bookings/domain/notification.repository";
+import { PostgresNotificationRepository } from "../bookings/infrastructure/persistence/postgres-notification.repository";
 import { ActivityRepository } from "./domain/activity.repository";
 import { PostgresActivityRepository } from "./infrastructure/persistence/postgres-activity.repository";
+import { EnrolmentRepository } from "./domain/enrolment.repository";
+import { PostgresEnrolmentRepository } from "./infrastructure/persistence/postgres-enrolment.repository";
+import { EnrolmentNotices } from "./application/enrolment-notices";
+import { EnrolmentQueue } from "./application/enrolment-queue";
+import { EnrolInActivity } from "./application/commands/enrol-in-activity.command";
+import { LeaveActivity } from "./application/commands/leave-activity.command";
+import { RemoveEnrolment } from "./application/commands/remove-enrolment.command";
+import { ExportActivityEnrolments } from "./application/commands/export-activity-enrolments.command";
+import { ListMyEnrolments } from "./application/queries/list-my-enrolments.query";
+import { ListActivityEnrolments } from "./application/queries/list-activity-enrolments.query";
+import { EnrolInActivityController } from "./infrastructure/api/citizen/enrol-in-activity.controller";
+import { LeaveActivityController } from "./infrastructure/api/citizen/leave-activity.controller";
+import { ListMyEnrolmentsController } from "./infrastructure/api/citizen/list-my-enrolments.controller";
+import { ListActivityEnrolmentsController } from "./infrastructure/api/manager/list-activity-enrolments.controller";
+import { ExportActivityEnrolmentsController } from "./infrastructure/api/manager/export-activity-enrolments.controller";
+import { RemoveEnrolmentController } from "./infrastructure/api/manager/remove-enrolment.controller";
 import { ActivityPlanner } from "./application/activity-planner";
 import { ActivityPreparation } from "./application/activity-preparation";
 import { CreateActivity } from "./application/commands/create-activity.command";
@@ -23,9 +45,14 @@ import { CancelActivityController } from "./infrastructure/api/manager/cancel-ac
 import { CancelActivitySessionController } from "./infrastructure/api/manager/cancel-activity-session.controller";
 import { ListPublicActivitiesController } from "./infrastructure/api/public/list-public-activities.controller";
 import { GetPublicActivityController } from "./infrastructure/api/public/get-public-activity.controller";
-/** Activities and sports schools with places and weekly sessions (#97). */
+/**
+ * Activities and sports schools with places, weekly sessions and enrolment (#97). Global because
+ * facilities and accounts cancel sessions or remove people through `ActivityEnrolments` in their
+ * own transaction; it binds its own adapters of the ports it shares so it imports no module that
+ * depends on it.
+ */
+@Global()
 @Module({
-  imports: [FacilitiesModule],
   providers: [
     ActivityPlanner,
     ActivityPreparation,
@@ -38,7 +65,23 @@ import { GetPublicActivityController } from "./infrastructure/api/public/get-pub
     GetManagedActivity,
     ListPublicActivities,
     GetPublicActivity,
+    EnrolmentNotices,
+    EnrolmentQueue,
+    { provide: ActivityEnrolments, useExisting: EnrolmentQueue },
+    EnrolInActivity,
+    LeaveActivity,
+    RemoveEnrolment,
+    ExportActivityEnrolments,
+    ListMyEnrolments,
+    ListActivityEnrolments,
     { provide: ActivityRepository, useClass: PostgresActivityRepository },
+    { provide: EnrolmentRepository, useClass: PostgresEnrolmentRepository },
+    {
+      provide: NotificationRepository,
+      useClass: PostgresNotificationRepository,
+    },
+    { provide: OpeningCalendar, useClass: IcalOpeningCalendar },
+    { provide: HolidayCalendar, useClass: IcalHolidayCalendar },
   ],
   controllers: [
     ListManagedActivitiesController,
@@ -50,6 +93,13 @@ import { GetPublicActivityController } from "./infrastructure/api/public/get-pub
     CancelActivitySessionController,
     ListPublicActivitiesController,
     GetPublicActivityController,
+    EnrolInActivityController,
+    LeaveActivityController,
+    ListMyEnrolmentsController,
+    ListActivityEnrolmentsController,
+    ExportActivityEnrolmentsController,
+    RemoveEnrolmentController,
   ],
+  exports: [ActivityEnrolments],
 })
 export class ActivitiesModule {}

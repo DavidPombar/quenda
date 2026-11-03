@@ -14,6 +14,7 @@ import { NoticePreferencesResponseDTO } from "./notice-preferences.response.dto"
 import { ExportedPushDeviceResponseDTO } from "./exported-push-device.response.dto";
 import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 import { ExportedWaitlistEntryResponseDTO } from "./exported-waitlist-entry.response.dto";
+import { ExportedEnrolmentResponseDTO } from "./exported-enrolment.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -84,6 +85,11 @@ export class AccountExportResponseDTO {
   })
   waitlist!: ExportedWaitlistEntryResponseDTO[];
   @ApiProperty({
+    description: "Enrolments in activities (#97)",
+    type: [ExportedEnrolmentResponseDTO],
+  })
+  activityEnrolments!: ExportedEnrolmentResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -106,6 +112,9 @@ export class AccountExportResponseDTO {
       messages: value.messages.map(ExportedMessageResponseDTO.from),
       blocks: value.blocks.map(ExportedBlockResponseDTO.from),
       waitlist: value.waitlist.map(ExportedWaitlistEntryResponseDTO.from),
+      activityEnrolments: value.activityEnrolments.map(
+        ExportedEnrolmentResponseDTO.from,
+      ),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

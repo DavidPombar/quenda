@@ -5,7 +5,11 @@ import { render } from "vitest-browser-react";
 import { stubJsonResponse } from "@frontend-testing/server-stubs";
 import { App } from "@/components/app/app.view";
 import { facility, municipality, stubShell } from "@/test/fixtures";
-import type { ManagedActivity, ManagedActivityDetails } from "@/types/models";
+import type {
+  ManagedActivity,
+  ManagedActivityDetails,
+  ManagedEnrolmentPage,
+} from "@/types/models";
 const draft: ManagedActivity = {
   id: "60000000-0000-4000-8000-000000000011",
   facilityId: facility.id,
@@ -37,6 +41,8 @@ const draft: ManagedActivity = {
   nextSession: null,
   upcomingSessions: 0,
   schedule: "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n",
+  enrolled: 0,
+  waiting: 0,
 };
 const published: ManagedActivityDetails = {
   ...draft,
@@ -76,6 +82,11 @@ function stubManager(activities: ManagedActivity[] = []) {
   stubJsonResponse({
     path: "*/v2/manager/activities",
     response: activities,
+  });
+  // Nobody has enrolled unless a test says otherwise.
+  stubJsonResponse({
+    path: "*/v2/manager/activities/:id/enrolments",
+    response: { items: [], total: 0, page: 1, pageSize: 25 },
   });
 }
 describe("Activities and sports schools", () => {
@@ -133,9 +144,7 @@ describe("Activities and sports schools", () => {
       .element(alert.getByText(/17:00–18:00: Hai reservas nesa hora/))
       .toBeVisible();
     expect(clash.spy).toHaveBeenCalledOnce();
-    await alert
-      .getByRole("button", { name: /como día sen sesión/ })
-      .click();
+    await alert.getByRole("button", { name: /como día sen sesión/ }).click();
     const saved = stubJsonResponse({
       path: "*/v2/manager/activities",
       method: "POST",
@@ -175,17 +184,20 @@ describe("Activities and sports schools", () => {
     );
     await render(<App />);
     await expect
-      .element(page.getByRole("heading", { name: "Editando: Natación infantil" }))
+      .element(
+        page.getByRole("heading", { name: "Editando: Natación infantil" }),
+      )
       .toBeVisible();
-    stubJsonResponse({ path: "*/v2/manager/activities", response: [published] });
+    stubJsonResponse({
+      path: "*/v2/manager/activities",
+      response: [published],
+    });
     stubJsonResponse({
       path: "*/v2/manager/activities/:id",
       response: published,
     });
     await page.getByRole("button", { name: "Publicar" }).click();
-    await expect
-      .element(page.getByText(/Actividade publicada/))
-      .toBeVisible();
+    await expect.element(page.getByText(/Actividade publicada/)).toBeVisible();
     expect(publication.spy).toHaveBeenCalledOnce();
     const cancel = stubJsonResponse({
       path: "*/v2/manager/activity-sessions/:id",
@@ -199,9 +211,7 @@ describe("Activities and sports schools", () => {
       .click();
     const dialog = page.getByRole("alertdialog");
     await dialog.getByRole("button", { name: "Confirmar" }).click();
-    await expect
-      .element(dialog.getByText(/Escribe o motivo/))
-      .toBeVisible();
+    await expect.element(dialog.getByText(/Escribe o motivo/)).toBeVisible();
     await dialog.getByRole("textbox").fill("Avaría na depuradora");
     await dialog.getByRole("button", { name: "Confirmar" }).click();
     await expect.element(dialog).not.toBeInTheDocument();
@@ -221,5 +231,92 @@ describe("Activities and sports schools", () => {
     await expect
       .element(page.getByRole("button", { name: "Nova actividade" }))
       .not.toBeInTheDocument();
+  });
+  test("should list the people of an activity, remove one with a reason and link the CSV (#97)", async () => {
+    const full = { ...published, enrolled: 1, waiting: 1 };
+    stubManager([full]);
+    stubJsonResponse({ path: "*/v2/manager/activities/:id", response: full });
+    const people: ManagedEnrolmentPage = {
+      items: [
+        {
+          id: "62000000-0000-4000-8000-000000000001",
+          userId: "u1",
+          status: "enrolled",
+          position: null,
+          name: "Antía Souto",
+          email: "antia@example.invalid",
+          createdAt: "2026-10-21T10:00:00Z",
+          enrolledAt: "2026-10-21T10:00:00Z",
+          endedAt: null,
+          removalReason: null,
+        },
+        {
+          id: "62000000-0000-4000-8000-000000000002",
+          userId: "u2",
+          status: "waiting",
+          position: 1,
+          name: "Brais Lema",
+          email: null,
+          createdAt: "2026-10-22T10:00:00Z",
+          enrolledAt: null,
+          endedAt: null,
+          removalReason: null,
+        },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 25,
+    };
+    const list = stubJsonResponse({
+      path: "*/v2/manager/activities/:id/enrolments",
+      response: people,
+    });
+    const removal = stubJsonResponse({
+      path: "*/v2/manager/activity-enrolments/:id",
+      method: "PATCH",
+      status: 204,
+      response: undefined,
+    });
+    await commands.navigate(
+      `/admin/vilaverde/actividades?actividade=${draft.id}`,
+    );
+    await render(<App />);
+    const block = page.getByRole("region", {
+      name: "Inscricións: Natación infantil",
+    });
+    await expect
+      .element(
+        block.getByText("1 de 8 prazas ocupadas. Na lista de espera: 1."),
+      )
+      .toBeVisible();
+    await expect
+      .element(block.getByText("Lista de espera: posición 1", { exact: false }))
+      .toBeVisible();
+    await expect
+      .element(block.getByRole("link", { name: "Descargar CSV" }))
+      .toHaveAttribute(
+        "href",
+        `/v2/manager/activities/${draft.id}/enrolments.csv?lang=gl`,
+      );
+    await block
+      .getByRole("combobox", { name: "Mostrar" })
+      .selectOptions("waiting");
+    await expect
+      .poll(() =>
+        new URL(list.spy.mock.lastCall![0].url).searchParams.get("status"),
+      )
+      .toBe("waiting");
+    await block
+      .getByRole("button", { name: "Dar de baixa: Antía Souto" })
+      .click();
+    const dialog = page.getByRole("alertdialog");
+    await dialog.getByRole("textbox").fill("Non presentou o certificado");
+    await dialog.getByRole("button", { name: "Confirmar" }).click();
+    await expect.element(dialog).not.toBeInTheDocument();
+    expect(removal.spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: { status: "removed", reason: "Non presentou o certificado" },
+      }),
+    );
   });
 });

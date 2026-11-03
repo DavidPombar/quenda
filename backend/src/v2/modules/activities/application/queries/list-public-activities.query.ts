@@ -5,7 +5,7 @@ import {
   ActivityRepository,
 } from "../../domain/activity.repository";
 import { PublicActivityPage } from "../../domain/activity.read-model";
-import { enrolmentState } from "../activity-input";
+import { catalogueEnrolment } from "../activity-input";
 import { Municipalities } from "../../../../shared/application/municipality-settings";
 import { Clock } from "../../../../shared/application/clock";
 import { Result } from "../../../../shared/application/result";
@@ -39,7 +39,7 @@ export class ListPublicActivities {
     return Result.ok({
       items: found.items.map((item) => ({
         ...item,
-        enrolment: enrolmentState(item, today),
+        enrolment: catalogueEnrolment(item, today),
       })),
       total: found.total,
       page: args.page,

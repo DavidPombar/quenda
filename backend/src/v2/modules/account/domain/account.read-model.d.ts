@@ -99,18 +99,9 @@ export interface ExportedCategory {
 }
 export interface ExportedNotification {
   id: string;
-  /** Null for a waiting-list offer (#96). */
+  /** Null for a waiting-list offer (#96) or an enrolment notice (#97). */
   bookingId: string | null;
-  kind:
-    | "confirmed"
-    | "rescheduled"
-    | "cancelled"
-    | "cancelled_by_municipality"
-    | "no_show"
-    | "blocked"
-    | "unblocked"
-    | "reminder"
-    | "waitlist_offer";
+  kind: MessageKind;
   facilityName: string;
   resourceId: string;
   resourceName: string;
@@ -129,6 +120,18 @@ export interface ExportedWaitlistEntry {
   status: "waiting" | "offered" | "accepted" | "expired" | "left" | "closed";
   createdAt: Temporal.Instant;
   offeredAt: Temporal.Instant | null;
+}
+/** An enrolment in an activity (#97); deleted with the activity's history after retention. */
+export interface ExportedEnrolment {
+  id: string;
+  activityId: string;
+  activityName: string;
+  facilityName: string;
+  status: "enrolled" | "waiting" | "left" | "removed" | "cancelled";
+  createdAt: Temporal.Instant;
+  enrolledAt: Temporal.Instant | null;
+  endedAt: Temporal.Instant | null;
+  removalReason: string | null;
 }
 export interface ExportedBlock {
   start: Temporal.Instant;
@@ -163,5 +166,6 @@ export interface AccountExport {
   messages: ExportedMessage[];
   blocks: ExportedBlock[];
   waitlist: ExportedWaitlistEntry[];
+  activityEnrolments: ExportedEnrolment[];
   auditEvents: ExportedAuditEvent[];
 }
