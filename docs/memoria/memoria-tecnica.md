@@ -145,7 +145,7 @@ Despois, acompañamento durante a primeira tempada: incidencias revisadas cada d
 
 ## 7. Equipo do proxecto
 
-- **David Pombar Lourido**: dirección do proxecto e persoa de contacto. Autor da maior parte do código de Quenda no repositorio público. https://www.linkedin.com/in/davidpombar/
+- **David Pombar Lourido**: dirección do proxecto e persoa de contacto; autor da maior parte do código de Quenda. Leva 22 anos desenvolvendo proxectos de software: comezou en consultoría, traballando para administracións públicas, e despois ocupou cargos de responsabilidade en multinacionais como Inditex e Auctane (Packlink). Emprendedor en serie, fundou tres empresas. https://www.linkedin.com/in/davidpombar/
 - **Iago Lastra Rodríguez**: cofundador de TimeTime. Enxeñeiro de software, titulado pola Universidade da Coruña, con máis de dez anos de experiencia e especializado en desenvolvemento *frontend*, onde dirixiu equipos. Autor do libro *Frontend Testing* (LeanPub, 2020) e de máis de 150 repositorios públicos en GitHub. https://www.linkedin.com/in/iagolast/
 
 TIMETIME SOFTWARE, SL desenvolveu Quenda desde a publicación das bases ata hoxe (máis de 50 *pull requests* revisados e fusionados no repositorio público). Iso acredita a capacidade para desenvolver solucións de software libre (punto 2 das bases) e para manter o plan do apartado 5.
