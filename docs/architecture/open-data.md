@@ -107,7 +107,9 @@ published.
 
 ## Activities
 
-`activities.json` and `activities.csv` publish the current offer of activities and sports schools
+`activities.json` and `activities.csv` publish the current offer of activities and sports schools, with
+the count of people holding a place (`enrolled`; `remainingAttendeeCapacity` in JSON-LD), never
+who,
 (#97): published activities that have not ended. Each one carries its name, sport, facility and
 court, ISO weekdays and local times, first and last day, dates without a session, the RFC 5545
 `rrule` of its sessions, places, ages, enrolment dates and the general indicative price. In

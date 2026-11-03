@@ -26,6 +26,7 @@ export const activityColumns = [
   "exceptions",
   "rrule",
   "places",
+  "enrolled",
   "min_age",
   "max_age",
   "enrolment_opens_on",
@@ -54,6 +55,7 @@ export function activitiesCsv(publication: Publication<OpenActivities>) {
       exceptions: activity.rule.exceptions.join(" "),
       rrule: activity.rrule,
       places: activity.places,
+      enrolled: activity.enrolled,
       min_age: activity.minAge,
       max_age: activity.maxAge,
       enrolment_opens_on: activity.enrolmentOpensOn,
@@ -65,8 +67,7 @@ export function activitiesCsv(publication: Publication<OpenActivities>) {
     return activityColumns.map((column) => csvCell(record[column]));
   });
   return (
-    [activityColumns, ...rows].map((row) => row.join(",")).join("\r\n") +
-    "\r\n"
+    [activityColumns, ...rows].map((row) => row.join(",")).join("\r\n") + "\r\n"
   );
 }
 /**
@@ -119,6 +120,11 @@ export function activitiesJsonLd(publication: Publication<OpenActivities>) {
           },
         },
         maximumAttendeeCapacity: activity.places,
+        // schema.org: places left, from the people enrolled (a count, no people).
+        remainingAttendeeCapacity: Math.max(
+          0,
+          activity.places - activity.enrolled,
+        ),
         ...(activity.minAge !== null || activity.maxAge !== null
           ? {
               typicalAgeRange: `${activity.minAge ?? 0}-${activity.maxAge ?? ""}`,

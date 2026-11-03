@@ -3,7 +3,11 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { Database } from "../../../../shared/infrastructure/database";
 import { AccessRepository } from "../../domain/access.repository";
-import { AccessDayBooking, PassTarget } from "../../domain/access.read-model";
+import {
+  AccessDayBooking,
+  AttendanceStatus,
+  PassTarget,
+} from "../../domain/access.read-model";
 import { accessCode } from "../../application/access-code";
 interface DayRow {
   id: string;
@@ -62,6 +66,117 @@ export class PostgresAccessRepository extends AccessRepository {
         ? Temporal.Instant.from(row.checkedInAt)
         : null,
     }));
+  }
+  async sessions(
+    tenantId: string,
+    from: Temporal.Instant,
+    to: Temporal.Instant,
+  ) {
+    const { rows } = await this.db.query<{
+      id: string;
+      activityId: string;
+      nameGl: string;
+      nameEs: string;
+      facilityId: string;
+      facilityName: string;
+      resourceName: string;
+      openingCalendar: string;
+      start: string;
+      end: string;
+      people: {
+        enrolmentId: string;
+        adult: string | null;
+        dependant: string | null;
+        attendance: AttendanceStatus | null;
+      }[];
+    }>(
+      `SELECT x.id, a.id AS "activityId", a.name_gl AS "nameGl", a.name_es AS "nameEs",
+        a.facility_id AS "facilityId", f.name AS "facilityName", r.name AS "resourceName",
+        f.opening_calendar AS "openingCalendar", x.starts_at AS start, x.ends_at AS "end",
+        COALESCE((SELECT json_agg(json_build_object('enrolmentId', e.id, 'adult', u.display_name,
+            'dependant', d.first_name, 'attendance', t.status) ORDER BY COALESCE(d.first_name, u.display_name), e.id)
+          FROM activity_enrolments e
+          JOIN users u ON u.tenant_id=e.tenant_id AND u.id=e.user_id
+          LEFT JOIN dependants d ON d.tenant_id=e.tenant_id AND d.id=e.dependant_id
+          LEFT JOIN activity_attendance t ON t.tenant_id=e.tenant_id AND t.enrolment_id=e.id AND t.session_id=x.id
+          WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id AND e.status='enrolled'), '[]') AS people
+      FROM activity_sessions x
+      JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id
+      JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
+      JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
+      WHERE x.tenant_id=$1 AND x.status='active' AND a.status='published'
+        AND x.starts_at>=$2 AND x.starts_at<$3
+      ORDER BY x.starts_at, a.name_gl`,
+      [tenantId, from.toString(), to.toString()],
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      activityId: row.activityId,
+      activityName: { gl: row.nameGl, es: row.nameEs },
+      facilityId: row.facilityId,
+      facilityName: row.facilityName,
+      resourceName: row.resourceName,
+      openingCalendar: row.openingCalendar,
+      start: Temporal.Instant.from(row.start),
+      end: Temporal.Instant.from(row.end),
+      people: row.people.map((person) => ({
+        enrolmentId: person.enrolmentId,
+        name: person.dependant ?? firstName(person.adult),
+        attendance: person.attendance,
+      })),
+    }));
+  }
+  async findForAttendance(
+    tenantId: string,
+    sessionId: string,
+    enrolmentId: string,
+  ) {
+    const { rows } = await this.db.query<{
+      status: "active" | "cancelled";
+      activityStatus: string;
+      enrolled: boolean;
+      openingCalendar: string;
+      start: string;
+      end: string;
+    }>(
+      `SELECT x.status, a.status AS "activityStatus", f.opening_calendar AS "openingCalendar",
+        x.starts_at AS start, x.ends_at AS "end",
+        EXISTS (SELECT 1 FROM activity_enrolments e WHERE e.tenant_id=x.tenant_id AND e.id=$3
+          AND e.activity_id=a.id AND e.status='enrolled') AS enrolled
+      FROM activity_sessions x
+      JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id
+      JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
+      WHERE x.tenant_id=$1 AND x.id=$2 FOR UPDATE OF x`,
+      [tenantId, sessionId, enrolmentId],
+    );
+    const row = rows[0];
+    return row
+      ? {
+          ...row,
+          start: Temporal.Instant.from(row.start),
+          end: Temporal.Instant.from(row.end),
+        }
+      : null;
+  }
+  async saveAttendance(
+    args: Parameters<AccessRepository["saveAttendance"]>[0],
+  ) {
+    const { rowCount } = await this.db.query(
+      `INSERT INTO activity_attendance (tenant_id,session_id,enrolment_id,status,recorded_at,actor_id)
+      VALUES ($1,$2,$3,$4,$5,$6)
+      ON CONFLICT (tenant_id,session_id,enrolment_id) DO UPDATE
+        SET status=excluded.status, recorded_at=excluded.recorded_at, actor_id=excluded.actor_id
+        WHERE excluded.recorded_at >= activity_attendance.recorded_at`,
+      [
+        args.tenantId,
+        args.sessionId,
+        args.enrolmentId,
+        args.status,
+        args.recordedAt.toString(),
+        args.actorId,
+      ],
+    );
+    return (rowCount ?? 0) > 0;
   }
   async findForCheckIn(tenantId: string, bookingId: string) {
     const { rows } = await this.db.query<{

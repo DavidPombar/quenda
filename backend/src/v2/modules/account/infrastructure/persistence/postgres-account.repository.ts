@@ -436,10 +436,14 @@ export class PostgresAccountRepository extends AccountRepository {
       enrolledAt: string | null;
       endedAt: string | null;
       removalReason: string | null;
+      attendance: { start: string; status: "present" | "absent" }[];
     }>(
       `SELECT e.id, e.activity_id AS "activityId", e.dependant_id AS "dependantId", a.name_gl AS "activityName", f.name AS "facilityName",
         e.status, e.created_at AS "createdAt", e.enrolled_at AS "enrolledAt", e.ended_at AS "endedAt",
-        e.removal_reason AS "removalReason"
+        e.removal_reason AS "removalReason",
+        COALESCE((SELECT json_agg(json_build_object('start', x.starts_at, 'status', t.status) ORDER BY x.starts_at)
+          FROM activity_attendance t JOIN activity_sessions x ON x.tenant_id=t.tenant_id AND x.id=t.session_id
+          WHERE t.tenant_id=e.tenant_id AND t.enrolment_id=e.id), '[]') AS attendance
       FROM activity_enrolments e
       JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
       JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
@@ -451,6 +455,10 @@ export class PostgresAccountRepository extends AccountRepository {
       createdAt: Temporal.Instant.from(row.createdAt),
       enrolledAt: row.enrolledAt ? Temporal.Instant.from(row.enrolledAt) : null,
       endedAt: row.endedAt ? Temporal.Instant.from(row.endedAt) : null,
+      attendance: row.attendance.map((mark) => ({
+        start: Temporal.Instant.from(mark.start),
+        status: mark.status,
+      })),
     }));
   }
   async listBlocksAll(tenantId: string, userId: string) {

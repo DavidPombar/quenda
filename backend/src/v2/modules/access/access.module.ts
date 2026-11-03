@@ -11,6 +11,8 @@ import { NodeAccessSigner } from "./infrastructure/crypto/node-access-signer";
 import { IssueAccessPass } from "./application/commands/issue-access-pass.command";
 import { RotateAccessKey } from "./application/commands/rotate-access-key.command";
 import { RecordCheckIns } from "./application/commands/record-check-ins.command";
+import { RecordAttendance } from "./application/commands/record-attendance.command";
+import { RecordAttendanceController } from "./infrastructure/api/access/record-attendance.controller";
 import { UpdateAccessWebhook } from "./application/commands/update-access-webhook.command";
 import { GetJwks } from "./application/queries/get-jwks.query";
 import { GetAccessDay } from "./application/queries/get-access-day.query";
@@ -29,6 +31,7 @@ import { UpdateAccessWebhookController } from "./infrastructure/api/manager/upda
     IssueAccessPass,
     RotateAccessKey,
     RecordCheckIns,
+    RecordAttendance,
     UpdateAccessWebhook,
     GetJwks,
     GetAccessDay,
@@ -42,6 +45,7 @@ import { UpdateAccessWebhookController } from "./infrastructure/api/manager/upda
     GetJwksController,
     GetAccessDayController,
     RecordCheckInsController,
+    RecordAttendanceController,
     GetAccessSettingsController,
     RotateAccessKeyController,
     UpdateAccessWebhookController,

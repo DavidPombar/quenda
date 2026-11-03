@@ -72,9 +72,11 @@ async function published(context: Tenant, court: { id: string }) {
     activity(court),
   ).expect(201);
   const id = created.body.id as string;
-  await post(context.manager, `manager/activities/${id}/publication`, {}).expect(
-    200,
-  );
+  await post(
+    context.manager,
+    `manager/activities/${id}/publication`,
+    {},
+  ).expect(200);
   return id;
 }
 describe("Activities and sports schools", () => {
@@ -233,7 +235,11 @@ describe("Activities and sports schools", () => {
       activity(
         court,
         { places: 10 },
-        { exceptions: [second().toString()], startsLocal: "16:00", endsLocal: "17:00" },
+        {
+          exceptions: [second().toString()],
+          startsLocal: "16:00",
+          endsLocal: "17:00",
+        },
       ),
     ).expect(200);
     expect(edited.body).toMatchObject({ places: 10, status: "published" });
@@ -389,7 +395,11 @@ describe("Activities and sports schools", () => {
     await post(context.manager, "manager/activities", {
       ...activity(court),
       name: { gl: "Borrador sen publicar", es: "" },
-      rule: { ...activity(court).rule, startsLocal: "19:00", endsLocal: "20:00" },
+      rule: {
+        ...activity(court).rule,
+        startsLocal: "19:00",
+        endsLocal: "20:00",
+      },
     }).expect(201);
     const text = (file: string) =>
       anonymous()
@@ -404,8 +414,11 @@ describe("Activities and sports schools", () => {
         })
         .expect(200);
     const schema = async (name: string) =>
-      (await anonymous().get(`/v2/public/open-data/schemas/${name}`).expect(200))
-        .body as object;
+      (
+        await anonymous()
+          .get(`/v2/public/open-data/schemas/${name}`)
+          .expect(200)
+      ).body as object;
     const ajv = new Ajv2020({ strict: false });
     addFormats(ajv);
     const json = JSON.parse((await text("activities.json")).body as string);
@@ -425,7 +438,7 @@ describe("Activities and sports schools", () => {
     const [header, row, ...rest] = csv.trimEnd().split("\r\n");
     expect(rest).toEqual([]);
     expect(header).toBe(
-      "id,name,sport,facility_id,facility_name,court,weekdays,starts_local,ends_local,starts_on,ends_on,exceptions,rrule,places,min_age,max_age,enrolment_opens_on,enrolment_closes_on,price_eur,url",
+      "id,name,sport,facility_id,facility_name,court,weekdays,starts_local,ends_local,starts_on,ends_on,exceptions,rrule,places,enrolled,min_age,max_age,enrolment_opens_on,enrolment_closes_on,price_eur,url",
     );
     expect(row).toContain(`${id},Natación infantil,swimming,`);
     expect(row).toContain("FREQ=WEEKLY;BYDAY=");

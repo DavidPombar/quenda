@@ -349,9 +349,8 @@ Quenda é unha V0 que funciona con datos ficticios; aínda non é un servizo que
 da veciñanza. Antes dun piloto real falta: a alta en produción con Cl@ve/Chave365, unha revisión
 de seguridade independente e unha revisión externa de accesibilidade con tecnoloxías de apoio
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), avisos por SMS, límites de peticións
-compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, a
-a asistencia ás actividades
-([#97](https://github.com/DavidPombar/quenda/issues/97)), e reservas de grupo. Non se declara ningunha certificación RXPD,
+compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos e
+reservas de grupo. Non se declara ningunha certificación RXPD,
 ENS nin WCAG; os concellos poden partir dos modelos en castelán do
 [rexistro de actividades de tratamento](docs/legal/registro-actividades-tratamiento.md) e do
 [contrato de encargo do tratamento](docs/legal/contrato-encargado-tratamiento.md), que debe revisar
@@ -716,8 +715,7 @@ Quenda is a working V0 with synthetic data, not yet a service processing residen
 Still to do before a real pilot: production onboarding with Cl@ve/Chave365, an independent security
 review and an external accessibility review with assistive technology
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), SMS notices, rate limiting shared across
-API replicas, server-side pagination of long histories, payments, attendance at activities
-([#97](https://github.com/DavidPombar/quenda/issues/97)), and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
+API replicas, server-side pagination of long histories, payments and group bookings. No GDPR, ENS or WCAG certification is claimed; councils can start from the
 Spanish templates for the [record of processing activities](docs/legal/registro-actividades-tratamiento.md)
 and the [processor agreement](docs/legal/contrato-encargado-tratamiento.md), to be reviewed by
 their data protection officer.

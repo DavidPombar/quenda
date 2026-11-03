@@ -317,4 +317,99 @@ describe("Access control at the door", () => {
       items: [expect.objectContaining({ bookingId: second.id, sequence: 0 })],
     });
   });
+  test("should take the roll of today's activity sessions, keeping marks offline until they can be sent (#97)", async () => {
+    stubAccessStaff();
+    const session = {
+      id: "61000000-0000-4000-8000-000000000001",
+      activityId: "60000000-0000-4000-8000-000000000011",
+      activityName: { gl: "Natación infantil", es: "" },
+      facilityId: booking.facilityId,
+      facilityName: "Piscina municipal",
+      resourceName: "Rúa 2",
+      start: Temporal.Now.instant().subtract({ minutes: 5 }).toString(),
+      end: Temporal.Now.instant().add({ minutes: 55 }).toString(),
+      validFrom: Temporal.Now.instant().subtract({ hours: 2 }).toString(),
+      people: [
+        {
+          enrolmentId: "62000000-0000-4000-8000-000000000001",
+          name: "Uxía",
+          attendance: null,
+        },
+        {
+          enrolmentId: "62000000-0000-4000-8000-000000000002",
+          name: "Brais",
+          attendance: null,
+        },
+      ],
+    };
+    stubJsonResponse({
+      path: "*/v2/access/day",
+      response: { ...day, sessions: [session] },
+    });
+    const offline = stubJsonResponse({
+      path: "*/v2/access/attendance",
+      method: "POST",
+      status: 503,
+      response: { code: "unavailable", detail: "" },
+    });
+    await commands.navigate("/admin/vilaverde/acceso");
+    await render(<App />);
+    await page.getByRole("button", { name: "Actividades de hoxe (1)" }).click();
+    const roll = page.getByRole("article", { name: /Natación infantil/ });
+    await expect.element(roll.getByText(/0 de 2 presentes/)).toBeVisible();
+    await roll
+      .getByRole("group", { name: "Brais" })
+      .getByRole("radio", { name: "Ausente" })
+      .click();
+    await roll.getByRole("button", { name: "Marcar todas presentes" }).click();
+    await expect.element(roll.getByText(/1 de 2 presentes/)).toBeVisible();
+    await expect
+      .element(
+        roll
+          .getByRole("group", { name: "Uxía" })
+          .getByRole("radio", { name: "Presente" }),
+      )
+      .toBeChecked();
+    await expect
+      .element(page.getByText(/2 marcas gardadas neste dispositivo/))
+      .toBeVisible();
+    expect(offline.spy).toHaveBeenCalled();
+    const online = stubJsonResponse({
+      path: "*/v2/access/attendance",
+      method: "POST",
+      response: {
+        results: [
+          {
+            sessionId: session.id,
+            enrolmentId: session.people[1]!.enrolmentId,
+            outcome: "recorded",
+          },
+          {
+            sessionId: session.id,
+            enrolmentId: session.people[0]!.enrolmentId,
+            outcome: "recorded",
+          },
+        ],
+      },
+    });
+    onlineManager.setOnline(false);
+    onlineManager.setOnline(true);
+    await expect.poll(() => online.spy.mock.calls.length).toBeGreaterThan(0);
+    expect(
+      (online.spy.mock.lastCall![0] as { body: { items: unknown[] } }).body
+        .items,
+    ).toEqual([
+      expect.objectContaining({
+        enrolmentId: session.people[1]!.enrolmentId,
+        status: "absent",
+      }),
+      expect.objectContaining({
+        enrolmentId: session.people[0]!.enrolmentId,
+        status: "present",
+      }),
+    ]);
+    await expect
+      .element(page.getByText(/marcas gardadas neste dispositivo/))
+      .not.toBeInTheDocument();
+  });
 });

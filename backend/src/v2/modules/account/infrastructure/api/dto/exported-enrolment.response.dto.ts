@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { ApiProperty } from "@nestjs/swagger";
 import { ExportedEnrolment } from "../../../domain/account.read-model";
+export class ExportedAttendanceMarkDTO {
+  @ApiProperty({ description: "Session start" }) start!: string;
+  @ApiProperty({ enum: ["present", "absent"] }) status!: "present" | "absent";
+}
 export class ExportedEnrolmentResponseDTO {
   @ApiProperty({ description: "Enrolment UUID" }) id!: string;
   @ApiProperty({ description: "Activity UUID" }) activityId!: string;
@@ -10,6 +14,8 @@ export class ExportedEnrolmentResponseDTO {
     description: "Person in the adult's care who took part; null for the adult",
   })
   dependantId!: string | null;
+  @ApiProperty({ type: [ExportedAttendanceMarkDTO] })
+  attendance!: ExportedAttendanceMarkDTO[];
   @ApiProperty({ description: "Activity name in Galician" })
   activityName!: string;
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;
@@ -37,6 +43,10 @@ export class ExportedEnrolmentResponseDTO {
       createdAt: value.createdAt.toString(),
       enrolledAt: value.enrolledAt?.toString() ?? null,
       endedAt: value.endedAt?.toString() ?? null,
+      attendance: value.attendance.map((mark) => ({
+        start: mark.start.toString(),
+        status: mark.status,
+      })),
     };
   }
 }

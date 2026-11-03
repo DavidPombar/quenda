@@ -42,12 +42,42 @@ export interface AccessDayBooking {
   holder: string;
   checkedInAt: Temporal.Instant | null;
 }
+/** A person on the roll of an activity session (#97, part D). */
+export interface AccessDayParticipant {
+  enrolmentId: string;
+  /** First name only: the participant in an adult's care, or the adult. */
+  name: string;
+  attendance: AttendanceStatus | null;
+}
+/** A session of an activity on the day, with the people holding a place in it. */
+export interface AccessDaySession {
+  id: string;
+  activityId: string;
+  activityName: { gl: string; es: string };
+  facilityId: string;
+  facilityName: string;
+  resourceName: string;
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+  /** When the roll can be taken, as a pass opens the door. */
+  validFrom: Temporal.Instant;
+  people: AccessDayParticipant[];
+}
+export type AttendanceStatus = "present" | "absent";
+export type AttendanceOutcome =
+  | "recorded"
+  | "stale"
+  | "cancelled"
+  | "not_enrolled"
+  | "out_of_window"
+  | "not_found";
 export interface AccessDay {
   date: Temporal.PlainDate;
   syncedAt: Temporal.Instant;
   issuer: string;
   keys: AccessKey[];
   bookings: AccessDayBooking[];
+  sessions: AccessDaySession[];
   /** Reservations that must no longer open the door even with a valid signature. */
   revoked: string[];
 }

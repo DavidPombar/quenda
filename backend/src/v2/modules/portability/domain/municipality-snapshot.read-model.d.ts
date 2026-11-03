@@ -381,6 +381,14 @@ export interface MunicipalitySnapshot {
     declaredAt: string;
     createdAt: string;
   }[];
+  /** Roll-call marks of activity sessions (#97, part D). */
+  activityAttendance: {
+    sessionId: string;
+    enrolmentId: string;
+    status: string;
+    recordedAt: string;
+    actorId: string | null;
+  }[];
 }
 
 export interface MunicipalityExport {

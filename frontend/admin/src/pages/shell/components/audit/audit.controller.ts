@@ -69,6 +69,7 @@ const AUDIT_ACTIONS = [
   ["activity_enrolment.left", "auditEnrolmentLeft"],
   ["activity_enrolment.removed", "auditEnrolmentRemoved"],
   ["activity.enrolments_exported", "auditEnrolmentsExported"],
+  ["activity_attendance.recorded", "auditAttendanceRecorded"],
   ["dependant.added", "auditDependantAdded"],
   ["dependant.updated", "auditDependantUpdated"],
   ["dependant.removed", "auditDependantRemoved"],

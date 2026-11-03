@@ -13,7 +13,10 @@ import { Result } from "../../../../shared/application/result";
 import { AppError, failure } from "../../../../shared/application/errors";
 export type GetAccessDayError =
   AppError<"forbidden"> | AppError<"not_found"> | AppError<"validation">;
-/** Everything a door device needs to work offline for one local day. */
+/**
+ * Everything a door device needs to work offline for one local day: the reservations and the
+ * activity sessions with their roll (#97).
+ */
 @Injectable()
 export class GetAccessDay {
   constructor(
@@ -48,6 +51,7 @@ export class GetAccessDay {
       .toZonedDateTime({ timeZone: settings.timezone })
       .toInstant();
     const bookings = await this.access.day(settings.id, from, to);
+    const sessions = await this.access.sessions(settings.id, from, to);
     return Result.ok({
       date,
       syncedAt: now,
@@ -60,6 +64,14 @@ export class GetAccessDay {
         ...booking,
         validFrom: this.window.of({
           ...booking,
+          openingCalendar,
+          timezone: settings.timezone,
+        }).from,
+      })),
+      sessions: sessions.map(({ openingCalendar, ...session }) => ({
+        ...session,
+        validFrom: this.window.of({
+          ...session,
           openingCalendar,
           timezone: settings.timezone,
         }).from,

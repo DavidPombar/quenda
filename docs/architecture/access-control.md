@@ -56,6 +56,23 @@ queue and go out on the next sync, or as soon as the browser reports it is back 
 `check_ins` is the evidence of attendance (#16): a reservation with a check-in cannot be marked as a
 no-show. Each recorded entry is audited as `booking.checked_in`. Each request includes the synced `sequence`; a queued entry for an older revision is rejected as `stale`. Attendance is unique per reservation revision, so attendance before a move is not reused for the new slot. Manual entries obey the same opening window as QR entries. A refused session never falls back to cached data.
 
+### Roll call of activity sessions (#97)
+
+The day package also carries `sessions`: the active sessions of published activities that start
+that day, with the first name of each person holding a place (the child in an adult's care, or
+the adult) and any mark already taken. Under **Actividades de hoxe** staff mark each person
+**Presente** or **Ausente**, or **Marcar todas presentes**, and see «6 de 8 presentes».
+
+Marks go out with `POST /v2/access/attendance` (1–200 items of `sessionId`, `enrolmentId`,
+`status`, `recordedAt`). Offline they wait in their own queue (`quenda.access.{slug}.attendance`)
+and are sent as soon as the device is back online, in serialized batches like entries. The window
+runs from when the door opens for the session (the pass window) to the end of its local day, with
+the same five minutes of clock tolerance. The latest mark per person and session wins
+(`activity_attendance`, keyed by session and enrolment), so a repeated batch changes nothing and an
+older mark comes back `stale`. Other outcomes are `recorded`, `cancelled`, `not_enrolled`,
+`out_of_window` and `not_found`; rejections are shown in text. Each recorded mark is audited as
+`activity_attendance.recorded`. Absences carry no penalty.
+
 The backoffice camera requires HTTPS (or localhost). The deployed `/admin/` policy permits a camera from the same origin and the scanner's Blob worker; the public website and citizen app keep camera access disabled.
 
 ## Connector for locks and lights

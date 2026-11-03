@@ -3,6 +3,8 @@ import { apiClient } from "@/client/api-client";
 import type {
   AccessDay,
   AccessSettings,
+  AttendanceMark,
+  AttendanceOutcome,
   CheckIn,
   CheckInOutcome,
 } from "@/types/models";
@@ -12,6 +14,17 @@ export const accessRepository = {
     apiClient.request<{
       results: { bookingId: string; outcome: CheckInOutcome }[];
     }>("access/check-ins", { method: "POST", body: JSON.stringify({ items }) }),
+  attendance: (items: AttendanceMark[]) =>
+    apiClient.request<{
+      results: {
+        sessionId: string;
+        enrolmentId: string;
+        outcome: AttendanceOutcome;
+      }[];
+    }>("access/attendance", {
+      method: "POST",
+      body: JSON.stringify({ items }),
+    }),
   settings: () => apiClient.request<AccessSettings>("manager/access-settings"),
   rotateKey: () =>
     apiClient.request<{ kid: string }>("manager/access-keys/rotation", {

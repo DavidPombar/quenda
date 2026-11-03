@@ -53,6 +53,7 @@ coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bo
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'activityId', r.activity_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'cancellationReason', r.cancellation_reason, 'sequence', r.sequence) ORDER BY r.id) FROM activity_sessions r WHERE r.tenant_id=m.id), '[]') AS "activitySessions"
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'activityId', r.activity_id, 'userId', r.user_id, 'dependantId', r.dependant_id, 'status', r.status, 'createdAt', r.created_at, 'enrolledAt', r.enrolled_at, 'endedAt', r.ended_at, 'removalReason', r.removal_reason) ORDER BY r.created_at, r.id) FROM activity_enrolments r WHERE r.tenant_id=m.id), '[]') AS "activityEnrolments"
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'firstName', r.first_name, 'birthYear', r.birth_year, 'declarationVersion', r.declaration_version, 'declaredAt', r.declared_at, 'createdAt', r.created_at) ORDER BY r.created_at, r.id) FROM dependants r WHERE r.tenant_id=m.id), '[]') AS "dependants"
+,coalesce((SELECT json_agg(json_build_object('sessionId', r.session_id, 'enrolmentId', r.enrolment_id, 'status', r.status, 'recordedAt', r.recorded_at, 'actorId', r.actor_id) ORDER BY r.session_id, r.enrolment_id) FROM activity_attendance r WHERE r.tenant_id=m.id), '[]') AS "activityAttendance"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -175,6 +176,7 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
       activitySessions: row.activitySessions,
       activityEnrolments: row.activityEnrolments,
       dependants: row.dependants,
+      activityAttendance: row.activityAttendance,
       messages: row.messages.map((value) => ({
         ...value,
         createdAt: Temporal.Instant.from(value.createdAt),

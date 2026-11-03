@@ -14,6 +14,8 @@ export interface OpenActivity {
   /** RFC 5545 rule line of the weekly schedule, e.g. FREQ=WEEKLY;BYDAY=TU,TH;UNTIL=… */
   rrule: string;
   places: number;
+  /** People holding a place now: a count, never who (#97, part D). */
+  enrolled: number;
   minAge: number | null;
   maxAge: number | null;
   enrolmentOpensOn: string;
