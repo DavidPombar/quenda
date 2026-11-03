@@ -4,6 +4,12 @@ import { ExportedEnrolment } from "../../../domain/account.read-model";
 export class ExportedEnrolmentResponseDTO {
   @ApiProperty({ description: "Enrolment UUID" }) id!: string;
   @ApiProperty({ description: "Activity UUID" }) activityId!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Person in the adult's care who took part; null for the adult",
+  })
+  dependantId!: string | null;
   @ApiProperty({ description: "Activity name in Galician" })
   activityName!: string;
   @ApiProperty({ description: "Facility display name" }) facilityName!: string;

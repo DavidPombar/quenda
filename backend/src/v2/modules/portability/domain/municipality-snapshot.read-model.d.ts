@@ -364,11 +364,22 @@ export interface MunicipalitySnapshot {
     id: string;
     activityId: string;
     userId: string;
+    dependantId: string | null;
     status: string;
     createdAt: string;
     enrolledAt: string | null;
     endedAt: string | null;
     removalReason: string | null;
+  }[];
+  /** People in an adult's care (#97, part C): first name and year of birth only. */
+  dependants: {
+    id: string;
+    userId: string;
+    firstName: string;
+    birthYear: number;
+    declarationVersion: string;
+    declaredAt: string;
+    createdAt: string;
   }[];
 }
 

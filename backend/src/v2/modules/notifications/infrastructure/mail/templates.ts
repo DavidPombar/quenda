@@ -69,6 +69,7 @@ const copy = {
     enrolmentFooter: (name: string) =>
       `Recibes este correo porque te inscribiches nunha actividade do ${name}. Se tes dúbidas, responde a esta mensaxe.`,
     activity: "Actividade",
+    participant: "Participante",
     cancelledDates: "Sesións anuladas",
     unsubscribe:
       "Non queres recibir este tipo de aviso por correo? Date de baixa:",
@@ -138,6 +139,7 @@ const copy = {
     enrolmentFooter: (name: string) =>
       `Recibes este correo porque te inscribiste en una actividad del ${name}. Si tienes dudas, responde a este mensaje.`,
     activity: "Actividad",
+    participant: "Participante",
     cancelledDates: "Sesiones anuladas",
     unsubscribe:
       "¿No quieres recibir este tipo de aviso por correo? Date de baja:",
@@ -199,6 +201,9 @@ export function renderMail(
   const facts: [string, string][] = [
     ...(activityName
       ? ([[t.activity, activityName]] as [string, string][])
+      : []),
+    ...(delivery.participant
+      ? ([[t.participant, delivery.participant]] as [string, string][])
       : []),
     [t.facility, delivery.facility.name],
     ...(session

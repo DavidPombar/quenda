@@ -532,6 +532,43 @@ try {
     path: ".dev-logs/my-enrolments.png",
     fullPage: true,
   });
+  // People in the adult's care (#97, part C): add a child and enrol them too.
+  await page.goto(`${base}/app/${activitySlug}/conta`);
+  const care = page.getByRole("region", { name: "Persoas ao meu cargo" });
+  await care
+    .getByRole("button", { name: "Engadir unha persoa ao teu cargo" })
+    .click();
+  await care.getByRole("textbox", { name: "Nome" }).fill("Uxía");
+  const birthYear = new Date().getFullYear() - 9;
+  await care
+    .getByRole("spinbutton", { name: "Ano de nacemento" })
+    .fill(String(birthYear));
+  await care.getByText(/Declaro que teño a patria potestade/).click();
+  await audit("my-dependants");
+  await care.getByRole("button", { name: "Gardar", exact: true }).click();
+  await care.getByText("Uxía", { exact: true }).waitFor();
+  await assertReflow("my-dependants");
+  await page.goto(`${base}/app/${activitySlug}/actividades`);
+  await page.getByRole("link", { name: "Escola de pádel" }).click();
+  await page
+    .getByRole("group", { name: "Para quen?" })
+    .getByRole("radio", { name: /^Uxía/ })
+    .check();
+  await page.getByRole("button", { name: "Inscribirme", exact: true }).click();
+  const childDialog = page.getByRole("dialog", {
+    name: "Inscribirte en Escola de pádel",
+  });
+  await childDialog.getByText("Participa: Uxía").waitFor();
+  await audit("child-enrol");
+  await childDialog
+    .getByRole("button", { name: "Confirmar inscrición" })
+    .click();
+  await childDialog.getByText("Xa estás inscrito ou inscrita.").waitFor();
+  await childDialog
+    .getByRole("button", { name: "Pechar", exact: true })
+    .first()
+    .click();
+  await page.getByText("Uxía: ten praza nesta actividade.").waitFor();
   await context.clearCookies();
   await page.goto(`${base}/admin/${activitySlug}/xestion`);
   // The backoffice remembers the manager's session and says it has ended.

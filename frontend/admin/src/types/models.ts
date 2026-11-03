@@ -618,8 +618,13 @@ export interface ManagedEnrolment {
   status: "enrolled" | "waiting" | "left" | "removed" | "cancelled";
   /** Place in the waiting list, from 1. */
   position: number | null;
+  /** The adult who enrolled. */
   name: string;
   email: string | null;
+  /** A person in their care who takes part, and their age in the activity's year. */
+  dependantId: string | null;
+  participantFirstName: string | null;
+  participantAge: number | null;
   createdAt: string;
   enrolledAt: string | null;
   endedAt: string | null;

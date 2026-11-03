@@ -15,6 +15,7 @@ import {
   ExportedWaitlistEntry,
   ExportedNotification,
   ExportedEnrolment,
+  ExportedDependant,
 } from "../../domain/account.read-model";
 import { Database } from "../../../../shared/infrastructure/database";
 import {
@@ -396,10 +397,38 @@ export class PostgresAccountRepository extends AccountRepository {
       offeredAt: row.offeredAt ? Temporal.Instant.from(row.offeredAt) : null,
     }));
   }
+  async listDependantsAll(tenantId: string, userId: string) {
+    const { rows } = await this.db.query<{
+      id: string;
+      firstName: string;
+      birthYear: number;
+      declarationVersion: string;
+      declaredAt: string;
+      createdAt: string;
+    }>(
+      `SELECT id, first_name AS "firstName", birth_year AS "birthYear",
+        declaration_version AS "declarationVersion", declared_at AS "declaredAt", created_at AS "createdAt"
+      FROM dependants WHERE tenant_id=$1 AND user_id=$2 ORDER BY created_at, id`,
+      [tenantId, userId],
+    );
+    return rows.map((row): ExportedDependant => ({
+      ...row,
+      declaredAt: Temporal.Instant.from(row.declaredAt),
+      createdAt: Temporal.Instant.from(row.createdAt),
+    }));
+  }
+  async deleteDependants(tenantId: string, userId: string) {
+    const { rowCount } = await this.db.query(
+      "DELETE FROM dependants WHERE tenant_id=$1 AND user_id=$2",
+      [tenantId, userId],
+    );
+    return rowCount ?? 0;
+  }
   async listEnrolmentsAll(tenantId: string, userId: string) {
     const { rows } = await this.db.query<{
       id: string;
       activityId: string;
+      dependantId: string | null;
       activityName: string;
       facilityName: string;
       status: ExportedEnrolment["status"];
@@ -408,7 +437,7 @@ export class PostgresAccountRepository extends AccountRepository {
       endedAt: string | null;
       removalReason: string | null;
     }>(
-      `SELECT e.id, e.activity_id AS "activityId", a.name_gl AS "activityName", f.name AS "facilityName",
+      `SELECT e.id, e.activity_id AS "activityId", e.dependant_id AS "dependantId", a.name_gl AS "activityName", f.name AS "facilityName",
         e.status, e.created_at AS "createdAt", e.enrolled_at AS "enrolledAt", e.ended_at AS "endedAt",
         e.removal_reason AS "removalReason"
       FROM activity_enrolments e

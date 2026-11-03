@@ -6,8 +6,8 @@ with a paper form at the town hall. Quenda models them next to the reservation e
 activity's sessions and a one-off booking never take the same court at the same time (C1, M1, M2).
 
 This is described in four parts. Part A publishes the offer and holds the courts; part B lets
-adults enrol, with an automatic waiting list. People in the care of an adult (minors) and attendance
-with its indicators follow in later parts.
+adults enrol, with an automatic waiting list; part C lets them enrol the people in their care
+(minors). Attendance with its indicators follows in part D.
 
 ## Model
 
@@ -82,9 +82,10 @@ ones marked with their reason. Drafts are never public. The citizen app shows th
 
 ## Enrolment (part B)
 
-- **Who**: a signed-in adult enrols themself (`POST /v2/citizen/activity-enrolments` with a
-  client-generated id, so a repeated request returns the same enrolment). An activity whose top age
-  is under 18 is for minors; until part C its enrolments go through the council.
+- **Who**: a signed-in adult enrols themself or a person in their care
+  (`POST /v2/citizen/activity-enrolments` with a client-generated id and an optional
+  `dependantId`, so a repeated request returns the same enrolment). The adult takes part only when
+  the activity's top age is 18 or more, or it has none.
 - **When**: only a published activity whose enrolment period includes today, in the
   municipality's time zone (`enrolment_closed` otherwise). One open enrolment per person and
   activity (`already_enrolled`).
@@ -118,3 +119,18 @@ removes one with a reason, and downloads them as CSV
 (`GET /v2/manager/activities/:id/enrolments.csv`: UTF-8 with BOM, `;`, Galician or Spanish headers;
 text a spreadsheet would run as a formula is neutralised). Each download is audited
 (`activity.enrolments_exported`), as are `activity_enrolment.created`, `.left` and `.removed`.
+
+## People in an adult's care (part C)
+
+An adult adds the people in their care under **A miña conta → Persoas ao meu cargo**
+(`GET`/`POST /v2/citizen/dependants`, `PATCH`/`DELETE /v2/citizen/dependants/:id`): a first name
+and a year of birth, at most ten. Adding one requires the guardianship declaration, whose version
+is recorded (`declaration_required` otherwise). A person cannot be removed while enrolled
+(`dependant_in_use`).
+
+On an activity's page, **Para quen?** offers the adult (when the activity takes adults) and each
+person in their care, with their age in the year the activity starts; those outside the ages are
+shown but cannot be chosen, and the server checks again (`age_not_allowed`). The adult and each
+child hold one open enrolment each. Notices go to the adult and name the participant in the email;
+the list and CSV show the participant's first name and age next to the adult who enrolled them.
+See [data protection](data-protection.md).

@@ -387,8 +387,10 @@ describe("Enrolment in activities", () => {
       .expect(200)
       .expect("Content-Type", /text\/csv/);
     expect(csv.text.startsWith("﻿")).toBe(true);
-    expect(csv.text).toContain("Estado;Posición na lista de espera;Nome");
-    expect(csv.text).toContain("Inscrita;;Persoa 2");
+    expect(csv.text).toContain(
+      "Estado;Posición na lista de espera;Persoa que inscribe;Correo electrónico;Participante;Idade",
+    );
+    expect(csv.text).toContain("Inscrita;;Persoa 2;;;;");
     expect(csv.text).toContain("Non presentou o certificado médico");
     const exported = await harness.db.query(
       "SELECT details FROM audit_events WHERE tenant_id=$1 AND action='activity.enrolments_exported'",

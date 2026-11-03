@@ -66,7 +66,10 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 - Personas usuarias que reservan instalaciones.
 - Personal municipal que gestiona las instalaciones.
 
-`{{Si se admiten reservas de menores, describir cómo se gestiona su representación.}}`
+- Personas menores u otras personas a cargo de una persona usuaria adulta, inscritas por ella en
+  actividades deportivas municipales. La persona adulta declara, al añadirlas, que ostenta la
+  patria potestad o la tutela y actúa en su representación (art. 7 LOPDGDD); se conserva la
+  versión de esa declaración y su fecha. `{{Revisar con la persona delegada de protección de datos.}}`
 
 ## 7. Categorías de datos personales
 
@@ -74,7 +77,8 @@ informada (art. 13 RGPD); no es la base jurídica del tratamiento.
 |---|---|
 | Identificativos | Nombre y apellidos facilitados por el sistema de identificación (Cl@ve u otro); identificador del proveedor de identidad; identificador interno; correo electrónico si el proveedor lo facilita |
 | NIF (solo si el concello activa la verificación de empadronamiento) | Número de identificación fiscal, cifrado; para aplicar tarifas de persona empadronada `{{Eliminar esta fila si no se activa.}}` |
-| Uso del servicio | Reservas (instalación, fecha y hora, estado), listas de espera (turno esperado, orden de llegada y ofertas), avisos, versión del aviso de privacidad aceptada y fecha |
+| Uso del servicio | Reservas (instalación, fecha y hora, estado), listas de espera (turno esperado, orden de llegada y ofertas), inscripciones en actividades y su lista de espera, avisos, versión del aviso de privacidad aceptada y fecha |
+| Personas a cargo | Nombre (sin apellidos) y año de nacimiento, para comprobar la edad exigida por cada actividad; versión y fecha de la declaración de representación |
 | Seguridad | Sesiones (identificador cifrado y caducidad); registro de auditoría de las acciones |
 
 | Categoría de usuario | Categorías que dan derecho a una tarifa propia (empadronamiento, familia, club local, menor, familia numerosa, discapacidad, jubilación) y si están verificadas; sin documentos acreditativos |

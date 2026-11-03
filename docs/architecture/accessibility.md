@@ -47,7 +47,7 @@ The scans in `scripts/smoke-browser.mjs`, by name:
 | Public website `/` | `website-desktop`, `website-mobile`, `website-search`, `accessibility-website` |
 | Citizen app, signed out | `shared-catalog`, `shared-catalog-desktop`, `catalog`, `mobile`, `accessibility-app`, `bookings-signed-out`, `account-signed-out`, `unsubscribe`, `session-dialog`, `email-code`, `privacy-notice` |
 | Citizen app, booking | `facility-page` (photo, map, opening hours), `resources-grid` (all courts), `confirmation`, `booking-success` |
-| Citizen app, activities | `activities`, `activity-page`, `enrol-dialog`, `my-enrolments` |
+| Citizen app, activities | `activities`, `activity-page`, `enrol-dialog`, `my-enrolments`, `my-dependants`, `child-enrol` |
 | Citizen app, own bookings and account | `bookings-upcoming`, `access-pass` (QR), `change-booking`, `cancel-booking`, `history`, `history-mobile`, `open-data`, `account`, `delete-account` |
 | Backoffice, manager | `admin-entry`, `admin-gate`, `management`, `management-mobile`, `facility-editor`, `courts-dialog`, `admin-bookings`, `admin-bookings-mobile`, `admin-insights`, `admin-categories`, `admin-settings`, `seasons`, `activities-admin`, `activity-editor`, `activity-enrolments`, `staff`, `audit-log`, `accessibility-admin` |
 | Door page | `access-control` |

@@ -187,6 +187,7 @@ export function stubShell(
       path: "*/v2/citizen/activity-enrolments",
       response: [],
     });
+    stubJsonResponse({ path: "*/v2/citizen/dependants", response: [] });
   }
   stubJsonResponse({
     path: "*/v2/public/municipalities",
@@ -310,6 +311,8 @@ export function stubAccount(
   const response = { ...account, ...overrides };
   stubJsonResponse({ path: "*/v2/citizen/me", response });
   stubJsonResponse({ path: "*/v2/citizen/categories", response: categories });
+  // Nobody in the person's care unless a test says otherwise (#97).
+  stubJsonResponse({ path: "*/v2/citizen/dependants", response: [] });
   stubJsonResponse({
     path: "*/v2/citizen/me/club",
     response: { organization: null, occurrences: [] },

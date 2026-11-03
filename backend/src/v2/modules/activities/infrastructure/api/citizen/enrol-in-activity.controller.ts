@@ -38,6 +38,7 @@ export class EnrolInActivityController {
       principal,
       id: body.id,
       activityId: body.activityId,
+      dependantId: body.dependantId ?? null,
     });
     return result.fold(MyEnrolmentResponseDTO.from, this.handleError);
   }

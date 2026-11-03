@@ -63,6 +63,7 @@ export class ExportAccount {
         tenantId,
         userId,
       ),
+      dependants: await this.accounts.listDependantsAll(tenantId, userId),
       auditEvents: await this.accounts.listAuditByActor(tenantId, userId),
     };
     // Queries run outside a transaction; this single INSERT autocommits on its own.

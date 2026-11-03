@@ -43,5 +43,7 @@ export interface Notification {
   /** The activity of an enrolment notice (#97). */
   activityId: string | null;
   activityName: { gl: string; es: string } | null;
+  /** First name of the person in the adult's care the enrolment is for. */
+  participantName: string | null;
   createdAt: Temporal.Instant;
 }

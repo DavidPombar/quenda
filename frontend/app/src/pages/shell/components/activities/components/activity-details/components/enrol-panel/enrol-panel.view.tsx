@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Button, Dialog, Portal } from "@chakra-ui/react";
 import { PiCheckCircle, PiHourglassMedium, PiX } from "react-icons/pi";
+import { Link } from "react-router-dom";
+import { ROUTES, routeFor } from "@/constants/routes";
 import { localized } from "@/services/catalog.service";
 import { fill } from "@/services/i18n.service";
 import type { AppContext } from "@/types/app-context";
@@ -28,55 +30,93 @@ export function EnrolPanel(p: {
         {a.waiting > 0 &&
           ` ${fill(t("activityWaitingCount"), { count: a.waiting })}`}
       </p>
-      {c.forMinors ? (
-        c.canEnrol && (
-          <p>
-            {t("enrolMinorsHow")}{" "}
-            <a href={`mailto:${municipality.contact}`}>
-              {municipality.contact}
-            </a>
-          </p>
-        )
-      ) : c.mine ? (
-        <div className="enrol-state">
+      {c.mine.map((entry) => (
+        <div key={entry.id} className="enrol-state">
           <p
-            className={`booking-status ${c.mine.status === "enrolled" ? "upcoming" : "waiting"}`}
+            className={`booking-status ${entry.status === "enrolled" ? "upcoming" : "waiting"}`}
           >
-            {c.mine.status === "enrolled" ? (
+            {entry.status === "enrolled" ? (
               <PiCheckCircle size={20} aria-hidden="true" />
             ) : (
               <PiHourglassMedium size={20} aria-hidden="true" />
             )}
-            {c.mine.status === "enrolled"
-              ? t("enrolledNotice")
+            {entry.participant ? `${entry.participant.firstName}: ` : ""}
+            {entry.status === "enrolled"
+              ? t(entry.participant ? "enrolledParticipant" : "enrolledNotice")
               : fill(t("enrolledWaiting"), {
-                  position: c.mine.position ?? "",
+                  position: entry.position ?? "",
                 })}
           </p>
           <Button
             variant="outline"
-            loading={c.leave.isPending}
-            onClick={() => c.mine && c.leave.mutate(c.mine.id)}
+            loading={c.leave.isPending && c.leave.variables === entry.id}
+            aria-label={
+              entry.participant
+                ? `${t("enrolLeave")}: ${entry.participant.firstName}`
+                : undefined
+            }
+            onClick={() => c.leave.mutate(entry.id)}
           >
             {t("enrolLeave")}
           </Button>
-          {c.leave.error && (
-            <p role="alert" className="error-text">
-              {c.leave.error.message}
-            </p>
-          )}
         </div>
-      ) : c.canEnrol ? (
-        session ? (
-          <Button colorPalette="court" size="lg" onClick={c.open}>
-            {t(full ? "enrolWaitlistAction" : "enrolAction")}
-          </Button>
-        ) : (
+      ))}
+      {c.leave.error && (
+        <p role="alert" className="error-text">
+          {c.leave.error.message}
+        </p>
+      )}
+      {c.canEnrol &&
+        (!session ? (
           <Button colorPalette="court" size="lg" onClick={p.context.signIn}>
             {t("enrolSignIn")}
           </Button>
-        )
-      ) : null}
+        ) : (
+          <>
+            {c.participants.length > 1 ||
+            c.participants.some((participant) => participant.name) ? (
+              <fieldset className="participant-choice">
+                <legend>{t("enrolFor")}</legend>
+                {c.participants.map((participant) => (
+                  <label key={participant.key} className="choice-field">
+                    <input
+                      type="radio"
+                      name="participant"
+                      value={participant.key}
+                      disabled={!participant.allowed}
+                      checked={c.selected?.key === participant.key}
+                      onChange={() => c.choose(participant.key)}
+                    />
+                    {participant.name === null
+                      ? t("enrolForMe")
+                      : fill(
+                          t(
+                            participant.allowed
+                              ? "enrolForAge"
+                              : "enrolForNotAllowed",
+                          ),
+                          {
+                            name: participant.name,
+                            age: participant.age ?? "",
+                          },
+                        )}
+                  </label>
+                ))}
+              </fieldset>
+            ) : null}
+            {c.childrenOnly && !c.selected && <p>{t("enrolChildrenOnly")}</p>}
+            {c.childrenOnly && (
+              <Link to={routeFor(municipality.slug, ROUTES.account)}>
+                {t("enrolAddDependant")}
+              </Link>
+            )}
+            {c.selected && (
+              <Button colorPalette="court" size="lg" onClick={c.open}>
+                {t(full ? "enrolWaitlistAction" : "enrolAction")}
+              </Button>
+            )}
+          </>
+        ))}
       <Dialog.Root
         open={c.confirming}
         onOpenChange={(event) => {
@@ -93,6 +133,11 @@ export function EnrolPanel(p: {
                 <Dialog.Title>
                   {fill(t("enrolTitle"), { name: localized(a.name, locale) })}
                 </Dialog.Title>
+                {c.selected?.name && (
+                  <Dialog.Description className="modal-description">
+                    {fill(t("enrolmentParticipant"), { name: c.selected.name })}
+                  </Dialog.Description>
+                )}
               </Dialog.Header>
               <Dialog.Body>
                 {/* Present from the start so the result is announced (WCAG 4.1.3). */}

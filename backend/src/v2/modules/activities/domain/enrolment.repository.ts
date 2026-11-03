@@ -17,11 +17,12 @@ export abstract class EnrolmentRepository {
     tenantId: string,
     id: string,
   ): Promise<ActivityEnrolment | null>;
-  /** The person's enrolled or waiting enrolment in the activity. */
+  /** The adult's enrolled or waiting enrolment in the activity, for them or a dependant. */
   abstract findOpen(
     tenantId: string,
     activityId: string,
     userId: string,
+    dependantId: string | null,
   ): Promise<ActivityEnrolment | null>;
   /** Open enrolments of the activity, enrolled first, then waiting in order of arrival. */
   abstract open(

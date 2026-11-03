@@ -19,6 +19,7 @@ interface EnrolmentRow {
   tenantId: string;
   activityId: string;
   userId: string;
+  dependantId: string | null;
   status: EnrolmentStatus;
   createdAt: string;
   enrolledAt: string | null;
@@ -26,7 +27,7 @@ interface EnrolmentRow {
   removalReason: string | null;
 }
 const columns = `e.id, e.tenant_id AS "tenantId", e.activity_id AS "activityId", e.user_id AS "userId",
-  e.status, e.created_at AS "createdAt", e.enrolled_at AS "enrolledAt", e.ended_at AS "endedAt",
+  e.dependant_id AS "dependantId", e.status, e.created_at AS "createdAt", e.enrolled_at AS "enrolledAt", e.ended_at AS "endedAt",
   e.removal_reason AS "removalReason"`;
 /** Place in the waiting list of an enrolment `e`, from 1; null unless waiting. */
 const position = `CASE WHEN e.status='waiting' THEN (SELECT count(*) FROM activity_enrolments q
@@ -42,6 +43,7 @@ function enrolment(row: EnrolmentRow): ActivityEnrolment {
     tenantId: row.tenantId,
     activityId: row.activityId,
     userId: row.userId,
+    dependantId: row.dependantId,
     status: row.status,
     createdAt: instant(row.createdAt),
     enrolledAt: optionalInstant(row.enrolledAt),
@@ -53,6 +55,8 @@ type ManagedRow = EnrolmentRow & {
   position: number | null;
   name: string;
   email: string | null;
+  participantFirstName: string | null;
+  participantAge: number | null;
 };
 function managed(row: ManagedRow): ManagedEnrolment {
   const {
@@ -65,14 +69,20 @@ function managed(row: ManagedRow): ManagedEnrolment {
     position: row.position,
     name: row.name,
     email: row.email,
+    participantFirstName: row.participantFirstName,
+    participantAge: row.participantAge,
   };
 }
 const managedQuery = (
   where: string,
   extra = "",
 ) => `SELECT ${columns}, ${position} AS position,
-  u.display_name AS name, CASE WHEN u.deleted_at IS NULL THEN u.email END AS email${extra}
+  u.display_name AS name, CASE WHEN u.deleted_at IS NULL THEN u.email END AS email,
+  d.first_name AS "participantFirstName",
+  (extract(year FROM a.starts_on)::int - d.birth_year) AS "participantAge"${extra}
   FROM activity_enrolments e JOIN users u ON u.tenant_id=e.tenant_id AND u.id=e.user_id
+  JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
+  LEFT JOIN dependants d ON d.tenant_id=e.tenant_id AND d.id=e.dependant_id
   WHERE e.tenant_id=$1 AND e.activity_id=$2 ${where}`;
 @Injectable()
 export class PostgresEnrolmentRepository extends EnrolmentRepository {
@@ -86,11 +96,17 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
     );
     return rows[0] ? enrolment(rows[0]) : null;
   }
-  async findOpen(tenantId: string, activityId: string, userId: string) {
+  async findOpen(
+    tenantId: string,
+    activityId: string,
+    userId: string,
+    dependantId: string | null,
+  ) {
     const { rows } = await this.db.query<EnrolmentRow>(
       `SELECT ${columns} FROM activity_enrolments e
-      WHERE e.tenant_id=$1 AND e.activity_id=$2 AND e.user_id=$3 AND e.status IN ('enrolled','waiting')`,
-      [tenantId, activityId, userId],
+      WHERE e.tenant_id=$1 AND e.activity_id=$2 AND e.user_id=$3
+        AND e.dependant_id IS NOT DISTINCT FROM $4::uuid AND e.status IN ('enrolled','waiting')`,
+      [tenantId, activityId, userId, dependantId],
     );
     return rows[0] ? enrolment(rows[0]) : null;
   }
@@ -105,8 +121,8 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
   }
   async add(value: ActivityEnrolment) {
     await this.db.query(
-      `INSERT INTO activity_enrolments (id,tenant_id,activity_id,user_id,status,created_at,enrolled_at,ended_at,removal_reason)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      `INSERT INTO activity_enrolments (id,tenant_id,activity_id,user_id,status,created_at,enrolled_at,ended_at,removal_reason,dependant_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
         value.id,
         value.tenantId,
@@ -117,6 +133,7 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
         value.enrolledAt?.toString() ?? null,
         value.endedAt?.toString() ?? null,
         value.removalReason,
+        value.dependantId,
       ],
     );
   }
@@ -155,9 +172,10 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
         resourceName: string;
         nextSession: string | null;
         cancelledSessions: number;
+        participantFirstName: string | null;
       }
     >(
-      `SELECT ${columns}, ${position} AS position,
+      `SELECT ${columns}, ${position} AS position, d.first_name AS "participantFirstName",
         a.name_gl AS "activityNameGl", a.name_es AS "activityNameEs", a.status AS "activityStatus",
         a.facility_id AS "facilityId", f.name AS "facilityName", r.name AS "resourceName",
         (SELECT min(x.starts_at) FROM activity_sessions x WHERE x.tenant_id=a.tenant_id
@@ -168,6 +186,7 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
       JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
       JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
       JOIN resources r ON r.tenant_id=a.tenant_id AND r.id=a.resource_id
+      LEFT JOIN dependants d ON d.tenant_id=e.tenant_id AND d.id=e.dependant_id
       WHERE e.tenant_id=$1 AND e.user_id=$2
       ORDER BY ${order}`,
       [tenantId, userId, now.toString()],
@@ -181,6 +200,13 @@ export class PostgresEnrolmentRepository extends EnrolmentRepository {
       facilityName: row.facilityName,
       resourceName: row.resourceName,
       status: row.status,
+      participant:
+        row.participantFirstName === null
+          ? null
+          : {
+              dependantId: row.dependantId,
+              firstName: row.participantFirstName,
+            },
       position: row.position,
       createdAt: instant(row.createdAt),
       enrolledAt: optionalInstant(row.enrolledAt),

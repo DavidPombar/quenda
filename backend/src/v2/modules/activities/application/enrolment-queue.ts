@@ -54,20 +54,16 @@ export class EnrolmentQueue extends ActivityEnrolments {
     return this.notices.sessionsCancelled(args);
   }
   async forget(tenantId: string, userId: string, now: Temporal.Instant) {
-    const activityIds = new Set(
-      (await this.enrolments.openOfUser(tenantId, userId)).map(
-        (entry) => entry.activityId,
-      ),
-    );
-    for (const activityId of activityIds) {
+    const open = await this.enrolments.openOfUser(tenantId, userId);
+    for (const activityId of new Set(open.map((entry) => entry.activityId))) {
       const activity = await this.activities.find(tenantId, activityId);
-      const entry = await this.enrolments.findOpen(
-        tenantId,
-        activityId,
-        userId,
-      );
-      if (!activity || !entry) continue;
-      await this.enrolments.save({ ...entry, status: "left", endedAt: now });
+      if (!activity) continue;
+      // Read again under the activity's lock; the adult's own and their dependants' enrolments.
+      for (const { id } of open.filter((entry) => entry.activityId === activityId)) {
+        const entry = await this.enrolments.find(tenantId, id);
+        if (entry?.status !== "enrolled" && entry?.status !== "waiting") continue;
+        await this.enrolments.save({ ...entry, status: "left", endedAt: now });
+      }
       if (activity.status === "published")
         await this.fill({ tenantId, activityId, places: activity.places, now });
     }

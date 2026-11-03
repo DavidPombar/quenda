@@ -1007,6 +1007,8 @@ const gl = {
   activityEnrolmentsWaiting: "En lista de espera",
   activityEnrolmentsEmpty: "Aínda non hai ninguén inscrito.",
   activityEnrolmentHolds: "Con praza",
+  activityEnrolmentParticipant: "{name}, {age} anos",
+  activityEnrolmentBy: "· inscribe {name}",
   activityEnrolmentPosition: "Lista de espera: posición {position}",
   activityEnrolmentSince: "Inscrición: {when}",
   activityEnrolmentRemove: "Dar de baixa",
@@ -1028,6 +1030,9 @@ const gl = {
   auditEnrolmentLeft: "Baixa voluntaria nunha actividade",
   auditEnrolmentRemoved: "Baixa nunha actividade polo concello",
   auditEnrolmentsExported: "Descarga das persoas inscritas",
+  auditDependantAdded: "Persoa ao cargo engadida",
+  auditDependantUpdated: "Persoa ao cargo corrixida",
+  auditDependantRemoved: "Persoa ao cargo eliminada",
   auditFacilitySessionsCancelled: "Sesións anuladas polo peche",
 } as const;
 export type TextKey = keyof typeof gl;
@@ -2018,6 +2023,8 @@ const es: Record<TextKey, string> = {
   activityEnrolmentsWaiting: "En lista de espera",
   activityEnrolmentsEmpty: "Todavía no hay nadie inscrito.",
   activityEnrolmentHolds: "Con plaza",
+  activityEnrolmentParticipant: "{name}, {age} años",
+  activityEnrolmentBy: "· inscribe {name}",
   activityEnrolmentPosition: "Lista de espera: posición {position}",
   activityEnrolmentSince: "Inscripción: {when}",
   activityEnrolmentRemove: "Dar de baja",
@@ -2039,6 +2046,9 @@ const es: Record<TextKey, string> = {
   auditEnrolmentLeft: "Baja voluntaria en una actividad",
   auditEnrolmentRemoved: "Baja en una actividad por el ayuntamiento",
   auditEnrolmentsExported: "Descarga de las personas inscritas",
+  auditDependantAdded: "Persona a cargo añadida",
+  auditDependantUpdated: "Persona a cargo corregida",
+  auditDependantRemoved: "Persona a cargo eliminada",
   auditFacilitySessionsCancelled: "Sesiones anuladas por el cierre",
 };
 export function translate(locale: Locale, key: TextKey): string {
