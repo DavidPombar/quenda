@@ -430,7 +430,7 @@ def export_pdf():
 def main():
     build()
     pages, size = export_pdf()
-    text = open(SOURCE, encoding="utf-8").read()
+    text = re.sub(r"<!--.*?-->", "", open(SOURCE, encoding="utf-8").read(), flags=re.S)
     pending = sorted(set(re.findall(r"\[PENDENTE[^\]]*\]", text)))
     print(f"{os.path.relpath(PDF, ROOT)}: {pages} pages, {size / 1024:.0f} KB")
     for item in pending:

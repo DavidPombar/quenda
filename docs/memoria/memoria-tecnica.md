@@ -18,7 +18,7 @@ Unha liña só con imaxes ponas unha ao carón da outra. [PENDENTE] marca o que 
 | Concello / provincia | Pontevedra (Pontevedra). Domicilio social: Praza de Barcelos 27, 7B, 36002 Pontevedra |
 | Nome da proposta | Quenda: reserva en liña de instalacións deportivas municipais |
 | Persoa de contacto | David Pombar |
-| Teléfono de contacto | [PENDENTE] |
+| Teléfono de contacto | 619 51 04 77 |
 | Correo electrónico | info@timetime.in |
 | Web / portfólio (opcional) | Código: https://github.com/DavidPombar/quenda · Demo: https://91-99-68-27.sslip.io/ |
 
@@ -145,7 +145,8 @@ Despois, acompañamento durante a primeira tempada: incidencias revisadas cada d
 
 ## 7. Equipo do proxecto
 
-[PENDENTE: persoas do equipo, o seu papel no proxecto e a súa experiencia en desenvolvemento web, en administración pública e en software libre.]
+- **David Pombar Lourido**: dirección do proxecto e persoa de contacto. Autor da maior parte do código de Quenda no repositorio público. https://www.linkedin.com/in/davidpombar/
+- **Iago Lastra Rodríguez**: cofundador de TimeTime. Enxeñeiro de software, titulado pola Universidade da Coruña, con máis de dez anos de experiencia e especializado en desenvolvemento *frontend*, onde dirixiu equipos. Autor do libro *Frontend Testing* (LeanPub, 2020) e de máis de 150 repositorios públicos en GitHub. https://www.linkedin.com/in/iagolast/
 
 TIMETIME SOFTWARE, SL desenvolveu Quenda desde a publicación das bases ata hoxe (máis de 50 *pull requests* revisados e fusionados no repositorio público). Iso acredita a capacidade para desenvolver solucións de software libre (punto 2 das bases) e para manter o plan do apartado 5.
 
