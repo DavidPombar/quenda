@@ -349,8 +349,7 @@ Quenda é unha V0 que funciona con datos ficticios; aínda non é un servizo que
 da veciñanza. Antes dun piloto real falta: a alta en produción con Cl@ve/Chave365, unha revisión
 de seguridade independente e unha revisión externa de accesibilidade con tecnoloxías de apoio
 ([#77](https://github.com/DavidPombar/quenda/issues/77)), avisos por SMS, límites de peticións
-compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, a
-a asistencia ás actividades
+compartidos entre réplicas da API, paxinación no servidor dos historiais longos, pagamentos, a asistencia ás actividades
 ([#97](https://github.com/DavidPombar/quenda/issues/97)), e reservas de grupo. Non se declara ningunha certificación RXPD,
 ENS nin WCAG; os concellos poden partir dos modelos en castelán do
 [rexistro de actividades de tratamento](docs/legal/registro-actividades-tratamiento.md) e do
@@ -365,12 +364,13 @@ a súa persoa delegada de protección de datos.
 | Arquitectura (en inglés) | [Implementación](docs/architecture/implementation.md) · [identidade](docs/architecture/identity.md) · [avisos](docs/architecture/notifications.md) · [calendarios](docs/architecture/calendars.md) · [catálogo](docs/architecture/catalogue.md) · [tempadas](docs/architecture/seasons.md) · [actividades](docs/architecture/activities.md) · [lista de espera](docs/architecture/waitlist.md) · [control de accesos](docs/architecture/access-control.md) · [app instalable](docs/architecture/pwa.md) · [analítica](docs/architecture/analytics.md) · [migracións](docs/architecture/migrations.md) |
 | Datos e dereitos | [Datos abertos](docs/architecture/open-data.md) · [portabilidade dos datos](docs/architecture/data-portability.md) · [protección de datos](docs/architecture/data-protection.md) · [modelos legais](docs/legal) |
 | Accesibilidade e deseño | [Matriz WCAG 2.1 AA](docs/architecture/accessibility.md) · [pautas de deseño](docs/architecture/design-guidelines.md) |
-| Certame | [Alcance](docs/contexto/01-alcance-funcional.md) · [requisitos técnicos](docs/contexto/02-requisitos-tecnicos.md) · [valoración](docs/contexto/03-concurso-presentacion-valoracion.md) · [folla de ruta](docs/memoria/roadmap.md) · [investigación](docs/investigacion/00-resumen-ejecutivo.md) |
+| Certame | [Alcance](docs/contexto/01-alcance-funcional.md) · [requisitos técnicos](docs/contexto/02-requisitos-tecnicos.md) · [valoración](docs/contexto/03-concurso-presentacion-valoracion.md) · [memoria técnica](docs/memoria/memoria-tecnica.md) ([PDF](docs/memoria/memoria-tecnica.pdf)) · [folla de ruta](docs/memoria/roadmap.md) · [investigación](docs/investigacion/00-resumen-ejecutivo.md) |
 
 ## Contribuír e licenza
 
 Quenda publícase como un activo público reutilizable baixo a
-[GNU Affero General Public License v3.0 ou posterior](LICENSE). Consulta
+[GNU Affero General Public License v3.0 ou posterior](LICENSE). © 2026 TIMETIME SOFTWARE, SL,
+titular dos dereitos ([NOTICE](NOTICE)). Consulta
 [CONTRIBUTING.md](CONTRIBUTING.md), a [política de seguridade](SECURITY.md), o
 [código de conduta](CODE_OF_CONDUCT.md), o [rexistro de cambios](CHANGELOG.md) e os metadatos de
 catálogo [publiccode.yml](publiccode.yml).
@@ -730,11 +730,12 @@ their data protection officer.
 | Architecture | [Implementation](docs/architecture/implementation.md) · [identity](docs/architecture/identity.md) · [notifications](docs/architecture/notifications.md) · [calendars](docs/architecture/calendars.md) · [catalogue](docs/architecture/catalogue.md) · [seasons](docs/architecture/seasons.md) · [activities](docs/architecture/activities.md) · [waiting list](docs/architecture/waitlist.md) · [access control](docs/architecture/access-control.md) · [installable app](docs/architecture/pwa.md) · [analytics](docs/architecture/analytics.md) · [migrations](docs/architecture/migrations.md) |
 | Data and rights | [Open data](docs/architecture/open-data.md) · [data portability](docs/architecture/data-portability.md) · [data protection](docs/architecture/data-protection.md) · [legal templates](docs/legal) |
 | Accessibility and design | [WCAG 2.1 AA matrix](docs/architecture/accessibility.md) · [design guidelines](docs/architecture/design-guidelines.md) |
-| Contest | [Scope](docs/contexto/01-alcance-funcional.md) · [technical requirements](docs/contexto/02-requisitos-tecnicos.md) · [evaluation](docs/contexto/03-concurso-presentacion-valoracion.md) · [roadmap](docs/memoria/roadmap.md) · [research](docs/investigacion/00-resumen-ejecutivo.md) |
+| Contest | [Scope](docs/contexto/01-alcance-funcional.md) · [technical requirements](docs/contexto/02-requisitos-tecnicos.md) · [evaluation](docs/contexto/03-concurso-presentacion-valoracion.md) · [technical report](docs/memoria/memoria-tecnica.md) ([PDF](docs/memoria/memoria-tecnica.pdf)) · [roadmap](docs/memoria/roadmap.md) · [research](docs/investigacion/00-resumen-ejecutivo.md) |
 
 ## Contributing and licence
 
 Quenda is published as a reusable public asset under the
-[GNU Affero General Public License v3.0 or later](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md),
+[GNU Affero General Public License v3.0 or later](LICENSE). © 2026 TIMETIME SOFTWARE, SL, the
+copyright holder ([NOTICE](NOTICE)). See [CONTRIBUTING.md](CONTRIBUTING.md),
 the [security policy](SECURITY.md), the [code of conduct](CODE_OF_CONDUCT.md), the
 [changelog](CHANGELOG.md) and the [publiccode.yml](publiccode.yml) catalogue metadata.

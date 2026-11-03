@@ -38,7 +38,9 @@
     "illustrations": "node scripts/build-illustrations.mjs",
     "test:smoke": "node scripts/smoke-browser.mjs",
     "access:simulator": "node scripts/access-simulator.mjs",
-    "test:headers": "node scripts/check-headers.mjs"
+    "test:headers": "node scripts/check-headers.mjs",
+    "memoria": "python3 scripts/memoria/build.py",
+    "memoria:capturas": "node scripts/memoria/capturas.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.6",

@@ -4,7 +4,7 @@ publiccodeYmlVersion: "0"
 
 name: Quenda
 url: "https://github.com/DavidPombar/quenda"
-# TODO(#19): set landingURL once the public demo exists (#29).
+landingURL: "https://91-99-68-27.sslip.io/"
 # TODO(#19): add softwareVersion and releaseDate with the first tagged release.
 # TODO(#19): add logo (SVG) when the visual identity is approved.
 
@@ -87,8 +87,7 @@ description:
 
 legal:
   license: AGPL-3.0-or-later
-  # TODO(#19): confirm the legal entity that owns the copyright (bases, punto 8).
-  # mainCopyrightOwner: ...
+  mainCopyrightOwner: TIMETIME SOFTWARE, SL
 
 maintenance:
   # TODO(#19): switch to "internal" or "contract" and add contacts/contractors
