@@ -293,6 +293,8 @@ export interface Insights extends DateRange {
   byFacility: FacilityUsage[];
   /** Only weekday × hour cells with open time. */
   heatmap: HeatmapCell[];
+  /** Missing from operator summaries and older servers. */
+  activities?: ActivityFigures[];
 }
 export type AuditActorRole = "citizen" | "manager" | "access" | "system";
 export interface AuditEvent {
@@ -326,12 +328,48 @@ export interface AccessBooking {
   checkedInAt: string | null;
 }
 /** Snapshot kept on the device so passes can be checked without a network. */
+/** An activity session of the day with its roll (#97, part D). */
+export interface AccessSession {
+  id: string;
+  activityId: string;
+  activityName: Localized;
+  facilityId: string;
+  facilityName: string;
+  resourceName: string;
+  start: string;
+  end: string;
+  /** When the roll can be taken. */
+  validFrom: string;
+  people: {
+    enrolmentId: string;
+    /** First name only. */
+    name: string;
+    attendance: AttendanceStatus | null;
+  }[];
+}
+export type AttendanceStatus = "present" | "absent";
+/** A roll-call mark, possibly kept on the device until it can be sent. */
+export interface AttendanceMark {
+  sessionId: string;
+  enrolmentId: string;
+  status: AttendanceStatus;
+  recordedAt: string;
+}
+export type AttendanceOutcome =
+  | "recorded"
+  | "stale"
+  | "cancelled"
+  | "not_enrolled"
+  | "out_of_window"
+  | "not_found";
 export interface AccessDay {
   date: string;
   syncedAt: string;
   issuer: string;
   keys: Record<string, string>[];
   bookings: AccessBooking[];
+  /** Missing in days stored before activities had a roll. */
+  sessions?: AccessSession[];
   revoked: string[];
 }
 export interface CheckIn {
@@ -635,4 +673,19 @@ export interface ManagedEnrolmentPage {
   total: number;
   page: number;
   pageSize: number;
+}
+/** Places, enrolment and attendance of an activity over the range (#97). */
+export interface ActivityFigures {
+  id: string;
+  name: string;
+  facilityName: string;
+  places: number;
+  enrolled: number;
+  waiting: number;
+  sessions: number;
+  cancelledSessions: number;
+  present: number;
+  absent: number;
+  /** Rounded percent; null before any roll call. */
+  attendanceRate: number | null;
 }

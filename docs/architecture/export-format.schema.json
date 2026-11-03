@@ -1562,6 +1562,22 @@
           "createdAt"
         ]
       }
+    },
+    "activityAttendance": {
+      "type": "array",
+      "description": "Roll-call marks of activity sessions (#97, part D); optional. The latest mark per enrolment and session",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sessionId": { "type": "string" },
+          "enrolmentId": { "type": "string" },
+          "status": { "enum": ["present", "absent"] },
+          "recordedAt": { "type": "string" },
+          "actorId": { "type": ["string", "null"] }
+        },
+        "required": ["sessionId", "enrolmentId", "status", "recordedAt", "actorId"]
+      }
     }
   },
   "additionalProperties": false

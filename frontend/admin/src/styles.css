@@ -2158,3 +2158,61 @@ main h1[tabindex="-1"] {
   gap: var(--space-2);
   margin-top: var(--space-3);
 }
+/* Gate page: bookings or today's activity sessions, and the roll call (#97). */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24px;
+  row-gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.tabs button {
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font-weight: 550;
+  color: var(--ink-2);
+}
+.tabs button.selected {
+  color: var(--court);
+  font-weight: 700;
+  border-bottom-color: var(--court);
+}
+.roll-session {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.roll-session h3 {
+  margin: 0;
+}
+.roll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.roll-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 8px 0;
+  border: 0;
+}
+.roll-person legend {
+  float: left;
+  min-width: 10rem;
+  font-weight: 700;
+}

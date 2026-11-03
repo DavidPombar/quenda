@@ -428,6 +428,7 @@ const activitiesJson = {
                 properties: { "@type": { const: "SportsActivityLocation" } },
               },
               maximumAttendeeCapacity: { type: "integer", minimum: 1 },
+              remainingAttendeeCapacity: { type: "integer", minimum: 0 },
               typicalAgeRange: {
                 type: "string",
                 pattern: "^\\d{1,3}-(\\d{1,3})?$",
@@ -486,6 +487,10 @@ const activitiesTable = {
       required: true,
     }),
     field("places", "integer", "Places", { required: true, minimum: 1 }),
+    field("enrolled", "integer", "People holding a place (a count)", {
+      required: true,
+      minimum: 0,
+    }),
     field("min_age", "integer", "Youngest age accepted", { minimum: 0 }),
     field("max_age", "integer", "Oldest age accepted", { minimum: 0 }),
     field("enrolment_opens_on", "date", "First day of enrolment", {

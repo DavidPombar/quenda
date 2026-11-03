@@ -40,7 +40,9 @@ export class PostgresOpenDataRepository extends OpenDataRepository {
         to_char(a.starts_local, 'HH24:MI') AS "startsLocal", to_char(a.ends_local, 'HH24:MI') AS "endsLocal",
         to_char(a.starts_on, 'YYYY-MM-DD') AS "startsOn", to_char(a.ends_on, 'YYYY-MM-DD') AS "endsOn",
         ARRAY(SELECT to_char(e, 'YYYY-MM-DD') FROM unnest(a.exceptions) AS e ORDER BY e) AS exceptions,
-        a.schedule, a.places, a.min_age AS "minAge", a.max_age AS "maxAge",
+        a.schedule, a.places,
+        (SELECT count(*) FROM activity_enrolments e WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id AND e.status='enrolled')::int AS enrolled,
+        a.min_age AS "minAge", a.max_age AS "maxAge",
         to_char(a.enrolment_opens_on, 'YYYY-MM-DD') AS "enrolmentOpensOn",
         to_char(a.enrolment_closes_on, 'YYYY-MM-DD') AS "enrolmentClosesOn",
         (SELECT p.price_cents FROM activity_prices p WHERE p.tenant_id=a.tenant_id AND p.activity_id=a.id AND p.category='general') AS "priceCents"

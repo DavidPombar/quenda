@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { Temporal } from "@js-temporal/polyfill";
 import { Database } from "../../../../shared/infrastructure/database";
 import {
+  ActivityFigures,
   BookingSpan,
   InsightsFacility,
   InsightsRepository,
@@ -55,6 +56,28 @@ export class PostgresInsightsRepository extends InsightsRepository {
     );
     return rows[0]!;
   }
+  async activities(
+    tenantId: string,
+    start: Temporal.Instant,
+    end: Temporal.Instant,
+  ) {
+    const { rows } = await this.db.query<ActivityFigures>(
+      `SELECT a.id, a.name_gl AS name, f.name AS "facilityName", a.places,
+        (SELECT count(*) FROM activity_enrolments e WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id AND e.status='enrolled')::int AS enrolled,
+        (SELECT count(*) FROM activity_enrolments e WHERE e.tenant_id=a.tenant_id AND e.activity_id=a.id AND e.status='waiting')::int AS waiting,
+        count(*) FILTER (WHERE x.status='active')::int AS sessions,
+        count(*) FILTER (WHERE x.status='cancelled')::int AS "cancelledSessions",
+        COALESCE(sum((SELECT count(*) FROM activity_attendance t WHERE t.tenant_id=x.tenant_id AND t.session_id=x.id AND t.status='present')) FILTER (WHERE x.status='active'), 0)::int AS present,
+        COALESCE(sum((SELECT count(*) FROM activity_attendance t WHERE t.tenant_id=x.tenant_id AND t.session_id=x.id AND t.status='absent')) FILTER (WHERE x.status='active'), 0)::int AS absent
+      FROM activities a
+      JOIN facilities f ON f.tenant_id=a.tenant_id AND f.id=a.facility_id
+      JOIN activity_sessions x ON x.tenant_id=a.tenant_id AND x.activity_id=a.id
+      WHERE a.tenant_id=$1 AND a.status IN ('published','cancelled') AND x.starts_at>=$2 AND x.starts_at<$3
+      GROUP BY a.id, f.name ORDER BY a.name_gl, a.id`,
+      [tenantId, start.toString(), end.toString()],
+    );
+    return rows;
+  }
   async bookings(
     tenantId: string,
     start: Temporal.Instant,
@@ -68,7 +91,7 @@ export class PostgresInsightsRepository extends InsightsRepository {
       status: BookingSpan["status"];
       unitIds: string[];
     }>(
-      'SELECT b.facility_id AS "facilityId", b.resource_id AS "resourceId", b.starts_at AS start, b.ends_at AS end, b.status, ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=b.tenant_id AND r.id=b.resource_id ORDER BY coalesce(part.id,r.id)) AS "unitIds" FROM bookings b WHERE b.tenant_id=$1 AND b.starts_at<$3 AND b.ends_at>$2 UNION ALL SELECT a.facility_id, a.resource_id, s.starts_at, s.ends_at, \'season\', ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=a.tenant_id AND r.id=a.resource_id ORDER BY coalesce(part.id,r.id)) FROM season_occurrences s JOIN season_allocations a ON a.tenant_id=s.tenant_id AND a.id=s.allocation_id WHERE s.tenant_id=$1 AND s.status=\'active\' AND s.starts_at<$3 AND s.ends_at>$2 UNION ALL SELECT a.facility_id, a.resource_id, x.starts_at, x.ends_at, \'activity\', ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=a.tenant_id AND r.id=a.resource_id ORDER BY coalesce(part.id,r.id)) FROM activity_sessions x JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id WHERE x.tenant_id=$1 AND x.status=\'active\' AND x.starts_at<$3 AND x.ends_at>$2',
+      "SELECT b.facility_id AS \"facilityId\", b.resource_id AS \"resourceId\", b.starts_at AS start, b.ends_at AS end, b.status, ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=b.tenant_id AND r.id=b.resource_id ORDER BY coalesce(part.id,r.id)) AS \"unitIds\" FROM bookings b WHERE b.tenant_id=$1 AND b.starts_at<$3 AND b.ends_at>$2 UNION ALL SELECT a.facility_id, a.resource_id, s.starts_at, s.ends_at, 'season', ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=a.tenant_id AND r.id=a.resource_id ORDER BY coalesce(part.id,r.id)) FROM season_occurrences s JOIN season_allocations a ON a.tenant_id=s.tenant_id AND a.id=s.allocation_id WHERE s.tenant_id=$1 AND s.status='active' AND s.starts_at<$3 AND s.ends_at>$2 UNION ALL SELECT a.facility_id, a.resource_id, x.starts_at, x.ends_at, 'activity', ARRAY(SELECT coalesce(part.id,r.id) FROM resources r LEFT JOIN resources part ON part.tenant_id=r.tenant_id AND part.parent_id=r.id WHERE r.tenant_id=a.tenant_id AND r.id=a.resource_id ORDER BY coalesce(part.id,r.id)) FROM activity_sessions x JOIN activities a ON a.tenant_id=x.tenant_id AND a.id=x.activity_id WHERE x.tenant_id=$1 AND x.status='active' AND x.starts_at<$3 AND x.ends_at>$2",
       [tenantId, start.toString(), end.toString()],
     );
     return rows.map((row) => ({

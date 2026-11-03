@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { AccessDay, CheckIn } from "@/types/models";
+import type { AccessDay, AttendanceMark, CheckIn } from "@/types/models";
 // The door device keeps the last synced day and the entries it could not send yet.
 const dayKey = (slug: string) => `quenda.access.${slug}.day`;
 const queueKey = (slug: string) => `quenda.access.${slug}.queue`;
+const attendanceKey = (slug: string) => `quenda.access.${slug}.attendance`;
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -29,6 +30,13 @@ export function pendingCheckIns(slug: string) {
 }
 export function storePendingCheckIns(slug: string, items: CheckIn[]) {
   write(queueKey(slug), items);
+}
+/** Roll-call marks of activity sessions not sent yet (#97). */
+export function pendingAttendance(slug: string) {
+  return read<AttendanceMark[]>(attendanceKey(slug), []);
+}
+export function storePendingAttendance(slug: string, items: AttendanceMark[]) {
+  write(attendanceKey(slug), items);
 }
 /**
  * Drops the synced days on sign-out: they list bookings, so they do not stay on a shared

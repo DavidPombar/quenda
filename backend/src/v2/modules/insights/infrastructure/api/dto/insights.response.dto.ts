@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { ActivityFiguresResponseDTO } from "./activity-figures.response.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { Insights } from "../../../application/queries/get-insights.query";
 import { FacilityUsageResponseDTO } from "./facility-usage.response.dto";
@@ -41,6 +42,11 @@ export class InsightsResponseDTO {
     type: [HeatmapCellResponseDTO],
   })
   heatmap!: HeatmapCellResponseDTO[];
+  @ApiProperty({
+    description: "Places, enrolment and attendance per activity (#97)",
+    type: [ActivityFiguresResponseDTO],
+  })
+  activities!: ActivityFiguresResponseDTO[];
   static from(value: Insights): InsightsResponseDTO {
     return {
       from: value.from,
@@ -57,6 +63,7 @@ export class InsightsResponseDTO {
       waitlistExpired: value.waitlistExpired,
       byFacility: value.byFacility.map(FacilityUsageResponseDTO.from),
       heatmap: value.heatmap.map(HeatmapCellResponseDTO.from),
+      activities: value.activities.map(ActivityFiguresResponseDTO.from),
     };
   }
 }

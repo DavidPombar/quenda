@@ -49,7 +49,7 @@ The scans in `scripts/smoke-browser.mjs`, by name:
 | Citizen app, booking | `facility-page` (photo, map, opening hours), `resources-grid` (all courts), `confirmation`, `booking-success` |
 | Citizen app, activities | `activities`, `activity-page`, `enrol-dialog`, `my-enrolments`, `my-dependants`, `child-enrol` |
 | Citizen app, own bookings and account | `bookings-upcoming`, `access-pass` (QR), `change-booking`, `cancel-booking`, `history`, `history-mobile`, `open-data`, `account`, `delete-account` |
-| Backoffice, manager | `admin-entry`, `admin-gate`, `management`, `management-mobile`, `facility-editor`, `courts-dialog`, `admin-bookings`, `admin-bookings-mobile`, `admin-insights`, `admin-categories`, `admin-settings`, `seasons`, `activities-admin`, `activity-editor`, `activity-enrolments`, `staff`, `audit-log`, `accessibility-admin` |
+| Backoffice, manager | `admin-entry`, `admin-gate`, `management`, `management-mobile`, `facility-editor`, `courts-dialog`, `admin-bookings`, `admin-bookings-mobile`, `admin-insights`, `admin-categories`, `admin-settings`, `seasons`, `activities-admin`, `activity-editor`, `activity-enrolments`, `access-activities`, `staff`, `audit-log`, `accessibility-admin` |
 | Door page | `access-control` |
 | Operator area | `operator-signed-out`, `operator-municipalities`, `operator-municipality-form`, `operator-manager-form`, `operator-insights`, `operator-web-analytics` |
 

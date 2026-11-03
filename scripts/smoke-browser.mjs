@@ -685,6 +685,15 @@ try {
     .getByRole("heading", { level: 1, name: "Control de accesos" })
     .waitFor();
   await page.getByRole("heading", { name: "Reservas de hoxe" }).waitFor();
+  // The roll of today's activity sessions (#97, part D), possibly empty in the demo.
+  await page.getByRole("button", { name: /^Actividades de hoxe/ }).click();
+  await page
+    .getByRole("heading", { name: "Pasar lista nas actividades de hoxe" })
+    .waitFor();
+  await audit("access-activities");
+  await assertReflow("access-activities");
+  await page.getByRole("button", { name: "Reservas de hoxe" }).click();
+  await page.getByRole("heading", { name: "Reservas de hoxe" }).waitFor();
   await audit("access-control");
   await page.getByRole("link", { name: "Coñece Quenda", exact: true }).click();
   await page

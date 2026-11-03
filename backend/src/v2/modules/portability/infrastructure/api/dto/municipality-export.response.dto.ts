@@ -407,6 +407,13 @@ class ExportedDependantDTO {
   @ApiProperty() declaredAt!: string;
   @ApiProperty() createdAt!: string;
 }
+class ExportedActivityAttendanceDTO {
+  @ApiProperty() sessionId!: string;
+  @ApiProperty() enrolmentId!: string;
+  @ApiProperty({ enum: ["present", "absent"] }) status!: string;
+  @ApiProperty() recordedAt!: string;
+  @ApiProperty({ type: String, nullable: true }) actorId!: string | null;
+}
 class ExportedActivityEnrolmentDTO {
   @ApiProperty() id!: string;
   @ApiProperty() activityId!: string;
@@ -442,6 +449,11 @@ export class MunicipalityExportResponseDTO {
     description: "People in an adult's care (#97)",
   })
   dependants!: ExportedDependantDTO[];
+  @ApiProperty({
+    type: [ExportedActivityAttendanceDTO],
+    description: "Roll-call marks of activity sessions (#97)",
+  })
+  activityAttendance!: ExportedActivityAttendanceDTO[];
   @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
   facilityPhotos!: ExportedFacilityPhotoDTO[];
@@ -537,6 +549,7 @@ export class MunicipalityExportResponseDTO {
       activitySessions: snapshot.activitySessions,
       activityEnrolments: snapshot.activityEnrolments,
       dependants: snapshot.dependants,
+      activityAttendance: snapshot.activityAttendance,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

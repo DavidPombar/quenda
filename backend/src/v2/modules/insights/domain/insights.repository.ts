@@ -38,6 +38,20 @@ export interface BookingSpan {
    */
   status: "confirmed" | "cancelled" | "no_show" | "season" | "activity";
 }
+/** One activity's figures over a range of sessions (#97, part D); counts only, no people. */
+export interface ActivityFigures {
+  id: string;
+  name: string;
+  facilityName: string;
+  places: number;
+  enrolled: number;
+  waiting: number;
+  /** Sessions in the range that took place, and those cancelled. */
+  sessions: number;
+  cancelledSessions: number;
+  present: number;
+  absent: number;
+}
 export abstract class InsightsRepository {
   abstract facilities(tenantId: string): Promise<InsightsFacility[]>;
   abstract statusPeriods(
@@ -51,6 +65,12 @@ export abstract class InsightsRepository {
     from: Temporal.PlainDate,
     to: Temporal.PlainDate,
   ): Promise<{ accepted: number; expired: number }>;
+  /** Published or cancelled activities with sessions starting in start–end. */
+  abstract activities(
+    tenantId: string,
+    start: Temporal.Instant,
+    end: Temporal.Instant,
+  ): Promise<ActivityFigures[]>;
   /** Bookings overlapping start–end, whatever their status. */
   abstract bookings(
     tenantId: string,

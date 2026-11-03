@@ -234,4 +234,60 @@ describe("indicators", () => {
       )
       .toBeVisible();
   });
+  test("should list places, enrolment and attendance of each activity (#97)", async () => {
+    stubManager();
+    stubJsonResponse({
+      path: "*/v2/manager/insights",
+      response: {
+        ...insightsFor("2026-10-01", "2026-10-31", 42),
+        activities: [
+          {
+            id: "60000000-0000-4000-8000-000000000011",
+            name: "Natación infantil",
+            facilityName: "Piscina municipal",
+            places: 8,
+            enrolled: 8,
+            waiting: 3,
+            sessions: 9,
+            cancelledSessions: 1,
+            present: 60,
+            absent: 12,
+            attendanceRate: 83,
+          },
+          {
+            id: "60000000-0000-4000-8000-000000000012",
+            name: "Ioga",
+            facilityName: "Pavillón",
+            places: 12,
+            enrolled: 4,
+            waiting: 0,
+            sessions: 4,
+            cancelledSessions: 0,
+            present: 0,
+            absent: 0,
+            attendanceRate: null,
+          },
+        ],
+      },
+    });
+    await commands.navigate(
+      "/admin/vilaverde/indicadores?from=2026-10-01&to=2026-10-31",
+    );
+    await render(<App />);
+    const table = page.getByRole("table", { name: "Actividades" });
+    const swimming = table.getByRole("row", { name: /Natación infantil/ });
+    await expect
+      .element(swimming.getByRole("cell", { name: "3" }))
+      .toBeVisible();
+    await expect
+      .element(swimming.getByRole("cell", { name: "83 % (60/72)" }))
+      .toBeVisible();
+    await expect
+      .element(
+        table
+          .getByRole("row", { name: /Ioga/ })
+          .getByRole("cell", { name: "Sen pasar lista" }),
+      )
+      .toBeVisible();
+  });
 });

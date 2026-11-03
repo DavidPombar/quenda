@@ -8,6 +8,7 @@ import { useInsightsController } from "./insights.controller";
 import { InsightTotals } from "./components/insight-totals/insight-totals.view";
 import { OccupancyHeatmap } from "./components/occupancy-heatmap/occupancy-heatmap.view";
 import { FacilityOccupancy } from "./components/facility-occupancy/facility-occupancy.view";
+import { ActivityFigures } from "./components/activity-figures/activity-figures.view";
 const LEVELS = [
   [0, "0 %"],
   [1, "1–24 %"],
@@ -220,6 +221,10 @@ export function Insights() {
                 previous={c.previous.data ?? null}
                 t={t}
                 locale={c.locale}
+              />
+              <ActivityFigures
+                activities={c.insights.data.activities ?? []}
+                t={t}
               />
               {c.tenantId && (
                 <WebVisits

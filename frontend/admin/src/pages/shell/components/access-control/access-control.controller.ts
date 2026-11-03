@@ -46,6 +46,8 @@ export function useAccessControlController() {
   const [scanning, setScanning] = useState(false);
   const [search, setSearch] = useState("");
   const [facilityId, setFacilityId] = useState("");
+  // Today's reservations at the door, or the roll of today's activity sessions (#97).
+  const [tab, setTab] = useState<"bookings" | "activities">("bookings");
   const day = dayQuery.data?.day ?? null;
   const entered = new Set([
     ...(day?.bookings
@@ -191,6 +193,12 @@ export function useAccessControlController() {
   const zone = municipality.timezone;
   return {
     t,
+    tab,
+    setTab,
+    sessions: day?.sessions ?? [],
+    slug,
+    locale: context.locale,
+    timezone: zone,
     staff,
     signIn: context.signIn,
     dayQuery,

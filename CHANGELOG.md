@@ -24,6 +24,12 @@ All notable changes to Quenda are documented here. The format follows
 
 ### Added
 
+- Attendance and indicators for activities, part D (#97, M3): the gate page gains «Actividades de
+  hoxe» to take the roll of each session by first name, «Presente» or «Ausente», offline if
+  needed; the latest mark wins and absences carry no penalty. Indicators and their CSV add places,
+  enrolment, sessions and attendance rate per activity, and open data adds the count of people
+  enrolled. Transfers and account exports include the marks. Closes #97.
+
 - People in an adult's care, part C (#97, C2, T4): under «A miña conta» an adult adds children or
   other people in their care by first name and year of birth only, declaring parental authority or
   guardianship (versioned). Activity pages ask «Para quen?» and offer only those of the right age,

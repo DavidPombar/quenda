@@ -37,6 +37,7 @@ manager can only export their own. The file is named
 | `activities`, `activityPrices`, `activitySessions` | Activities and sports schools (#97): the weekly rule as edited and as RFC 5545 `schedule`, places, ages, enrolment dates, status, informative prices, and every dated session with its status and `sequence`. Active sessions of published activities occupy their court units again on import. Optional in older packages |
 | `activityEnrolments` | Enrolments in activities (#97): person, status, times and removal reason. Notices and outbox messages carry `enrolmentId` and `activitySessionId`. `dependantId` names a person in the adult's care. Optional in older packages |
 | `dependants` | People in an adult's care (#97): first name, year of birth and the guardianship declaration accepted. Optional in older packages |
+| `activityAttendance` | Roll-call marks of activity sessions (#97): session, enrolment, present or absent, time and staff member. Optional in older packages |
 
 Sessions and calendar subscription credentials are deliberately excluded. People
 sign in again and create new subscription links on the destination. Deleted

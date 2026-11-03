@@ -136,6 +136,8 @@ export interface ExportedEnrolment {
   activityId: string;
   /** The person in the adult's care who took part, or null for the adult. */
   dependantId: string | null;
+  /** Roll-call marks of its sessions (#97, part D). */
+  attendance: { start: Temporal.Instant; status: "present" | "absent" }[];
   activityName: string;
   facilityName: string;
   status: "enrolled" | "waiting" | "left" | "removed" | "cancelled";

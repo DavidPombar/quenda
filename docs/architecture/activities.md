@@ -7,7 +7,7 @@ activity's sessions and a one-off booking never take the same court at the same 
 
 This is described in four parts. Part A publishes the offer and holds the courts; part B lets
 adults enrol, with an automatic waiting list; part C lets them enrol the people in their care
-(minors). Attendance with its indicators follows in part D.
+(minors); part D takes the roll at the gate and adds the activities to the indicators.
 
 ## Model
 
@@ -134,3 +134,13 @@ shown but cannot be chosen, and the server checks again (`age_not_allowed`). The
 child hold one open enrolment each. Notices go to the adult and name the participant in the email;
 the list and CSV show the participant's first name and age next to the adult who enrolled them.
 See [data protection](data-protection.md).
+
+## Attendance and indicators (part D)
+
+The gate page takes the roll of each session of the day, offline if needed (see
+[access control](access-control.md)). The indicators (**Indicadores**, and their CSV) add one row
+per activity with sessions in the period: places, people holding a place and waiting, sessions held
+and cancelled, and the attendance rate (present over all marks; «Sen pasar lista» before any). Open
+data adds the count of people enrolled (`enrolled` in the CSV, `remainingAttendeeCapacity` in
+JSON-LD), never who. Attendance marks go with the enrolment when retention deletes it, travel in
+municipality transfers (`activityAttendance`) and appear in the person's account export.

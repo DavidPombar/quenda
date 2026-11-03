@@ -13,6 +13,7 @@ import {
   occupancyReport,
   weeklyOccupancy,
 } from "../domain/occupancy";
+import type { ActivityFigures } from "../domain/insights.repository";
 import { OpeningCalendar } from "../../facilities/domain/opening-calendar";
 import { HolidayCalendar } from "../../facilities/domain/holiday-calendar";
 import { Clock } from "../../../shared/application/clock";
@@ -30,6 +31,8 @@ export interface Insights extends OccupancyReport {
   /** Waiting-list offers accepted and let expire (#96). */
   waitlistAccepted: number;
   waitlistExpired: number;
+  /** Places, enrolment and attendance per activity with sessions in the range (#97). */
+  activities: (ActivityFigures & { attendanceRate: number | null })[];
 }
 export interface DateRange {
   from: Temporal.PlainDate;
@@ -103,6 +106,13 @@ export class MunicipalityInsights {
       range.from,
       range.to,
     );
+    const instant = (date: Temporal.PlainDate) =>
+      date.toZonedDateTime({ timeZone: settings.timezone }).toInstant();
+    const courses = await this.repository.activities(
+      settings.id,
+      instant(range.from),
+      instant(range.to.add({ days: 1 })),
+    );
     return {
       ...report,
       slug: settings.slug,
@@ -112,6 +122,16 @@ export class MunicipalityInsights {
       facilities: facilities.length,
       waitlistAccepted: waitlist.accepted,
       waitlistExpired: waitlist.expired,
+      activities: courses.map((activity) => ({
+        ...activity,
+        // Share of marks that were "present", in whole percent; null before any roll call.
+        attendanceRate:
+          activity.present + activity.absent === 0
+            ? null
+            : Math.round(
+                (100 * activity.present) / (activity.present + activity.absent),
+              ),
+      })),
     };
   }
   /** Occupancy by facility × ISO week × weekday × hour, published as open data (#21). */

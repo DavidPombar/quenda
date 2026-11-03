@@ -51,6 +51,8 @@ export interface MunicipalityPackage {
   activityEnrolments?: Row[];
   /** People in an adult's care (#97, part C); optional in older packages. */
   dependants?: Row[];
+  /** Roll-call marks of activity sessions (#97, part D); optional in older packages. */
+  activityAttendance?: Row[];
 }
 const collections = [
   "facilities",
@@ -471,6 +473,14 @@ const tables = {
     declared_at: "declaredAt",
     created_at: "createdAt",
   },
+  activity_attendance: {
+    tenant_id: "tenantId",
+    session_id: "sessionId",
+    enrolment_id: "enrolmentId",
+    status: "status",
+    recorded_at: "recordedAt",
+    actor_id: "actorId",
+  },
 } as const;
 /**
  * Loads a municipality export into this instance in one transaction (criterion 4,
@@ -633,6 +643,7 @@ export async function importMunicipality(
     );
     await insert("dependants", data.dependants ?? []);
     await insert("activity_enrolments", data.activityEnrolments ?? []);
+    await insert("activity_attendance", data.activityAttendance ?? []);
     await insert("notifications", data.notifications);
     await insert("audit_events", data.auditEvents);
     await insert("consents", data.consents);
