@@ -15,6 +15,7 @@ const delivery: Delivery = {
   enrolmentId: "e1",
   activity: { name: { gl: "Natación infantil", es: "" } },
   enrolmentStatus: "enrolled",
+  participant: null,
   noticeReason: null,
   cancelledDates: [],
   attempts: 1,
@@ -69,6 +70,13 @@ describe("enrolment notices (#97)", () => {
       "Sesiones anuladas: Jueves, 5 de noviembre, 17:00",
     );
     expect(mail.text).toContain("Motivo: Vaciado del vaso");
+  });
+  it("should name the person in the adult's care who takes part (#97, part C)", () => {
+    const mail = renderMail({ ...delivery, participant: "Uxía" }, links);
+    expect(mail.text).toContain("Participante: Uxía");
+    expect(pushPayload({ ...delivery, participant: "Uxía" }, "/app").body).not.toContain(
+      "Uxía",
+    );
   });
   it("should leave out the session when the enrolment ends", () => {
     const mail = renderMail(

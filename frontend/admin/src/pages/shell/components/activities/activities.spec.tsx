@@ -245,6 +245,9 @@ describe("Activities and sports schools", () => {
           position: null,
           name: "Antía Souto",
           email: "antia@example.invalid",
+          dependantId: null,
+          participantFirstName: null,
+          participantAge: null,
           createdAt: "2026-10-21T10:00:00Z",
           enrolledAt: "2026-10-21T10:00:00Z",
           endedAt: null,
@@ -257,6 +260,9 @@ describe("Activities and sports schools", () => {
           position: 1,
           name: "Brais Lema",
           email: null,
+          dependantId: "63000000-0000-4000-8000-000000000001",
+          participantFirstName: "Uxía",
+          participantAge: 9,
           createdAt: "2026-10-22T10:00:00Z",
           enrolledAt: null,
           endedAt: null,
@@ -291,6 +297,10 @@ describe("Activities and sports schools", () => {
       .toBeVisible();
     await expect
       .element(block.getByText("Lista de espera: posición 1", { exact: false }))
+      .toBeVisible();
+    await expect.element(block.getByText("Uxía, 9 anos")).toBeVisible();
+    await expect
+      .element(block.getByText("· inscribe Brais Lema"))
       .toBeVisible();
     await expect
       .element(block.getByRole("link", { name: "Descargar CSV" }))

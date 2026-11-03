@@ -49,6 +49,8 @@ export interface MunicipalityPackage {
   activitySessions?: Row[];
   /** Enrolments in activities (#97); optional in older packages. */
   activityEnrolments?: Row[];
+  /** People in an adult's care (#97, part C); optional in older packages. */
+  dependants?: Row[];
 }
 const collections = [
   "facilities",
@@ -457,6 +459,17 @@ const tables = {
     enrolled_at: "enrolledAt",
     ended_at: "endedAt",
     removal_reason: "removalReason",
+    dependant_id: "dependantId",
+  },
+  dependants: {
+    tenant_id: "tenantId",
+    id: "id",
+    user_id: "userId",
+    first_name: "firstName",
+    birth_year: "birthYear",
+    declaration_version: "declarationVersion",
+    declared_at: "declaredAt",
+    created_at: "createdAt",
   },
 } as const;
 /**
@@ -618,6 +631,7 @@ export async function importMunicipality(
       WHERE x.tenant_id=$1 AND x.status='active' AND a.status='published'`,
       [tenantId],
     );
+    await insert("dependants", data.dependants ?? []);
     await insert("activity_enrolments", data.activityEnrolments ?? []);
     await insert("notifications", data.notifications);
     await insert("audit_events", data.auditEvents);

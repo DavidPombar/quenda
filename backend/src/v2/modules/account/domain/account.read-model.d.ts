@@ -121,10 +121,21 @@ export interface ExportedWaitlistEntry {
   createdAt: Temporal.Instant;
   offeredAt: Temporal.Instant | null;
 }
+/** A person in the adult's care (#97, part C): first name and year of birth only. */
+export interface ExportedDependant {
+  id: string;
+  firstName: string;
+  birthYear: number;
+  declarationVersion: string;
+  declaredAt: Temporal.Instant;
+  createdAt: Temporal.Instant;
+}
 /** An enrolment in an activity (#97); deleted with the activity's history after retention. */
 export interface ExportedEnrolment {
   id: string;
   activityId: string;
+  /** The person in the adult's care who took part, or null for the adult. */
+  dependantId: string | null;
   activityName: string;
   facilityName: string;
   status: "enrolled" | "waiting" | "left" | "removed" | "cancelled";
@@ -167,5 +178,6 @@ export interface AccountExport {
   blocks: ExportedBlock[];
   waitlist: ExportedWaitlistEntry[];
   activityEnrolments: ExportedEnrolment[];
+  dependants: ExportedDependant[];
   auditEvents: ExportedAuditEvent[];
 }

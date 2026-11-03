@@ -674,6 +674,7 @@ describe("My bookings with waiting lists (#96)", () => {
       facilityName: facility.name,
       resourceName: facility.name,
       status: "enrolled" as const,
+      participant: null,
       position: null,
       createdAt: "2026-10-21T10:00:00Z",
       enrolledAt: "2026-10-21T10:00:00Z",

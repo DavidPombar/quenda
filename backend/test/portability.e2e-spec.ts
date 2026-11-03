@@ -253,11 +253,17 @@ describe("Municipality data portability", () => {
       status: "cancelled",
       reason: "Choiva",
     }).expect(204);
-    // An enrolment in it (#97, part B) with the notice of the cancelled date.
+    // An enrolment in it (#97, parts B and C) for a person in the citizen's care, with the
+    // notice of the cancelled date.
     const enrolment = randomUUID();
+    const dependant = randomUUID();
     await db.query(
-      "INSERT INTO activity_enrolments (id,tenant_id,activity_id,user_id,status,created_at,enrolled_at) SELECT $1,$2,$3,id,'enrolled','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='citizen'",
-      [enrolment, tenantId, activity.body.id],
+      "INSERT INTO dependants (id,tenant_id,user_id,first_name,birth_year,declaration_version,declared_at,created_at) SELECT $1,$2,id,'Uxía',2017,'2026-11','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='citizen'",
+      [dependant, tenantId],
+    );
+    await db.query(
+      "INSERT INTO activity_enrolments (id,tenant_id,activity_id,user_id,dependant_id,status,created_at,enrolled_at) SELECT $1,$2,$3,id,$4,'enrolled','2026-10-20T10:00:00Z','2026-10-20T10:00:00Z' FROM users WHERE tenant_id=$2 AND role='citizen'",
+      [enrolment, tenantId, activity.body.id, dependant],
     );
     await db.query(
       `INSERT INTO notifications (id,tenant_id,user_id,kind,created_at,details,enrolment_id,activity_session_id)
@@ -424,6 +430,7 @@ describe("Municipality data portability", () => {
       "activity_prices",
       "activity_sessions",
       "activity_enrolments",
+      "dependants",
     ]) {
       const scope = table === "municipalities" ? "id" : "tenant_id";
       const filter =

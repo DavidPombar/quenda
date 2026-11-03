@@ -243,6 +243,8 @@ export interface Notification {
   /** The activity of an enrolment notice (#97). */
   activityId?: string | null;
   activityName?: Localized | null;
+  /** First name of the person in the adult's care an enrolment notice is about. */
+  participantName?: string | null;
   createdAt: string;
   details: {
     reason?: string;
@@ -510,6 +512,8 @@ export interface MyEnrolment {
   facilityName: string;
   resourceName: string;
   status: EnrolmentStatus;
+  /** The person in the adult's care who takes part; null for the adult. */
+  participant: { dependantId: string | null; firstName: string } | null;
   /** Place in the waiting list, from 1. */
   position: number | null;
   createdAt: string;
@@ -517,4 +521,13 @@ export interface MyEnrolment {
   endedAt: string | null;
   nextSession: string | null;
   cancelledSessions: number;
+}
+/** A person in the adult's care (#97): first name and year of birth only. */
+export interface Dependant {
+  id: string;
+  firstName: string;
+  birthYear: number;
+  declarationVersion: string;
+  declaredAt: string;
+  createdAt: string;
 }

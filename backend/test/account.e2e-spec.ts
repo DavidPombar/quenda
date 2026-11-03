@@ -179,6 +179,7 @@ describe("Account rights (T4) through HTTP and PostgreSQL", () => {
     );
     expect(audit.rows[0].details).toEqual({
       cancelledBookings: 1,
+      removedDependants: 0,
       revokedSessions: 1,
       removedIdentities: 0,
     });

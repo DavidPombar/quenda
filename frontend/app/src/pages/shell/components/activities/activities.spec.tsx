@@ -144,6 +144,7 @@ describe("Activities and sports schools", () => {
       facilityName: facility.name,
       resourceName: "Rúa 2",
       status: "enrolled",
+      participant: null,
       position: null,
       createdAt: "2026-10-21T10:00:00Z",
       enrolledAt: "2026-10-21T10:00:00Z",
@@ -221,5 +222,83 @@ describe("Activities and sports schools", () => {
     await expect
       .element(page.getByText("Completa: lista de espera", { exact: false }))
       .toBeVisible();
+  });
+  test("should enrol a child in the adult's care of the right age, and say who cannot take part", async () => {
+    stubShell(true);
+    stubFacilities([facility]);
+    stubJsonResponse({ path: "*/v2/public/activities/:id", response: details });
+    const year = Number(details.rule.startsOn.slice(0, 4));
+    stubJsonResponse({
+      path: "*/v2/citizen/dependants",
+      response: [
+        {
+          id: "63000000-0000-4000-8000-000000000001",
+          firstName: "Uxía",
+          birthYear: year - 9,
+          declarationVersion: "2026-11",
+          declaredAt: "2026-10-21T10:00:00Z",
+          createdAt: "2026-10-21T10:00:00Z",
+        },
+        {
+          id: "63000000-0000-4000-8000-000000000002",
+          firstName: "Xián",
+          birthYear: year - 14,
+          declarationVersion: "2026-11",
+          declaredAt: "2026-10-21T10:00:00Z",
+          createdAt: "2026-10-21T10:00:00Z",
+        },
+      ],
+    });
+    const { spy } = stubJsonResponse({
+      path: "*/v2/citizen/activity-enrolments",
+      method: "POST",
+      status: 201,
+      response: {
+        id: "62000000-0000-4000-8000-000000000003",
+        activityId: swimming.id,
+        activityName: swimming.name,
+        activityStatus: "published",
+        facilityId: facility.id,
+        facilityName: facility.name,
+        resourceName: "Rúa 2",
+        status: "enrolled",
+        participant: {
+          dependantId: "63000000-0000-4000-8000-000000000001",
+          firstName: "Uxía",
+        },
+        position: null,
+        createdAt: "2026-10-21T10:00:00Z",
+        enrolledAt: "2026-10-21T10:00:00Z",
+        endedAt: null,
+        nextSession: null,
+        cancelledSessions: 0,
+      } satisfies MyEnrolment,
+    });
+    await commands.navigate(`/app/vilaverde/actividades/${swimming.id}`);
+    await render(<App />);
+    const choice = page.getByRole("group", { name: "Para quen?" });
+    await expect
+      .element(choice.getByRole("radio", { name: "Uxía (9 anos)" }))
+      .toBeChecked();
+    await expect
+      .element(
+        choice.getByRole("radio", { name: "Xián: non ten a idade (14 anos)" }),
+      )
+      .toBeDisabled();
+    await expect
+      .element(choice.getByRole("radio", { name: "Para min" }))
+      .not.toBeInTheDocument();
+    await page.getByRole("button", { name: "Inscribirme" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect.element(dialog.getByText("Participa: Uxía")).toBeVisible();
+    await dialog.getByRole("button", { name: "Confirmar inscrición" }).click();
+    await expect.poll(() => spy.mock.calls.length).toBe(1);
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          dependantId: "63000000-0000-4000-8000-000000000001",
+        }),
+      }),
+    );
   });
 });

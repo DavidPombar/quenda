@@ -2273,3 +2273,50 @@ a.account:hover .account-name strong {
 .enrol-panel h2 {
   margin: 0;
 }
+/* Who an enrolment is for: the adult or a person in their care (#97). */
+.participant-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.participant-choice legend {
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+.choice-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+.choice-field input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--court);
+}
+.choice-field:has(input:disabled) {
+  color: var(--ink-2);
+}
+.dependant-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  list-style: none;
+}
+.dependant-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+.dependant-form {
+  margin-top: var(--space-3);
+}

@@ -11,7 +11,10 @@ export interface ActivityEnrolment {
   id: string;
   tenantId: string;
   activityId: string;
+  /** The adult who enrols and is told. */
   userId: string;
+  /** The person in their care who takes part, or null when the adult takes part (part C). */
+  dependantId: string | null;
   status: EnrolmentStatus;
   createdAt: Temporal.Instant;
   enrolledAt: Temporal.Instant | null;

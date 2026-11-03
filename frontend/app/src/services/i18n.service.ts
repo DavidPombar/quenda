@@ -552,11 +552,40 @@ const gl = {
   enrolDone: "Xa estás inscrito ou inscrita.",
   enrolDoneWaiting: "Xa estás na lista de espera.",
   enrolledNotice: "Estás inscrito ou inscrita nesta actividade.",
+  enrolledParticipant: "ten praza nesta actividade.",
   enrolledWaiting: "Estás na lista de espera: posición {position}.",
   enrolLeave: "Darme de baixa",
-  enrolMinorsHow:
-    "As inscricións de menores fanse, polo de agora, co concello:",
   enrolmentsTab: "Inscricións",
+  dependants: "Persoas ao meu cargo",
+  dependantsBody:
+    "Engade as nenas e nenos ou outras persoas ao teu cargo para inscribilas en actividades da súa idade.",
+  dependantsEmpty: "Aínda non engadiches ningunha persoa.",
+  dependantAge: "{age} anos este ano (nada ou nado en {year})",
+  dependantAdd: "Engadir unha persoa ao teu cargo",
+  dependantEditing: "Editar: {name}",
+  dependantEdit: "Editar",
+  dependantRemove: "Eliminar",
+  dependantFirstName: "Nome",
+  dependantFirstNameHint: "Só o nome, sen apelidos.",
+  dependantBirthYear: "Ano de nacemento",
+  dependantDeclaration:
+    "Declaro que teño a patria potestade ou a tutela desta persoa e que actúo na súa representación.",
+  dependantPrivacy:
+    "Só gardamos o nome e o ano de nacemento, para comprobar a idade nas actividades. Bórranse cando a elimines ou cando elimines a túa conta.",
+  dependantInvalid:
+    "Escribe o nome e un ano de nacemento válido e marca a declaración.",
+  dependantSave: "Gardar",
+  dependantRemoveTitle: "Eliminar a {name}",
+  dependantRemoveBody:
+    "Deixará de aparecer na túa conta. Se ten inscricións abertas, dáa de baixa nelas primeiro.",
+  enrolFor: "Para quen?",
+  enrolForMe: "Para min",
+  enrolForAge: "{name} ({age} anos)",
+  enrolForNotAllowed: "{name}: non ten a idade ({age} anos)",
+  enrolAddDependant: "Engadir unha persoa ao teu cargo",
+  enrolChildrenOnly:
+    "Esta actividade é para menores: inscribe a unha persoa ao teu cargo.",
+  enrolmentParticipant: "Participa: {name}",
   enrolmentsEmpty: "Non tes inscricións",
   enrolmentsEmptyBody:
     "Busca unha actividade ou escola deportiva e inscríbete.",
@@ -1123,11 +1152,40 @@ const es: Record<TextKey, string> = {
   enrolDone: "Ya estás inscrito o inscrita.",
   enrolDoneWaiting: "Ya estás en la lista de espera.",
   enrolledNotice: "Estás inscrito o inscrita en esta actividad.",
+  enrolledParticipant: "tiene plaza en esta actividad.",
   enrolledWaiting: "Estás en la lista de espera: posición {position}.",
   enrolLeave: "Darme de baja",
-  enrolMinorsHow:
-    "Las inscripciones de menores se hacen, por ahora, con el ayuntamiento:",
   enrolmentsTab: "Inscripciones",
+  dependants: "Personas a mi cargo",
+  dependantsBody:
+    "Añade a las niñas y niños u otras personas a tu cargo para inscribirlas en actividades de su edad.",
+  dependantsEmpty: "Todavía no has añadido ninguna persona.",
+  dependantAge: "{age} años este año (nacida o nacido en {year})",
+  dependantAdd: "Añadir una persona a tu cargo",
+  dependantEditing: "Editar: {name}",
+  dependantEdit: "Editar",
+  dependantRemove: "Eliminar",
+  dependantFirstName: "Nombre",
+  dependantFirstNameHint: "Solo el nombre, sin apellidos.",
+  dependantBirthYear: "Año de nacimiento",
+  dependantDeclaration:
+    "Declaro que tengo la patria potestad o la tutela de esta persona y que actúo en su representación.",
+  dependantPrivacy:
+    "Solo guardamos el nombre y el año de nacimiento, para comprobar la edad en las actividades. Se borran cuando la elimines o cuando elimines tu cuenta.",
+  dependantInvalid:
+    "Escribe el nombre y un año de nacimiento válido y marca la declaración.",
+  dependantSave: "Guardar",
+  dependantRemoveTitle: "Eliminar a {name}",
+  dependantRemoveBody:
+    "Dejará de aparecer en tu cuenta. Si tiene inscripciones abiertas, dala de baja en ellas primero.",
+  enrolFor: "¿Para quién?",
+  enrolForMe: "Para mí",
+  enrolForAge: "{name} ({age} años)",
+  enrolForNotAllowed: "{name}: no tiene la edad ({age} años)",
+  enrolAddDependant: "Añadir una persona a tu cargo",
+  enrolChildrenOnly:
+    "Esta actividad es para menores: inscribe a una persona a tu cargo.",
+  enrolmentParticipant: "Participa: {name}",
   enrolmentsEmpty: "No tienes inscripciones",
   enrolmentsEmptyBody: "Busca una actividad o escuela deportiva e inscríbete.",
   browseActivities: "Ver actividades",

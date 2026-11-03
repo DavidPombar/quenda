@@ -208,4 +208,73 @@ describe("Account and privacy page", () => {
       .element(page.getByText("Pistas de pádel da Carballeira · Pista 1"))
       .toBeVisible();
   });
+  test("should add a person in the adult's care only with the guardianship declaration, and remove them (#97)", async () => {
+    stubShell(true);
+    stubAccount();
+    const uxia = {
+      id: "63000000-0000-4000-8000-000000000001",
+      firstName: "Uxía",
+      birthYear: 2017,
+      declarationVersion: "2026-11",
+      declaredAt: "2026-10-21T10:00:00Z",
+      createdAt: "2026-10-21T10:00:00Z",
+    };
+    const added = stubJsonResponse({
+      path: "*/v2/citizen/dependants",
+      method: "POST",
+      status: 201,
+      response: uxia,
+    });
+    await commands.navigate("/app/vilaverde/conta");
+    await render(<App />);
+    const block = page.getByRole("region", { name: "Persoas ao meu cargo" });
+    await expect
+      .element(block.getByText("Aínda non engadiches ningunha persoa."))
+      .toBeVisible();
+    await block
+      .getByRole("button", { name: "Engadir unha persoa ao teu cargo" })
+      .click();
+    const form = block.getByRole("form", {
+      name: "Engadir unha persoa ao teu cargo",
+    });
+    await form.getByRole("textbox", { name: "Nome" }).fill("Uxía");
+    await form
+      .getByRole("spinbutton", { name: "Ano de nacemento" })
+      .fill("2017");
+    await form.getByRole("button", { name: "Gardar" }).click();
+    // Without the declaration nothing is sent.
+    await expect
+      .element(
+        form.getByRole("alert").filter({ hasText: "marca a declaración" }),
+      )
+      .toBeVisible();
+    expect(added.spy).not.toHaveBeenCalled();
+    stubJsonResponse({ path: "*/v2/citizen/dependants", response: [uxia] });
+    await form.getByText(/Declaro que teño a patria potestade/).click();
+    await form.getByRole("button", { name: "Gardar" }).click();
+    await expect.poll(() => added.spy.mock.calls.length).toBe(1);
+    expect(added.spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          firstName: "Uxía",
+          birthYear: 2017,
+          declared: true,
+          declarationVersion: "2026-11",
+        }),
+      }),
+    );
+    await expect
+      .element(block.getByText("Uxía", { exact: true }))
+      .toBeVisible();
+    const removal = stubJsonResponse({
+      path: `*/v2/citizen/dependants/${uxia.id}`,
+      method: "DELETE",
+      status: 204,
+      response: null,
+    });
+    await block.getByRole("button", { name: "Eliminar: Uxía" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await dialog.getByRole("button", { name: "Eliminar" }).click();
+    await expect.poll(() => removal.spy.mock.calls.length).toBe(1);
+  });
 });

@@ -64,6 +64,12 @@ export class NotificationResponseDTO {
   activityId!: string | null;
   @ApiProperty({ type: NotificationActivityNameDTO, nullable: true })
   activityName!: NotificationActivityNameDTO | null;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "Person in the adult's care an enrolment notice is about (#97)",
+  })
+  participantName!: string | null;
   @ApiProperty({ description: "Event instant" }) createdAt!: string;
   static from(value: Notification): NotificationResponseDTO {
     return {
@@ -76,6 +82,7 @@ export class NotificationResponseDTO {
       resourceName: value.resourceName,
       activityId: value.activityId,
       activityName: value.activityName,
+      participantName: value.participantName,
       createdAt: value.createdAt.toString(),
     };
   }

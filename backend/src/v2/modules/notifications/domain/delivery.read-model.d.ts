@@ -19,6 +19,8 @@ export interface Delivery {
   activity: { name: { gl: string; es: string } } | null;
   enrolmentStatus:
     "enrolled" | "waiting" | "left" | "removed" | "cancelled" | null;
+  /** First name of the person in the adult's care the enrolment is for (#97, part C). */
+  participant: string | null;
   /** Reason and cancelled dates recorded in the enrolment notice. */
   noticeReason: string | null;
   cancelledDates: Temporal.Instant[];

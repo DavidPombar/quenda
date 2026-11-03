@@ -38,6 +38,31 @@ What Quenda calls _consent_ is the person's acknowledgement of the council's pri
 If a council ever relies on consent for an optional purpose (for example marketing messages), that
 needs its own explicit, withdrawable record; `consents` is not that record.
 
+### People in an adult's care (#97)
+
+Children's courses are part of the same public service, so enrolling a minor also rests on art.
+6.1.e GDPR, not on consent. The adult acts as the child's representative (art. 7 LOPDGDD: under
+14, the person holding parental authority or guardianship):
+
+- **Declaration.** Adding a person to their care, the adult declares that they hold parental
+  authority or guardianship and act on the child's behalf. The text is shown in the app; the
+  record keeps its version (`declaration_version`) and time (`declared_at`), and the action is
+  audited as `dependant.added`, without the name.
+- **Minimisation.** Only the first name and the year of birth are kept: enough to tell children
+  apart and to check an activity's ages (counted in the year it starts). No surname, exact date,
+  document or health data.
+- **Who sees it.** The adult, in their account. The council sees the first name and age next to
+  the adult's name and email in the activity's list and CSV, and the gate shows the first name for
+  the roll call. Notices go to the adult; push and calendar subscriptions never carry the name.
+- **Rights.** The adult exercises them: they correct or remove the person in their care (refused
+  while enrolled; they leave first), and the account export includes them.
+- **Retention.** Removed with the adult's account (their places pass to the next person waiting);
+  enrolments end with the activity's history after `retention_months` and keep no name once the
+  person is removed.
+
+The council's privacy notice must say this; the demo text includes a paragraph to adapt, and the
+council's data protection officer should review it.
+
 ## Data inventory
 
 | Table                      | Personal data                                                                                                                                                                                                                  | Purpose                                                                                                                     | Retention                                                                                             |
@@ -54,6 +79,7 @@ needs its own explicit, withdrawable record; `consents` is not that record.
 | `login_codes` | Address (SHA-256) and, only until the mail is sent, the address and the code in clear; hashed code, attempts and times | Sign in with a one-time code (#8) | Address and code cleared once sent; row removed a day after it expires, or with the account |
 | `waitlist_entries` | Link to `user_id`, the slot of the court waited for, the place in the queue (join time), the offer's times and the booking that took it (#96) | Offer a freed place to the people who asked for it | Deleted when the slot ends (worker on every pass, and retention as a backstop) and on account deletion; `waitlist_outcomes` keeps only daily counts per facility without people |
 | `activity_enrolments` | Link to `user_id`, the activity, status, enrolment and end times, and the reason when the council removed the person (#97) | Give places in activities and run their waiting lists; the council sees the person's name and email in the list and the CSV | Deleted, with its notices, once the activity ended more than `retention_months` ago; open enrolments end on account deletion and the place goes to the next person |
+| `dependants` | Adult (`user_id`), first name, year of birth, guardianship declaration version and time (#97) | Enrol children and other people in the adult's care in activities for their age | Deleted by the adult or with their account; past enrolments then keep no name |
 | `notification_preferences`   | Each notice kind by email and by push, when it differs from the default                                                                                                                                                          | Respect the person's choice                                                                                                   | Deleted on account deletion                                                                             |
 | `push_subscriptions`         | Push service endpoint and browser keys, user agent, date                                                                                                                                                                         | Deliver push notices to the devices the person turned on                                                                      | Deleted on account deletion or when the push service answers 404/410; not exported                      |
 | `audit_events`             | `actor_id`, `actor_role`, `details`                                                                                                                                                                                            | Accountability for changes (art. 5.2 GDPR)                                                                                  | `actor_id` set to NULL after `retention_months`; action and details remain                            |
@@ -68,8 +94,8 @@ visitor's IP address and user agent reach that third party when the map is shown
 privacy notice must say; a council can use its own or the provincial council's tile server.
 
 Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
-about minors (enrolment for minors, planned in #97 part C, will need its own review and the
-council's DPO). It keeps the identifier the identity provider returns and the name it supplies; the
+about minors beyond the first name and year of birth of a person in an adult's care (#97, see
+above). It keeps the identifier the identity provider returns and the name it supplies; the
 email address only when the provider sends one, used only for notices about the person's own
 reservations; and the tax identifier (NIF) only when the municipality enables residence
 verification, encrypted with AES-256-GCM under `QUENDA_DATA_KEY` and never in plain text. Demo
@@ -126,8 +152,8 @@ The `disability` category can reveal health data, a special category under art. 
 
 | Right                                    | Implementation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Access and portability (arts. 15, 20)    | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including the email address, language and decrypted NIF when stored), linked identities, consents, user categories and the family-tariff choice, every reservation, every notice, the waiting lists of slots still to come (#96), notice preferences, the devices receiving push notices (push service, browser and date; not the endpoint or keys), the messages queued or sent by email, push or webhook (kind and dates, no text) and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`.                                                                                |
-| Erasure (art. 17)                        | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices, queued messages, categories, waiting-list entries, notice preferences and push devices are deleted (a place held for the person goes to the next one waiting), the email address, language and NIF are cleared, linked identities are deleted, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
+| Access and portability (arts. 15, 20)    | **A miña conta → Descargar os meus datos** calls `GET /v2/citizen/me/export`: a JSON attachment with profile (including the email address, language and decrypted NIF when stored), linked identities, consents, user categories and the family-tariff choice, every reservation, every notice, the waiting lists of slots still to come (#96), enrolments in activities and the people in the adult's care (#97), notice preferences, the devices receiving push notices (push service, browser and date; not the endpoint or keys), the messages queued or sent by email, push or webhook (kind and dates, no text) and the person's own audit events, without the paging limits of the history views. Audited as `account.exported`.                                                                                |
+| Erasure (art. 17)                        | **A miña conta → Eliminar a conta** calls `DELETE /v2/citizen/me`. In one transaction: future confirmed reservations are cancelled regardless of the notice period, notices, queued messages, categories, waiting-list entries, notice preferences and push devices are deleted (a place held for the person goes to the next one waiting), open enrolments of the adult and of the people in their care end and those people are deleted, the email address, language and NIF are cleared, linked identities are deleted, every session is revoked, `display_name` becomes «Conta eliminada» and `deleted_at` is set. Past reservations keep their anonymised row so indicators stay correct. Audited as `account.deleted` with the counts. |
 | Information (arts. 13, 14)               | The council's notice is shown from the sign-in dialog and the account page, with the version the person accepted and the retention period.                                                                                                                                                                                                                                                                                                                                                                                         |
 | Rectification (art. 16)                  | Name, email and NIF come from the identity provider and are refreshed at each sign-in, so corrections are made at the provider. Other requests go to the council.                                                                                                                                                                                                                                                                                                                                                                  |
 | Restriction and objection (arts. 18, 21) | Not automated. The council handles requests manually; a manager can cancel the person's reservations and the operator can mark the account.                                                                                                                                                                                                                                                                                                                                                                                        |

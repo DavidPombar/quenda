@@ -7,6 +7,7 @@ import {
   PiChalkboardTeacher,
   PiHourglassMedium,
   PiMapPin,
+  PiUser,
 } from "react-icons/pi";
 import { ROUTES, routeFor } from "@/constants/routes";
 import { localized } from "@/services/catalog.service";
@@ -70,6 +71,14 @@ export function EnrolmentRow(p: {
         </span>
       </div>
       <ul className="meta-list">
+        {e.participant && (
+          <li>
+            <PiUser size={20} aria-hidden="true" />
+            {fill(p.t("enrolmentParticipant"), {
+              name: e.participant.firstName,
+            })}
+          </li>
+        )}
         <li>
           <PiMapPin size={20} aria-hidden="true" />
           {resource ? `${e.facilityName}, ${resource}` : e.facilityName}
@@ -93,7 +102,16 @@ export function EnrolmentRow(p: {
       </ul>
       {open && (
         <div className="booking-actions">
-          <Button variant="outline" onClick={p.onLeave} loading={p.leaving}>
+          <Button
+            variant="outline"
+            onClick={p.onLeave}
+            loading={p.leaving}
+            aria-label={
+              e.participant
+                ? `${p.t("enrolLeave")}: ${e.participant.firstName}`
+                : undefined
+            }
+          >
             {p.t("enrolLeave")}
           </Button>
         </div>

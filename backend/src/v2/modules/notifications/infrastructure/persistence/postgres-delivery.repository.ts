@@ -27,6 +27,7 @@ interface DeliveryRow {
   activityNameGl: string | null;
   activityNameEs: string | null;
   enrolmentStatus: Delivery["enrolmentStatus"];
+  participant: string | null;
   noticeDetails: { reason?: string; dates?: string[] } | null;
   attempts: number;
   email: string | null;
@@ -96,7 +97,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       SELECT c.id, c.kind, c.channel, c.tenant_id AS "tenantId", c.user_id AS "userId",
         c.booking_id AS "bookingId", c.waitlist_entry_id AS "waitlistEntryId", c.attempts,
         c.enrolment_id AS "enrolmentId", a.name_gl AS "activityNameGl", a.name_es AS "activityNameEs",
-        e.status AS "enrolmentStatus",
+        e.status AS "enrolmentStatus", dp.first_name AS participant,
         (SELECT n.details FROM notifications n
           WHERE n.tenant_id=c.tenant_id AND n.enrolment_id=c.enrolment_id AND n.kind=c.kind
             AND n.activity_session_id IS NOT DISTINCT FROM c.activity_session_id
@@ -126,6 +127,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
       LEFT JOIN waitlist_entries w ON w.tenant_id=c.tenant_id AND w.id=c.waitlist_entry_id
       LEFT JOIN activity_enrolments e ON e.tenant_id=c.tenant_id AND e.id=c.enrolment_id
       LEFT JOIN activities a ON a.tenant_id=e.tenant_id AND a.id=e.activity_id
+      LEFT JOIN dependants dp ON dp.tenant_id=e.tenant_id AND dp.id=e.dependant_id
       -- An enrolment notice is about its cancelled date, else the next session, else the last one.
       LEFT JOIN LATERAL (
         SELECT s.starts_at, s.ends_at FROM activity_sessions s
@@ -159,6 +161,7 @@ export class PostgresDeliveryRepository extends DeliveryRepository {
           ? null
           : { name: { gl: row.activityNameGl, es: row.activityNameEs ?? "" } },
       enrolmentStatus: row.enrolmentStatus,
+      participant: row.participant,
       noticeReason: row.noticeDetails?.reason ?? null,
       cancelledDates: (row.noticeDetails?.dates ?? []).map((date) =>
         Temporal.Instant.from(date),

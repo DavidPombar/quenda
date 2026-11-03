@@ -12,6 +12,10 @@ export class EnrolmentActivityNameDTO {
   @ApiProperty({ description: "Empty means use the Galician text" })
   es!: string;
 }
+export class EnrolmentParticipantDTO {
+  @ApiProperty({ type: String, nullable: true }) dependantId!: string | null;
+  @ApiProperty({ description: "First name only" }) firstName!: string;
+}
 export class MyEnrolmentResponseDTO {
   @ApiProperty() id!: string;
   @ApiProperty() activityId!: string;
@@ -23,6 +27,12 @@ export class MyEnrolmentResponseDTO {
   @ApiProperty() facilityName!: string;
   @ApiProperty() resourceName!: string;
   @ApiProperty({ enum: STATUSES }) status!: EnrolmentStatus;
+  @ApiProperty({
+    type: EnrolmentParticipantDTO,
+    nullable: true,
+    description: "The person in the adult's care who takes part; null for the adult",
+  })
+  participant!: EnrolmentParticipantDTO | null;
   @ApiProperty({
     type: Number,
     nullable: true,
@@ -48,6 +58,19 @@ export class MyEnrolmentResponseDTO {
 export class ManagedEnrolmentResponseDTO {
   @ApiProperty() id!: string;
   @ApiProperty() userId!: string;
+  @ApiProperty({ type: String, nullable: true }) dependantId!: string | null;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: "First name of the person in the adult's care",
+  })
+  participantFirstName!: string | null;
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: "Their age in the year the activity starts",
+  })
+  participantAge!: number | null;
   @ApiProperty({ enum: STATUSES }) status!: EnrolmentStatus;
   @ApiProperty({ type: Number, nullable: true }) position!: number | null;
   @ApiProperty({ description: "Display name of the person" }) name!: string;

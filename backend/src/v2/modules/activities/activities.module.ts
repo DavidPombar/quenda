@@ -12,6 +12,16 @@ import { PostgresActivityRepository } from "./infrastructure/persistence/postgre
 import { EnrolmentRepository } from "./domain/enrolment.repository";
 import { PostgresEnrolmentRepository } from "./infrastructure/persistence/postgres-enrolment.repository";
 import { EnrolmentNotices } from "./application/enrolment-notices";
+import { DependantRepository } from "./domain/dependant.repository";
+import { PostgresDependantRepository } from "./infrastructure/persistence/postgres-dependant.repository";
+import { AddDependant } from "./application/commands/add-dependant.command";
+import { UpdateDependant } from "./application/commands/update-dependant.command";
+import { RemoveDependant } from "./application/commands/remove-dependant.command";
+import { ListDependants } from "./application/queries/list-dependants.query";
+import { ListDependantsController } from "./infrastructure/api/citizen/list-dependants.controller";
+import { AddDependantController } from "./infrastructure/api/citizen/add-dependant.controller";
+import { UpdateDependantController } from "./infrastructure/api/citizen/update-dependant.controller";
+import { RemoveDependantController } from "./infrastructure/api/citizen/remove-dependant.controller";
 import { EnrolmentQueue } from "./application/enrolment-queue";
 import { EnrolInActivity } from "./application/commands/enrol-in-activity.command";
 import { LeaveActivity } from "./application/commands/leave-activity.command";
@@ -74,6 +84,11 @@ import { GetPublicActivityController } from "./infrastructure/api/public/get-pub
     ExportActivityEnrolments,
     ListMyEnrolments,
     ListActivityEnrolments,
+    AddDependant,
+    UpdateDependant,
+    RemoveDependant,
+    ListDependants,
+    { provide: DependantRepository, useClass: PostgresDependantRepository },
     { provide: ActivityRepository, useClass: PostgresActivityRepository },
     { provide: EnrolmentRepository, useClass: PostgresEnrolmentRepository },
     {
@@ -99,6 +114,10 @@ import { GetPublicActivityController } from "./infrastructure/api/public/get-pub
     ListActivityEnrolmentsController,
     ExportActivityEnrolmentsController,
     RemoveEnrolmentController,
+    ListDependantsController,
+    AddDependantController,
+    UpdateDependantController,
+    RemoveDependantController,
   ],
   exports: [ActivityEnrolments],
 })

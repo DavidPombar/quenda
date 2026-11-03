@@ -1499,6 +1499,10 @@
           "userId": {
             "type": "string"
           },
+          "dependantId": {
+            "type": ["string", "null"],
+            "description": "Person in the adult's care who takes part (#97, part C); optional in older packages"
+          },
           "status": {
             "enum": [
               "enrolled",
@@ -1530,6 +1534,32 @@
           "enrolledAt",
           "endedAt",
           "removalReason"
+        ]
+      }
+    },
+    "dependants": {
+      "type": "array",
+      "description": "People in an adult's care (#97, part C); optional. First name and year of birth only, with the guardianship declaration the adult accepted",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string" },
+          "firstName": { "type": "string" },
+          "birthYear": { "type": "integer" },
+          "declarationVersion": { "type": "string" },
+          "declaredAt": { "type": "string" },
+          "createdAt": { "type": "string" }
+        },
+        "required": [
+          "id",
+          "userId",
+          "firstName",
+          "birthYear",
+          "declarationVersion",
+          "declaredAt",
+          "createdAt"
         ]
       }
     }

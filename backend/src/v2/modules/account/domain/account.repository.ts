@@ -11,6 +11,7 @@ import type {
   ExportedMessage,
   ExportedNotification,
   ExportedEnrolment,
+  ExportedDependant,
   ExportedPushDevice,
   ExportedWaitlistEntry,
 } from "./account.read-model";
@@ -133,6 +134,12 @@ export abstract class AccountRepository {
     tenantId: string,
     userId: string,
   ): Promise<ExportedWaitlistEntry[]>;
+  abstract listDependantsAll(
+    tenantId: string,
+    userId: string,
+  ): Promise<ExportedDependant[]>;
+  /** Removes the people in the adult's care (account deletion). */
+  abstract deleteDependants(tenantId: string, userId: string): Promise<number>;
   abstract listEnrolmentsAll(
     tenantId: string,
     userId: string,

@@ -60,7 +60,10 @@ export type ErrorCode =
   | "places_below_enrolled"
   | "enrolment_closed"
   | "already_enrolled"
-  | "age_not_allowed";
+  | "age_not_allowed"
+  | "dependant_limit"
+  | "dependant_in_use"
+  | "declaration_required";
 export type AppError<C extends ErrorCode = ErrorCode> = { code: C };
 export function failure<C extends ErrorCode>(code: C): AppError<C> {
   return { code };

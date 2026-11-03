@@ -398,10 +398,20 @@ class ExportedActivitySessionDTO {
   cancellationReason!: string | null;
   @ApiProperty() sequence!: number;
 }
+class ExportedDependantDTO {
+  @ApiProperty() id!: string;
+  @ApiProperty() userId!: string;
+  @ApiProperty() firstName!: string;
+  @ApiProperty() birthYear!: number;
+  @ApiProperty() declarationVersion!: string;
+  @ApiProperty() declaredAt!: string;
+  @ApiProperty() createdAt!: string;
+}
 class ExportedActivityEnrolmentDTO {
   @ApiProperty() id!: string;
   @ApiProperty() activityId!: string;
   @ApiProperty() userId!: string;
+  @ApiProperty({ type: String, nullable: true }) dependantId!: string | null;
   @ApiProperty({
     enum: ["enrolled", "waiting", "left", "removed", "cancelled"],
   })
@@ -427,6 +437,11 @@ export class MunicipalityExportResponseDTO {
     description: "Enrolments in activities (#97)",
   })
   activityEnrolments!: ExportedActivityEnrolmentDTO[];
+  @ApiProperty({
+    type: [ExportedDependantDTO],
+    description: "People in an adult's care (#97)",
+  })
+  dependants!: ExportedDependantDTO[];
   @ApiProperty({ type: [ExportedSportDTO] }) sports!: ExportedSportDTO[];
   @ApiProperty({ type: [ExportedFacilityPhotoDTO] })
   facilityPhotos!: ExportedFacilityPhotoDTO[];
@@ -521,6 +536,7 @@ export class MunicipalityExportResponseDTO {
       activityPrices: snapshot.activityPrices,
       activitySessions: snapshot.activitySessions,
       activityEnrolments: snapshot.activityEnrolments,
+      dependants: snapshot.dependants,
       userCategories: snapshot.userCategories.map((value) => ({
         ...value,
         requestedAt: value.requestedAt?.toString() ?? null,

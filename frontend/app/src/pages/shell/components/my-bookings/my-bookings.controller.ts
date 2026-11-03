@@ -182,7 +182,13 @@ export function useMyBookingsController() {
     /** An enrolment notice names its activity before the place (#97). */
     noticePlace: (notice: Notification) =>
       notice.activityName
-        ? `${localized(notice.activityName, context.locale)} · ${notice.facilityName}`
+        ? [
+            localized(notice.activityName, context.locale),
+            notice.participantName,
+            notice.facilityName,
+          ]
+            .filter(Boolean)
+            .join(" · ")
         : notice.facilityName,
     noticeDetail,
     visibleNotices,

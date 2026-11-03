@@ -15,6 +15,7 @@ import { ExportedPushDeviceResponseDTO } from "./exported-push-device.response.d
 import { ExportedBlockResponseDTO } from "./exported-block.response.dto";
 import { ExportedWaitlistEntryResponseDTO } from "./exported-waitlist-entry.response.dto";
 import { ExportedEnrolmentResponseDTO } from "./exported-enrolment.response.dto";
+import { ExportedDependantResponseDTO } from "./exported-dependant.response.dto";
 export class AccountExportResponseDTO {
   @ApiProperty({ description: "Instant the export was produced" })
   generatedAt!: string;
@@ -90,6 +91,11 @@ export class AccountExportResponseDTO {
   })
   activityEnrolments!: ExportedEnrolmentResponseDTO[];
   @ApiProperty({
+    description: "People in the adult's care (#97)",
+    type: [ExportedDependantResponseDTO],
+  })
+  dependants!: ExportedDependantResponseDTO[];
+  @ApiProperty({
     description: "Audit events performed by this account",
     type: [ExportedAuditEventResponseDTO],
   })
@@ -115,6 +121,7 @@ export class AccountExportResponseDTO {
       activityEnrolments: value.activityEnrolments.map(
         ExportedEnrolmentResponseDTO.from,
       ),
+      dependants: value.dependants.map(ExportedDependantResponseDTO.from),
       auditEvents: value.auditEvents.map(ExportedAuditEventResponseDTO.from),
     };
   }

@@ -94,7 +94,12 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Hai máis persoas inscritas que as prazas indicadas. Dá de baixa a alguén antes de reducilas.",
     enrolment_closed: "A inscrición nesta actividade non está aberta.",
     already_enrolled: "Xa estás inscrito ou inscrita nesta actividade.",
-    age_not_allowed: "Esta actividade non é para a túa idade.",
+    age_not_allowed: "Esta actividade non é para esa idade.",
+    dependant_limit: "Podes ter ata dez persoas ao teu cargo.",
+    dependant_in_use:
+      "Esta persoa ten inscricións abertas. Dáa de baixa nelas antes de eliminala.",
+    declaration_required:
+      "Para engadir unha persoa ao teu cargo tes que declarar que tes a patria potestade ou a tutela.",
   },
   es: {
     not_found: "No encontramos este recurso.",
@@ -182,7 +187,12 @@ const messages: Record<"gl" | "es", Record<ErrorCode, string>> = {
       "Hay más personas inscritas que las plazas indicadas. Da de baja a alguien antes de reducirlas.",
     enrolment_closed: "La inscripción en esta actividad no está abierta.",
     already_enrolled: "Ya estás inscrito o inscrita en esta actividad.",
-    age_not_allowed: "Esta actividad no es para tu edad.",
+    age_not_allowed: "Esta actividad no es para esa edad.",
+    dependant_limit: "Puedes tener hasta diez personas a tu cargo.",
+    dependant_in_use:
+      "Esta persona tiene inscripciones abiertas. Dala de baja en ellas antes de eliminarla.",
+    declaration_required:
+      "Para añadir una persona a tu cargo tienes que declarar que tienes la patria potestad o la tutela.",
   },
 };
 @Catch(HttpException)

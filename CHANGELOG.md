@@ -24,6 +24,13 @@ All notable changes to Quenda are documented here. The format follows
 
 ### Added
 
+- People in an adult's care, part C (#97, C2, T4): under «A miña conta» an adult adds children or
+  other people in their care by first name and year of birth only, declaring parental authority or
+  guardianship (versioned). Activity pages ask «Para quen?» and offer only those of the right age,
+  checked again by the server. The council's list and CSV show the participant's first name and
+  age; notices name them by email only. Account export and deletion, portability and the data
+  protection documents cover them.
+
 - Enrolment in activities, part B (#97, C2, C4, M2): adults enrol from the activity's page; past
   the places they join a waiting list and the first person waiting gets a freed place on their own,
   with a notice. Leaving, removal by the council with a reason, account deletion and new places all

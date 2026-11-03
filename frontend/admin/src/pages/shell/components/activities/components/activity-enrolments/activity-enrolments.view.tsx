@@ -81,7 +81,21 @@ export function ActivityEnrolments(p: {
           {data.items.map((enrolment) => (
             <li key={enrolment.id}>
               <span>
-                <strong>{enrolment.name}</strong>
+                {enrolment.participantFirstName ? (
+                  <>
+                    <strong>
+                      {fill(t("activityEnrolmentParticipant"), {
+                        name: enrolment.participantFirstName,
+                        age: enrolment.participantAge ?? "",
+                      })}
+                    </strong>{" "}
+                    <span className="muted">
+                      {fill(t("activityEnrolmentBy"), { name: enrolment.name })}
+                    </span>
+                  </>
+                ) : (
+                  <strong>{enrolment.name}</strong>
+                )}
                 {enrolment.email && (
                   <>
                     {" "}
@@ -108,7 +122,7 @@ export function ActivityEnrolments(p: {
               <Button
                 size="sm"
                 variant="outline"
-                aria-label={`${t("activityEnrolmentRemove")}: ${enrolment.name}`}
+                aria-label={`${t("activityEnrolmentRemove")}: ${enrolment.participantFirstName ?? enrolment.name}`}
                 onClick={() => c.open(enrolment)}
               >
                 {t("activityEnrolmentRemove")}
@@ -143,7 +157,7 @@ export function ActivityEnrolments(p: {
       {c.removing && (
         <ReasonDialog
           title={t("activityEnrolmentRemoveTitle")}
-          description={`${c.removing.name}. ${t("activityEnrolmentRemoveBody")}`}
+          description={`${c.removing.participantFirstName ?? c.removing.name}. ${t("activityEnrolmentRemoveBody")}`}
           t={t}
           pending={c.remove.isPending}
           error={c.remove.error ? c.remove.error.message : null}

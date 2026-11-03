@@ -51,7 +51,8 @@ coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'bo
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'facilityId', r.facility_id, 'resourceId', r.resource_id, 'sport', r.sport, 'nameGl', r.name_gl, 'nameEs', r.name_es, 'descriptionGl', r.description_gl, 'descriptionEs', r.description_es, 'weekdays', r.weekdays, 'startsLocal', to_char(r.starts_local, 'HH24:MI'), 'endsLocal', to_char(r.ends_local, 'HH24:MI'), 'startsOn', to_char(r.starts_on, 'YYYY-MM-DD'), 'endsOn', to_char(r.ends_on, 'YYYY-MM-DD'), 'exceptions', ARRAY(SELECT to_char(e, 'YYYY-MM-DD') FROM unnest(r.exceptions) AS e ORDER BY e), 'schedule', r.schedule, 'places', r.places, 'minAge', r.min_age, 'maxAge', r.max_age, 'enrolmentOpensOn', to_char(r.enrolment_opens_on, 'YYYY-MM-DD'), 'enrolmentClosesOn', to_char(r.enrolment_closes_on, 'YYYY-MM-DD'), 'status', r.status, 'cancellationReason', r.cancellation_reason, 'createdAt', r.created_at, 'publishedAt', r.published_at, 'cancelledAt', r.cancelled_at) ORDER BY r.id) FROM activities r WHERE r.tenant_id=m.id), '[]') AS "activities"
 ,coalesce((SELECT json_agg(json_build_object('activityId', r.activity_id, 'category', r.category, 'priceCents', r.price_cents) ORDER BY r.activity_id, r.category) FROM activity_prices r WHERE r.tenant_id=m.id), '[]') AS "activityPrices"
 ,coalesce((SELECT json_agg(json_build_object('id', r.id, 'activityId', r.activity_id, 'start', r.starts_at, 'end', r.ends_at, 'status', r.status, 'cancellationReason', r.cancellation_reason, 'sequence', r.sequence) ORDER BY r.id) FROM activity_sessions r WHERE r.tenant_id=m.id), '[]') AS "activitySessions"
-,coalesce((SELECT json_agg(json_build_object('id', r.id, 'activityId', r.activity_id, 'userId', r.user_id, 'status', r.status, 'createdAt', r.created_at, 'enrolledAt', r.enrolled_at, 'endedAt', r.ended_at, 'removalReason', r.removal_reason) ORDER BY r.created_at, r.id) FROM activity_enrolments r WHERE r.tenant_id=m.id), '[]') AS "activityEnrolments"
+,coalesce((SELECT json_agg(json_build_object('id', r.id, 'activityId', r.activity_id, 'userId', r.user_id, 'dependantId', r.dependant_id, 'status', r.status, 'createdAt', r.created_at, 'enrolledAt', r.enrolled_at, 'endedAt', r.ended_at, 'removalReason', r.removal_reason) ORDER BY r.created_at, r.id) FROM activity_enrolments r WHERE r.tenant_id=m.id), '[]') AS "activityEnrolments"
+,coalesce((SELECT json_agg(json_build_object('id', r.id, 'userId', r.user_id, 'firstName', r.first_name, 'birthYear', r.birth_year, 'declarationVersion', r.declaration_version, 'declaredAt', r.declared_at, 'createdAt', r.created_at) ORDER BY r.created_at, r.id) FROM dependants r WHERE r.tenant_id=m.id), '[]') AS "dependants"
 FROM municipalities m WHERE m.id=$1`;
 @Injectable()
 export class PostgresPortabilityRepository extends PortabilityRepository {
@@ -173,6 +174,7 @@ export class PostgresPortabilityRepository extends PortabilityRepository {
       activityPrices: row.activityPrices,
       activitySessions: row.activitySessions,
       activityEnrolments: row.activityEnrolments,
+      dependants: row.dependants,
       messages: row.messages.map((value) => ({
         ...value,
         createdAt: Temporal.Instant.from(value.createdAt),
