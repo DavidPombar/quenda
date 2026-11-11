@@ -421,6 +421,35 @@ describe("Facility page details", () => {
         "https://www.openstreetmap.org/?mlat=42.61&mlon=-8.12#map=18/42.61/-8.12",
       );
   });
+  test("should send the site's origin as Referer with the map tiles, as the tile server requires", async () => {
+    stubShell();
+    stubFacilities([facility]);
+    // A one-pixel image keeps the test offline while Leaflet still builds the tile elements.
+    stubJsonResponse({
+      path: "*/v2/public/map",
+      response: {
+        tileUrl:
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7#{z}/{x}/{y}",
+        attribution: "© OpenStreetMap contributors",
+      },
+    });
+    stubAvailability(facility, () => []);
+    await commands.navigate(`/app/vilaverde/instalacions/${facility.id}`);
+    await render(<App />);
+    const map = page.getByRole("region", {
+      name: `Mapa da localización de ${facility.name}`,
+    });
+    await expect.element(map).toBeVisible();
+    await expect
+      .poll(() => map.element().querySelectorAll("img.leaflet-tile").length)
+      .toBeGreaterThan(0);
+    const tiles = [...map.element().querySelectorAll("img.leaflet-tile")];
+    for (const tile of tiles)
+      expect(tile.getAttribute("referrerpolicy")).toBe(
+        "strict-origin-when-cross-origin",
+      );
+    expect(map.element().textContent).toContain("© OpenStreetMap contributors");
+  });
   test("should explain that a closed facility cannot be booked instead of listing slots", async () => {
     stubShell();
     stubFacilities([{ ...facility, status: "closed" }]);

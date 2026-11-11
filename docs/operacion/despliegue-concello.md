@@ -97,6 +97,25 @@ Genere cada secreto con `openssl rand -base64 32` y rellene:
 Deje comentado lo que no use: una variable vacía no es lo mismo que una variable sin
 definir.
 
+#### Servidor de mapas
+
+La ficha de cada instalación muestra un mapa. Por defecto las teselas salen de los
+servidores de OpenStreetMap, que mantienen voluntarios: su
+[política de uso](https://operations.osmfoundation.org/policies/tiles/) admite un uso
+moderado como el de una demo, pero desaconseja el uso intenso. En producción, use el
+servidor de teselas de la deputación, uno propio o un proveedor comercial:
+
+| Fichero      | Variable          | Valor                                                                                        |
+| ------------ | ----------------- | -------------------------------------------------------------------------------------------- |
+| `quenda.env` | `MAP_TILE_URL`    | Plantilla XYZ con `{z}`, `{x}` e `{y}`, p. ej. `https://teselas.example.gal/{z}/{x}/{y}.png` |
+| `quenda.env` | `MAP_ATTRIBUTION` | La atribución que exija el proveedor                                                         |
+| `.env`       | `MAP_TILE_ORIGIN` | El origen del mismo servidor (`https://teselas.example.gal`), para la CSP                    |
+
+El servidor de teselas recibe la IP de cada visitante y, como `Referer`, solo el origen de
+la web (nunca la página que se mira); el aviso de privacidad debe decirlo. Si el mapa
+muestra «Access blocked», el servidor rechaza las peticiones: revise que la instancia sea la
+versión actual y, si el uso es intenso, cambie de servidor.
+
 #### Arrancar
 
 ```bash
@@ -155,6 +174,7 @@ La instancia está vacía: siga con el [alta de un concello](alta-concello.md).
 | Caddy no obtiene el certificado                 | El DNS aún no apunta al servidor o el puerto 80 está cerrado                              |
 | No llegan correos                               | `SMTP_URL` incorrecto o el relé no acepta el remitente de `MAIL_FROM`; mire `logs worker` |
 | Los enlaces de los correos apuntan a otro sitio | `QUENDA_DOMAIN` no es el dominio público                                                  |
+| El mapa muestra «Access blocked»                | Vea [servidor de mapas](#servidor-de-mapas): el servidor rechaza las teselas              |
 
 ## Demo pública
 

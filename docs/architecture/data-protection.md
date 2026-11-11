@@ -91,7 +91,9 @@ Facility photos (#26) are meant to show the space; the backoffice asks for a des
 is seen, and managers should not upload pictures in which people can be identified. The facility
 map loads tiles from the server set in `MAP_TILE_URL`. With the default, OpenStreetMap, each
 visitor's IP address and user agent reach that third party when the map is shown, which the
-privacy notice must say; a council can use its own or the provincial council's tile server.
+privacy notice must say; a council can use its own or the provincial council's tile server. The tile
+requests carry only the site's origin as `Referer`, never the page path, so the tile server does
+not learn which facility is viewed; the rest of the app sends no `Referer` to other sites.
 
 Quenda does not collect identity documents, postal addresses, phone numbers, health data or data
 about minors beyond the first name and year of birth of a person in an adult's care (#97, see
