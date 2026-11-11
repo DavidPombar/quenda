@@ -37,6 +37,13 @@ for (const path of ["/", "/app/", "/app/reservas", "/admin/", "/admin/x"]) {
     /img-src 'self' data: blob: https:\/\/[^\s;]+;/,
     `${path} map tiles`,
   );
+  // Page paths stay on this site; only the map tiles send the bare origin to the tile server,
+  // which OpenStreetMap's tile policy requires (#26).
+  assert.equal(
+    response.headers.get("referrer-policy"),
+    "same-origin",
+    `${path} referrer policy`,
+  );
   assert.equal(response.headers.get("x-frame-options"), "DENY", path);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.ok(

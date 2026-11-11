@@ -102,9 +102,18 @@ court with parts never takes one, because booking it holds all its parts.
 - **Tile server:** set per deployment. The API reads `MAP_TILE_URL` and `MAP_ATTRIBUTION` and
   publishes them at `GET /v2/public/map`. The web image adds `MAP_TILE_ORIGIN` to the CSP
   `img-src`, rendered by the nginx image's templates.
+- **Referer:** the pages send `Referrer-Policy: same-origin`, which leaves cross-origin requests
+  without a `Referer`. OpenStreetMap's
+  [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) blocks those
+  requests and serves «Access blocked» tiles instead. The tile layer therefore sets
+  `referrerpolicy="strict-origin-when-cross-origin"` on its images, so the tile server
+  receives only this deployment's origin, never the path of the facility being viewed.
 - **Privacy:** the demo uses OpenStreetMap's servers. Each visitor's IP address and user agent
   reach the tile server when the map loads, as the privacy notice must say. A council can point
   `MAP_TILE_URL` at its own or the provincial council's tile server instead.
+- **Heavy use:** OpenStreetMap's servers are run by volunteers and their policy discourages
+  heavy use. A production deployment should use its own tile server or a commercial provider
+  ([deployment guide](../operacion/despliegue-concello.md#servidor-de-mapas)).
 
 ## Opening hours
 
